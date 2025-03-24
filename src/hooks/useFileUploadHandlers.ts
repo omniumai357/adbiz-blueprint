@@ -1,84 +1,88 @@
 import { useState } from 'react';
+import { FileState } from './useFileUpload';
+import { validateFiles } from '@/utils/file-validation';
 
-type FileError = string | null;
-
-interface UseFileUploadHandlersResult {
-  handleDrop: (acceptedFiles: File[]) => void;
-  handleFiles: (files: File | File[]) => void;
-  handleRemove: (fileName: string) => void;
-  files: File[];
-  error: FileError;
-  setError: (error: FileError) => void;
+export interface UseFileUploadHandlersProps {
+  files: FileState;
+  setFiles: React.Dispatch<React.SetStateAction<FileState>>;
+  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
+  validateFiles: typeof validateFiles;
 }
 
-interface FileValidationResult {
-  isValid: boolean;
-  errorMessage: string | null;
+export interface UseFileUploadHandlersResult {
+  handleFileChange: (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => void;
+  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
 }
 
-const useFileUploadHandlers = (): UseFileUploadHandlersResult => {
-  const [files, setFiles] = useState<File[]>([]);
-  const [error, setError] = useState<FileError>(null);
+const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUploadHandlersResult => {
+  const { files, setFiles, setUploadError } = props;
 
-  const validateFile = (file: File): FileValidationResult => {
-    const maxSizeInBytes = 10 * 1024 * 1024; // 10MB
-    const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-
-    if (file.size > maxSizeInBytes) {
-      return { isValid: false, errorMessage: `File ${file.name} exceeds the maximum size of 10MB.` };
+  const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
+    let newFiles: File[] = [];
+    
+    // Handle event input
+    if ('target' in e && e.target.files) {
+      newFiles = Array.from(e.target.files);
+    } 
+    // Handle direct array of files
+    else if (Array.isArray(e)) {
+      newFiles = Array.from(e);
     }
+    
+    if (newFiles.length === 0) return;
 
-    if (!allowedFileTypes.includes(file.type)) {
-      return { isValid: false, errorMessage: `File ${file.name} has an unsupported file type. Allowed types are JPEG, PNG, GIF, PDF, and DOC(X).` };
-    }
-
-    return { isValid: true, errorMessage: null };
-  };
-
-  const handleDrop = (acceptedFiles: File[]) => {
-    setError(null);
-    const newFiles = [...files];
-
-    for (const file of acceptedFiles) {
-      const validationResult = validateFile(file);
-      if (!validationResult.isValid) {
-        setError(validationResult.errorMessage);
+    // For logo, we only keep one file
+    if (fileType === 'logo') {
+      const { validFiles, hasInvalidFiles } = validateFiles([newFiles[0]], fileType);
+      
+      if (hasInvalidFiles) {
+        setUploadError(`Invalid file type. Please use a supported format.`);
         return;
       }
-      newFiles.push(file);
+      
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: validFiles[0]
+      }));
+      return;
     }
-
-    setFiles(newFiles);
-  };
-
-  // Fix the error by adding a proper type guard for the file parameter
-  const handleFiles = (files: File | File[]) => {
-    if (!files) return;
     
-    // Convert to array if it's a single file
-    const fileList = Array.isArray(files) ? files : [files];
+    // For other file types, we append to existing files
+    const { validFiles, hasInvalidFiles } = validateFiles(newFiles, fileType);
     
-    for (const file of fileList) {
-      if (!validateFile(file)) {
-        setError(`File ${file.name} is not valid. Please check file type and size.`);
-        return;
-      }
+    if (hasInvalidFiles) {
+      setUploadError(`Some files have invalid types. Only supported formats were added.`);
     }
-
-    setFiles((prevFiles) => {
-      const newFiles = [...prevFiles];
-      for (const file of fileList) {
-        newFiles.push(file);
-      }
-      return newFiles;
-    });
+    
+    if (validFiles.length > 0) {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: [...prev[fileType], ...validFiles]
+      }));
+    }
   };
 
-  const handleRemove = (fileName: string) => {
-    setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
+  const onRemoveFile = (fileType: keyof FileState, index?: number) => {
+    if (fileType === 'logo') {
+      setFiles(prev => ({
+        ...prev,
+        logo: null
+      }));
+      return;
+    }
+    
+    if (index !== undefined) {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: prev[fileType].filter((_, i) => i !== index)
+      }));
+    }
   };
 
-  return { handleDrop, handleFiles, handleRemove, files, error, setError };
+  return {
+    handleFileChange,
+    onRemoveFile
+  };
 };
 
 export default useFileUploadHandlers;
