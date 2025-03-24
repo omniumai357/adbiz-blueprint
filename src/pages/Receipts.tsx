@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { FileText, Download, ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { format } from "date-fns";
+import InvoiceViewer from "@/components/invoice/InvoiceViewer";
 
 interface Receipt {
   id: string;
@@ -25,6 +26,7 @@ const Receipts = () => {
   const { toast } = useToast();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchReceipts = async () => {
@@ -54,19 +56,22 @@ const Receipts = () => {
         if (error) throw error;
 
         // Get package details
-        const packageIds = data.map(order => order.package_id).filter(Boolean);
+        const packageIds = data
+          .map(order => order.package_id)
+          .filter(Boolean);
+          
         const { data: packagesData } = await supabase
           .from('packages')
           .select('id, title')
           .in('id', packageIds);
         
-        const packageMap = packagesData?.reduce((acc, pkg) => {
+        const packageMap = packagesData?.reduce((acc: Record<string, string>, pkg: any) => {
           acc[pkg.id] = pkg.title;
           return acc;
         }, {});
 
         // Format receipt data
-        const formattedReceipts = data.map(order => ({
+        const formattedReceipts = data.map((order: any) => ({
           id: order.id,
           created_at: order.created_at,
           total_amount: order.total_amount,
@@ -91,8 +96,7 @@ const Receipts = () => {
   }, [user, navigate, toast]);
 
   const viewInvoice = (invoiceNumber: string) => {
-    // In a real app, this would open the invoice in a new tab
-    window.open(`/invoice/${invoiceNumber}`, '_blank');
+    setSelectedInvoice(invoiceNumber);
   };
 
   const downloadReceipt = (receiptId: string) => {
@@ -185,6 +189,13 @@ const Receipts = () => {
           )}
         </div>
       </main>
+      
+      {selectedInvoice && (
+        <InvoiceViewer 
+          invoiceNumber={selectedInvoice} 
+          onClose={() => setSelectedInvoice(null)} 
+        />
+      )}
     </div>
   );
 };

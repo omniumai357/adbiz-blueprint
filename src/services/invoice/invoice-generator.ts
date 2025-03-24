@@ -1,6 +1,7 @@
 
 import { InvoiceData, InvoiceItem } from "./types";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { getTemplateForPackage } from "./templates/templateFactory";
 
 /**
  * Invoice generation utilities
@@ -37,6 +38,9 @@ export const invoiceGenerator = {
       price: packageDetails.price
     }];
 
+    // Get the template type for this package
+    const templateType = getTemplateForPackage(packageDetails.id);
+
     // Create invoice data
     return {
       orderId,
@@ -48,7 +52,8 @@ export const invoiceGenerator = {
       dueDate: dueDate.toISOString(),
       invoiceNumber: this.generateInvoiceNumber(),
       userId,
-      deliveryMethod
+      deliveryMethod,
+      templateType // Store the template type
     };
   }
 };

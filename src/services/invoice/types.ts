@@ -19,6 +19,7 @@ export interface InvoiceData {
   invoiceNumber: string;
   userId?: string;
   deliveryMethod?: 'email' | 'sms' | 'both';
+  templateType?: 'standard' | 'premium' | 'platinum'; // New field for template type
 }
 
 export type InvoiceDeliveryMethod = 'email' | 'sms' | 'both';
@@ -28,3 +29,32 @@ export interface InvoiceDeliveryResult {
   sms: any;
   errors: Error[];
 }
+
+export interface InvoiceTemplate {
+  name: string;
+  displayName: string;
+  description: string;
+  forPackageTypes: string[];
+}
+
+// Available invoice templates
+export const invoiceTemplates: InvoiceTemplate[] = [
+  {
+    name: 'standard',
+    displayName: 'Standard Template',
+    description: 'Basic template suitable for standard packages',
+    forPackageTypes: ['basic', 'standard', 'tier1', 'tier2', 'monthly-basic', 'monthly-standard', 'custom-tier1', 'custom-tier2']
+  },
+  {
+    name: 'premium',
+    displayName: 'Premium Template',
+    description: 'Enhanced template with VIP styling for premium customers',
+    forPackageTypes: ['premium', 'tier3', 'monthly-premium', 'custom-tier3']
+  },
+  {
+    name: 'platinum',
+    displayName: 'Platinum Executive Template',
+    description: 'Exclusive template for platinum customers with executive styling',
+    forPackageTypes: ['platinum']
+  }
+];

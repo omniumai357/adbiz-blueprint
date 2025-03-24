@@ -1,119 +1,144 @@
 
-import { InvoiceDeliveryMethod, InvoiceDeliveryResult, InvoiceData } from "./types";
+import { InvoiceDeliveryMethod, InvoiceDeliveryResult } from './types';
+import { supabase } from '@/integrations/supabase/client';
+import { getTemplateForPackage, generateInvoiceHtml } from './templates/templateFactory';
 
 /**
- * Handles invoice delivery through different channels
+ * Invoice delivery service responsible for sending invoices through various channels
  */
 export const invoiceDelivery = {
   /**
    * Sends an invoice via email
    */
-  async sendInvoiceEmail(invoiceId: string, email: string, name: string, invoiceData: Partial<InvoiceData>) {
+  async sendInvoiceEmail(
+    invoiceId: string,
+    email: string,
+    name: string,
+    invoiceData: any
+  ): Promise<any> {
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-invoice`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
+      // Determine the right template to use based on package
+      const templateType = getTemplateForPackage(invoiceData.items[0]?.description?.toLowerCase() || '');
+      
+      // Generate HTML email from the template
+      const invoiceHtml = generateInvoiceHtml(invoiceData, templateType);
+
+      // Use the Supabase Edge Function to send the email
+      const { data, error } = await supabase.functions.invoke('send-invoice', {
+        body: {
           invoiceId,
           email,
           name,
-          ...invoiceData
-        }),
+          orderId: invoiceData.orderId,
+          items: invoiceData.items,
+          amount: invoiceData.amount,
+          invoiceNumber: invoiceData.invoiceNumber,
+          dueDate: invoiceData.dueDate,
+          invoiceHtml // Pass the generated HTML from our template
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send invoice');
-      }
-
-      return await response.json();
+      if (error) throw error;
+      
+      console.log('Email delivery response:', data);
+      return data;
     } catch (error) {
-      console.error("Error sending invoice via email:", error);
-      throw error;
+      console.error('Failed to send invoice email:', error);
+      return { error };
     }
   },
 
   /**
    * Sends an invoice via SMS
    */
-  async sendInvoiceSMS(invoiceId: string, phoneNumber: string, invoiceNumber: string, customMessage?: string) {
+  async sendInvoiceSMS(
+    invoiceId: string,
+    phoneNumber: string,
+    invoiceNumber: string,
+    customMessage?: string
+  ): Promise<any> {
     try {
-      if (!phoneNumber) {
-        throw new Error('Phone number is required for SMS delivery');
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-sms`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
+      // Default message if none provided
+      const message = customMessage || 
+        `Your invoice #${invoiceNumber} is ready. Log in to your account to view or download it.`;
+      
+      // Use the Supabase Edge Function to send the SMS
+      const { data, error } = await supabase.functions.invoke('send-invoice', {
+        body: {
           invoiceId,
           phoneNumber,
           invoiceNumber,
-          message: customMessage
-        }),
+          message,
+          sendSms: true
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to send invoice SMS');
-      }
-
-      return await response.json();
+      if (error) throw error;
+      
+      console.log('SMS delivery response:', data);
+      return data;
     } catch (error) {
-      console.error("Error sending invoice via SMS:", error);
-      throw error;
+      console.error('Failed to send invoice SMS:', error);
+      return { error };
     }
   },
 
   /**
    * Delivers an invoice through selected channels (email, SMS, or both)
    */
-  async deliverInvoice(invoice: any, deliveryMethod: InvoiceDeliveryMethod, customerInfo: {
-    email: string;
-    name: string;
-    phone?: string;
-  }, invoiceData: Partial<InvoiceData>): Promise<InvoiceDeliveryResult> {
-    const results: InvoiceDeliveryResult = {
+  async deliverInvoice(
+    invoice: any,
+    deliveryMethod: InvoiceDeliveryMethod,
+    customerInfo: {
+      email: string;
+      name: string;
+      phone?: string;
+    },
+    invoiceData: any
+  ): Promise<InvoiceDeliveryResult> {
+    const result: InvoiceDeliveryResult = {
       email: null,
       sms: null,
       errors: []
     };
-    
-    // Send via email if method is 'email' or 'both'
-    if (deliveryMethod === 'email' || deliveryMethod === 'both') {
-      try {
-        results.email = await this.sendInvoiceEmail(
+
+    try {
+      // Email delivery
+      if (deliveryMethod === 'email' || deliveryMethod === 'both') {
+        const emailResponse = await this.sendInvoiceEmail(
           invoice.id,
           customerInfo.email,
           customerInfo.name,
           invoiceData
         );
-      } catch (error) {
-        console.error("Failed to deliver invoice via email:", error);
-        results.errors.push(error as Error);
+        
+        result.email = emailResponse;
+        
+        if (emailResponse.error) {
+          result.errors.push(new Error(`Email delivery failed: ${emailResponse.error.message}`));
+        }
       }
-    }
-    
-    // Send via SMS if method is 'sms' or 'both'
-    if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && customerInfo.phone) {
-      try {
-        results.sms = await this.sendInvoiceSMS(
+      
+      // SMS delivery
+      if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && customerInfo.phone) {
+        const smsResponse = await this.sendInvoiceSMS(
           invoice.id,
           customerInfo.phone,
           invoice.invoice_number
         );
-      } catch (error) {
-        console.error("Failed to deliver invoice via SMS:", error);
-        results.errors.push(error as Error);
+        
+        result.sms = smsResponse;
+        
+        if (smsResponse.error) {
+          result.errors.push(new Error(`SMS delivery failed: ${smsResponse.error.message}`));
+        }
       }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in invoice delivery:', error);
+      result.errors.push(error as Error);
+      return result;
     }
-    
-    return results;
   }
 };

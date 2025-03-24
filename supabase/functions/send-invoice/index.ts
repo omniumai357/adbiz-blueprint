@@ -25,7 +25,8 @@ serve(async (req) => {
       invoiceNumber,
       dueDate,
       phoneNumber,
-      sendSms
+      sendSms,
+      invoiceHtml  // New parameter with pre-generated HTML from template
     } = await req.json();
     
     // Create a Supabase client
@@ -33,8 +34,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Generate the invoice email HTML
-    const invoiceHtml = generateInvoiceHtml({
+    // Use the provided HTML or generate fallback HTML
+    const emailContent = invoiceHtml || generateFallbackInvoiceHtml({
       name,
       invoiceNumber,
       items,
@@ -46,6 +47,7 @@ serve(async (req) => {
     // In a real implementation, you would send the email here
     // For now, we'll just log that we would send it
     console.log(`Sending invoice #${invoiceNumber} to ${email}`);
+    console.log(`Using custom template: ${invoiceHtml ? 'Yes' : 'No'}`);
 
     // For demo purposes, we're simulating sending the email
     const emailSent = true;
@@ -122,8 +124,8 @@ serve(async (req) => {
   }
 });
 
-// Helper function to generate invoice HTML
-function generateInvoiceHtml({ name, invoiceNumber, items, amount, dueDate, issueDate }) {
+// Fallback function to generate invoice HTML if template HTML is not provided
+function generateFallbackInvoiceHtml({ name, invoiceNumber, items, amount, dueDate, issueDate }) {
   return `
     <html>
       <head>
