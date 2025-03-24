@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { validateFiles } from '@/utils/file-validation';
 import { uploadSingleFile, generateFilePath } from '@/utils/file-upload';
@@ -17,7 +16,6 @@ export const useFileUpload = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // Use extracted hooks for better organization
   const { files, setFiles } = useFileUploadState();
   const { uploadProgress, updateProgress } = useFileUploadProgress();
   const { handleFileChange, onRemoveFile } = useFileUploadHandlers({
@@ -58,7 +56,6 @@ export const useFileUpload = () => {
       const filePath = generateFilePath(businessId, fileType, file, i);
       const progressKey = `${fileType}-${i}`;
       
-      // Initialize progress
       updateProgress(progressKey, file.name, 0);
       
       const { success } = await uploadSingleFile(
@@ -83,11 +80,9 @@ export const useFileUpload = () => {
     setUploading(true);
     
     try {
-      // Upload logo first
       const logoSuccess = await uploadLogoFile(businessId);
       if (!logoSuccess) throw new Error('Failed to upload logo');
       
-      // Upload other file types
       const fileTypes: Array<keyof Omit<FileState, 'logo'>> = ['images', 'videos', 'documents'];
       
       for (const type of fileTypes) {
