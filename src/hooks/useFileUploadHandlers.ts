@@ -47,8 +47,8 @@ export const useFileUploadHandlers = ({
         selectedFiles = Array.from(e.target.files);
       }
     } else {
-      // Handle readonly File[] - explicitly cast to ensure it's treated as an iterable array
-      selectedFiles = Array.from(e as readonly File[]);
+      // Handle readonly File[] - convert to regular array to ensure it's iterable
+      selectedFiles = Array.prototype.slice.call(e);
     }
     
     if (selectedFiles.length === 0) {
