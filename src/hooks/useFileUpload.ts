@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -25,8 +24,8 @@ export const useFileUpload = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, { name: string; progress: number }>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement> | File[], fileType: keyof FileState) => {
+  // Handle file selection - updated to match the expected parameter order
+  const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | File[]) => {
     let selectedFiles: File[];
     
     if (Array.isArray(e)) {

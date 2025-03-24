@@ -1,4 +1,3 @@
-
 import { ChangeEvent, FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ interface FileUploadSectionProps {
     videos: File[];
     documents: File[];
   };
-  onFileChange: (fileType: keyof typeof files, file: File | File[] | null) => void;
+  onFileChange: (fileType: keyof typeof files, e: ChangeEvent<HTMLInputElement> | File[]) => void;
   onRemoveFile: (fileType: keyof typeof files, index?: number) => void;
   uploadProgress: Record<string, { name: string; progress: number }>;
   uploadError: string | null;
@@ -34,26 +33,8 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof typeof files) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
-    const selectedFiles = Array.from(e.target.files);
-    
-    // Validate file types
-    const allowedTypes: Record<string, string[]> = {
-      logo: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      images: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-      videos: ['video/mp4', 'video/quicktime', 'video/webm'],
-      documents: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    };
-    
-    // Check if files are valid
-    const validFiles = selectedFiles.filter(file => 
-      fileTypeIsValid(file, allowedTypes[fileType])
-    );
-    
-    if (fileType === 'logo') {
-      onFileChange(fileType, validFiles[0]);
-    } else {
-      onFileChange(fileType, validFiles);
-    }
+    // Pass the event directly to onFileChange
+    onFileChange(fileType, e);
   };
 
   return (
