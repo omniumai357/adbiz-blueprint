@@ -39,7 +39,7 @@ export const invoiceGenerator = {
     }];
 
     // Get the template type for this package
-    const templateType = getTemplateForPackage(packageDetails.id);
+    const templateType = getTemplateForPackage(packageDetails.id) as "standard" | "premium" | "platinum";
 
     // Create invoice data
     return {
