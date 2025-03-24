@@ -41,7 +41,7 @@ export const useFileUploadHandlers = ({
     
     // Check if e is an array of Files or an event using type guard
     if (Array.isArray(e)) {
-      // Handle case when e is an array of Files
+      // Handle case when e is an array of Files (convert readonly to mutable array)
       selectedFiles = Array.from(e);
     } else {
       // Handle case when e is a ChangeEvent from input
