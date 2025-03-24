@@ -2,8 +2,9 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format-utils";
-import { Package, PercentIcon } from "lucide-react";
+import { Package, PercentIcon, DollarSign } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 
 export interface BundleDiscountInfo {
   id: string;
@@ -29,6 +30,9 @@ const BundleDiscount = ({ discount, subtotal, applicable }: BundleDiscountProps)
   const formattedDiscount = discount.discountType === "percentage"
     ? `${discount.discountAmount}%`
     : formatCurrency(discount.discountAmount);
+
+  // Calculate progress toward discount threshold
+  const progress = Math.min(100, Math.floor((subtotal / discount.threshold) * 100));
 
   return (
     <div className={cn(
@@ -63,10 +67,17 @@ const BundleDiscount = ({ discount, subtotal, applicable }: BundleDiscountProps)
           </div>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span>Potential discount:</span>
             <span className="font-medium">{formattedDiscount}</span>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Progress toward discount</span>
+              <span>{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
           </div>
           <div className="text-sm text-muted-foreground">
             Add {formatCurrency(discount.threshold - subtotal)} more to qualify

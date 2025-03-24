@@ -28,6 +28,7 @@ interface CheckoutFormProps {
   isDiscountApplicable?: boolean;
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
+  total: number; // Add total to props
 }
 
 const CheckoutForm = ({
@@ -44,6 +45,7 @@ const CheckoutForm = ({
   isDiscountApplicable = false,
   onOrderSuccess,
   isProfileLoading,
+  total, // Destructure total from props
 }: CheckoutFormProps) => {
   const handlePaymentMethodChange = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -104,11 +106,12 @@ const CheckoutForm = ({
                 }}
                 customerInfo={customerInfo}
                 onSuccess={onOrderSuccess}
+                finalAmount={total} // Pass total as finalAmount
               />
             </Elements>
           ) : (
             <PayPalButton 
-              amount={subtotal} 
+              amount={total} // Use total instead of subtotal
               packageDetails={{
                 ...packageDetails,
                 addOns: selectedAddOns,

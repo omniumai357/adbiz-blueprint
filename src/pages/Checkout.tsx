@@ -31,6 +31,8 @@ const Checkout = () => {
     bundleDiscount,
     isDiscountApplicable,
     // Calculated values
+    subtotal,
+    discountAmount,
     total
   } = useCheckout();
 
@@ -73,6 +75,7 @@ const Checkout = () => {
               isDiscountApplicable={isDiscountApplicable}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}
+              total={total} // Pass the total here
             />
           )}
         </div>

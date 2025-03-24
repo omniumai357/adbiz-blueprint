@@ -1,6 +1,6 @@
 
 import React from "react";
-import { CheckCircle2, PlusCircle } from "lucide-react";
+import { CheckCircle2, PlusCircle, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format-utils";
 
@@ -10,6 +10,7 @@ export interface AddOnItem {
   description: string;
   price: number;
   popular?: boolean;
+  valueProposition?: string;
 }
 
 interface AddOnItemProps {
@@ -46,9 +47,17 @@ const AddOnItem = ({ item, selected, onToggle }: AddOnItemProps) => {
       <div className="flex-1">
         <div className="flex items-center justify-between">
           <h4 className="font-medium">{item.name}</h4>
-          <span className="font-medium">{formatCurrency(item.price)}</span>
+          <div className="flex items-center">
+            <span className="font-medium">{formatCurrency(item.price)}</span>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+        {item.valueProposition && (
+          <div className="mt-2 text-xs flex items-center text-primary">
+            <DollarSign className="h-3 w-3 mr-1" />
+            <span>{item.valueProposition}</span>
+          </div>
+        )}
       </div>
     </div>
   );

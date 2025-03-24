@@ -4,12 +4,14 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { CustomerInfo } from "./customer-info-form";
 import { paymentService } from "@/services/payment/payment-service";
+import { formatCurrency } from "@/lib/utils/format-utils";
 
 interface CardPaymentFormProps {
   packagePrice: number;
   packageDetails: any;
   customerInfo: CustomerInfo;
   onSuccess: (orderId: string) => void;
+  finalAmount?: number;
 }
 
 const CardPaymentForm = ({
@@ -17,11 +19,15 @@ const CardPaymentForm = ({
   packageDetails,
   customerInfo,
   onSuccess,
+  finalAmount,
 }: CardPaymentFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use final amount if provided, otherwise use package price
+  const amountToCharge = finalAmount !== undefined ? finalAmount : packagePrice;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +41,7 @@ const CardPaymentForm = ({
     
     try {
       // Create payment intent
-      const clientSecret = await paymentService.createPaymentIntent(packagePrice, 'usd');
+      const clientSecret = await paymentService.createPaymentIntent(amountToCharge, 'usd');
       
       // Process the payment
       const result = await paymentService.processCardPayment(
@@ -75,7 +81,7 @@ const CardPaymentForm = ({
         disabled={!stripe || processing} 
         className="w-full"
       >
-        {processing ? "Processing..." : `Pay $${packagePrice.toFixed(2)}`}
+        {processing ? "Processing..." : `Pay ${formatCurrency(amountToCharge)}`}
       </Button>
     </form>
   );
