@@ -78,6 +78,37 @@ serve(async (req) => {
         invoice_number: invoiceNumber,
         items
       });
+      
+      try {
+        // Insert the invoice in the database
+        const { data: invoice, error } = await supabase
+          .from('invoices')
+          .insert({
+            order_id: orderId,
+            customer_email: email,
+            customer_name: `${firstName} ${lastName}`,
+            amount: orderDetails.packageDetails?.price || orderDetails.amount,
+            invoice_number: invoiceNumber,
+            due_date: dueDate.toISOString(),
+            items: items
+          })
+          .select()
+          .single();
+          
+        if (error) {
+          console.error('Error creating invoice:', error);
+        } else {
+          console.log('Invoice created successfully:', invoice);
+          
+          // Add invoice number to the order response
+          completeOrder.invoice = {
+            id: invoice.id,
+            invoiceNumber: invoiceNumber
+          };
+        }
+      } catch (err) {
+        console.error('Error creating invoice:', err);
+      }
     }
     
     return new Response(

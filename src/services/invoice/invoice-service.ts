@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 import { formatDate } from "@/lib/utils/format-utils";
+import { Json } from "@/integrations/supabase/types";
 
 export interface InvoiceItem {
   description: string;
@@ -26,6 +27,9 @@ export const invoiceService = {
    */
   async createInvoice(data: InvoiceData) {
     try {
+      // Convert the InvoiceItem[] to Json type expected by Supabase
+      const itemsAsJson = data.items as unknown as Json;
+      
       const { data: invoice, error } = await supabase
         .from('invoices')
         .insert({
@@ -36,7 +40,7 @@ export const invoiceService = {
           amount: data.amount,
           invoice_number: data.invoiceNumber,
           due_date: data.dueDate,
-          items: data.items,
+          items: itemsAsJson,
           status: 'pending'
         })
         .select()

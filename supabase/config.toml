@@ -1,8 +1,13 @@
 
 project_id = "muysdfoszppwodrnyptg"
 
+# The config format changed between versions - we need to use the correct format
 [api]
-enabled = true
-
-[[api.cors]]
-enabled = true
+# Port to use for the API URL
+port = 54321
+# Schemas to expose in your API
+schemas = ["public", "storage", "graphql_public"]
+# Extra schemas to add to the search_path of every request
+extra_search_path = ["public", "extensions"]
+# Max rows to return by default
+max_rows = 1000
