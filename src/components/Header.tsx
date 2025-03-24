@@ -2,8 +2,15 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: "Home", path: "/" },
@@ -16,6 +23,7 @@ export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut, isAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,16 +75,67 @@ export const Header = () => {
               {item.label}
             </Link>
           ))}
+          
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className={cn(
+                "text-sm font-medium transition-colors hover:text-primary relative",
+                location.pathname === "/admin"
+                  ? "text-primary after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full"
+                  : "text-foreground/80"
+              )}
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
-        {/* CTA Button */}
-        <div className="hidden md:block">
-          <Button 
-            asChild 
-            className="button-transition hover:shadow-md hover:scale-105"
-          >
-            <Link to="/services">Get Started</Link>
-          </Button>
+        {/* CTA Button & User Menu */}
+        <div className="hidden md:flex items-center gap-4">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">Admin Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">My Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/orders">My Orders</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button 
+                asChild 
+                variant="ghost" 
+                size="sm"
+              >
+                <Link to="/auth">Sign In</Link>
+              </Button>
+              <Button 
+                asChild 
+                className="button-transition hover:shadow-md hover:scale-105"
+              >
+                <Link to="/services">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -111,12 +170,62 @@ export const Header = () => {
                 {item.label}
               </Link>
             ))}
-            <Button 
-              asChild 
-              className="w-full mt-2"
-            >
-              <Link to="/services">Get Started</Link>
-            </Button>
+            
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={cn(
+                  "py-2 text-base font-medium transition-colors hover:text-primary",
+                  location.pathname === "/admin"
+                    ? "text-primary"
+                    : "text-foreground/80"
+                )}
+              >
+                Admin
+              </Link>
+            )}
+            
+            {user ? (
+              <>
+                <div className="border-t border-border my-2 pt-2"></div>
+                <Link
+                  to="/profile"
+                  className="py-2 text-base font-medium transition-colors hover:text-primary"
+                >
+                  My Profile
+                </Link>
+                <Link
+                  to="/orders"
+                  className="py-2 text-base font-medium transition-colors hover:text-primary"
+                >
+                  My Orders
+                </Link>
+                <Button 
+                  variant="destructive"
+                  onClick={signOut}
+                  className="mt-2 w-full justify-start"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  asChild 
+                  variant="outline" 
+                  className="w-full"
+                >
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+                <Button 
+                  asChild 
+                  className="w-full"
+                >
+                  <Link to="/services">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

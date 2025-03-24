@@ -9,13 +9,178 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      coupons: {
+        Row: {
+          active: boolean | null
+          code: string
+          created_at: string
+          current_uses: number | null
+          description: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          id: string
+          max_uses: number | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          code: string
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          max_uses?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          company_info: Json | null
+          contact_info: Json | null
+          created_at: string
+          id: string
+          package_id: string | null
+          payment_id: string | null
+          payment_method: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_info?: Json | null
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          package_id?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_info?: Json | null
+          contact_info?: Json | null
+          created_at?: string
+          id?: string
+          package_id?: string | null
+          payment_id?: string | null
+          payment_method?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          active: boolean | null
+          category: string
+          created_at: string
+          description: string
+          features: Json
+          id: string
+          popular: boolean | null
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          category: string
+          created_at?: string
+          description: string
+          features: Json
+          id?: string
+          popular?: boolean | null
+          price: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          category?: string
+          created_at?: string
+          description?: string
+          features?: Json
+          id?: string
+          popular?: boolean | null
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
