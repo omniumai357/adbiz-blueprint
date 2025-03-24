@@ -1,55 +1,16 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { invoiceService } from "@/services/invoice/invoice-service";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 import { useProfile } from "@/hooks/data/useProfile";
-import { AddOnItem } from "@/components/checkout/add-on-item";
-import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
-
-type PaymentMethod = "credit-card" | "paypal";
-
-// Enhanced add-ons with value propositions
-const availableAddOns: AddOnItem[] = [
-  {
-    id: "addon-seo",
-    name: "SEO Optimization",
-    description: "Boost visibility with search engine optimization",
-    price: 49,
-    popular: true,
-    valueProposition: "Increase your site traffic up to 30%"
-  },
-  {
-    id: "addon-socialmedia",
-    name: "Social Media Setup",
-    description: "Get your business profiles set up on major platforms",
-    price: 29,
-    valueProposition: "Establish presence on 5 major platforms"
-  },
-  {
-    id: "addon-analytics",
-    name: "Advanced Analytics",
-    description: "Detailed performance tracking and reporting",
-    price: 39,
-    valueProposition: "Gain valuable insights with monthly reports"
-  }
-];
-
-// Bundle discount with clearer benefits
-const bundleDiscount: BundleDiscountInfo = {
-  id: "bundle-discount-1",
-  name: "Bundle Discount",
-  description: "Save when you add more services to your package",
-  discountAmount: 10,
-  discountType: "percentage",
-  threshold: 50, // Minimum add-on value to qualify
-  active: true
-};
+import { useAddOns, availableAddOns } from "./useAddOns";
+import { useDiscount, bundleDiscount } from "./useDiscount";
+import { useOrderProcessing } from "./useOrderProcessing";
+import { PaymentMethod } from "./types";
 
 export function useCheckout() {
   const location = useLocation();
-  const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit-card");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: "",
@@ -60,12 +21,7 @@ export function useCheckout() {
     website: "",
     invoiceDeliveryMethod: "email"
   });
-  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
-  const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
   
   const packageName = location.state?.packageName || "Standard Package";
   const packagePrice = location.state?.packagePrice || 199;
@@ -80,25 +36,43 @@ export function useCheckout() {
   // Get user profile data if they're logged in
   const { profile, isLoading: isProfileLoading } = useProfile(userId);
 
-  // Calculate totals for add-ons
-  const selectedAddOns = availableAddOns.filter(addon => selectedAddOnIds.includes(addon.id));
-  const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
-  
-  // Check if discount is applicable
-  const isDiscountApplicable = addOnsTotal >= bundleDiscount.threshold;
+  // Use add-ons hook
+  const {
+    selectedAddOnIds,
+    selectedAddOns,
+    addOnsTotal,
+    handleAddOnToggle
+  } = useAddOns(bundleDiscount.threshold);
   
   // Calculate the subtotal (package + add-ons)
   const subtotal = packagePrice + addOnsTotal;
   
-  // Calculate the discount amount if applicable
-  const discountAmount = isDiscountApplicable 
-    ? (bundleDiscount.discountType === "percentage" 
-      ? (subtotal * bundleDiscount.discountAmount / 100) 
-      : bundleDiscount.discountAmount)
-    : 0;
+  // Use discount hook
+  const {
+    isDiscountApplicable,
+    discountAmount
+  } = useDiscount(subtotal, addOnsTotal);
   
   // Calculate the final total with discount
   const total = subtotal - discountAmount;
+
+  // Use order processing hook
+  const {
+    showDownloadOptions,
+    orderId,
+    invoiceNumber,
+    isGeneratingInvoice,
+    handleOrderSuccess
+  } = useOrderProcessing({
+    userId,
+    packageName,
+    packageDetails,
+    selectedAddOns,
+    isDiscountApplicable,
+    bundleDiscount,
+    total,
+    customerInfo  // Pass customerInfo to useOrderProcessing
+  });
 
   useEffect(() => {
     const checkUser = async () => {
@@ -125,121 +99,6 @@ export function useCheckout() {
     }
   }, [profile]);
 
-  // Handle add-on toggle with feedback
-  const handleAddOnToggle = (id: string) => {
-    setSelectedAddOnIds(prevSelected => {
-      const newSelected = prevSelected.includes(id)
-        ? prevSelected.filter(itemId => itemId !== id)
-        : [...prevSelected, id];
-        
-      // Show toast when an add-on is added that makes the discount applicable
-      const newAddOnsTotal = availableAddOns
-        .filter(addon => newSelected.includes(addon.id))
-        .reduce((total, addon) => total + addon.price, 0);
-        
-      const wasDiscountApplicable = addOnsTotal >= bundleDiscount.threshold;
-      const isNowDiscountApplicable = newAddOnsTotal >= bundleDiscount.threshold;
-      
-      if (!wasDiscountApplicable && isNowDiscountApplicable) {
-        const discountValue = bundleDiscount.discountType === "percentage"
-          ? ((packagePrice + newAddOnsTotal) * bundleDiscount.discountAmount / 100)
-          : bundleDiscount.discountAmount;
-          
-        toast({
-          title: "Discount Applied!",
-          description: `You've qualified for a ${bundleDiscount.discountAmount}% discount, saving you ${formatCurrency(discountValue)}!`,
-        });
-      }
-      
-      return newSelected;
-    });
-  };
-
-  const handleOrderSuccess = async (id: string) => {
-    setOrderId(id);
-    setIsGeneratingInvoice(true);
-    
-    try {
-      const deliveryMethod = customerInfo.invoiceDeliveryMethod || 'email';
-      
-      if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && !customerInfo.phone) {
-        toast({
-          title: "Invoice delivery warning",
-          description: "Phone number is required for SMS delivery. Invoice will be sent by email only.",
-          variant: "destructive"
-        });
-      }
-      
-      // Include add-ons and discounts in package details
-      const enhancedPackageDetails = {
-        ...packageDetails,
-        addOns: selectedAddOns,
-        discount: isDiscountApplicable ? bundleDiscount : null,
-        finalPrice: total
-      };
-      
-      // Real-time invoice generation
-      const invoice = await invoiceService.createInvoiceFromOrder(
-        id,
-        enhancedPackageDetails,
-        customerInfo,
-        deliveryMethod as 'email' | 'sms' | 'both',
-        userId
-      );
-      
-      if (invoice) {
-        setInvoiceNumber(invoice.invoice_number);
-        
-        // Save receipt to customer account if logged in
-        if (userId) {
-          await supabase.from('orders').update({
-            status: 'completed',
-          }).eq('id', id);
-          
-          toast({
-            title: "Receipt saved",
-            description: "A digital copy of your receipt has been stored in your account",
-          });
-        }
-        
-        // Show success notifications based on delivery method
-        if (deliveryMethod === 'both' && customerInfo.phone) {
-          toast({
-            title: "Invoice sent!",
-            description: `An invoice has been emailed to ${customerInfo.email} and sent via SMS to ${customerInfo.phone}`,
-          });
-        } else if (deliveryMethod === 'sms' && customerInfo.phone) {
-          toast({
-            title: "Invoice sent!",
-            description: `An invoice has been sent via SMS to ${customerInfo.phone}`,
-          });
-        } else {
-          toast({
-            title: "Invoice sent!",
-            description: `An invoice has been emailed to ${customerInfo.email}`,
-          });
-        }
-      }
-      
-      setShowDownloadOptions(true);
-      
-      toast({
-        title: "Payment successful!",
-        description: `You've purchased the ${packageName} package.`,
-      });
-    } catch (error) {
-      console.error("Failed to create invoice:", error);
-      toast({
-        title: "Invoice generation issue",
-        description: "Your payment was successful, but there was an issue generating your invoice. Our team will contact you shortly.",
-        variant: "destructive"
-      });
-      setShowDownloadOptions(true);
-    } finally {
-      setIsGeneratingInvoice(false);
-    }
-  };
-
   return {
     customerInfo,
     setCustomerInfo,
@@ -263,7 +122,7 @@ export function useCheckout() {
     // Bundle discount related
     bundleDiscount,
     isDiscountApplicable,
-    // Calculated values with clearer names
+    // Calculated values
     subtotal,
     discountAmount,
     total
