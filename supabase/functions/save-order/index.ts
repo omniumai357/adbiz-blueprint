@@ -22,6 +22,17 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    // Add download information to order
+    const orderWithDownload = {
+      ...orderDetails,
+      downloads: {
+        available: true,
+        formats: ["pdf", "png", "video", "audio"],
+        downloadCount: 0,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      }
+    };
+    
     // In a real implementation, you would save the order to the database
     // For now, we'll just return the order details with a generated ID
     const orderId = 'order_' + Math.random().toString(36).substring(2, 15);
@@ -29,14 +40,14 @@ serve(async (req) => {
     // Log the order details for debugging
     console.log('Saving order:', {
       id: orderId,
-      ...orderDetails,
+      ...orderWithDownload,
       createdAt: new Date().toISOString()
     });
     
     return new Response(
       JSON.stringify({ 
         id: orderId,
-        ...orderDetails,
+        ...orderWithDownload,
         createdAt: new Date().toISOString()
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

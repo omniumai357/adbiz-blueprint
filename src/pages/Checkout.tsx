@@ -7,12 +7,14 @@ import { Elements } from "@stripe/react-stripe-js";
 import { stripePromise, createPaymentIntent } from "@/lib/stripe";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { CreditCard, Wallet } from "lucide-react";
 import PayPalButton from "@/components/PayPalButton";
+import PaymentSelector from "@/components/PaymentSelector";
+import DownloadOptions from "@/components/DownloadOptions";
 import { supabase } from "@/integrations/supabase/client";
+
+type PaymentMethod = "credit-card" | "paypal";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -20,7 +22,7 @@ const Checkout = () => {
   const { toast } = useToast();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState("credit-card");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("credit-card");
   const [customerInfo, setCustomerInfo] = useState({
     firstName: "",
     lastName: "",
@@ -29,6 +31,8 @@ const Checkout = () => {
     company: "",
     website: "",
   });
+  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
   
   // In a real implementation, get these from state or query params
   const packageName = location.state?.packageName || "Standard Package";
@@ -47,6 +51,21 @@ const Checkout = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handlePaymentMethodChange = (method: PaymentMethod) => {
+    setPaymentMethod(method);
+    setError(null);
+  };
+
+  const handleOrderSuccess = (id: string) => {
+    setOrderId(id);
+    setShowDownloadOptions(true);
+    
+    toast({
+      title: "Payment successful!",
+      description: `You've purchased the ${packageName} package.`,
+    });
   };
 
   const CardForm = () => {
@@ -99,12 +118,7 @@ const Checkout = () => {
         
         if (orderError) throw new Error(orderError.message);
         
-        toast({
-          title: "Payment successful!",
-          description: `You've purchased the ${packageName} package.`,
-        });
-        
-        navigate("/");
+        handleOrderSuccess(orderData.id);
       } catch (err: any) {
         console.error("Payment error:", err);
         setError(err.message || "An error occurred with your payment");
@@ -152,104 +166,93 @@ const Checkout = () => {
             </div>
           </div>
           
-          <div className="space-y-8">
-            {/* Customer Information Form */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Customer Information</h2>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input 
-                    id="firstName" 
-                    name="firstName" 
-                    value={customerInfo.firstName} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input 
-                    id="lastName" 
-                    name="lastName" 
-                    value={customerInfo.lastName} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email" 
-                  type="email" 
-                  value={customerInfo.email} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input 
-                  id="phone" 
-                  name="phone" 
-                  value={customerInfo.phone} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
-                <Input 
-                  id="company" 
-                  name="company" 
-                  value={customerInfo.company} 
-                  onChange={handleInputChange} 
-                  required 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="website">Website (optional)</Label>
-                <Input 
-                  id="website" 
-                  name="website" 
-                  value={customerInfo.website} 
-                  onChange={handleInputChange} 
-                />
+          {showDownloadOptions && orderId ? (
+            <div className="space-y-8">
+              <div className="p-6 bg-green-50 border border-green-200 rounded-lg text-center">
+                <h2 className="text-2xl font-bold text-green-700 mb-4">Thank You For Your Purchase!</h2>
+                <p className="mb-6">Your order has been successfully processed. Order ID: {orderId}</p>
+                <DownloadOptions purchaseId={orderId} packageName={packageName} />
               </div>
             </div>
-            
-            {/* Payment Method Selector */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Payment Method</h2>
-              
-              <RadioGroup 
-                value={paymentMethod} 
-                onValueChange={setPaymentMethod}
-                className="grid grid-cols-2 gap-4"
-              >
-                <div className="flex items-center space-x-2 border rounded-md p-4 cursor-pointer">
-                  <RadioGroupItem value="credit-card" id="credit-card" />
-                  <Label htmlFor="credit-card" className="flex items-center space-x-2 cursor-pointer">
-                    <CreditCard className="h-5 w-5" />
-                    <span>Credit Card</span>
-                  </Label>
+          ) : (
+            <div className="space-y-8">
+              {/* Customer Information Form */}
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold">Customer Information</h2>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input 
+                      id="firstName" 
+                      name="firstName" 
+                      value={customerInfo.firstName} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input 
+                      id="lastName" 
+                      name="lastName" 
+                      value={customerInfo.lastName} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
+                  </div>
                 </div>
                 
-                <div className="flex items-center space-x-2 border rounded-md p-4 cursor-pointer">
-                  <RadioGroupItem value="paypal" id="paypal" />
-                  <Label htmlFor="paypal" className="flex items-center space-x-2 cursor-pointer">
-                    <Wallet className="h-5 w-5" />
-                    <span>PayPal</span>
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    value={customerInfo.email} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
                 </div>
-              </RadioGroup>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input 
+                    id="phone" 
+                    name="phone" 
+                    value={customerInfo.phone} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company</Label>
+                  <Input 
+                    id="company" 
+                    name="company" 
+                    value={customerInfo.company} 
+                    onChange={handleInputChange} 
+                    required 
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website (optional)</Label>
+                  <Input 
+                    id="website" 
+                    name="website" 
+                    value={customerInfo.website} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+              </div>
+              
+              {/* Payment Method Selector */}
+              <PaymentSelector 
+                selectedMethod={paymentMethod}
+                onMethodChange={handlePaymentMethodChange}
+              />
               
               {/* Render appropriate payment form based on selection */}
               {paymentMethod === "credit-card" ? (
@@ -264,7 +267,7 @@ const Checkout = () => {
                 />
               )}
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

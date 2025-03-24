@@ -1,4 +1,11 @@
 
+// Extend the Window interface to include PayPal
+declare global {
+  interface Window {
+    paypal?: any;
+  }
+}
+
 export const initializePayPal = (clientId: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     // Check if PayPal script is already loaded
