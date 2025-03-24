@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactory';
-import { InvoiceData } from '@/services/invoice/types';
+import { InvoiceData, InvoiceItem } from '@/services/invoice/types';
 import { Button } from '@/components/ui/button';
 import { Loader2, Printer, Download, X } from 'lucide-react';
+import { Json } from '@/integrations/supabase/types';
 
 interface InvoiceViewerProps {
   invoiceNumber: string;
@@ -37,22 +38,34 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
         // Determine template type based on items or package info
         let templateType = 'standard';
         if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
-          const itemName = invoice.items[0].description.toLowerCase();
-          if (itemName.includes('premium') || itemName.includes('tier3')) {
-            templateType = 'premium';
-          } else if (itemName.includes('platinum')) {
-            templateType = 'platinum';
+          // Safely type the item and access description
+          const firstItem = invoice.items[0] as { description: string };
+          if (firstItem && typeof firstItem.description === 'string') {
+            const itemName = firstItem.description.toLowerCase();
+            if (itemName.includes('premium') || itemName.includes('tier3')) {
+              templateType = 'premium';
+            } else if (itemName.includes('platinum')) {
+              templateType = 'platinum';
+            }
           }
         }
         
-        // Convert database invoice to InvoiceData format
+        // Convert database invoice to InvoiceData format and properly cast items
+        const invoiceItems: InvoiceItem[] = Array.isArray(invoice.items) 
+          ? invoice.items.map((item: any) => ({
+              description: String(item.description || ''),
+              quantity: Number(item.quantity || 1),
+              price: Number(item.price || 0)
+            }))
+          : [];
+          
         const invoiceDataForTemplate: InvoiceData = {
           orderId: invoice.order_id || 'unknown',
           customerName: invoice.customer_name,
           customerEmail: invoice.customer_email,
           customerPhone: invoice.customer_phone,
           amount: invoice.amount,
-          items: Array.isArray(invoice.items) ? invoice.items : [],
+          items: invoiceItems,
           dueDate: invoice.due_date,
           invoiceNumber: invoice.invoice_number,
           userId: invoice.user_id,
