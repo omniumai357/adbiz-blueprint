@@ -21,7 +21,17 @@ const Checkout = () => {
     packagePrice,
     packageDetails,
     isProfileLoading,
-    handleOrderSuccess
+    handleOrderSuccess,
+    // Add-ons related
+    availableAddOns,
+    selectedAddOnIds,
+    handleAddOnToggle,
+    selectedAddOns,
+    // Bundle discount related
+    bundleDiscount,
+    isDiscountApplicable,
+    // Calculated values
+    total
   } = useCheckout();
 
   return (
@@ -34,7 +44,9 @@ const Checkout = () => {
           
           <OrderSummary 
             packageName={packageName} 
-            packagePrice={packagePrice} 
+            packagePrice={packagePrice}
+            selectedAddOns={selectedAddOns}
+            appliedDiscount={isDiscountApplicable ? bundleDiscount : undefined}
             invoiceNumber={invoiceNumber}
           />
           
@@ -54,6 +66,11 @@ const Checkout = () => {
               setPaymentMethod={setPaymentMethod}
               packagePrice={packagePrice}
               packageDetails={packageDetails}
+              addOns={availableAddOns}
+              selectedAddOnIds={selectedAddOnIds}
+              onAddOnToggle={handleAddOnToggle}
+              bundleDiscount={bundleDiscount}
+              isDiscountApplicable={isDiscountApplicable}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}
             />
