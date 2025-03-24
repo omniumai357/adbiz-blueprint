@@ -109,11 +109,14 @@ export function useOrderProcessing({
           
           // If loyalty program was enabled, record this in the order metadata
           if (isLoyaltyProgramEnabled) {
-            await supabase.from('order_metadata').insert({
-              order_id: id,
-              loyalty_program_enrolled: isLoyaltyProgramEnabled,
-              loyalty_discount_applied: loyaltyBonusAmount || 0
-            });
+            // Instead of using order_metadata table (which might not exist),
+            // let's store this information in the orders table itself
+            await supabase.from('orders').update({
+              metadata: {
+                loyalty_program_enrolled: isLoyaltyProgramEnabled,
+                loyalty_discount_applied: loyaltyBonusAmount || 0
+              }
+            }).eq('id', id);
           }
           
           toast({

@@ -58,14 +58,17 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
     return <CustomerInfoSkeleton />;
   }
 
+  // Determine if phone is required based on delivery method
+  const phoneRequired = invoiceDeliveryMethod === "sms" || invoiceDeliveryMethod === "both";
+
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Customer Information</h2>
       <Form {...form}>
         <form onChange={form.handleSubmit(onSubmit)} className="space-y-8">
-          <CustomerPersonalInfo form={form} />
+          <CustomerPersonalInfo form={form} phoneRequired={phoneRequired} />
           <CustomerBusinessInfo form={form} />
-          <InvoiceDeliveryOptions form={form} selectedMethod={invoiceDeliveryMethod} />
+          <InvoiceDeliveryOptions form={form} />
         </form>
       </Form>
     </div>

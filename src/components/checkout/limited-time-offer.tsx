@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format-utils";
-import { Alarm, Clock, CalendarClock, BadgePercent, AlertCircle } from "lucide-react";
+import { AlarmClock, Clock, CalendarClock, BadgePercent, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 
@@ -88,7 +88,7 @@ const LimitedTimeOffer = ({ offer, subtotal, available }: LimitedTimeOfferProps)
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           {available && !timeLeft.expired ? (
-            <Alarm className="h-5 w-5 text-red-500" />
+            <AlarmClock className="h-5 w-5 text-red-500" />
           ) : (
             <Clock className="h-5 w-5 text-gray-400" />
           )}
@@ -131,7 +131,12 @@ const LimitedTimeOffer = ({ offer, subtotal, available }: LimitedTimeOfferProps)
               <span>Offer expires in</span>
               <span>{timeProgress}% elapsed</span>
             </div>
-            <Progress value={timeProgress} className="h-2" indicatorClassName="bg-red-500" />
+            <Progress value={timeProgress} className="h-2 bg-gray-200">
+              <div 
+                className="h-full bg-red-500 transition-all" 
+                style={{ width: `${timeProgress}%` }}
+              />
+            </Progress>
             
             <div className="text-center text-red-600 font-semibold mt-2 bg-red-50 rounded-md py-2 border border-red-100">
               {formatTime(timeLeft.hours)}:{formatTime(timeLeft.minutes)}:{formatTime(timeLeft.seconds)}

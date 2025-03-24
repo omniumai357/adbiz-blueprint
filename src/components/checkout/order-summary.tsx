@@ -1,8 +1,7 @@
-
 import React from "react";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { Separator } from "@/components/ui/separator";
-import { BadgePercent, Package, ShoppingBag, Sparkles, Award, Star, Alarm, Gift } from "lucide-react";
+import { BadgePercent, Package, ShoppingBag, Sparkles, Award, Star, AlarmClock, Gift } from "lucide-react";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { LimitedTimeOfferInfo } from "./limited-time-offer";
@@ -53,16 +52,12 @@ const OrderSummary = ({
   appliedCoupon,
   couponDiscountAmount = 0
 }: OrderSummaryProps) => {
-  // Calculate the total for add-ons
   const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
   
-  // Calculate the subtotal
   const subtotal = packagePrice + addOnsTotal;
   
-  // Calculate the total
   const total = subtotal - totalDiscountAmount;
   
-  // Calculate savings percentage if there's a discount
   const savingsPercentage = totalDiscountAmount > 0 
     ? Math.round((totalDiscountAmount / subtotal) * 100) 
     : 0;
@@ -90,7 +85,6 @@ const OrderSummary = ({
       
       <ScrollArea className="max-h-72">
         <div className="space-y-3">
-          {/* Main package */}
           <div className="flex justify-between">
             <div className="flex items-center">
               <Package className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -99,7 +93,6 @@ const OrderSummary = ({
             <span>{formatCurrency(packagePrice)}</span>
           </div>
           
-          {/* Add-ons */}
           {selectedAddOns.length > 0 && (
             <>
               <Separator className="my-2" />
@@ -113,7 +106,6 @@ const OrderSummary = ({
             </>
           )}
           
-          {/* Subtotal before discounts */}
           {totalDiscountAmount > 0 && (
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
@@ -121,24 +113,21 @@ const OrderSummary = ({
             </div>
           )}
           
-          {/* Discounts */}
           {totalDiscountAmount > 0 && (
             <>
               <Separator className="my-2" />
               <div className="text-sm font-medium mb-2">Discounts:</div>
               
-              {/* Limited time offer */}
               {limitedTimeOffer && offerDiscountAmount > 0 && (
                 <div className="flex justify-between text-sm text-red-500">
                   <div className="flex items-center">
-                    <Alarm className="h-4 w-4 mr-1" />
+                    <AlarmClock className="h-4 w-4 mr-1" />
                     <span>{limitedTimeOffer.name}</span>
                   </div>
                   <span>-{formatCurrency(offerDiscountAmount)}</span>
                 </div>
               )}
               
-              {/* Applied coupon */}
               {appliedCoupon && couponDiscountAmount > 0 && (
                 <div className="flex justify-between text-sm text-violet-600">
                   <div className="flex items-center">
@@ -149,7 +138,6 @@ const OrderSummary = ({
                 </div>
               )}
               
-              {/* Bundle Discount */}
               {appliedDiscount && bundleDiscountAmount > 0 && (
                 <div className="flex justify-between text-sm text-primary">
                   <div className="flex items-center">
@@ -160,7 +148,6 @@ const OrderSummary = ({
                 </div>
               )}
               
-              {/* Tiered Discount */}
               {tieredDiscount && tieredDiscountAmount > 0 && (
                 <div className="flex justify-between text-sm text-primary">
                   <div className="flex items-center">
@@ -174,7 +161,6 @@ const OrderSummary = ({
                 </div>
               )}
               
-              {/* Loyalty Program Bonus */}
               {isLoyaltyProgramEnabled && loyaltyBonusAmount > 0 && (
                 <div className="flex justify-between text-sm text-amber-600">
                   <div className="flex items-center">
@@ -187,14 +173,12 @@ const OrderSummary = ({
             </>
           )}
           
-          {/* Total */}
           <Separator className="my-2" />
           <div className="flex justify-between font-bold">
             <span>Total</span>
             <span>{formatCurrency(total)}</span>
           </div>
           
-          {/* Savings */}
           {totalDiscountAmount > 0 && (
             <div className="text-xs text-right text-primary font-medium">
               You save {formatCurrency(totalDiscountAmount)}
