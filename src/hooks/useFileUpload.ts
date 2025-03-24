@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { validateFiles } from '@/utils/file-validation';
-import { uploadSingleFile, generateFilePath } from '@/utils/file-upload';
+import { uploadSingleFile, generateFilePath, getUserIdForStorage } from '@/utils/file-upload';
 import { useFileUploadState } from './useFileUploadState';
 import useFileUploadHandlers from './useFileUploadHandlers';
 import { useFileUploadProgress } from './useFileUploadProgress';

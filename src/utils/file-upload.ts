@@ -15,7 +15,7 @@ export const uploadSingleFile = async (
     cacheControl?: string;
     onProgress?: (progress: number) => void;
   }
-): Promise<{ success: boolean; error?: Error }> => {
+): Promise<{ success: boolean; error?: Error; publicUrl?: string }> => {
   try {
     const { error } = await supabase.storage
       .from(bucket)
@@ -30,7 +30,12 @@ export const uploadSingleFile = async (
       options.onProgress(100);
     }
     
-    return { success: true };
+    // Get the public URL for the uploaded file
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath);
+    
+    return { success: true, publicUrl: data.publicUrl };
   } catch (error) {
     console.error('Error uploading file:', error);
     return { success: false, error: error as Error };
@@ -58,3 +63,15 @@ export const generateFilePath = (
     
   return `${businessId}/${fileType}/${fileName}`;
 };
+
+/**
+ * Get the authenticated user ID or generate a temporary ID
+ */
+export const getUserIdForStorage = async (): Promise<string> => {
+  const { data } = await supabase.auth.getSession();
+  const userId = data.session?.user?.id;
+  
+  // Return the authenticated user ID if available, otherwise return a temporary ID
+  return userId || `temp-${Date.now()}`;
+};
+

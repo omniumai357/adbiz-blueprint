@@ -17,9 +17,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/ui/use-toast";
 
-// Define the form schema
 const formSchema = z.object({
-  // Step 1: Business Info
   businessName: z.string().min(1, "Business name is required"),
   industry: z.string().min(1, "Industry is required"),
   otherIndustry: z.string().optional(),
@@ -30,7 +28,6 @@ const formSchema = z.object({
   businessSize: z.string().optional(),
   serviceArea: z.string().min(1, "Service area is required"),
   
-  // Step 2: Branding
   slogan: z.string().optional(),
   missionStatement: z.string().optional(),
   hasLogo: z.enum(["yes", "no"]).optional(),
@@ -39,7 +36,6 @@ const formSchema = z.object({
   secondaryColor: z.string().optional(),
   accentColor: z.string().optional(),
   
-  // Contact info
   phoneNumber: z.string().min(1, "Phone number is required"),
   email: z.string().email("Invalid email address"),
   website: z.string().optional(),
@@ -48,7 +44,6 @@ const formSchema = z.object({
   state: z.string().optional(),
   zipCode: z.string().optional(),
   
-  // Step 3: Marketing
   hasSocialMedia: z.enum(["yes", "no"]).optional(),
   platformsUsed: z.array(z.string()).optional(),
   facebookUrl: z.string().optional(),
@@ -94,14 +89,12 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   
   const { watch } = form;
   
-  // Watch for values to conditionally show fields
   const hasBusinessLicense = watch("hasBusinessLicense");
   const hasLogo = watch("hasLogo");
   const hasSocialMedia = watch("hasSocialMedia");
   const platformsUsed = watch("platformsUsed") || [];
   
   const nextStep = () => {
-    // Check required fields for current step before proceeding
     if (step === 1) {
       const { businessName, industry, businessDescription, serviceArea } = form.getValues();
       if (!businessName || !industry || !businessDescription || !serviceArea) {
@@ -133,10 +126,11 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   
   const onSubmit = async (data: FormValues) => {
     try {
-      // Generate a business ID
-      const businessId = `business-${Date.now()}`;
+      const businessId = `business-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       
-      // Format data for storage
+      const { data: authData } = await supabase.auth.getSession();
+      const userId = authData.session?.user?.id;
+      
       const formattedData = {
         ...data,
         has_business_license: data.hasBusinessLicense === "yes",
@@ -168,18 +162,16 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         } : null,
       };
       
-      // Upload all files first
-      const filesUploaded = await uploadFiles(businessId);
+      const filesUploaded = await uploadFiles(userId || businessId);
       
       if (!filesUploaded) {
         return;
       }
       
-      // Save questionnaire data to Supabase
       const { error } = await supabase
         .from("business_questionnaires")
         .insert({
-          user_id: "system", // In a real app, this would be the actual user ID
+          user_id: userId || "system",
           business_name: data.businessName,
           industry: data.industry,
           other_industry: data.otherIndustry,
@@ -238,7 +230,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         return;
       }
       
-      // Success! Show toast and call onComplete if provided
       toast({
         title: "Submission successful!",
         description: "Your business information has been saved. Our team will review it shortly.",
@@ -289,7 +280,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Step 1: Basic Business Information */}
           {step === 1 && (
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-gray-700">
@@ -508,7 +498,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
             </div>
           )}
           
-          {/* Step 2: Branding & Contact Information */}
           {step === 2 && (
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-gray-700">
@@ -783,7 +772,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
             </div>
           )}
           
-          {/* Step 3: Marketing Goals & Presence */}
           {step === 3 && (
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-gray-700">
@@ -877,7 +865,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                   />
                 )}
                 
-                {/* Platform-specific fields */}
                 {platformsUsed.includes("facebook") && (
                   <FormField
                     control={form.control}
@@ -1093,7 +1080,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
             </div>
           )}
           
-          {/* Step 4: File Upload Section */}
           {step === 4 && (
             <FileUploadSection
               files={files}
@@ -1105,7 +1091,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
             />
           )}
           
-          {/* Step 5: Review Section */}
           {step === 5 && (
             <ReviewSection
               formData={form.getValues()}

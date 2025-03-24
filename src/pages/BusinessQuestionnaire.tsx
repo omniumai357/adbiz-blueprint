@@ -8,21 +8,22 @@ import Footer from "@/components/Footer";
 import BusinessQuestionnaire from "@/components/BusinessQuestionnaire";
 
 const BusinessQuestionnairePage = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
   useEffect(() => {
     // Redirect if not logged in and auth is not loading
-    if (!isLoading && !user) {
+    if (!isLoading && !isAuthenticated) {
       toast({
         title: "Authentication required",
         description: "Please sign in to access the business questionnaire",
         variant: "destructive",
       });
+      // Save the current page as the redirect URL
       navigate("/auth?redirect=/business-questionnaire");
     }
-  }, [user, isLoading, navigate, toast]);
+  }, [user, isLoading, isAuthenticated, navigate, toast]);
   
   if (isLoading) {
     return (
@@ -38,7 +39,7 @@ const BusinessQuestionnairePage = () => {
     );
   }
   
-  if (!user) {
+  if (!isAuthenticated) {
     return null; // Will redirect from useEffect
   }
   
