@@ -2,30 +2,27 @@
 import React from 'react';
 import BaseTemplate, { InvoiceTemplateProps } from './BaseTemplate';
 
-// Premium package template with VIP sections
-const PremiumTemplate: React.FC<InvoiceTemplateProps> = (props) => {
-  const { invoiceData } = props;
-  
+const PremiumTemplate: React.FC<InvoiceTemplateProps> = ({ invoiceData, companyInfo }) => {
   return (
-    <div className="premium-template">
-      <div className="vip-banner bg-gradient-to-r from-amber-200 to-amber-100 p-3 text-center mb-4 rounded">
-        <p className="text-amber-800 font-bold">★ VIP PREMIUM CUSTOMER ★</p>
+    <div className="invoice-template premium-template">
+      <div className="vip-banner">
+        Premium Customer Invoice
       </div>
       
-      <BaseTemplate {...props} />
+      <BaseTemplate 
+        invoiceData={invoiceData} 
+        companyInfo={companyInfo}
+      />
       
-      <div className="additional-info mt-8 border-t pt-4">
-        <h3 className="text-lg font-semibold mb-2">Premium Package Privileges</h3>
-        <ul className="list-disc pl-5">
-          <li>30 ads/posts per month</li>
-          <li>Dedicated account manager</li>
-          <li>Priority support - direct line: (555) 123-4567</li>
-          <li>Monthly performance reports</li>
-          <li>First strategy meeting: {new Date(new Date().setDate(new Date().getDate() + 3)).toLocaleDateString()}</li>
-        </ul>
-        
-        <div className="mt-4 bg-amber-50 p-4 rounded border border-amber-200">
-          <p className="font-medium">Your premium onboarding begins immediately. Check your email for VIP access details.</p>
+      <div className="mt-8 pt-4 border-t">
+        <div className="additional-info">
+          <h3 className="font-medium text-lg mb-2">Thank You for Choosing Our Premium Package</h3>
+          <p>As a premium customer, you have access to priority support and exclusive benefits.</p>
+          <ul className="list-disc pl-5 mt-4">
+            <li>24/7 Priority Customer Support</li>
+            <li>Dedicated Account Manager</li>
+            <li>Monthly Strategy Sessions</li>
+          </ul>
         </div>
       </div>
     </div>

@@ -1,25 +1,36 @@
 
-/**
- * Returns the appropriate template type based on package ID
- */
-export const getTemplateForPackage = (packageId: string): string => {
-  if (packageId.includes('premium') || packageId.includes('tier3')) {
-    return 'premium';
-  } else if (packageId.includes('platinum')) {
-    return 'platinum';
-  } else {
-    // Default to standard template for basic and standard packages
-    return 'standard';
-  }
-};
+import { InvoiceTemplate, invoiceTemplates } from '../../types';
 
 /**
- * Company info object used across all templates
+ * Default company information to use in templates
  */
-export const getDefaultCompanyInfo = () => ({
-  name: 'AdBiz Pro',
-  address: '123 Marketing Ave, Digital City, CA 90210',
-  phone: '(555) 123-4567',
-  email: 'info@adbiz.pro',
-  website: 'www.adbiz.pro'
-});
+export function getDefaultCompanyInfo() {
+  return {
+    name: 'AdBiz Pro',
+    address: '123 Business Ave, Suite 101, San Francisco, CA 94107',
+    phone: '(555) 123-4567',
+    email: 'billing@adbizpro.com',
+    website: 'www.adbizpro.com'
+  };
+}
+
+/**
+ * Determine the appropriate template based on package ID or name
+ */
+export function getTemplateForPackage(packageIdentifier: string): string {
+  // Convert to lowercase for case-insensitive matching
+  const packageId = packageIdentifier.toLowerCase();
+  
+  // Check for platinum packages
+  if (packageId.includes('platinum')) {
+    return 'platinum';
+  }
+  
+  // Check for premium packages (tier3 also indicates premium level)
+  if (packageId.includes('premium') || packageId.includes('tier3')) {
+    return 'premium';
+  }
+  
+  // Default to standard template
+  return 'standard';
+}
