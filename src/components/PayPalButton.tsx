@@ -1,9 +1,10 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/use-toast';
 import { Package } from '@/lib/data';
-import { renderPayPalButton } from '@/lib/paypal-utils';
 import { CustomerInfo } from '@/components/checkout/customer-info-form';
+import { paymentService } from '@/services/payment/payment-service';
 
 interface PayPalButtonProps {
   amount: number;
@@ -27,28 +28,37 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
       setLoading(true);
       setError(null);
       
-      const success = await renderPayPalButton(
-        amount,
-        packageDetails,
-        customerInfo,
-        paypalBtnRef,
-        () => {
-          // Handle success
-          toast({
-            title: "Payment successful!",
-            description: `You've purchased the ${packageDetails.title} package.`,
-          });
-          
-          // Redirect to home page (or success page)
-          navigate("/");
-        },
-        (errorMessage: string) => {
-          // Handle error
-          setError(errorMessage);
-        }
-      );
+      if (!paypalBtnRef.current) {
+        setLoading(false);
+        return;
+      }
       
-      setLoading(false);
+      try {
+        await paymentService.processPayPalPayment(
+          amount,
+          packageDetails,
+          customerInfo,
+          paypalBtnRef.current,
+          (orderId) => {
+            // Handle success
+            toast({
+              title: "Payment successful!",
+              description: `You've purchased the ${packageDetails.title} package.`,
+            });
+            
+            // Redirect to home page (or success page)
+            navigate("/");
+          },
+          (errorMessage: string) => {
+            // Handle error
+            setError(errorMessage);
+          }
+        );
+      } catch (err) {
+        setError('Failed to initialize PayPal checkout.');
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadPayPalButton();

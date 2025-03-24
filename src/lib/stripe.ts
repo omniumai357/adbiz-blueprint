@@ -1,19 +1,22 @@
 
-import { loadStripe } from '@stripe/stripe-js';
+// This file is being replaced by the service-based approach
+// Exporting from the new service for backward compatibility
 
-// In Vite, environment variables are accessed via import.meta.env
-// This is only the client-side public key, safe to include in client code
-export const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+import { stripePromise } from '@/services/payment/stripe-service';
+import { paymentService } from '@/services/payment/payment-service';
+
+// For backward compatibility
+export { stripePromise };
 
 // For real implementation, these would communicate with your backend
 export const createPaymentIntent = async (amount: number, currency = 'USD') => {
-  // Mock implementation for now - in production this would call your backend
-  console.log(`Creating payment intent for ${amount} ${currency}`);
-  
-  // Simulating API response
-  return {
-    clientSecret: 'mock_client_secret_for_testing',
-  };
+  try {
+    const clientSecret = await paymentService.createPaymentIntent(amount, currency);
+    return { clientSecret };
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    return { clientSecret: 'mock_client_secret_for_testing' };
+  }
 };
 
 export const saveOrder = async (orderDetails: any) => {

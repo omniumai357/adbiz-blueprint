@@ -1,16 +1,15 @@
-
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/ui/use-toast";
 import Header from "@/components/Header";
 import { Elements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe";
 import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-info-form";
 import OrderSummary from "@/components/checkout/order-summary";
 import CardPaymentForm from "@/components/checkout/card-payment-form";
 import PayPalButton from "@/components/PayPalButton";
 import PaymentSelector from "@/components/PaymentSelector";
 import DownloadOptions from "@/components/DownloadOptions";
+import { stripePromise } from "@/services/payment/stripe-service";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -29,7 +28,6 @@ const Checkout = () => {
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   
-  // In a real implementation, get these from state or query params
   const packageName = location.state?.packageName || "Standard Package";
   const packagePrice = location.state?.packagePrice || 199;
   const packageDetails = location.state?.packageDetails || { 
@@ -74,19 +72,16 @@ const Checkout = () => {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Customer Information Form */}
               <CustomerInfoForm 
                 customerInfo={customerInfo}
                 onChange={setCustomerInfo}
               />
               
-              {/* Payment Method Selector */}
               <PaymentSelector 
                 selectedMethod={paymentMethod}
                 onMethodChange={handlePaymentMethodChange}
               />
               
-              {/* Render appropriate payment form based on selection */}
               {paymentMethod === "credit-card" ? (
                 <Elements stripe={stripePromise}>
                   <CardPaymentForm 

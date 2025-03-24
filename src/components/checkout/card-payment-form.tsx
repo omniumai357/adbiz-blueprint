@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { CustomerInfo } from "./customer-info-form";
+import { paymentService } from "@/services/payment/payment-service";
 
 interface CardPaymentFormProps {
   packagePrice: number;
@@ -33,42 +34,22 @@ const CardPaymentForm = ({
     setError(null);
     
     try {
-      // Call the Supabase Edge Function to create payment intent
-      const { data, error: funcError } = await supabase.functions.invoke('create-payment-intent', {
-        body: { amount: packagePrice * 100, currency: 'usd' }
-      });
+      // Create payment intent
+      const clientSecret = await paymentService.createPaymentIntent(packagePrice, 'usd');
       
-      if (funcError) throw new Error(funcError.message);
+      // Process the payment
+      const result = await paymentService.processCardPayment(
+        clientSecret,
+        elements.getElement(CardElement)!,
+        packageDetails,
+        customerInfo
+      );
       
-      const { clientSecret } = data;
-      
-      const { error: paymentError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement)!,
-        },
-      });
-      
-      if (paymentError) {
-        throw new Error(paymentError.message);
+      if (!result.success) {
+        throw new Error(result.error || 'Payment failed');
       }
-
-      // Save the order
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('save-order', {
-        body: {
-          packageId: packageDetails.id,
-          total_amount: packagePrice,
-          contact_info: customerInfo,
-          company_info: {
-            name: customerInfo.company,
-            website: customerInfo.website || '',
-          },
-          payment_method: 'credit-card',
-        }
-      });
       
-      if (orderError) throw new Error(orderError.message);
-      
-      onSuccess(orderData.id);
+      onSuccess(result.orderId || 'order-processed');
     } catch (err: any) {
       console.error("Payment error:", err);
       setError(err.message || "An error occurred with your payment");
