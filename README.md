@@ -31,6 +31,7 @@ Our expertly crafted ads are designed to capture attention and drive conversions
 - Website design for service businesses
 - Local SEO optimization
 - Review management
+- AI-powered customer support chatbot
 
 ## Technology Stack
 
@@ -40,6 +41,7 @@ Our expertly crafted ads are designed to capture attention and drive conversions
 - **Database**: Supabase PostgreSQL
 - **Payment Processing**: Stripe, PayPal
 - **Deployment**: Continuous deployment via GitHub Actions
+- **AI Chatbot**: Deepseek Coder AI model for cost-effective support
 
 ## User Experience
 
@@ -52,7 +54,7 @@ Our platform follows Apple-inspired design principles with a focus on:
 
 ## Customer Support
 
-- Intelligent chatbot for instant assistance
+- Intelligent AI chatbot for instant assistance
 - Email support with 24-hour response time
 - Live chat during business hours
 - Comprehensive knowledge base and FAQ

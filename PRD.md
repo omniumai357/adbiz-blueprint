@@ -9,6 +9,7 @@
 | 1.0 | 2023-10-20 | Initial draft | Product Team |
 | 1.1 | 2023-11-15 | Updated service packages | Product Team |
 | 2.0 | 2024-05-01 | Major revision with new features | Product Team |
+| 2.1 | 2024-06-15 | Added AI chatbot integration | Product Team |
 
 ## 1. Introduction
 
@@ -24,11 +25,13 @@ This document covers the technical, functional, and business requirements for th
 - **SEO**: Search Engine Optimization
 - **CMS**: Content Management System
 - **UI/UX**: User Interface/User Experience
+- **LLM**: Large Language Model
+- **AI**: Artificial Intelligence
 
 ## 2. Product Overview
 
 ### 2.1 Product Vision
-AdBiz.pro aims to be the leading platform for service businesses to enhance their online visibility through targeted Craigslist advertising, custom ad creation, and comprehensive marketing solutions.
+AdBiz.pro aims to be the leading platform for service businesses to enhance their online visibility through targeted Craigslist advertising, custom ad creation, comprehensive marketing solutions, and AI-powered customer support.
 
 ### 2.2 Target Users
 - Small to medium-sized service businesses
@@ -132,6 +135,13 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Engagement metrics
 - Trend analysis
 
+#### 3.1.6 AI-Powered Customer Support
+- Deepseek Coder-based chatbot integration
+- 24/7 automated support assistance
+- Context-aware responses based on company services
+- Seamless handoff to human agents when needed
+- Chat history and analytics for support quality improvement
+
 ### 3.2 Administrative Features
 
 #### 3.2.1 Package Management
@@ -166,12 +176,14 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - RESTful API architecture
 - PostgreSQL database via Supabase
 - Scalable cloud infrastructure
+- AI integration for customer support
 
 #### 3.3.2 Performance Requirements
 - Page load time < 2 seconds
 - API response time < 500ms
 - 99.9% uptime SLA
 - Support for 10,000+ concurrent users
+- AI chatbot response time < 1 second
 
 #### 3.3.3 Security Requirements
 - HTTPS/TLS encryption
@@ -187,6 +199,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - CRM systems
 - Analytics tools
 - Social media platforms
+- Deepseek AI for chatbot functionality
 
 ## 4. User Interface Requirements
 
@@ -204,6 +217,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - User-friendly file upload system
 - Interactive analytics dashboard
 - Intuitive ad creation wizard
+- Floating AI chatbot widget
 
 ### 4.3 User Flows
 - Account creation and onboarding
@@ -212,6 +226,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Ad approval and revision process
 - Subscription management
 - Performance review
+- AI chatbot interaction and escalation
 
 ## 5. Milestones and Timeline
 
@@ -228,6 +243,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Multi-channel posting capabilities
 - CRM integration
 - Customer portal enhancements
+- AI chatbot initial implementation
 
 ### 5.3 Phase 3 - Q4 2024
 - AI-powered ad optimization
@@ -235,6 +251,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Agency/multi-client management
 - Mobile application
 - API for third-party integrations
+- Enhanced AI support capabilities
 
 ## 6. Success Metrics
 
@@ -244,6 +261,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Customer lifetime value (CLV)
 - Churn rate
 - Expansion revenue
+- Support ticket reduction via AI chatbot
 
 ### 6.2 User Engagement Metrics
 - Active users (daily, weekly, monthly)
@@ -251,6 +269,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Feature adoption rate
 - Conversion rate
 - Net Promoter Score (NPS)
+- Chatbot satisfaction rating
 
 ### 6.3 Performance Metrics
 - Ad campaign effectiveness
@@ -258,6 +277,7 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Support resolution time
 - Platform uptime
 - System performance
+- AI chatbot accuracy and resolution rate
 
 ## 7. Appendices
 
@@ -272,6 +292,9 @@ Comprehensive system architecture diagram illustrating the relationships between
 
 ### 7.4 UI/UX Mockups and Prototypes
 High-fidelity mockups and interactive prototypes of key user interfaces and flows.
+
+### 7.5 AI Chatbot Implementation Details
+Technical specifications for the Deepseek Coder-based chatbot implementation, including system requirements, API integration, and deployment options.
 
 ---
 
