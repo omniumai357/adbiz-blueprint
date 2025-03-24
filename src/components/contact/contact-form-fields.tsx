@@ -2,17 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-
-interface ContactFormFieldsProps {
-  formState: {
-    name: string;
-    email: string;
-    phone: string;
-    company: string;
-    message: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
+import { ContactFormFieldsProps } from "@/types/contact";
 
 export const ContactFormFields = ({ formState, handleChange }: ContactFormFieldsProps) => {
   return (

@@ -5,9 +5,10 @@ import { useToast } from "@/hooks/ui/use-toast";
 import { MessageSquare } from "lucide-react";
 import { ContactFormFields } from "@/components/contact/contact-form-fields";
 import { ContactSuccessMessage } from "@/components/contact/contact-success-message";
+import { ContactFormData } from "@/types/contact";
 
 // Contact form initial state
-const initialFormState = {
+const initialFormState: ContactFormData = {
   name: "",
   email: "",
   phone: "",
@@ -16,7 +17,7 @@ const initialFormState = {
 };
 
 export const ContactForm = () => {
-  const [formState, setFormState] = useState(initialFormState);
+  const [formState, setFormState] = useState<ContactFormData>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();

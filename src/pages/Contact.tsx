@@ -5,9 +5,10 @@ import { ContactBanner } from "@/components/contact/contact-banner";
 import { ContactSidebar } from "@/components/contact/contact-sidebar";
 import { ContactForm } from "@/components/contact/contact-form";
 import { ContactFAQ } from "@/components/contact/contact-faq";
+import { FAQ } from "@/types/contact";
 
 // FAQ data
-const faqs = [
+const faqs: FAQ[] = [
   {
     question: "How quickly can you start working on my ads?",
     answer: "We begin working on your campaign within 24 hours of your purchase. You'll receive the first deliverables based on your selected package timeline.",

@@ -1,8 +1,5 @@
 
-interface FAQ {
-  question: string;
-  answer: string;
-}
+import { FAQ } from "@/types/contact";
 
 interface ContactFAQProps {
   faqs: FAQ[];

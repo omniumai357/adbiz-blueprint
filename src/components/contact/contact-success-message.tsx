@@ -1,10 +1,7 @@
 
 import { CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface ContactSuccessMessageProps {
-  onReset: () => void;
-}
+import { ContactSuccessMessageProps } from "@/types/contact";
 
 export const ContactSuccessMessage = ({ onReset }: ContactSuccessMessageProps) => {
   return (
