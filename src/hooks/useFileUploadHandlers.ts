@@ -45,13 +45,13 @@ export const useFileUploadHandlers = ({
       // This is a ChangeEvent<HTMLInputElement>
       if (e.target.files) {
         selectedFiles = Array.from(e.target.files);
-      } else {
-        return;
       }
-    } else if (Array.isArray(e)) {
+    } else {
       // This is a readonly File[]
       selectedFiles = Array.from(e);
-    } else {
+    }
+    
+    if (selectedFiles.length === 0) {
       return;
     }
     
