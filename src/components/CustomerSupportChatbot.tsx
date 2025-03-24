@@ -25,7 +25,7 @@ const CustomerSupportChatbot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Hello! I'm the adbiz.pro support assistant. How can I help you today?',
+      content: "Hello! I'm the adbiz.pro support assistant. How can I help you today?",
     },
   ]);
   const [input, setInput] = useState('');
@@ -95,7 +95,7 @@ const CustomerSupportChatbot = () => {
         ...prev,
         { 
           role: 'assistant', 
-          content: 'I apologize, but I'm having trouble connecting to my knowledge base. Please try again or contact our support team at support@adbiz.pro for immediate assistance.' 
+          content: "I apologize, but I'm having trouble connecting to my knowledge base. Please try again or contact our support team at support@adbiz.pro for immediate assistance."
         }
       ]);
     } finally {
@@ -128,7 +128,7 @@ const CustomerSupportChatbot = () => {
       ...prev,
       { 
         role: 'assistant', 
-        content: 'I'll connect you with a human support agent. Please provide your email address, and a support agent will contact you within 24 hours.' 
+        content: "I'll connect you with a human support agent. Please provide your email address, and a support agent will contact you within 24 hours."
       }
     ]);
   };
