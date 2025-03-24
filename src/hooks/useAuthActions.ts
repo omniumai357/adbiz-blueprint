@@ -6,6 +6,27 @@ import { toast } from "@/hooks/use-toast";
 export const useAuthActions = () => {
   const navigate = useNavigate();
 
+  // Helper function for consistent error handling
+  const handleAuthError = (error: any, action: string) => {
+    console.error(`Auth error during ${action}:`, error);
+    
+    const errorMessage = error?.message || `An error occurred during ${action}.`;
+    
+    // Custom error messages for common auth errors
+    const friendlyMessage = 
+      errorMessage.includes("Email not confirmed") ? "Please check your email and confirm your account before signing in." :
+      errorMessage.includes("Invalid login credentials") ? "Invalid email or password. Please try again." :
+      errorMessage.includes("User already registered") ? "An account with this email already exists." :
+      errorMessage.includes("Password should be") ? "Password must be at least 6 characters long." :
+      errorMessage;
+
+    toast({
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)} failed`,
+      description: friendlyMessage,
+      variant: "destructive",
+    });
+  };
+
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -27,11 +48,7 @@ export const useAuthActions = () => {
       
       navigate("/auth", { state: { message: "Please check your email for the confirmation link." } });
     } catch (error: any) {
-      toast({
-        title: "Error creating account",
-        description: error.message || "An error occurred during signup.",
-        variant: "destructive",
-      });
+      handleAuthError(error, "signup");
     }
   };
 
@@ -53,11 +70,7 @@ export const useAuthActions = () => {
       
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Error signing in",
-        description: error.message || "Invalid email or password.",
-        variant: "destructive",
-      });
+      handleAuthError(error, "signin");
     }
   };
 
@@ -76,17 +89,59 @@ export const useAuthActions = () => {
       
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Error signing out",
-        description: error.message || "An error occurred during sign out.",
-        variant: "destructive",
+      handleAuthError(error, "signout");
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Password reset email sent",
+        description: "Please check your email for the password reset link.",
+      });
+      
+      navigate("/auth", { 
+        state: { message: "Please check your email for the password reset link." } 
+      });
+    } catch (error: any) {
+      handleAuthError(error, "password reset");
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Password updated",
+        description: "Your password has been successfully updated.",
+      });
+      
+      navigate("/");
+    } catch (error: any) {
+      handleAuthError(error, "password update");
     }
   };
 
   return {
     signUp,
     signIn,
-    signOut
+    signOut,
+    resetPassword,
+    updatePassword
   };
 };
