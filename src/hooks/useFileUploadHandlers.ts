@@ -35,13 +35,13 @@ export const useFileUploadHandlers = ({
    */
   const handleFileChange = (
     fileType: keyof FileState, 
-    e: ChangeEvent<HTMLInputElement> | File[]
+    e: ChangeEvent<HTMLInputElement> | readonly File[]
   ) => {
     let selectedFiles: File[];
     
     // Handle both array of Files and event from input
     if (Array.isArray(e)) {
-      selectedFiles = e;
+      selectedFiles = [...e];
     } else if (e.target.files) {
       selectedFiles = Array.from(e.target.files);
     } else {
