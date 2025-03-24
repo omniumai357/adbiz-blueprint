@@ -1,9 +1,13 @@
 
 import { InvoiceData } from '../types';
+import { renderToString } from 'react-dom/server';
+import React from 'react';
+import StandardTemplate from './StandardTemplate';
+import PremiumTemplate from './PremiumTemplate';
+import PlatinumTemplate from './PlatinumTemplate';
 
-// Templates will be dynamically loaded based on package type
+// Returns the appropriate template type based on package ID
 export const getTemplateForPackage = (packageId: string): string => {
-  // Extract the package category/tier from the ID
   if (packageId.includes('premium') || packageId.includes('tier3')) {
     return 'premium';
   } else if (packageId.includes('platinum')) {
@@ -99,161 +103,36 @@ export const generateInvoiceHtml = (invoiceData: InvoiceData, templateType: stri
     `
   };
 
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  // Company info for all templates
+  const companyInfo = {
+    name: 'AdBiz Pro',
+    address: '123 Marketing Ave, Digital City, CA 90210',
+    phone: '(555) 123-4567',
+    email: 'info@adbiz.pro',
+    website: 'www.adbiz.pro'
   };
 
-  // Get the specific template HTML based on template type
-  const getTemplateHtml = () => {
-    const itemsHtml = invoiceData.items.map(item => `
-      <tr>
-        <td>${item.description}</td>
-        <td>${item.quantity}</td>
-        <td>$${item.price.toFixed(2)}</td>
-        <td>$${(item.quantity * item.price).toFixed(2)}</td>
-      </tr>
-    `).join('');
+  // Render the appropriate React component to a string
+  let templateContent;
+  switch (templateType) {
+    case 'premium':
+      templateContent = renderToString(
+        React.createElement(PremiumTemplate, { invoiceData, companyInfo })
+      );
+      break;
+    case 'platinum':
+      templateContent = renderToString(
+        React.createElement(PlatinumTemplate, { invoiceData, companyInfo })
+      );
+      break;
+    default:
+      templateContent = renderToString(
+        React.createElement(StandardTemplate, { invoiceData, companyInfo })
+      );
+      break;
+  }
 
-    // Base template structure
-    let html = `
-      <div class="invoice-template">
-        <div class="invoice-header">
-          <div class="company-info">
-            <h1>AdBiz Pro</h1>
-            <p>123 Marketing Ave, Digital City, CA 90210</p>
-            <p>Phone: (555) 123-4567</p>
-            <p>Email: info@adbiz.pro</p>
-          </div>
-          <div class="invoice-info">
-            <h2>INVOICE</h2>
-            <p>Invoice #: ${invoiceData.invoiceNumber}</p>
-            <p>Issue Date: ${formatDate(new Date().toISOString())}</p>
-            <p>Due Date: ${formatDate(invoiceData.dueDate)}</p>
-          </div>
-        </div>
-
-        <div class="customer-info">
-          <h3>Bill To:</h3>
-          <p>${invoiceData.customerName}</p>
-          <p>Email: ${invoiceData.customerEmail}</p>
-          ${invoiceData.customerPhone ? `<p>Phone: ${invoiceData.customerPhone}</p>` : ''}
-        </div>
-
-        <div class="invoice-items">
-          <table>
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="3" class="text-right font-bold">Total:</td>
-                <td class="font-bold">$${invoiceData.amount.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="invoice-footer">
-          <p>Thank you for your business!</p>
-          <p>Payment is due by ${formatDate(invoiceData.dueDate)}</p>
-        </div>
-    `;
-
-    // Add template-specific extras
-    if (templateType === 'premium') {
-      html = `
-        <div class="vip-banner">
-          <p>★ VIP PREMIUM CUSTOMER ★</p>
-        </div>
-        ${html}
-        <div class="additional-info mt-8 border-t pt-4">
-          <h3 class="text-lg font-semibold mb-2">Premium Package Privileges</h3>
-          <ul class="list-disc pl-5">
-            <li>30 ads/posts per month</li>
-            <li>Dedicated account manager</li>
-            <li>Priority support - direct line: (555) 123-4567</li>
-            <li>Monthly performance reports</li>
-            <li>First strategy meeting: ${formatDate(new Date(new Date().setDate(new Date().getDate() + 3)).toISOString())}</li>
-          </ul>
-          
-          <div class="mt-4 bg-amber-50 p-4 rounded border border-amber-200">
-            <p class="font-medium">Your premium onboarding begins immediately. Check your email for VIP access details.</p>
-          </div>
-        </div>
-      `;
-    } else if (templateType === 'platinum') {
-      html = `
-        <div class="platinum-banner">
-          <p class="text-lg">★★★ PLATINUM EXECUTIVE ★★★</p>
-        </div>
-        ${html}
-        <div class="additional-info mt-8 border-t pt-4">
-          <h3 class="text-lg font-semibold mb-2">Platinum Executive Benefits</h3>
-          <p class="mb-2 text-slate-700">Thank you for choosing our ultimate marketing solution.</p>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div class="bg-slate-50 p-4 rounded border border-slate-200">
-              <h4 class="font-medium mb-2">Your 12-Month Campaign</h4>
-              <ul class="list-disc pl-5">
-                <li>Full-service marketing campaign</li>
-                <li>Bonus language optimization</li>
-                <li>Weekly strategy calls</li>
-                <li>Custom reporting dashboard</li>
-              </ul>
-            </div>
-            
-            <div class="bg-slate-50 p-4 rounded border border-slate-200">
-              <h4 class="font-medium mb-2">Executive Support</h4>
-              <p>Your dedicated executive account manager:</p>
-              <p class="font-bold">John Executive</p>
-              <p>Direct: (555) 987-6543</p>
-              <p>Email: john@adbizpro.com</p>
-            </div>
-          </div>
-          
-          <div class="mt-6 bg-slate-100 p-4 rounded border border-slate-300">
-            <p class="font-medium">Your executive onboarding session is scheduled for ${formatDate(new Date(new Date().setDate(new Date().getDate() + 2)).toISOString())}. Check your email for calendar invitation.</p>
-          </div>
-        </div>
-      `;
-    } else if (templateType === 'standard') {
-      html = `
-        ${html}
-        <div class="additional-info mt-8 border-t pt-4">
-          <h3 class="text-lg font-semibold mb-2">Standard Package Details</h3>
-          <ul class="list-disc pl-5">
-            <li>15 ads/posts per month</li>
-            <li>24/7 support included</li>
-            <li>Advanced analytics included</li>
-            <li>First report delivery: ${formatDate(new Date(new Date().setDate(new Date().getDate() + 7)).toISOString())}</li>
-          </ul>
-          
-          <div class="mt-4 bg-gray-50 p-4 rounded">
-            <p class="font-medium">Your dedicated account representative will contact you within 1 business day.</p>
-          </div>
-        </div>
-      `;
-    }
-
-    html += '</div>'; // Close the invoice-template div
-    return html;
-  };
-
-  // Combine all the components into a complete HTML document
+  // Combine all components into a complete HTML document
   return `
     <!DOCTYPE html>
     <html>
@@ -266,7 +145,7 @@ export const generateInvoiceHtml = (invoiceData: InvoiceData, templateType: stri
       </style>
     </head>
     <body>
-      ${getTemplateHtml()}
+      ${templateContent}
     </body>
     </html>
   `;
