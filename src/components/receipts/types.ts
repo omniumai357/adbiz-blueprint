@@ -14,3 +14,11 @@ export interface PaginatedReceipts {
   pageSize: number;
   totalPages: number;
 }
+
+export interface ReceiptSearchParams {
+  query?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minAmount?: number;
+  maxAmount?: number;
+}

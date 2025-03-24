@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import InvoiceViewer from "@/components/invoice/InvoiceViewer";
 import ReceiptsList from "@/components/receipts/ReceiptsList";
+import ReceiptSearchForm from "@/components/receipts/ReceiptSearchForm";
 import { useReceipts } from "@/hooks/useReceipts";
+import { ReceiptSearchParams } from "@/components/receipts/types";
 
 const Receipts = () => {
   const { user } = useAuth();
@@ -16,9 +18,20 @@ const Receipts = () => {
   const { toast } = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchParams, setSearchParams] = useState<ReceiptSearchParams>({});
   const pageSize = 5; // Number of receipts per page
   
-  const { receipts, loading, pagination } = useReceipts(user?.id, currentPage, pageSize);
+  const { receipts, loading, pagination } = useReceipts(user?.id, currentPage, pageSize, searchParams);
+
+  const handleSearch = (params: ReceiptSearchParams) => {
+    setSearchParams(params);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handleResetSearch = () => {
+    setSearchParams({});
+    setCurrentPage(1); // Reset to first page when clearing search
+  };
 
   const viewInvoice = (invoiceNumber: string) => {
     setSelectedInvoice(invoiceNumber);
@@ -55,6 +68,11 @@ const Receipts = () => {
             </Button>
             <h1 className="text-3xl font-bold">Your Receipts</h1>
           </div>
+          
+          <ReceiptSearchForm 
+            onSearch={handleSearch}
+            onReset={handleResetSearch}
+          />
           
           <ReceiptsList
             receipts={receipts}
