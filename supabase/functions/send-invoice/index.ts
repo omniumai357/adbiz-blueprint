@@ -23,7 +23,9 @@ serve(async (req) => {
       items,
       amount,
       invoiceNumber,
-      dueDate
+      dueDate,
+      phoneNumber,
+      sendSms
     } = await req.json();
     
     // Create a Supabase client
@@ -48,14 +50,54 @@ serve(async (req) => {
     // For demo purposes, we're simulating sending the email
     const emailSent = true;
     
+    // Send SMS if requested and phone number is provided
+    let smsSent = false;
+    if (sendSms && phoneNumber) {
+      try {
+        // Call the send-sms edge function
+        const smsResponse = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({
+            invoiceId,
+            phoneNumber,
+            invoiceNumber,
+            message: `Your invoice #${invoiceNumber} has been issued. Total amount: $${typeof amount === 'number' ? amount.toFixed(2) : amount}. Due date: ${new Date(dueDate).toLocaleDateString()}.`
+          }),
+        });
+        
+        if (smsResponse.ok) {
+          console.log(`SMS notification for invoice #${invoiceNumber} sent to ${phoneNumber}`);
+          smsSent = true;
+        } else {
+          console.error('Failed to send SMS notification:', await smsResponse.text());
+        }
+      } catch (smsError) {
+        console.error('Error sending SMS notification:', smsError);
+      }
+    }
+    
     if (emailSent) {
       // Update the invoice record to mark it as sent
+      const updateData: Record<string, any> = {
+        status: 'sent',
+        sent_at: new Date().toISOString()
+      };
+      
+      // Add SMS status if applicable
+      if (smsSent) {
+        updateData.sms_sent_at = new Date().toISOString();
+        updateData.delivery_status = 'both_sent';
+      } else {
+        updateData.delivery_status = 'email_sent';
+      }
+      
       const { data, error } = await supabase
         .from('invoices')
-        .update({ 
-          status: 'sent',
-          sent_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', invoiceId);
       
       if (error) {
@@ -66,7 +108,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true,
-        message: `Invoice #${invoiceNumber} sent to ${email}` 
+        email: emailSent ? `Invoice #${invoiceNumber} sent to ${email}` : null,
+        sms: smsSent ? `SMS notification sent to ${phoneNumber}` : null
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

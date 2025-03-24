@@ -14,11 +14,13 @@ export interface InvoiceData {
   orderId: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   amount: number;
   items: InvoiceItem[];
   dueDate: string;
   invoiceNumber: string;
   userId?: string;
+  deliveryMethod?: 'email' | 'sms' | 'both';
 }
 
 export const invoiceService = {
@@ -37,11 +39,13 @@ export const invoiceService = {
           user_id: data.userId,
           customer_email: data.customerEmail,
           customer_name: data.customerName,
+          customer_phone: data.customerPhone,
           amount: data.amount,
           invoice_number: data.invoiceNumber,
           due_date: data.dueDate,
           items: itemsAsJson,
-          status: 'pending'
+          status: 'pending',
+          delivery_method: data.deliveryMethod || 'email'
         })
         .select()
         .single();
@@ -81,9 +85,90 @@ export const invoiceService = {
 
       return await response.json();
     } catch (error) {
-      console.error("Error sending invoice:", error);
+      console.error("Error sending invoice via email:", error);
       throw error;
     }
+  },
+
+  /**
+   * Sends an invoice via SMS
+   */
+  async sendInvoiceSMS(invoiceId: string, phoneNumber: string, invoiceNumber: string, customMessage?: string) {
+    try {
+      if (!phoneNumber) {
+        throw new Error('Phone number is required for SMS delivery');
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-sms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          invoiceId,
+          phoneNumber,
+          invoiceNumber,
+          message: customMessage
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send invoice SMS');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending invoice via SMS:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delivers an invoice through selected channels (email, SMS, or both)
+   */
+  async deliverInvoice(invoice: any, deliveryMethod: 'email' | 'sms' | 'both', customerInfo: {
+    email: string;
+    name: string;
+    phone?: string;
+  }, invoiceData: Partial<InvoiceData>) {
+    const results = {
+      email: null as any,
+      sms: null as any,
+      errors: [] as Error[]
+    };
+    
+    // Send via email if method is 'email' or 'both'
+    if (deliveryMethod === 'email' || deliveryMethod === 'both') {
+      try {
+        results.email = await this.sendInvoice(
+          invoice.id,
+          customerInfo.email,
+          customerInfo.name,
+          invoiceData
+        );
+      } catch (error) {
+        console.error("Failed to deliver invoice via email:", error);
+        results.errors.push(error as Error);
+      }
+    }
+    
+    // Send via SMS if method is 'sms' or 'both'
+    if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && customerInfo.phone) {
+      try {
+        results.sms = await this.sendInvoiceSMS(
+          invoice.id,
+          customerInfo.phone,
+          invoice.invoice_number
+        );
+      } catch (error) {
+        console.error("Failed to deliver invoice via SMS:", error);
+        results.errors.push(error as Error);
+      }
+    }
+    
+    return results;
   },
 
   /**
@@ -103,6 +188,7 @@ export const invoiceService = {
     orderId: string, 
     packageDetails: any, 
     customerInfo: CustomerInfo,
+    deliveryMethod: 'email' | 'sms' | 'both' = 'email',
     userId?: string
   ) {
     const invoiceNumber = this.generateInvoiceNumber();
@@ -123,11 +209,13 @@ export const invoiceService = {
       orderId,
       customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
       customerEmail: customerInfo.email,
+      customerPhone: customerInfo.phone,
       amount: packageDetails.price,
       items,
       dueDate: dueDate.toISOString(),
       invoiceNumber,
-      userId
+      userId,
+      deliveryMethod
     };
 
     // Create invoice in database
@@ -137,12 +225,16 @@ export const invoiceService = {
       throw error;
     }
     
-    // Send invoice via email
+    // Deliver invoice via selected channels
     if (invoice) {
-      await this.sendInvoice(
-        invoice.id,
-        invoiceData.customerEmail,
-        invoiceData.customerName,
+      await this.deliverInvoice(
+        invoice,
+        deliveryMethod,
+        {
+          email: invoiceData.customerEmail,
+          name: invoiceData.customerName,
+          phone: invoiceData.customerPhone
+        },
         invoiceData
       );
     }

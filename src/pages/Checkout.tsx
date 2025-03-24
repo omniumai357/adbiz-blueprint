@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -27,6 +26,7 @@ const Checkout = () => {
     phone: "",
     company: "",
     website: "",
+    invoiceDeliveryMethod: "email"
   });
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -44,7 +44,6 @@ const Checkout = () => {
   };
 
   useEffect(() => {
-    // Check if user is logged in
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -63,20 +62,43 @@ const Checkout = () => {
     setOrderId(id);
     
     try {
-      // Create and send invoice
+      const deliveryMethod = customerInfo.invoiceDeliveryMethod || 'email';
+      
+      if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && !customerInfo.phone) {
+        toast({
+          title: "Invoice delivery warning",
+          description: "Phone number is required for SMS delivery. Invoice will be sent by email only.",
+          variant: "destructive"
+        });
+      }
+      
       const invoice = await invoiceService.createInvoiceFromOrder(
         id,
         packageDetails,
         customerInfo,
+        deliveryMethod as 'email' | 'sms' | 'both',
         userId
       );
       
       if (invoice) {
         setInvoiceNumber(invoice.invoice_number);
-        toast({
-          title: "Invoice sent!",
-          description: `An invoice has been emailed to ${customerInfo.email}`,
-        });
+        
+        if (deliveryMethod === 'both' && customerInfo.phone) {
+          toast({
+            title: "Invoice sent!",
+            description: `An invoice has been emailed to ${customerInfo.email} and sent via SMS to ${customerInfo.phone}`,
+          });
+        } else if (deliveryMethod === 'sms' && customerInfo.phone) {
+          toast({
+            title: "Invoice sent!",
+            description: `An invoice has been sent via SMS to ${customerInfo.phone}`,
+          });
+        } else {
+          toast({
+            title: "Invoice sent!",
+            description: `An invoice has been emailed to ${customerInfo.email}`,
+          });
+        }
       }
       
       setShowDownloadOptions(true);
@@ -87,7 +109,6 @@ const Checkout = () => {
       });
     } catch (error) {
       console.error("Failed to create invoice:", error);
-      // Still show download options even if invoice creation fails
       setShowDownloadOptions(true);
       
       toast({
