@@ -2,7 +2,9 @@
 import React from 'react';
 import BaseTemplate, { InvoiceTemplateProps } from './BaseTemplate';
 
-// Standard package template with basic sections
+/**
+ * Standard package template with basic sections
+ */
 const StandardTemplate: React.FC<InvoiceTemplateProps> = (props) => {
   const { invoiceData } = props;
   
