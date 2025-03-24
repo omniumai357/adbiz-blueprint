@@ -3,8 +3,8 @@ import { useCheckoutAuth } from "./useCheckoutAuth";
 import { useCustomerInfo } from "./useCustomerInfo";
 import { usePackageDetails } from "./usePackageDetails";
 import { usePaymentMethod } from "./usePaymentMethod";
-import { useAddOns, bundleDiscount } from "./useAddOns";
-import { useDiscount } from "./useDiscount";
+import { useAddOns, availableAddOns, bundleDiscount } from "./useAddOns";
+import { useDiscount, discountTiers } from "./useDiscount";
 import { useOrderProcessing } from "./useOrderProcessing";
 import { useCoupons } from "./useCoupons";
 import { useLimitedTimeOffers } from "./useLimitedTimeOffers";
@@ -124,7 +124,7 @@ export function useCheckout() {
     isProfileLoading,
     handleOrderSuccess,
     // Add-ons related
-    availableAddOns: useAddOns.availableAddOns,
+    availableAddOns,
     selectedAddOnIds,
     handleAddOnToggle,
     selectedAddOns,
@@ -133,7 +133,7 @@ export function useCheckout() {
     isDiscountApplicable,
     bundleDiscountAmount,
     // Tiered discount related
-    discountTiers: useDiscount.discountTiers,
+    discountTiers,
     appliedTier,
     isFirstPurchase,
     tieredDiscountAmount,

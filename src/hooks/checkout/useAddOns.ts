@@ -3,6 +3,18 @@ import { useState } from "react";
 import { AddOnItem } from "@/components/checkout/add-on-item";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { useToast } from "@/hooks/ui/use-toast";
+import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
+
+// Bundle discount configuration
+export const bundleDiscount: BundleDiscountInfo = {
+  id: "bundle-discount-1",
+  name: "Bundle Discount",
+  description: "Save when you add more services to your package",
+  discountAmount: 10,
+  discountType: "percentage",
+  threshold: 50, // Minimum add-on value to qualify
+  active: true
+};
 
 // Enhanced add-ons with value propositions
 export const availableAddOns: AddOnItem[] = [
@@ -82,3 +94,7 @@ export function useAddOns(
     handleAddOnToggle
   };
 }
+
+// Attach the availableAddOns and bundleDiscount to the useAddOns function for access in other modules
+useAddOns.availableAddOns = availableAddOns;
+useAddOns.bundleDiscount = bundleDiscount;

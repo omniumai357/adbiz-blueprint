@@ -145,3 +145,6 @@ export function useDiscount(subtotal: number, addOnsTotal: number, userId: strin
     isLoading
   };
 }
+
+// Attach the discountTiers to the useDiscount function for access in other modules
+useDiscount.discountTiers = discountTiers;
