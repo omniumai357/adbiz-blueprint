@@ -13,6 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAppForm } from "@/hooks/forms/useAppForm";
+import { useNavigate } from "react-router-dom";
 
 const signUpSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -31,6 +32,7 @@ type SignUpFormProps = {
 
 export function SignUpForm({ onTabChange }: SignUpFormProps) {
   const { signUp } = useAuth();
+  const navigate = useNavigate();
 
   const form = useAppForm(signUpSchema, {
     defaultValues: {
@@ -50,6 +52,14 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
     
     if (result?.error) {
       form.setSubmitError(result.error.message);
+    } else {
+      // Redirect to auth page with registrationSuccess flag
+      navigate("/auth", { 
+        state: { 
+          message: "Account created successfully! Check out your welcome discount below.", 
+          registrationSuccess: true 
+        } 
+      });
     }
   };
 

@@ -11,9 +11,13 @@ export const useAuthNavigation = () => {
     
     // Check if result has 'success' property and it's true
     if (result && 'success' in result && result.success) {
-      // Check if result has 'message' property before accessing it
-      const message = 'message' in result ? result.message : undefined;
-      navigate("/auth", { state: { message } });
+      // Navigate to auth page with registrationSuccess flag to trigger coupon display
+      navigate("/auth", { 
+        state: { 
+          message: "Account created! Check out your welcome discount below.", 
+          registrationSuccess: true 
+        } 
+      });
     }
     return result;
   };

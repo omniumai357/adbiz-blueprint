@@ -102,6 +102,7 @@ export type Database = {
           id: string
           max_uses: number | null
           updated_at: string
+          user_id: string | null
           valid_until: string | null
         }
         Insert: {
@@ -115,6 +116,7 @@ export type Database = {
           id?: string
           max_uses?: number | null
           updated_at?: string
+          user_id?: string | null
           valid_until?: string | null
         }
         Update: {
@@ -128,6 +130,7 @@ export type Database = {
           id?: string
           max_uses?: number | null
           updated_at?: string
+          user_id?: string | null
           valid_until?: string | null
         }
         Relationships: []
@@ -327,6 +330,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_random_coupon_code: {
+        Args: {
+          length?: number
+        }
+        Returns: string
+      }
       is_admin: {
         Args: {
           user_id: string
