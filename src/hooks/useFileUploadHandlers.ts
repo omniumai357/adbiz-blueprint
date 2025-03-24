@@ -39,17 +39,14 @@ export const useFileUploadHandlers = ({
   ) => {
     let selectedFiles: File[] = [];
     
-    // Check if e is an array of Files or an event using type guard
     if (Array.isArray(e)) {
       // Handle case when e is an array of Files (convert readonly to mutable array)
       selectedFiles = Array.from(e);
-    } else {
+    } else if (e.target && e.target.files) {
       // Handle case when e is a ChangeEvent from input
-      if (e.target.files) {
-        selectedFiles = Array.from(e.target.files);
-      } else {
-        return;
-      }
+      selectedFiles = Array.from(e.target.files);
+    } else {
+      return;
     }
     
     const { validFiles, hasInvalidFiles } = validateFiles(
