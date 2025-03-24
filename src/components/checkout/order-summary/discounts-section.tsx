@@ -1,8 +1,9 @@
 
 import React from "react";
 import { Separator } from "@/components/ui/separator";
-import { BadgePercent, AlarmClock, Gift, Award, Star, Sparkles } from "lucide-react";
-import OrderBaseItem from "./order-base-item";
+import { Award, BadgePercent, DollarSign, Sparkles } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format-utils";
+import { Badge } from "@/components/ui/badge";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
@@ -48,74 +49,85 @@ const DiscountsSection = ({
   appliedMilestoneReward,
   milestoneRewardAmount = 0
 }: DiscountsSectionProps) => {
-  
   if (!showDiscounts) return null;
-  
+
   return (
-    <>
-      <Separator className="my-2" />
-      <div className="text-sm font-medium mb-2">Discounts:</div>
-      
-      {limitedTimeOffer && offerDiscountAmount > 0 && (
-        <OrderBaseItem 
-          name={limitedTimeOffer.name}
-          price={offerDiscountAmount}
-          isNegative={true}
-          variant="red"
-          icon={<AlarmClock className="h-4 w-4" />}
-        />
-      )}
-      
-      {appliedCoupon && couponDiscountAmount > 0 && (
-        <OrderBaseItem 
-          name={`Coupon: ${appliedCoupon.code}`}
-          price={couponDiscountAmount}
-          isNegative={true}
-          variant="violet"
-          icon={<Gift className="h-4 w-4" />}
-        />
-      )}
-      
-      {appliedMilestoneReward && milestoneRewardAmount > 0 && (
-        <OrderBaseItem 
-          name={`Milestone: ${appliedMilestoneReward.milestone_name}`}
-          price={milestoneRewardAmount}
-          isNegative={true}
-          variant="emerald"
-          icon={<Sparkles className="h-4 w-4" />}
-        />
-      )}
-      
-      {appliedDiscount && bundleDiscountAmount > 0 && (
-        <OrderBaseItem 
-          name={appliedDiscount.name}
-          price={bundleDiscountAmount}
-          isNegative={true}
-          variant="primary"
-          icon={<BadgePercent className="h-4 w-4" />}
-        />
-      )}
-      
-      {tieredDiscount && tieredDiscountAmount > 0 && (
-        <OrderBaseItem 
-          name={tieredDiscount.name + (isFirstPurchase ? " " : "")}
-          price={tieredDiscountAmount}
-          isNegative={true}
-          variant="primary"
-          icon={<Award className="h-4 w-4" />}
-        />
-      )}
-      
-      {isLoyaltyProgramEnabled && loyaltyBonusAmount > 0 && (
-        <OrderBaseItem 
-          name="Loyalty Program Bonus"
-          price={loyaltyBonusAmount}
-          isNegative={true}
-          variant="amber"
-          icon={<Star className="h-4 w-4" />}
-        />
-      )}
-    </>
+    <div>
+      <Separator className="my-4" />
+      <h4 className="font-medium mb-3">Discounts & Savings</h4>
+      <div className="space-y-2">
+        {limitedTimeOffer && offerDiscountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <BadgePercent className="h-4 w-4 text-orange-500" />
+              <span>{limitedTimeOffer.name}</span>
+              <Badge variant="outline" className="text-xs bg-orange-50 border-orange-200 text-orange-700">
+                Limited time
+              </Badge>
+            </div>
+            <span className="text-rose-600">-{formatCurrency(offerDiscountAmount)}</span>
+          </div>
+        )}
+
+        {appliedCoupon && couponDiscountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-cyan-500" />
+              <span>Coupon: {appliedCoupon.code}</span>
+            </div>
+            <span className="text-rose-600">-{formatCurrency(couponDiscountAmount)}</span>
+          </div>
+        )}
+
+        {appliedDiscount && bundleDiscountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <BadgePercent className="h-4 w-4 text-primary" />
+              <span>{appliedDiscount.name}</span>
+            </div>
+            <span className="text-rose-600">-{formatCurrency(bundleDiscountAmount)}</span>
+          </div>
+        )}
+
+        {tieredDiscount && tieredDiscountAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-purple-500" />
+              <span>{tieredDiscount.name}</span>
+              {isFirstPurchase && tieredDiscount.firstPurchaseBonus && (
+                <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
+                  First purchase
+                </Badge>
+              )}
+            </div>
+            <span className="text-rose-600">-{formatCurrency(tieredDiscountAmount)}</span>
+          </div>
+        )}
+
+        {isLoyaltyProgramEnabled && loyaltyBonusAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4 text-amber-500" />
+              <span>Loyalty Program Bonus</span>
+            </div>
+            <span className="text-rose-600">-{formatCurrency(loyaltyBonusAmount)}</span>
+          </div>
+        )}
+
+        {appliedMilestoneReward && milestoneRewardAmount > 0 && (
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>{appliedMilestoneReward.milestone_name} Reward</span>
+              <Badge variant="default" className="text-xs">
+                Milestone
+              </Badge>
+            </div>
+            <span className="text-rose-600">-{formatCurrency(milestoneRewardAmount)}</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements } from 'react-router-dom';
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
-import { supabase } from './integrations/supabase/client';
+
+import React from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AuthContextProvider } from './contexts/auth-context';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
@@ -12,6 +10,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
 
+// Create the router with all page routes
 const router = createBrowserRouter([
   {
     path: "/",

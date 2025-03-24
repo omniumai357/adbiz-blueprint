@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/contexts/auth-context";
-import { useProfile } from "@/hooks/data/useProfile";
+import { useAuth } from "@/contexts/auth-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +24,7 @@ import {
 import { Menu } from "lucide-react";
 
 const Header = () => {
-  const { isAuthenticated, logout, user } = useContext(AuthContext);
-  const { profile } = useProfile(user?.id);
+  const { isAuthenticated, signOut, user, profile } = useAuth();
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -34,7 +33,7 @@ const Header = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
+    signOut();
     navigate("/");
   };
 

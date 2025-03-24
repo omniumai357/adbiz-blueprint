@@ -87,7 +87,7 @@ const Checkout = () => {
             offerDiscountAmount={offerDiscountAmount}
             appliedCoupon={appliedCoupon ?? undefined}
             couponDiscountAmount={couponDiscountAmount}
-            appliedMilestoneReward={appliedMilestoneReward ?? undefined}
+            appliedMilestoneReward={appliedMilestoneReward}
             milestoneRewardAmount={milestoneRewardAmount}
           />
           

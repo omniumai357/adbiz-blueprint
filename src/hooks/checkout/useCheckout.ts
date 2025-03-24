@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -257,6 +258,8 @@ export function useCheckout() {
     }, 5000);
   };
 
+  const selectedAddOns = availableAddOns.filter(addon => selectedAddOnIds.includes(addon.id));
+
   return {
     customerInfo,
     setCustomerInfo,
@@ -275,6 +278,7 @@ export function useCheckout() {
     availableAddOns,
     selectedAddOnIds,
     handleAddOnToggle,
+    selectedAddOns,
     bundleDiscount,
     isDiscountApplicable,
     appliedTier,

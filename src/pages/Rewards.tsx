@@ -2,11 +2,10 @@
 import React from "react";
 import Header from "@/components/Header";
 import MilestonesDashboard from "@/components/rewards/MilestonesDashboard";
-import { useContext } from "react";
-import { AuthContext } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/auth-context";
 
 const Rewards = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col">
