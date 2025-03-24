@@ -10,12 +10,14 @@ interface PayPalButtonProps {
   amount: number;
   packageDetails: Package;
   customerInfo: CustomerInfo;
+  onSuccess?: (orderId: string) => void;
 }
 
 const PayPalButton: React.FC<PayPalButtonProps> = ({ 
   amount, 
   packageDetails,
-  customerInfo
+  customerInfo,
+  onSuccess
 }) => {
   const paypalBtnRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -46,8 +48,13 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
               description: `You've purchased the ${packageDetails.title} package.`,
             });
             
-            // Redirect to home page (or success page)
-            navigate("/");
+            // Call onSuccess callback if provided
+            if (onSuccess) {
+              onSuccess(orderId);
+            } else {
+              // Fallback to redirecting if no callback
+              navigate("/");
+            }
           },
           (errorMessage: string) => {
             // Handle error
@@ -62,7 +69,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({
     };
     
     loadPayPalButton();
-  }, [amount, packageDetails, customerInfo, navigate, toast]);
+  }, [amount, packageDetails, customerInfo, navigate, toast, onSuccess]);
   
   return (
     <div className="mt-6">

@@ -3,9 +3,9 @@ import { CustomerInfo } from "@/components/checkout/customer-info-form";
 import { invoiceGenerator } from "./invoice-generator";
 import { invoiceRepository } from "./invoice-repository";
 import { invoiceDelivery } from "./invoice-delivery";
-import { InvoiceData, InvoiceItem, InvoiceDeliveryMethod } from "./types";
+import { InvoiceDeliveryMethod } from "./types";
 
-export { InvoiceItem, InvoiceData } from "./types";
+export type { InvoiceItem, InvoiceData } from "./types";
 
 /**
  * Invoice service facade that combines all invoice related operations
@@ -14,14 +14,14 @@ export const invoiceService = {
   /**
    * Creates a new invoice in the database
    */
-  async createInvoice(data: InvoiceData) {
+  async createInvoice(data: any) {
     return invoiceRepository.createInvoice(data);
   },
 
   /**
    * Sends an invoice via email
    */
-  async sendInvoice(invoiceId: string, email: string, name: string, invoiceData: Partial<InvoiceData>) {
+  async sendInvoice(invoiceId: string, email: string, name: string, invoiceData: any) {
     return invoiceDelivery.sendInvoiceEmail(invoiceId, email, name, invoiceData);
   },
 
@@ -39,7 +39,7 @@ export const invoiceService = {
     email: string;
     name: string;
     phone?: string;
-  }, invoiceData: Partial<InvoiceData>) {
+  }, invoiceData: any) {
     return invoiceDelivery.deliverInvoice(invoice, deliveryMethod, customerInfo, invoiceData);
   },
 
