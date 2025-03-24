@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   profile: any | null;
   isLoading: boolean;
+  isAuthenticated: boolean; // New property for easier auth checks
   signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<any>;
@@ -61,6 +62,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  // Computed property for easier auth status checks
+  const isAuthenticated = !!user;
+
   return (
     <AuthContext.Provider
       value={{
@@ -68,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         profile,
         isLoading,
+        isAuthenticated,
         signUp,
         signIn,
         signOut,

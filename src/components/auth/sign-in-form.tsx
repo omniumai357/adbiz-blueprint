@@ -1,9 +1,9 @@
+
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAppForm } from "@/hooks/forms/useAppForm";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -24,9 +25,8 @@ type SignInFormProps = {
 
 export function SignInForm({ onTabChange }: SignInFormProps) {
   const { signIn } = useAuth();
-
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
+  
+  const form = useAppForm(signInSchema, {
     defaultValues: {
       email: "",
       password: "",
@@ -34,12 +34,21 @@ export function SignInForm({ onTabChange }: SignInFormProps) {
   });
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
-    await signIn(data.email, data.password);
+    const result = await signIn(data.email, data.password);
+    if (result?.error) {
+      form.setSubmitError(result.error.message);
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {form.submitError && (
+          <Alert variant="destructive">
+            <AlertDescription>{form.submitError}</AlertDescription>
+          </Alert>
+        )}
+        
         <FormField
           control={form.control}
           name="email"
@@ -69,9 +78,9 @@ export function SignInForm({ onTabChange }: SignInFormProps) {
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={form.formState.isSubmitting}
+          disabled={form.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Signing in..." : "Sign In"}
+          {form.isSubmitting ? "Signing in..." : "Sign In"}
         </Button>
       </form>
       <div className="flex justify-center border-t pt-6 text-sm text-muted-foreground mt-6">

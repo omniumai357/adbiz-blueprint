@@ -1,3 +1,4 @@
+
 import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
@@ -9,12 +10,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
-  const { user, isLoading, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isLoading) {
-      if (!user) {
+      if (!isAuthenticated) {
         toast({
           title: "Authentication required",
           description: "Please sign in to access this page.",
@@ -30,7 +31,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
         navigate("/");
       }
     }
-  }, [user, isLoading, isAdmin, navigate, requireAdmin]);
+  }, [isAuthenticated, isLoading, isAdmin, navigate, requireAdmin]);
 
   if (isLoading) {
     return (
@@ -40,7 +41,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     );
   }
 
-  if (!user || (requireAdmin && !isAdmin)) {
+  if (!isAuthenticated || (requireAdmin && !isAdmin)) {
     return null;
   }
 

@@ -1,9 +1,9 @@
+
 import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Form,
   FormControl,
@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAppForm } from "@/hooks/forms/useAppForm";
 
 const signUpSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -31,8 +32,7 @@ type SignUpFormProps = {
 export function SignUpForm({ onTabChange }: SignUpFormProps) {
   const { signUp } = useAuth();
 
-  const form = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
+  const form = useAppForm(signUpSchema, {
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -43,15 +43,25 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
   });
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
-    await signUp(data.email, data.password, {
+    const result = await signUp(data.email, data.password, {
       first_name: data.firstName,
       last_name: data.lastName,
     });
+    
+    if (result?.error) {
+      form.setSubmitError(result.error.message);
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {form.submitError && (
+          <Alert variant="destructive">
+            <AlertDescription>{form.submitError}</AlertDescription>
+          </Alert>
+        )}
+        
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -122,9 +132,9 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={form.formState.isSubmitting}
+          disabled={form.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Creating account..." : "Create Account"}
+          {form.isSubmitting ? "Creating account..." : "Create Account"}
         </Button>
       </form>
       <div className="flex justify-center border-t pt-6 text-sm text-muted-foreground mt-6">
