@@ -1,8 +1,8 @@
 
 import { useState } from "react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { RadioGroup } from "@/components/ui/radio-group";
 import { CreditCard, Wallet } from "lucide-react";
+import { PaymentOption } from "@/components/payment/payment-option";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -21,21 +21,21 @@ const PaymentSelector = ({ selectedMethod, onMethodChange }: PaymentSelectorProp
         onValueChange={(value) => onMethodChange(value as PaymentMethod)}
         className="grid grid-cols-2 gap-4"
       >
-        <div className="flex items-center space-x-2 border rounded-md p-4 cursor-pointer hover:bg-gray-50 transition-colors">
-          <RadioGroupItem value="credit-card" id="credit-card" />
-          <Label htmlFor="credit-card" className="flex items-center space-x-2 cursor-pointer">
-            <CreditCard className="h-5 w-5" />
-            <span>Credit Card</span>
-          </Label>
-        </div>
+        <PaymentOption
+          id="credit-card"
+          value="credit-card"
+          label="Credit Card"
+          icon={<CreditCard className="h-5 w-5" />}
+          isSelected={selectedMethod === "credit-card"}
+        />
         
-        <div className="flex items-center space-x-2 border rounded-md p-4 cursor-pointer hover:bg-gray-50 transition-colors">
-          <RadioGroupItem value="paypal" id="paypal" />
-          <Label htmlFor="paypal" className="flex items-center space-x-2 cursor-pointer">
-            <Wallet className="h-5 w-5" />
-            <span>PayPal</span>
-          </Label>
-        </div>
+        <PaymentOption
+          id="paypal"
+          value="paypal"
+          label="PayPal"
+          icon={<Wallet className="h-5 w-5" />}
+          isSelected={selectedMethod === "paypal"}
+        />
       </RadioGroup>
     </div>
   );
