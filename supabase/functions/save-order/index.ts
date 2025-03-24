@@ -26,6 +26,13 @@ serve(async (req) => {
     // For now, we'll just return the order details with a generated ID
     const orderId = 'order_' + Math.random().toString(36).substring(2, 15);
     
+    // Log the order details for debugging
+    console.log('Saving order:', {
+      id: orderId,
+      ...orderDetails,
+      createdAt: new Date().toISOString()
+    });
+    
     return new Response(
       JSON.stringify({ 
         id: orderId,
