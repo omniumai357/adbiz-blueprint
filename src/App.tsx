@@ -1,4 +1,5 @@
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Checkout from "./pages/Checkout";
+import BusinessQuestionnaire from "./pages/BusinessQuestionnaire";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +33,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/business-questionnaire" element={<BusinessQuestionnaire />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
@@ -40,3 +43,4 @@ const App = () => (
 );
 
 export default App;
+

@@ -1,4 +1,5 @@
 
+
 import { cn } from "@/lib/utils";
 import { Package } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,14 @@ interface PackageCardProps {
 }
 
 export const PackageCard = ({ pkg, className }: PackageCardProps) => {
+  // Route to the appropriate page based on package id
+  const getPackageRoute = () => {
+    if (pkg.id === 'platinum') {
+      return `/business-questionnaire?package=${pkg.id}`;
+    }
+    return `/checkout?package=${pkg.id}`;
+  };
+
   return (
     <div 
       className={cn(
@@ -50,7 +59,7 @@ export const PackageCard = ({ pkg, className }: PackageCardProps) => {
           className="w-full button-transition hover:shadow-md"
           variant={pkg.popular ? "default" : "outline"}
         >
-          <Link to={`/checkout?package=${pkg.id}`}>
+          <Link to={getPackageRoute()}>
             Choose Plan
           </Link>
         </Button>
@@ -60,3 +69,4 @@ export const PackageCard = ({ pkg, className }: PackageCardProps) => {
 };
 
 export default PackageCard;
+
