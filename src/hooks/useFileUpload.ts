@@ -24,7 +24,7 @@ export const useFileUpload = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, { name: string; progress: number }>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // Handle file selection - updated to match the expected parameter order
+  // Handle file selection - updated to match the expected parameter types
   const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | File[]) => {
     let selectedFiles: File[];
     

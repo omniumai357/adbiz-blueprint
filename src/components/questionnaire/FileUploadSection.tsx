@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import { Upload, X, FileText, Image, Video, FileAudio } from "lucide-react";
 
+interface FileState {
+  logo: File | null;
+  images: File[];
+  videos: File[];
+  documents: File[];
+}
+
 interface FileUploadSectionProps {
-  files: {
-    logo: File | null;
-    images: File[];
-    videos: File[];
-    documents: File[];
-  };
-  onFileChange: (fileType: keyof typeof files, e: ChangeEvent<HTMLInputElement> | File[]) => void;
-  onRemoveFile: (fileType: keyof typeof files, index?: number) => void;
+  files: FileState;
+  onFileChange: (fileType: keyof FileState, e: ChangeEvent<HTMLInputElement> | File[]) => void;
+  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
   uploadProgress: Record<string, { name: string; progress: number }>;
   uploadError: string | null;
   hasLogo: boolean;
@@ -26,11 +28,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
   uploadError,
   hasLogo,
 }) => {
-  const fileTypeIsValid = (file: File, allowedTypes: string[]) => {
-    return allowedTypes.includes(file.type);
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof typeof files) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
     // Pass the event directly to onFileChange
