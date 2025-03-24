@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
