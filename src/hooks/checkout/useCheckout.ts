@@ -22,6 +22,8 @@ export function useCheckout() {
     invoiceDeliveryMethod: "email"
   });
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoyaltyProgramEnabled, setIsLoyaltyProgramEnabled] = useState<boolean>(false);
+  const [loyaltyBonusAmount, setLoyaltyBonusAmount] = useState<number>(0);
   
   const packageName = location.state?.packageName || "Standard Package";
   const packagePrice = location.state?.packagePrice || 199;
@@ -55,9 +57,28 @@ export function useCheckout() {
     tieredDiscountAmount,
     isFirstPurchase,
     firstPurchaseBonus,
-    totalDiscountAmount,
+    totalDiscountAmount: baseDiscountAmount,
     isLoading: isDiscountLoading
   } = useDiscount(subtotal, addOnsTotal, userId);
+
+  // Calculate loyalty bonus (5% of subtotal if loyalty program is enabled)
+  useEffect(() => {
+    if (isLoyaltyProgramEnabled && userId) {
+      setLoyaltyBonusAmount(subtotal * 0.05);
+    } else {
+      setLoyaltyBonusAmount(0);
+    }
+  }, [isLoyaltyProgramEnabled, subtotal, userId]);
+  
+  // Handle loyalty program toggle
+  const handleLoyaltyProgramToggle = () => {
+    if (userId) {
+      setIsLoyaltyProgramEnabled(!isLoyaltyProgramEnabled);
+    }
+  };
+
+  // Calculate total discount (base discounts + loyalty bonus)
+  const totalDiscountAmount = baseDiscountAmount + loyaltyBonusAmount;
   
   // Calculate the final total with all discounts
   const total = subtotal - totalDiscountAmount;
@@ -78,6 +99,8 @@ export function useCheckout() {
     bundleDiscount,
     tieredDiscount: appliedTier,
     isFirstPurchase,
+    isLoyaltyProgramEnabled,
+    loyaltyBonusAmount,
     totalDiscountAmount,
     total,
     customerInfo
@@ -131,17 +154,20 @@ export function useCheckout() {
     // Bundle discount related
     bundleDiscount,
     isDiscountApplicable,
+    bundleDiscountAmount,
     // Tiered discount related
     discountTiers,
     appliedTier,
     isFirstPurchase,
     firstPurchaseBonus,
+    // Loyalty program related
+    isLoyaltyProgramEnabled,
+    loyaltyBonusAmount,
+    handleLoyaltyProgramToggle,
     // Loading states
     isLoading: isProfileLoading || isDiscountLoading,
     // Calculated values
     subtotal,
-    bundleDiscountAmount,
-    tieredDiscountAmount,
     totalDiscountAmount,
     total
   };

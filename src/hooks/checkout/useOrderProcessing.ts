@@ -23,6 +23,8 @@ interface UseOrderProcessingProps {
     firstPurchaseBonus: number;
   } | null;
   isFirstPurchase?: boolean;
+  isLoyaltyProgramEnabled?: boolean;
+  loyaltyBonusAmount?: number;
   totalDiscountAmount: number;
   total: number;
   customerInfo: CustomerInfo;
@@ -37,6 +39,8 @@ export function useOrderProcessing({
   bundleDiscount,
   tieredDiscount,
   isFirstPurchase,
+  isLoyaltyProgramEnabled,
+  loyaltyBonusAmount,
   totalDiscountAmount,
   total,
   customerInfo
@@ -70,6 +74,10 @@ export function useOrderProcessing({
           isFirstPurchase,
           appliedBonus: isFirstPurchase ? tieredDiscount.firstPurchaseBonus : 0
         } : null,
+        loyaltyProgram: isLoyaltyProgramEnabled ? {
+          enabled: true,
+          bonusAmount: loyaltyBonusAmount || 0
+        } : null,
         totalDiscountAmount
       };
       
@@ -99,6 +107,14 @@ export function useOrderProcessing({
             status: 'completed',
           }).eq('id', id);
           
+          // If loyalty program was enabled, record this in the order
+          if (isLoyaltyProgramEnabled) {
+            await supabase.from('orders').update({
+              loyalty_program_enrolled: true,
+              loyalty_discount_applied: loyaltyBonusAmount || 0
+            }).eq('id', id);
+          }
+          
           toast({
             title: "Receipt saved",
             description: "A digital copy of your receipt has been stored in your account",
@@ -126,11 +142,16 @@ export function useOrderProcessing({
       
       setShowDownloadOptions(true);
       
-      // Show different success message based on first purchase status
+      // Show different success message based on customer status
       if (isFirstPurchase) {
         toast({
           title: "First purchase complete! 🎉",
           description: `Thank you for your first purchase of the ${packageName} package. We've applied a special first-time buyer discount!`,
+        });
+      } else if (isLoyaltyProgramEnabled) {
+        toast({
+          title: "Purchase complete and loyalty program joined! 🌟",
+          description: `Thank you for joining our loyalty program. You've received a special bonus on your ${packageName} package.`,
         });
       } else {
         toast({

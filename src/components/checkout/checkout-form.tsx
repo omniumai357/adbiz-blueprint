@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AddOnsSection from "@/components/checkout/add-ons-section";
 import BundleDiscount from "@/components/checkout/bundle-discount";
 import TieredDiscount from "@/components/checkout/tiered-discount";
+import LoyaltyProgram from "@/components/checkout/loyalty-program";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 
@@ -40,6 +41,9 @@ interface CheckoutFormProps {
   isFirstPurchase?: boolean;
   bundleDiscountAmount?: number;
   tieredDiscountAmount?: number;
+  isLoyaltyProgramEnabled?: boolean;
+  loyaltyBonusAmount?: number;
+  onLoyaltyProgramToggle?: () => void;
   totalDiscountAmount?: number;
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
@@ -63,6 +67,9 @@ const CheckoutForm = ({
   isFirstPurchase = false,
   bundleDiscountAmount = 0,
   tieredDiscountAmount = 0,
+  isLoyaltyProgramEnabled = false,
+  loyaltyBonusAmount = 0,
+  onLoyaltyProgramToggle = () => {},
   totalDiscountAmount = 0,
   onOrderSuccess,
   isProfileLoading,
@@ -121,6 +128,14 @@ const CheckoutForm = ({
                 applicable={isDiscountApplicable}
               />
             )}
+            
+            {/* Loyalty program section */}
+            <LoyaltyProgram
+              enabled={isLoyaltyProgramEnabled}
+              onToggle={onLoyaltyProgramToggle}
+              bonusAmount={loyaltyBonusAmount}
+              userId={customerInfo?.userId || null}
+            />
           </div>
           
           <PaymentSelector 
@@ -139,6 +154,10 @@ const CheckoutForm = ({
                     bundle: isDiscountApplicable ? bundleDiscount : null,
                     tiered: tieredDiscount,
                     isFirstPurchase,
+                    loyaltyProgram: isLoyaltyProgramEnabled ? {
+                      enabled: true,
+                      bonusAmount: loyaltyBonusAmount
+                    } : null,
                     totalDiscount: totalDiscountAmount
                   }
                 }}
@@ -157,6 +176,10 @@ const CheckoutForm = ({
                   bundle: isDiscountApplicable ? bundleDiscount : null,
                   tiered: tieredDiscount,
                   isFirstPurchase,
+                  loyaltyProgram: isLoyaltyProgramEnabled ? {
+                    enabled: true,
+                    bonusAmount: loyaltyBonusAmount
+                  } : null,
                   totalDiscount: totalDiscountAmount
                 }
               }}

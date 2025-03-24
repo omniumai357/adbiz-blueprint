@@ -2,7 +2,7 @@
 import React from "react";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { Separator } from "@/components/ui/separator";
-import { BadgePercent, Package, ShoppingBag, Sparkles, Award } from "lucide-react";
+import { BadgePercent, Package, ShoppingBag, Sparkles, Award, Star } from "lucide-react";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -21,8 +21,10 @@ interface OrderSummaryProps {
   isFirstPurchase?: boolean;
   bundleDiscountAmount?: number;
   tieredDiscountAmount?: number;
+  loyaltyBonusAmount?: number;
   totalDiscountAmount?: number;
   invoiceNumber?: string;
+  isLoyaltyProgramEnabled?: boolean;
 }
 
 const OrderSummary = ({ 
@@ -34,8 +36,10 @@ const OrderSummary = ({
   isFirstPurchase,
   bundleDiscountAmount = 0,
   tieredDiscountAmount = 0,
+  loyaltyBonusAmount = 0,
   totalDiscountAmount = 0,
-  invoiceNumber 
+  invoiceNumber,
+  isLoyaltyProgramEnabled = false
 }: OrderSummaryProps) => {
   // Calculate the total for add-ons
   const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
@@ -133,6 +137,17 @@ const OrderSummary = ({
             </div>
           )}
           
+          {/* Loyalty Program Bonus */}
+          {isLoyaltyProgramEnabled && loyaltyBonusAmount > 0 && (
+            <div className="flex justify-between text-sm text-amber-600">
+              <div className="flex items-center">
+                <Star className="h-4 w-4 mr-1" />
+                <span>Loyalty Program Bonus</span>
+              </div>
+              <span>-{formatCurrency(loyaltyBonusAmount)}</span>
+            </div>
+          )}
+          
           {/* Total */}
           <Separator className="my-2" />
           <div className="flex justify-between font-bold">
@@ -144,9 +159,9 @@ const OrderSummary = ({
           {totalDiscountAmount > 0 && (
             <div className="text-xs text-right text-primary font-medium">
               You save {formatCurrency(totalDiscountAmount)}
-              {isFirstPurchase && (
+              {(isFirstPurchase || isLoyaltyProgramEnabled) && (
                 <span className="ml-1 text-yellow-500 inline-flex items-center">
-                  (includes first purchase bonus <Sparkles className="h-3 w-3 ml-0.5" />)
+                  (includes special bonuses <Sparkles className="h-3 w-3 ml-0.5" />)
                 </span>
               )}
             </div>

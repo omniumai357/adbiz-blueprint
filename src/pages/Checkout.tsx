@@ -35,6 +35,10 @@ const Checkout = () => {
     appliedTier,
     isFirstPurchase,
     tieredDiscountAmount,
+    // Loyalty program related
+    isLoyaltyProgramEnabled,
+    loyaltyBonusAmount,
+    handleLoyaltyProgramToggle,
     // Loading states
     isLoading,
     // Calculated values
@@ -60,8 +64,10 @@ const Checkout = () => {
             isFirstPurchase={isFirstPurchase}
             bundleDiscountAmount={bundleDiscountAmount}
             tieredDiscountAmount={tieredDiscountAmount}
+            loyaltyBonusAmount={loyaltyBonusAmount}
             totalDiscountAmount={totalDiscountAmount}
             invoiceNumber={invoiceNumber}
+            isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
           />
           
           {showDownloadOptions && orderId ? (
@@ -89,6 +95,9 @@ const Checkout = () => {
               isFirstPurchase={isFirstPurchase}
               bundleDiscountAmount={bundleDiscountAmount}
               tieredDiscountAmount={tieredDiscountAmount}
+              isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
+              loyaltyBonusAmount={loyaltyBonusAmount}
+              onLoyaltyProgramToggle={handleLoyaltyProgramToggle}
               totalDiscountAmount={totalDiscountAmount}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}
