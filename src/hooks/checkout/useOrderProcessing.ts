@@ -14,6 +14,16 @@ interface UseOrderProcessingProps {
   selectedAddOns: AddOnItem[];
   isDiscountApplicable: boolean;
   bundleDiscount: BundleDiscountInfo;
+  tieredDiscount?: {
+    id: string;
+    name: string;
+    description: string;
+    discountAmount: number;
+    discountType: string;
+    firstPurchaseBonus: number;
+  } | null;
+  isFirstPurchase?: boolean;
+  totalDiscountAmount: number;
   total: number;
   customerInfo: CustomerInfo;
 }
@@ -25,6 +35,9 @@ export function useOrderProcessing({
   selectedAddOns,
   isDiscountApplicable,
   bundleDiscount,
+  tieredDiscount,
+  isFirstPurchase,
+  totalDiscountAmount,
   total,
   customerInfo
 }: UseOrderProcessingProps) {
@@ -49,11 +62,22 @@ export function useOrderProcessing({
         });
       }
       
+      // Construct discount information to include in the invoice
+      const discountInfo = {
+        bundleDiscount: isDiscountApplicable ? bundleDiscount : null,
+        tieredDiscount: tieredDiscount ? {
+          ...tieredDiscount,
+          isFirstPurchase,
+          appliedBonus: isFirstPurchase ? tieredDiscount.firstPurchaseBonus : 0
+        } : null,
+        totalDiscountAmount
+      };
+      
       // Include add-ons and discounts in package details
       const enhancedPackageDetails = {
         ...packageDetails,
         addOns: selectedAddOns,
-        discount: isDiscountApplicable ? bundleDiscount : null,
+        discounts: discountInfo,
         finalPrice: total
       };
       
@@ -102,10 +126,18 @@ export function useOrderProcessing({
       
       setShowDownloadOptions(true);
       
-      toast({
-        title: "Payment successful!",
-        description: `You've purchased the ${packageName} package.`,
-      });
+      // Show different success message based on first purchase status
+      if (isFirstPurchase) {
+        toast({
+          title: "First purchase complete! 🎉",
+          description: `Thank you for your first purchase of the ${packageName} package. We've applied a special first-time buyer discount!`,
+        });
+      } else {
+        toast({
+          title: "Payment successful!",
+          description: `You've purchased the ${packageName} package.`,
+        });
+      }
     } catch (error) {
       console.error("Failed to create invoice:", error);
       toast({

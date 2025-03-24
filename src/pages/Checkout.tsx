@@ -30,9 +30,16 @@ const Checkout = () => {
     // Bundle discount related
     bundleDiscount,
     isDiscountApplicable,
+    bundleDiscountAmount,
+    // Tiered discount related
+    appliedTier,
+    isFirstPurchase,
+    tieredDiscountAmount,
+    // Loading states
+    isLoading,
     // Calculated values
     subtotal,
-    discountAmount,
+    totalDiscountAmount,
     total
   } = useCheckout();
 
@@ -49,6 +56,11 @@ const Checkout = () => {
             packagePrice={packagePrice}
             selectedAddOns={selectedAddOns}
             appliedDiscount={isDiscountApplicable ? bundleDiscount : undefined}
+            tieredDiscount={appliedTier}
+            isFirstPurchase={isFirstPurchase}
+            bundleDiscountAmount={bundleDiscountAmount}
+            tieredDiscountAmount={tieredDiscountAmount}
+            totalDiscountAmount={totalDiscountAmount}
             invoiceNumber={invoiceNumber}
           />
           
@@ -73,9 +85,15 @@ const Checkout = () => {
               onAddOnToggle={handleAddOnToggle}
               bundleDiscount={bundleDiscount}
               isDiscountApplicable={isDiscountApplicable}
+              tieredDiscount={appliedTier}
+              isFirstPurchase={isFirstPurchase}
+              bundleDiscountAmount={bundleDiscountAmount}
+              tieredDiscountAmount={tieredDiscountAmount}
+              totalDiscountAmount={totalDiscountAmount}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}
-              total={total} // Pass the total here
+              isLoading={isLoading}
+              total={total}
             />
           )}
         </div>

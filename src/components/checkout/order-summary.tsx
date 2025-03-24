@@ -2,7 +2,7 @@
 import React from "react";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { Separator } from "@/components/ui/separator";
-import { BadgePercent, Package, ShoppingBag } from "lucide-react";
+import { BadgePercent, Package, ShoppingBag, Sparkles, Award } from "lucide-react";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,16 @@ interface OrderSummaryProps {
   packagePrice: number;
   selectedAddOns?: AddOnItem[];
   appliedDiscount?: BundleDiscountInfo;
+  tieredDiscount?: {
+    id: string;
+    name: string;
+    discountAmount: number;
+    firstPurchaseBonus?: number;
+  } | null;
+  isFirstPurchase?: boolean;
+  bundleDiscountAmount?: number;
+  tieredDiscountAmount?: number;
+  totalDiscountAmount?: number;
   invoiceNumber?: string;
 }
 
@@ -20,24 +30,25 @@ const OrderSummary = ({
   packagePrice, 
   selectedAddOns = [], 
   appliedDiscount,
+  tieredDiscount,
+  isFirstPurchase,
+  bundleDiscountAmount = 0,
+  tieredDiscountAmount = 0,
+  totalDiscountAmount = 0,
   invoiceNumber 
 }: OrderSummaryProps) => {
   // Calculate the total for add-ons
   const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
   
-  // Calculate discount amount
-  const discountAmount = appliedDiscount 
-    ? (appliedDiscount.discountType === "percentage" 
-      ? ((packagePrice + addOnsTotal) * appliedDiscount.discountAmount / 100) 
-      : appliedDiscount.discountAmount)
-    : 0;
+  // Calculate the subtotal
+  const subtotal = packagePrice + addOnsTotal;
   
   // Calculate the total
-  const total = packagePrice + addOnsTotal - discountAmount;
+  const total = subtotal - totalDiscountAmount;
   
   // Calculate savings percentage if there's a discount
-  const savingsPercentage = discountAmount > 0 
-    ? Math.round((discountAmount / (packagePrice + addOnsTotal)) * 100) 
+  const savingsPercentage = totalDiscountAmount > 0 
+    ? Math.round((totalDiscountAmount / subtotal) * 100) 
     : 0;
 
   return (
@@ -86,16 +97,16 @@ const OrderSummary = ({
             </>
           )}
           
-          {/* Subtotal before discount */}
-          {appliedDiscount && (
+          {/* Subtotal before discounts */}
+          {totalDiscountAmount > 0 && (
             <div className="flex justify-between text-sm">
               <span>Subtotal</span>
-              <span>{formatCurrency(packagePrice + addOnsTotal)}</span>
+              <span>{formatCurrency(subtotal)}</span>
             </div>
           )}
           
-          {/* Discount */}
-          {appliedDiscount && (
+          {/* Bundle Discount */}
+          {appliedDiscount && bundleDiscountAmount > 0 && (
             <>
               <Separator className="my-2" />
               <div className="flex justify-between text-sm text-primary">
@@ -103,9 +114,23 @@ const OrderSummary = ({
                   <BadgePercent className="h-4 w-4 mr-1" />
                   <span>{appliedDiscount.name}</span>
                 </div>
-                <span>-{formatCurrency(discountAmount)}</span>
+                <span>-{formatCurrency(bundleDiscountAmount)}</span>
               </div>
             </>
+          )}
+          
+          {/* Tiered Discount */}
+          {tieredDiscount && tieredDiscountAmount > 0 && (
+            <div className="flex justify-between text-sm text-primary">
+              <div className="flex items-center">
+                <Award className="h-4 w-4 mr-1" />
+                <span>{tieredDiscount.name}</span>
+                {isFirstPurchase && (
+                  <Sparkles className="h-3 w-3 ml-1 text-yellow-500" />
+                )}
+              </div>
+              <span>-{formatCurrency(tieredDiscountAmount)}</span>
+            </div>
           )}
           
           {/* Total */}
@@ -116,9 +141,14 @@ const OrderSummary = ({
           </div>
           
           {/* Savings */}
-          {discountAmount > 0 && (
+          {totalDiscountAmount > 0 && (
             <div className="text-xs text-right text-primary font-medium">
-              You save {formatCurrency(discountAmount)}
+              You save {formatCurrency(totalDiscountAmount)}
+              {isFirstPurchase && (
+                <span className="ml-1 text-yellow-500 inline-flex items-center">
+                  (includes first purchase bonus <Sparkles className="h-3 w-3 ml-0.5" />)
+                </span>
+              )}
             </div>
           )}
         </div>

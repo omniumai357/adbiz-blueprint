@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useAddOns, availableAddOns } from "./useAddOns";
-import { useDiscount, bundleDiscount } from "./useDiscount";
+import { useDiscount, bundleDiscount, discountTiers } from "./useDiscount";
 import { useOrderProcessing } from "./useOrderProcessing";
 import { PaymentMethod } from "./types";
 
@@ -47,14 +47,20 @@ export function useCheckout() {
   // Calculate the subtotal (package + add-ons)
   const subtotal = packagePrice + addOnsTotal;
   
-  // Use discount hook
+  // Use discount hook with user ID for first-purchase detection
   const {
     isDiscountApplicable,
-    discountAmount
-  } = useDiscount(subtotal, addOnsTotal);
+    bundleDiscountAmount,
+    appliedTier,
+    tieredDiscountAmount,
+    isFirstPurchase,
+    firstPurchaseBonus,
+    totalDiscountAmount,
+    isLoading: isDiscountLoading
+  } = useDiscount(subtotal, addOnsTotal, userId);
   
-  // Calculate the final total with discount
-  const total = subtotal - discountAmount;
+  // Calculate the final total with all discounts
+  const total = subtotal - totalDiscountAmount;
 
   // Use order processing hook
   const {
@@ -70,8 +76,11 @@ export function useCheckout() {
     selectedAddOns,
     isDiscountApplicable,
     bundleDiscount,
+    tieredDiscount: appliedTier,
+    isFirstPurchase,
+    totalDiscountAmount,
     total,
-    customerInfo  // Pass customerInfo to useOrderProcessing
+    customerInfo
   });
 
   useEffect(() => {
@@ -122,9 +131,18 @@ export function useCheckout() {
     // Bundle discount related
     bundleDiscount,
     isDiscountApplicable,
+    // Tiered discount related
+    discountTiers,
+    appliedTier,
+    isFirstPurchase,
+    firstPurchaseBonus,
+    // Loading states
+    isLoading: isProfileLoading || isDiscountLoading,
     // Calculated values
     subtotal,
-    discountAmount,
+    bundleDiscountAmount,
+    tieredDiscountAmount,
+    totalDiscountAmount,
     total
   };
 }

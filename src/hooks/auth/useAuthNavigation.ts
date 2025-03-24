@@ -12,10 +12,12 @@ export const useAuthNavigation = () => {
     // Check if result has 'success' property and it's true
     if (result && 'success' in result && result.success) {
       // Navigate to auth page with registrationSuccess flag to trigger coupon display
+      // Also include firstPurchaseDiscount flag to notify about the tiered discount
       navigate("/auth", { 
         state: { 
-          message: "Account created! Check out your welcome discount below.", 
-          registrationSuccess: true 
+          message: "Account created! Check out your welcome discount below and enjoy an additional bonus on your first purchase.", 
+          registrationSuccess: true,
+          firstPurchaseDiscount: true
         } 
       });
     }

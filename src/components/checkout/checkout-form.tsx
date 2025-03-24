@@ -9,6 +9,7 @@ import PayPalButton from "@/components/PayPalButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import AddOnsSection from "@/components/checkout/add-ons-section";
 import BundleDiscount from "@/components/checkout/bundle-discount";
+import TieredDiscount from "@/components/checkout/tiered-discount";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 
@@ -26,9 +27,24 @@ interface CheckoutFormProps {
   onAddOnToggle?: (id: string) => void;
   bundleDiscount?: BundleDiscountInfo;
   isDiscountApplicable?: boolean;
+  tieredDiscount?: {
+    id: string;
+    name: string;
+    description: string;
+    minTotal: number;
+    maxTotal: number;
+    discountAmount: number;
+    discountType: string;
+    firstPurchaseBonus: number;
+  } | null;
+  isFirstPurchase?: boolean;
+  bundleDiscountAmount?: number;
+  tieredDiscountAmount?: number;
+  totalDiscountAmount?: number;
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
-  total: number; // Add total to props
+  isLoading?: boolean;
+  total: number;
 }
 
 const CheckoutForm = ({
@@ -43,9 +59,15 @@ const CheckoutForm = ({
   onAddOnToggle = () => {},
   bundleDiscount,
   isDiscountApplicable = false,
+  tieredDiscount = null,
+  isFirstPurchase = false,
+  bundleDiscountAmount = 0,
+  tieredDiscountAmount = 0,
+  totalDiscountAmount = 0,
   onOrderSuccess,
   isProfileLoading,
-  total, // Destructure total from props
+  isLoading = false,
+  total,
 }: CheckoutFormProps) => {
   const handlePaymentMethodChange = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -63,7 +85,7 @@ const CheckoutForm = ({
         isLoading={isProfileLoading}
       />
       
-      {isProfileLoading ? (
+      {isLoading || isProfileLoading ? (
         <>
           <Skeleton className="w-full h-12 mt-8" />
           <Skeleton className="w-full h-48 mt-4" />
@@ -79,16 +101,27 @@ const CheckoutForm = ({
             />
           )}
           
-          {/* Bundle discount section */}
-          {bundleDiscount && (
-            <div className="mt-8">
+          {/* Discounts section */}
+          <div className="space-y-4">
+            {/* Tiered discount section */}
+            {tieredDiscount && (
+              <TieredDiscount 
+                tier={tieredDiscount}
+                isFirstPurchase={isFirstPurchase}
+                subtotal={subtotal}
+                discountAmount={tieredDiscountAmount}
+              />
+            )}
+            
+            {/* Bundle discount section */}
+            {bundleDiscount && (
               <BundleDiscount 
                 discount={bundleDiscount}
                 subtotal={subtotal}
                 applicable={isDiscountApplicable}
               />
-            </div>
-          )}
+            )}
+          </div>
           
           <PaymentSelector 
             selectedMethod={paymentMethod}
@@ -102,20 +135,30 @@ const CheckoutForm = ({
                 packageDetails={{
                   ...packageDetails,
                   addOns: selectedAddOns,
-                  discount: isDiscountApplicable ? bundleDiscount : null
+                  discounts: {
+                    bundle: isDiscountApplicable ? bundleDiscount : null,
+                    tiered: tieredDiscount,
+                    isFirstPurchase,
+                    totalDiscount: totalDiscountAmount
+                  }
                 }}
                 customerInfo={customerInfo}
                 onSuccess={onOrderSuccess}
-                finalAmount={total} // Pass total as finalAmount
+                finalAmount={total}
               />
             </Elements>
           ) : (
             <PayPalButton 
-              amount={total} // Use total instead of subtotal
+              amount={total}
               packageDetails={{
                 ...packageDetails,
                 addOns: selectedAddOns,
-                discount: isDiscountApplicable ? bundleDiscount : null
+                discounts: {
+                  bundle: isDiscountApplicable ? bundleDiscount : null,
+                  tiered: tieredDiscount,
+                  isFirstPurchase,
+                  totalDiscount: totalDiscountAmount
+                }
               }}
               customerInfo={customerInfo}
               onSuccess={onOrderSuccess}
