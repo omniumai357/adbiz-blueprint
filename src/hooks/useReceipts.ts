@@ -27,42 +27,48 @@ export const useReceipts = (
       try {
         setLoading(true);
         
-        // Start building the query
-        let query = supabase
-          .from('orders')
-          .select('id, created_at, total_amount, status, package_id, company_info, invoices(invoice_number)')
-          .eq('user_id', userId)
-          .eq('status', 'completed');
+        // Function to apply filters to a query
+        const applyFilters = (baseQuery: any) => {
+          let filteredQuery = baseQuery.eq('user_id', userId).eq('status', 'completed');
           
-        // Apply search filters
-        if (searchParams.query) {
-          // Search in invoice numbers and potential package titles
-          query = query.or(`invoices.invoice_number.ilike.%${searchParams.query}%`);
-        }
+          // Apply search filters
+          if (searchParams.query) {
+            // Search in invoice numbers and potential package titles
+            filteredQuery = filteredQuery.or(`invoices.invoice_number.ilike.%${searchParams.query}%`);
+          }
+          
+          if (searchParams.dateFrom) {
+            filteredQuery = filteredQuery.gte('created_at', searchParams.dateFrom);
+          }
+          
+          if (searchParams.dateTo) {
+            // Add one day to include the end date
+            const nextDay = new Date(searchParams.dateTo);
+            nextDay.setDate(nextDay.getDate() + 1);
+            filteredQuery = filteredQuery.lt('created_at', nextDay.toISOString());
+          }
+          
+          if (searchParams.minAmount !== undefined) {
+            filteredQuery = filteredQuery.gte('total_amount', searchParams.minAmount);
+          }
+          
+          if (searchParams.maxAmount !== undefined) {
+            filteredQuery = filteredQuery.lte('total_amount', searchParams.maxAmount);
+          }
+          
+          return filteredQuery;
+        };
         
-        if (searchParams.dateFrom) {
-          query = query.gte('created_at', searchParams.dateFrom);
-        }
-        
-        if (searchParams.dateTo) {
-          // Add one day to include the end date
-          const nextDay = new Date(searchParams.dateTo);
-          nextDay.setDate(nextDay.getDate() + 1);
-          query = query.lt('created_at', nextDay.toISOString());
-        }
-        
-        if (searchParams.minAmount !== undefined) {
-          query = query.gte('total_amount', searchParams.minAmount);
-        }
-        
-        if (searchParams.maxAmount !== undefined) {
-          query = query.lte('total_amount', searchParams.maxAmount);
-        }
+        // Create a query for the count
+        const countQuery = supabase
+          .from('orders')
+          .select('id', { count: 'exact' });
+          
+        // Apply the same filters to the count query
+        const filteredCountQuery = applyFilters(countQuery);
         
         // Get total count with the same filters
-        // Using the correct way to get count with the latest Supabase client
-        const countQuery = query.clone();
-        const { count: total, error: countError } = await countQuery.count();
+        const { count: total, error: countError } = await filteredCountQuery;
           
         if (countError) throw countError;
         
@@ -70,12 +76,20 @@ export const useReceipts = (
         setTotalCount(total || 0);
         setTotalPages(Math.ceil((total || 0) / pageSize));
         
+        // Create a query for the data
+        let dataQuery = supabase
+          .from('orders')
+          .select('id, created_at, total_amount, status, package_id, company_info, invoices(invoice_number)');
+          
+        // Apply the same filters to the data query
+        dataQuery = applyFilters(dataQuery);
+        
         // Calculate range for pagination
         const from = (page - 1) * pageSize;
         const to = from + pageSize - 1;
 
         // Get orders with applied filters and pagination
-        const { data, error } = await query
+        const { data, error } = await dataQuery
           .order('created_at', { ascending: false })
           .range(from, to);
 
