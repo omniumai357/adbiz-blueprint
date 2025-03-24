@@ -3,12 +3,13 @@ import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Form } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
+import CustomerPersonalInfo from "./customer-personal-info";
+import CustomerBusinessInfo from "./customer-business-info";
+import InvoiceDeliveryOptions from "./invoice-delivery-options";
 
 export interface CustomerInfo {
   firstName: string;
@@ -84,152 +85,13 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
       ) : (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="john.doe@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Phone Number
-                    {phoneRequired && <span className="ml-1 text-red-500">*</span>}
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="tel" 
-                      placeholder="+1 (555) 123-4567" 
-                      {...field} 
-                      className={phoneRequired ? "border-primary" : ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Acme Inc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="www.example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            <CustomerPersonalInfo form={form} phoneRequired={phoneRequired} />
+            
+            <CustomerBusinessInfo form={form} />
+            
             <Separator className="my-4" />
-
-            <div>
-              <h3 className="text-md font-medium mb-3">Invoice Delivery Preferences</h3>
-              <FormField
-                control={form.control}
-                name="invoiceDeliveryMethod"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        value={field.value}
-                        className="flex flex-col space-y-3"
-                      >
-                        <div className="flex items-start space-x-3 rounded-md border p-3 hover:bg-gray-50">
-                          <RadioGroupItem value="email" id="email" />
-                          <div className="flex-1">
-                            <label htmlFor="email" className="font-medium text-sm cursor-pointer">Email Only</label>
-                            <p className="text-xs text-gray-500">
-                              Receive your invoice at the email address provided above
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start space-x-3 rounded-md border p-3 hover:bg-gray-50">
-                          <RadioGroupItem value="sms" id="sms" />
-                          <div className="flex-1">
-                            <label htmlFor="sms" className="font-medium text-sm cursor-pointer">SMS Only</label>
-                            <p className="text-xs text-gray-500">
-                              Receive your invoice as a text message (requires phone number)
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start space-x-3 rounded-md border p-3 hover:bg-gray-50">
-                          <RadioGroupItem value="both" id="both" />
-                          <div className="flex-1">
-                            <label htmlFor="both" className="font-medium text-sm cursor-pointer">Both Email and SMS</label>
-                            <p className="text-xs text-gray-500">
-                              Receive your invoice through both channels for your convenience (requires phone number)
-                            </p>
-                          </div>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            
+            <InvoiceDeliveryOptions form={form} />
           </form>
         </Form>
       )}
