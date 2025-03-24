@@ -24,8 +24,10 @@ export const useFileUploadHandlers = ({
     isLogoType: boolean
   ) => {
     if (isLogoType) {
-      setFiles(prev => ({ ...prev, [fileType]: validFiles[0] || null }));
+      // For logo, we only need the first file (if any)
+      setFiles(prev => ({ ...prev, [fileType]: validFiles.length > 0 ? validFiles[0] : null }));
     } else {
+      // For other types, we append the array of files
       setFiles(prev => ({ ...prev, [fileType]: [...prev[fileType], ...validFiles] }));
     }
   };
