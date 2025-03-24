@@ -1,3 +1,4 @@
+
 import { Json } from "@/integrations/supabase/types";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 

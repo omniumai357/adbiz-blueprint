@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactory';
@@ -15,19 +16,20 @@ interface DatabaseInvoice {
   invoice_number: string;
   customer_name: string;
   customer_email: string;
-  customer_phone: string;
+  customer_phone: string | null;
   amount: number;
   items: any[];
   due_date: string;
-  order_id: string;
-  user_id: string;
+  order_id: string | null;
+  user_id: string | null;
   created_at: string;
   delivery_method: string;
-  delivery_status: string;
+  delivery_status: string | null;
   status: string;
-  sent_at?: string;
-  sms_sent_at?: string;
-  notes?: string;
+  sent_at?: string | null;
+  sms_sent_at?: string | null;
+  notes?: string | null;
+  issue_date?: string;
 }
 
 const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose }) => {
