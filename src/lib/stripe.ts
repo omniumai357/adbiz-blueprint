@@ -1,9 +1,9 @@
 
 import { loadStripe } from '@stripe/stripe-js';
 
-// Replace with your actual Stripe publishable key
+// In Vite, environment variables are accessed via import.meta.env
 // This is only the client-side public key, safe to include in client code
-export const stripePromise = loadStripe(process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
+export const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_TYooMQauvdEDq54NiTphI7jx');
 
 // For real implementation, these would communicate with your backend
 export const createPaymentIntent = async (amount: number, currency = 'USD') => {
