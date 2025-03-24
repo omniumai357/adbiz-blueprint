@@ -107,12 +107,13 @@ export function useOrderProcessing({
             status: 'completed',
           }).eq('id', id);
           
-          // If loyalty program was enabled, record this in the order
+          // If loyalty program was enabled, record this in the order metadata
           if (isLoyaltyProgramEnabled) {
-            await supabase.from('orders').update({
-              loyalty_program_enrolled: true,
+            await supabase.from('order_metadata').insert({
+              order_id: id,
+              loyalty_program_enrolled: isLoyaltyProgramEnabled,
               loyalty_discount_applied: loyaltyBonusAmount || 0
-            }).eq('id', id);
+            });
           }
           
           toast({

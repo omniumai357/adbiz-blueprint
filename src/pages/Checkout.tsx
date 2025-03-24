@@ -39,6 +39,17 @@ const Checkout = () => {
     isLoyaltyProgramEnabled,
     loyaltyBonusAmount,
     handleLoyaltyProgramToggle,
+    // Coupon related
+    personalizedCoupon,
+    appliedCoupon,
+    couponDiscountAmount,
+    isCheckingCoupon,
+    applyCoupon,
+    removeCoupon,
+    // Limited-time offers related
+    activeOffers,
+    availableOffer,
+    offerDiscountAmount,
     // Loading states
     isLoading,
     // Calculated values
@@ -68,6 +79,10 @@ const Checkout = () => {
             totalDiscountAmount={totalDiscountAmount}
             invoiceNumber={invoiceNumber}
             isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
+            limitedTimeOffer={availableOffer ?? undefined}
+            offerDiscountAmount={offerDiscountAmount}
+            appliedCoupon={appliedCoupon ?? undefined}
+            couponDiscountAmount={couponDiscountAmount}
           />
           
           {showDownloadOptions && orderId ? (
@@ -98,6 +113,15 @@ const Checkout = () => {
               isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
               loyaltyBonusAmount={loyaltyBonusAmount}
               onLoyaltyProgramToggle={handleLoyaltyProgramToggle}
+              activeOffers={activeOffers}
+              availableOffer={availableOffer}
+              offerDiscountAmount={offerDiscountAmount}
+              personalizedCoupon={personalizedCoupon}
+              appliedCoupon={appliedCoupon}
+              couponDiscountAmount={couponDiscountAmount}
+              isCheckingCoupon={isCheckingCoupon}
+              applyCoupon={applyCoupon}
+              removeCoupon={removeCoupon}
               totalDiscountAmount={totalDiscountAmount}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}

@@ -11,6 +11,8 @@ import AddOnsSection from "@/components/checkout/add-ons-section";
 import BundleDiscount from "@/components/checkout/bundle-discount";
 import TieredDiscount from "@/components/checkout/tiered-discount";
 import LoyaltyProgram from "@/components/checkout/loyalty-program";
+import LimitedTimeOffer, { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
+import PersonalizedCoupon from "@/components/checkout/personalized-coupon";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 
@@ -45,6 +47,18 @@ interface CheckoutFormProps {
   loyaltyBonusAmount?: number;
   onLoyaltyProgramToggle?: () => void;
   totalDiscountAmount?: number;
+  // Limited time offer properties
+  activeOffers?: LimitedTimeOfferInfo[];
+  availableOffer?: LimitedTimeOfferInfo | null;
+  offerDiscountAmount?: number;
+  // Coupon related properties
+  personalizedCoupon?: any;
+  appliedCoupon?: any;
+  couponDiscountAmount?: number;
+  isCheckingCoupon?: boolean;
+  applyCoupon?: (code: string) => void;
+  removeCoupon?: () => void;
+  // Order success handler
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
   isLoading?: boolean;
@@ -71,6 +85,18 @@ const CheckoutForm = ({
   loyaltyBonusAmount = 0,
   onLoyaltyProgramToggle = () => {},
   totalDiscountAmount = 0,
+  // Limited time offer properties
+  activeOffers = [],
+  availableOffer = null,
+  offerDiscountAmount = 0,
+  // Coupon related properties
+  personalizedCoupon = null,
+  appliedCoupon = null,
+  couponDiscountAmount = 0,
+  isCheckingCoupon = false,
+  applyCoupon = () => {},
+  removeCoupon = () => {},
+  // Order success handler
   onOrderSuccess,
   isProfileLoading,
   isLoading = false,
@@ -108,8 +134,27 @@ const CheckoutForm = ({
             />
           )}
           
-          {/* Discounts section */}
+          {/* Discounts and offers section */}
           <div className="space-y-4">
+            {/* Limited-time offer */}
+            {activeOffers.length > 0 && activeOffers[0] && (
+              <LimitedTimeOffer 
+                offer={activeOffers[0]}
+                subtotal={subtotal}
+                available={!!availableOffer}
+              />
+            )}
+            
+            {/* Personalized coupon */}
+            <PersonalizedCoupon 
+              coupon={personalizedCoupon}
+              onApply={applyCoupon}
+              isApplied={!!appliedCoupon}
+              subtotal={subtotal}
+              appliedDiscount={couponDiscountAmount}
+              isLoading={isCheckingCoupon}
+            />
+            
             {/* Tiered discount section */}
             {tieredDiscount && (
               <TieredDiscount 
@@ -138,6 +183,7 @@ const CheckoutForm = ({
             />
           </div>
           
+          {/* Payment section */}
           <PaymentSelector 
             selectedMethod={paymentMethod}
             onMethodChange={handlePaymentMethodChange}
@@ -157,6 +203,14 @@ const CheckoutForm = ({
                     loyaltyProgram: isLoyaltyProgramEnabled ? {
                       enabled: true,
                       bonusAmount: loyaltyBonusAmount
+                    } : null,
+                    limitedTimeOffer: availableOffer ? {
+                      name: availableOffer.name,
+                      discountAmount: offerDiscountAmount
+                    } : null,
+                    coupon: appliedCoupon ? {
+                      code: appliedCoupon.code,
+                      discountAmount: couponDiscountAmount
                     } : null,
                     totalDiscount: totalDiscountAmount
                   }
@@ -179,6 +233,14 @@ const CheckoutForm = ({
                   loyaltyProgram: isLoyaltyProgramEnabled ? {
                     enabled: true,
                     bonusAmount: loyaltyBonusAmount
+                  } : null,
+                  limitedTimeOffer: availableOffer ? {
+                    name: availableOffer.name,
+                    discountAmount: offerDiscountAmount
+                  } : null,
+                  coupon: appliedCoupon ? {
+                    code: appliedCoupon.code,
+                    discountAmount: couponDiscountAmount
                   } : null,
                   totalDiscount: totalDiscountAmount
                 }

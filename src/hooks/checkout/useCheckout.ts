@@ -7,6 +7,8 @@ import { useProfile } from "@/hooks/data/useProfile";
 import { useAddOns, availableAddOns } from "./useAddOns";
 import { useDiscount, bundleDiscount, discountTiers } from "./useDiscount";
 import { useOrderProcessing } from "./useOrderProcessing";
+import { useCoupons } from "./useCoupons";
+import { useLimitedTimeOffers } from "./useLimitedTimeOffers";
 import { PaymentMethod } from "./types";
 
 export function useCheckout() {
@@ -61,6 +63,24 @@ export function useCheckout() {
     isLoading: isDiscountLoading
   } = useDiscount(subtotal, addOnsTotal, userId);
 
+  // Use coupons hook for personalized and limited-time offers
+  const {
+    personalizedCoupon,
+    appliedCoupon,
+    couponDiscountAmount,
+    isCheckingCoupon,
+    applyCoupon,
+    removeCoupon
+  } = useCoupons(userId, subtotal);
+
+  // Use limited time offers hook
+  const {
+    activeOffers,
+    availableOffer,
+    offerDiscountAmount,
+    isLoading: isOffersLoading
+  } = useLimitedTimeOffers(subtotal);
+
   // Calculate loyalty bonus (5% of subtotal if loyalty program is enabled)
   useEffect(() => {
     if (isLoyaltyProgramEnabled && userId) {
@@ -77,11 +97,12 @@ export function useCheckout() {
     }
   };
 
-  // Calculate total discount (base discounts + loyalty bonus)
-  const totalDiscountAmount = baseDiscountAmount + loyaltyBonusAmount;
+  // Calculate total discount (base discounts + loyalty bonus + coupon + limited-time offer)
+  const totalDiscountAmount = baseDiscountAmount + loyaltyBonusAmount + 
+                              couponDiscountAmount + offerDiscountAmount;
   
   // Calculate the final total with all discounts
-  const total = subtotal - totalDiscountAmount;
+  const total = Math.max(0, subtotal - totalDiscountAmount);
 
   // Use order processing hook
   const {
@@ -127,6 +148,7 @@ export function useCheckout() {
         email: profile.email || "",
         phone: profile.phone || "",
         company: profile.company || "",
+        userId: profile.id
       }));
     }
   }, [profile]);
@@ -159,13 +181,25 @@ export function useCheckout() {
     discountTiers,
     appliedTier,
     isFirstPurchase,
+    tieredDiscountAmount,
     firstPurchaseBonus,
     // Loyalty program related
     isLoyaltyProgramEnabled,
     loyaltyBonusAmount,
     handleLoyaltyProgramToggle,
+    // Coupon related
+    personalizedCoupon,
+    appliedCoupon,
+    couponDiscountAmount,
+    isCheckingCoupon,
+    applyCoupon,
+    removeCoupon,
+    // Limited-time offers related
+    activeOffers,
+    availableOffer,
+    offerDiscountAmount,
     // Loading states
-    isLoading: isProfileLoading || isDiscountLoading,
+    isLoading: isProfileLoading || isDiscountLoading || isCheckingCoupon || isOffersLoading,
     // Calculated values
     subtotal,
     totalDiscountAmount,
