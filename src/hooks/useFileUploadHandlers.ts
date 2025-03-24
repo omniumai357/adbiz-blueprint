@@ -39,7 +39,7 @@ export const useFileUploadHandlers = ({
   ) => {
     let selectedFiles: File[];
     
-    // Check if e is an array of Files or an event
+    // Check if e is an array of Files or an event using type guard
     if (Array.isArray(e)) {
       // Handle case when e is an array of Files
       selectedFiles = [...e];
