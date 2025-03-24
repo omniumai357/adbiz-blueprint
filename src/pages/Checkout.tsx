@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -110,8 +109,7 @@ const Checkout = () => {
         // Save receipt to customer account if logged in
         if (userId) {
           await supabase.from('orders').update({
-            invoice_id: invoice.id,
-            receipt_stored: true,
+            status: 'completed',
           }).eq('id', id);
           
           toast({
