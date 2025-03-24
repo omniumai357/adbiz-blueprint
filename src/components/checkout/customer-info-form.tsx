@@ -1,4 +1,3 @@
-
 import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -7,9 +6,11 @@ import { Form } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
+import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import CustomerPersonalInfo from "./customer-personal-info";
 import CustomerBusinessInfo from "./customer-business-info";
 import InvoiceDeliveryOptions from "./invoice-delivery-options";
+import { isValidPhoneNumber, isValidEmail, isValidUrl } from "@/lib/utils/validation-utils";
 
 export interface CustomerInfo {
   firstName: string;
@@ -22,16 +23,36 @@ export interface CustomerInfo {
 }
 
 const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().optional(),
-  company: z.string().optional(),
-  website: z.string().optional(),
+  firstName: z.string()
+    .min(1, "First name is required")
+    .max(50, "First name cannot exceed 50 characters"),
+  lastName: z.string()
+    .min(1, "Last name is required")
+    .max(50, "Last name cannot exceed 50 characters"),
+  email: z.string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address")
+    .refine(isValidEmail, "Please enter a valid email address"),
+  phone: z.string()
+    .optional()
+    .refine(
+      (val) => !val || isValidPhoneNumber(val),
+      "Please enter a valid phone number (e.g., +1 555-123-4567)"
+    ),
+  company: z.string()
+    .optional(),
+  website: z.string()
+    .optional()
+    .refine(
+      (val) => !val || isValidUrl(val),
+      "Please enter a valid website URL (e.g., https://example.com)"
+    ),
   invoiceDeliveryMethod: z.enum(['email', 'sms', 'both']).default('email')
-}).refine(data => {
-  // If invoiceDeliveryMethod is 'sms' or 'both', phone is required
-  return !((['sms', 'both'].includes(data.invoiceDeliveryMethod)) && !data.phone);
+}).refine((data) => {
+  if (['sms', 'both'].includes(data.invoiceDeliveryMethod) && !data.phone) {
+    return false;
+  }
+  return true;
 }, {
   message: "Phone number is required for SMS delivery",
   path: ["phone"],
@@ -61,7 +82,9 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
     onChange(values);
   };
 
-  // Update parent component whenever form values change
+  const { formState: { errors } } = form;
+  const hasErrors = Object.keys(errors).length > 0;
+
   React.useEffect(() => {
     const subscription = form.watch((value) => {
       onChange(value as CustomerInfo);
@@ -69,13 +92,18 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
     return () => subscription.unsubscribe();
   }, [form, onChange]);
 
-  // Get the current delivery method to conditionally show content
   const deliveryMethod = form.watch("invoiceDeliveryMethod");
   const phoneRequired = deliveryMethod === 'sms' || deliveryMethod === 'both';
 
   return (
     <Card className="p-6">
       <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
+      
+      {hasErrors && (
+        <FormValidationMessage 
+          message="Please correct the errors below to continue" 
+        />
+      )}
       
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
@@ -84,12 +112,12 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
         </div>
       ) : (
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <CustomerPersonalInfo form={form} phoneRequired={phoneRequired} />
             
             <CustomerBusinessInfo form={form} />
             
-            <Separator className="my-4" />
+            <Separator className="my-6" />
             
             <InvoiceDeliveryOptions form={form} />
           </form>

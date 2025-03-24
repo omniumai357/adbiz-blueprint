@@ -1,9 +1,10 @@
 
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CustomerInfo } from "./customer-info-form";
+import { Info } from "lucide-react";
 
 interface CustomerPersonalInfoProps {
   form: UseFormReturn<CustomerInfo>;
@@ -19,11 +20,17 @@ const CustomerPersonalInfo = ({ form, phoneRequired }: CustomerPersonalInfoProps
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel className="flex items-center">
+                First Name <span className="ml-1 text-red-500">*</span>
+              </FormLabel>
               <FormControl>
-                <Input placeholder="John" {...field} />
+                <Input 
+                  placeholder="John" 
+                  {...field} 
+                  className={form.formState.errors.firstName ? "border-red-500" : ""}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="font-medium" />
             </FormItem>
           )}
         />
@@ -32,11 +39,17 @@ const CustomerPersonalInfo = ({ form, phoneRequired }: CustomerPersonalInfoProps
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel className="flex items-center">
+                Last Name <span className="ml-1 text-red-500">*</span>
+              </FormLabel>
               <FormControl>
-                <Input placeholder="Doe" {...field} />
+                <Input 
+                  placeholder="Doe" 
+                  {...field} 
+                  className={form.formState.errors.lastName ? "border-red-500" : ""}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="font-medium" />
             </FormItem>
           )}
         />
@@ -47,11 +60,22 @@ const CustomerPersonalInfo = ({ form, phoneRequired }: CustomerPersonalInfoProps
         name="email"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Email</FormLabel>
+            <FormLabel className="flex items-center">
+              Email <span className="ml-1 text-red-500">*</span>
+            </FormLabel>
             <FormControl>
-              <Input type="email" placeholder="john.doe@example.com" {...field} />
+              <Input 
+                type="email" 
+                placeholder="john.doe@example.com" 
+                {...field} 
+                className={form.formState.errors.email ? "border-red-500" : ""}
+              />
             </FormControl>
-            <FormMessage />
+            <FormDescription className="text-xs flex items-center">
+              <Info className="h-3 w-3 mr-1" /> 
+              We'll send your invoice to this email address
+            </FormDescription>
+            <FormMessage className="font-medium" />
           </FormItem>
         )}
       />
@@ -70,10 +94,14 @@ const CustomerPersonalInfo = ({ form, phoneRequired }: CustomerPersonalInfoProps
                 type="tel" 
                 placeholder="+1 (555) 123-4567" 
                 {...field} 
-                className={phoneRequired ? "border-primary" : ""}
+                className={form.formState.errors.phone ? "border-red-500" : ""}
               />
             </FormControl>
-            <FormMessage />
+            <FormDescription className="text-xs flex items-center">
+              <Info className="h-3 w-3 mr-1" />
+              Required for SMS invoice delivery
+            </FormDescription>
+            <FormMessage className="font-medium" />
           </FormItem>
         )}
       />

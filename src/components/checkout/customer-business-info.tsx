@@ -1,9 +1,10 @@
 
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { CustomerInfo } from "./customer-info-form";
+import { Info } from "lucide-react";
 
 interface CustomerBusinessInfoProps {
   form: UseFormReturn<CustomerInfo>;
@@ -19,9 +20,16 @@ const CustomerBusinessInfo = ({ form }: CustomerBusinessInfoProps) => {
           <FormItem>
             <FormLabel>Company (Optional)</FormLabel>
             <FormControl>
-              <Input placeholder="Acme Inc." {...field} />
+              <Input 
+                placeholder="Acme Inc." 
+                {...field} 
+                className={form.formState.errors.company ? "border-red-500" : ""}
+              />
             </FormControl>
-            <FormMessage />
+            <FormDescription className="text-xs">
+              Leave blank if not applicable
+            </FormDescription>
+            <FormMessage className="font-medium" />
           </FormItem>
         )}
       />
@@ -32,9 +40,17 @@ const CustomerBusinessInfo = ({ form }: CustomerBusinessInfoProps) => {
           <FormItem>
             <FormLabel>Website (Optional)</FormLabel>
             <FormControl>
-              <Input placeholder="www.example.com" {...field} />
+              <Input 
+                placeholder="https://example.com" 
+                {...field} 
+                className={form.formState.errors.website ? "border-red-500" : ""}
+              />
             </FormControl>
-            <FormMessage />
+            <FormDescription className="text-xs flex items-center">
+              <Info className="h-3 w-3 mr-1" />
+              Include https:// for valid URLs
+            </FormDescription>
+            <FormMessage className="font-medium" />
           </FormItem>
         )}
       />
