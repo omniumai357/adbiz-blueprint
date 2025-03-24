@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactory';
@@ -11,9 +10,29 @@ interface InvoiceViewerProps {
   onClose: () => void;
 }
 
+interface DatabaseInvoice {
+  id: string;
+  invoice_number: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  amount: number;
+  items: any[];
+  due_date: string;
+  order_id: string;
+  user_id: string;
+  created_at: string;
+  delivery_method: string;
+  delivery_status: string;
+  status: string;
+  sent_at?: string;
+  sms_sent_at?: string;
+  notes?: string;
+}
+
 const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose }) => {
   const [loading, setLoading] = useState(true);
-  const [invoiceData, setInvoiceData] = useState<any>(null);
+  const [invoiceData, setInvoiceData] = useState<DatabaseInvoice | null>(null);
   const [invoiceHtml, setInvoiceHtml] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +41,6 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
       try {
         setLoading(true);
         
-        // Fetch the invoice
         const { data: invoice, error: invoiceError } = await supabase
           .from('invoices')
           .select('*')
@@ -32,12 +50,10 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
         if (invoiceError) throw invoiceError;
         if (!invoice) throw new Error('Invoice not found');
         
-        setInvoiceData(invoice);
+        setInvoiceData(invoice as DatabaseInvoice);
         
-        // Determine template type based on items or package info
         let templateType = 'standard';
         if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
-          // Safely type the item and access description
           const firstItem = invoice.items[0] as { description: string };
           if (firstItem && typeof firstItem.description === 'string') {
             const itemName = firstItem.description.toLowerCase();
@@ -49,7 +65,6 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           }
         }
         
-        // Convert database invoice to InvoiceData format and properly cast items with enhanced details
         const invoiceItems: InvoiceItem[] = Array.isArray(invoice.items) 
           ? invoice.items.map((item: any) => ({
               description: String(item.description || ''),
@@ -76,7 +91,6 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           notes: invoice.notes
         };
         
-        // Generate the HTML using our template factory
         const html = generateInvoiceHtml(invoiceDataForTemplate, templateType);
         setInvoiceHtml(html);
       } catch (err) {
