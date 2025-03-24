@@ -1,11 +1,7 @@
 
 import { useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-
-// File type validation utility
-const fileTypeIsValid = (file: File, allowedTypes: string[]) => {
-  return allowedTypes.includes(file.type);
-};
+import { validateFiles } from '@/utils/file-validation';
+import { uploadSingleFile, generateFilePath } from '@/utils/file-upload';
 
 export interface FileState {
   logo: File | null;
@@ -25,8 +21,28 @@ export const useFileUpload = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, { name: string; progress: number }>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // Handle file selection - updated to match the expected parameter types
-  const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | File[]) => {
+  /**
+   * Update file state based on type
+   */
+  const updateFileState = (
+    fileType: keyof FileState, 
+    validFiles: File[], 
+    isLogoType: boolean
+  ) => {
+    if (isLogoType) {
+      setFiles(prev => ({ ...prev, [fileType]: validFiles[0] || null }));
+    } else {
+      setFiles(prev => ({ ...prev, [fileType]: [...prev[fileType], ...validFiles] }));
+    }
+  };
+  
+  /**
+   * Handle file selection
+   */
+  const handleFileChange = (
+    fileType: keyof FileState, 
+    e: React.ChangeEvent<HTMLInputElement> | File[]
+  ) => {
     let selectedFiles: File[];
     
     if (Array.isArray(e)) {
@@ -37,33 +53,24 @@ export const useFileUpload = () => {
       return;
     }
     
-    // Validate file types
-    const allowedTypes: Record<string, string[]> = {
-      logo: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      images: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-      videos: ['video/mp4', 'video/quicktime', 'video/webm'],
-      documents: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-    };
-    
-    // Check if files are valid
-    const validFiles = selectedFiles.filter(file => 
-      fileTypeIsValid(file, allowedTypes[fileType])
+    const { validFiles, hasInvalidFiles } = validateFiles(
+      selectedFiles, 
+      fileType as string
     );
     
-    if (validFiles.length !== selectedFiles.length) {
+    if (hasInvalidFiles) {
       setUploadError(`Some files were not valid ${fileType} formats and were removed.`);
     } else {
       setUploadError(null);
     }
     
-    if (fileType === 'logo') {
-      setFiles(prev => ({ ...prev, [fileType]: validFiles[0] }));
-    } else {
-      setFiles(prev => ({ ...prev, [fileType]: [...prev[fileType], ...validFiles] }));
-    }
+    const isLogoType = fileType === 'logo';
+    updateFileState(fileType, validFiles, isLogoType);
   };
   
-  // Remove file from selection
+  /**
+   * Remove file from selection
+   */
   const onRemoveFile = (fileType: keyof FileState, index?: number) => {
     if (fileType === 'logo') {
       setFiles(prev => ({ ...prev, logo: null }));
@@ -75,60 +82,85 @@ export const useFileUpload = () => {
     }
   };
   
-  // Upload files to storage
+  /**
+   * Update progress for a specific file
+   */
+  const updateProgress = (key: string, fileName: string, progress: number) => {
+    setUploadProgress(prev => ({
+      ...prev,
+      [key]: {
+        name: fileName,
+        progress
+      }
+    }));
+  };
+  
+  /**
+   * Upload logo file if it exists
+   */
+  const uploadLogoFile = async (businessId: string): Promise<boolean> => {
+    if (!files.logo) return true;
+    
+    const filePath = generateFilePath(businessId, 'logo', files.logo);
+    const { success, error } = await uploadSingleFile('business-assets', filePath, files.logo);
+    
+    if (!success) {
+      console.error('Error uploading logo:', error);
+      return false;
+    }
+    
+    return true;
+  };
+  
+  /**
+   * Upload files of a specific type
+   */
+  const uploadFilesByType = async (
+    businessId: string, 
+    fileType: keyof Omit<FileState, 'logo'>
+  ): Promise<boolean> => {
+    const filesToUpload = files[fileType];
+    
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const file = filesToUpload[i];
+      const filePath = generateFilePath(businessId, fileType, file, i);
+      const progressKey = `${fileType}-${i}`;
+      
+      // Initialize progress
+      updateProgress(progressKey, file.name, 0);
+      
+      const { success } = await uploadSingleFile(
+        'business-assets', 
+        filePath, 
+        file, 
+        {
+          onProgress: (progress) => updateProgress(progressKey, file.name, progress)
+        }
+      );
+      
+      if (!success) return false;
+    }
+    
+    return true;
+  };
+  
+  /**
+   * Upload all files to storage
+   */
   const uploadFiles = async (businessId: string) => {
     setUploading(true);
     
     try {
-      // Upload logo if exists
-      if (files.logo) {
-        const fileExt = files.logo.name.split('.').pop();
-        const filePath = `${businessId}/logo.${fileExt}`;
-        
-        const { error } = await supabase.storage
-          .from('business-assets')
-          .upload(filePath, files.logo, {
-            cacheControl: '3600',
-          });
-          
-        if (error) throw error;
-      }
+      // Upload logo first
+      const logoSuccess = await uploadLogoFile(businessId);
+      if (!logoSuccess) throw new Error('Failed to upload logo');
       
       // Upload other file types
-      const fileTypes = ['images', 'videos', 'documents'] as const;
+      const fileTypes: Array<keyof Omit<FileState, 'logo'>> = ['images', 'videos', 'documents'];
       
       for (const type of fileTypes) {
-        for (let i = 0; i < files[type].length; i++) {
-          const file = files[type][i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}-${i}.${fileExt}`;
-          const filePath = `${businessId}/${type}/${fileName}`;
-          
-          setUploadProgress(prev => ({
-            ...prev,
-            [`${type}-${i}`]: {
-              name: file.name,
-              progress: 0,
-            }
-          }));
-          
-          const { error } = await supabase.storage
-            .from('business-assets')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-            });
-            
-          if (error) throw error;
-          
-          // Update progress to complete
-          setUploadProgress(prev => ({
-            ...prev,
-            [`${type}-${i}`]: {
-              name: file.name,
-              progress: 100,
-            }
-          }));
-        }
+        const success = await uploadFilesByType(businessId, type);
+        if (!success) throw new Error(`Failed to upload ${type}`);
       }
       
       return true;
