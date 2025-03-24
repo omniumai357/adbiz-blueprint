@@ -9,7 +9,7 @@ interface BusinessQuestionnaireProps {
 const BusinessQuestionnaire: FC<BusinessQuestionnaireProps> = ({ onComplete }) => {
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <BusinessQuestionnaireForm />
+      <BusinessQuestionnaireForm onComplete={onComplete} />
     </div>
   );
 };
