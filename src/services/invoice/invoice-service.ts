@@ -3,9 +3,7 @@ import { CustomerInfo } from "@/components/checkout/customer-info-form";
 import { invoiceGenerator } from "./invoice-generator";
 import { invoiceRepository } from "./invoice-repository";
 import { invoiceDelivery } from "./invoice-delivery";
-import { InvoiceDeliveryMethod } from "./types";
-
-export type { InvoiceItem, InvoiceData } from "./types";
+import { InvoiceDeliveryMethod, InvoiceData, InvoiceItem } from "./types";
 
 /**
  * Invoice service facade that combines all invoice related operations
@@ -60,7 +58,7 @@ export const invoiceService = {
     deliveryMethod: InvoiceDeliveryMethod = 'email',
     userId?: string
   ) {
-    // Create invoice data
+    // Create invoice data with enhanced line item details
     const invoiceData = invoiceGenerator.createInvoiceDataFromOrder(
       orderId,
       packageDetails,
@@ -93,3 +91,5 @@ export const invoiceService = {
     return invoice;
   }
 };
+
+export type { InvoiceItem, InvoiceData } from "./types";

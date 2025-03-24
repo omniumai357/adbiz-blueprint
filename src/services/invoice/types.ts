@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 
@@ -6,6 +5,9 @@ export interface InvoiceItem {
   description: string;
   quantity: number;
   price: number;
+  details?: string;
+  features?: string[];
+  timeframe?: string;
 }
 
 export interface InvoiceData {
@@ -19,7 +21,9 @@ export interface InvoiceData {
   invoiceNumber: string;
   userId?: string;
   deliveryMethod?: 'email' | 'sms' | 'both';
-  templateType?: 'standard' | 'premium' | 'platinum'; // New field for template type
+  templateType?: 'standard' | 'premium' | 'platinum';
+  taxRate?: number;
+  notes?: string;
 }
 
 export type InvoiceDeliveryMethod = 'email' | 'sms' | 'both';

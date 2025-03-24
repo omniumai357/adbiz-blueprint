@@ -5,7 +5,6 @@ import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactor
 import { InvoiceData, InvoiceItem } from '@/services/invoice/types';
 import { Button } from '@/components/ui/button';
 import { Loader2, Printer, Download, X } from 'lucide-react';
-import { Json } from '@/integrations/supabase/types';
 
 interface InvoiceViewerProps {
   invoiceNumber: string;
@@ -50,12 +49,15 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           }
         }
         
-        // Convert database invoice to InvoiceData format and properly cast items
+        // Convert database invoice to InvoiceData format and properly cast items with enhanced details
         const invoiceItems: InvoiceItem[] = Array.isArray(invoice.items) 
           ? invoice.items.map((item: any) => ({
               description: String(item.description || ''),
               quantity: Number(item.quantity || 1),
-              price: Number(item.price || 0)
+              price: Number(item.price || 0),
+              details: item.details,
+              features: item.features,
+              timeframe: item.timeframe
             }))
           : [];
           
@@ -70,7 +72,8 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           invoiceNumber: invoice.invoice_number,
           userId: invoice.user_id,
           deliveryMethod: invoice.delivery_method as 'email' | 'sms' | 'both',
-          templateType: templateType as 'standard' | 'premium' | 'platinum'
+          templateType: templateType as 'standard' | 'premium' | 'platinum',
+          notes: invoice.notes
         };
         
         // Generate the HTML using our template factory

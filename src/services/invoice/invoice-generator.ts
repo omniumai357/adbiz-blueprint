@@ -31,15 +31,37 @@ export const invoiceGenerator = {
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 14);
     
-    // Create invoice items from package
+    // Create invoice items from package with enhanced details
     const items: InvoiceItem[] = [{
       description: packageDetails.title,
       quantity: 1,
-      price: packageDetails.price
+      price: packageDetails.price,
+      details: packageDetails.description,
+      features: Array.isArray(packageDetails.features) ? packageDetails.features.slice(0, 3) : undefined
     }];
+    
+    // Add any add-ons with details
+    if (packageDetails.addOns && Array.isArray(packageDetails.addOns) && packageDetails.addOns.length > 0) {
+      packageDetails.addOns.forEach((addon: any) => {
+        items.push({
+          description: addon.name || addon.title,
+          quantity: 1,
+          price: addon.price,
+          details: addon.description
+        });
+      });
+    }
 
     // Get the template type for this package
     const templateType = getTemplateForPackage(packageDetails.id) as "standard" | "premium" | "platinum";
+    
+    // Add custom notes based on template type
+    let notes;
+    if (templateType === 'premium') {
+      notes = "Premium customers receive priority support and monthly strategy sessions. Thank you for your valued business!";
+    } else if (templateType === 'platinum') {
+      notes = "As a Platinum member, you receive exclusive access to our executive support team and quarterly business reviews. We value your partnership!";
+    }
 
     // Create invoice data
     return {
@@ -47,13 +69,14 @@ export const invoiceGenerator = {
       customerName: `${customerInfo.firstName} ${customerInfo.lastName}`,
       customerEmail: customerInfo.email,
       customerPhone: customerInfo.phone,
-      amount: packageDetails.price,
+      amount: packageDetails.finalPrice || packageDetails.price,
       items,
       dueDate: dueDate.toISOString(),
       invoiceNumber: this.generateInvoiceNumber(),
       userId,
       deliveryMethod,
-      templateType // Store the template type
+      templateType,
+      notes
     };
   }
 };
