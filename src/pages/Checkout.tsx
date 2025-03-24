@@ -4,9 +4,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import { Elements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe";
+import { stripePromise, createPaymentIntent } from "@/lib/stripe";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -34,9 +35,26 @@ const Checkout = () => {
       setError(null);
       
       try {
-        // In a real implementation, this would create an actual payment intent
-        // For demo, we'll simulate success
+        // In real implementation, call the edge function
+        // const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+        //   body: { amount: packagePrice, currency: 'usd' }
+        // });
         
+        // if (error) throw error;
+        
+        // const { clientSecret } = data;
+        
+        // const { error: paymentError } = await stripe.confirmCardPayment(clientSecret, {
+        //   payment_method: {
+        //     card: elements.getElement(CardElement)!,
+        //   },
+        // });
+        
+        // if (paymentError) {
+        //   throw new Error(paymentError.message);
+        // }
+
+        // For the demo, we'll simulate success
         toast({
           title: "Payment successful!",
           description: `You've purchased the ${packageName} package.`,
