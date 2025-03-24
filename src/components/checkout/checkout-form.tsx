@@ -8,6 +8,7 @@ import PaymentSection from "@/components/checkout/form/payment-section";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { LimitedTimeOfferInfo } from "./limited-time-offer";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -51,6 +52,10 @@ interface CheckoutFormProps {
   isCheckingCoupon?: boolean;
   applyCoupon?: (code: string) => void;
   removeCoupon?: () => void;
+  // Milestone reward properties
+  appliedMilestoneReward?: UserMilestone | null;
+  milestoneRewardAmount?: number;
+  onMilestoneRewardApplied?: (reward: UserMilestone) => void;
   // Order success handler
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
@@ -87,6 +92,9 @@ const CheckoutForm = ({
   isCheckingCoupon = false,
   applyCoupon = () => {},
   removeCoupon = () => {},
+  appliedMilestoneReward = null,
+  milestoneRewardAmount = 0,
+  onMilestoneRewardApplied = () => {},
   onOrderSuccess,
   isProfileLoading,
   isLoading = false,
@@ -141,6 +149,8 @@ const CheckoutForm = ({
         isCheckingCoupon={isCheckingCoupon}
         applyCoupon={applyCoupon}
         removeCoupon={removeCoupon}
+        onMilestoneRewardApplied={onMilestoneRewardApplied}
+        appliedMilestoneReward={appliedMilestoneReward}
       />
       
       {/* Payment section */}

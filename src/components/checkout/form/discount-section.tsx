@@ -1,11 +1,13 @@
 
-import React from "react";
+import React, { useState } from "react";
 import BundleDiscount from "@/components/checkout/bundle-discount";
 import TieredDiscount from "@/components/checkout/tiered-discount";
 import LoyaltyProgram from "@/components/checkout/loyalty-program";
 import LimitedTimeOffer, { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 import PersonalizedCoupon from "@/components/checkout/personalized-coupon";
 import { BundleDiscountInfo } from "../bundle-discount";
+import MilestoneRewards from "@/components/checkout/milestone-rewards";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface DiscountSectionProps {
   subtotal: number;
@@ -25,6 +27,8 @@ interface DiscountSectionProps {
   isCheckingCoupon?: boolean;
   applyCoupon?: (code: string) => void;
   removeCoupon?: () => void;
+  onMilestoneRewardApplied?: (reward: UserMilestone) => void;
+  appliedMilestoneReward?: UserMilestone | null;
 }
 
 const DiscountSection = ({
@@ -45,6 +49,8 @@ const DiscountSection = ({
   isCheckingCoupon = false,
   applyCoupon = () => {},
   removeCoupon = () => {},
+  onMilestoneRewardApplied = () => {},
+  appliedMilestoneReward = null,
 }: DiscountSectionProps) => {
   return (
     <div className="space-y-4">
@@ -56,6 +62,13 @@ const DiscountSection = ({
           available={!!availableOffer}
         />
       )}
+      
+      {/* Milestone rewards */}
+      <MilestoneRewards 
+        userId={userId}
+        onRewardApplied={onMilestoneRewardApplied}
+        appliedReward={appliedMilestoneReward}
+      />
       
       {/* Personalized coupon */}
       <PersonalizedCoupon 

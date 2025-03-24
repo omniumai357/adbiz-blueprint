@@ -5,6 +5,7 @@ import { BadgePercent, AlarmClock, Gift, Award, Star, Sparkles } from "lucide-re
 import OrderBaseItem from "./order-base-item";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface DiscountsSectionProps {
   showDiscounts: boolean;
@@ -27,6 +28,8 @@ interface DiscountsSectionProps {
   tieredDiscountAmount?: number;
   isLoyaltyProgramEnabled?: boolean;
   loyaltyBonusAmount?: number;
+  appliedMilestoneReward?: UserMilestone | null;
+  milestoneRewardAmount?: number;
 }
 
 const DiscountsSection = ({
@@ -41,7 +44,9 @@ const DiscountsSection = ({
   isFirstPurchase,
   tieredDiscountAmount = 0,
   isLoyaltyProgramEnabled,
-  loyaltyBonusAmount = 0
+  loyaltyBonusAmount = 0,
+  appliedMilestoneReward,
+  milestoneRewardAmount = 0
 }: DiscountsSectionProps) => {
   
   if (!showDiscounts) return null;
@@ -68,6 +73,16 @@ const DiscountsSection = ({
           isNegative={true}
           variant="violet"
           icon={<Gift className="h-4 w-4" />}
+        />
+      )}
+      
+      {appliedMilestoneReward && milestoneRewardAmount > 0 && (
+        <OrderBaseItem 
+          name={`Milestone: ${appliedMilestoneReward.milestone_name}`}
+          price={milestoneRewardAmount}
+          isNegative={true}
+          variant="emerald"
+          icon={<Sparkles className="h-4 w-4" />}
         />
       )}
       

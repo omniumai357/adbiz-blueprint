@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AddOnItem } from "../add-on-item";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 import OrderSummaryHeader from "./order-summary-header";
 import PackageSection from "./package-section";
@@ -36,6 +37,8 @@ interface OrderSummaryProps {
     description?: string;
   };
   couponDiscountAmount?: number;
+  appliedMilestoneReward?: UserMilestone | null;
+  milestoneRewardAmount?: number;
 }
 
 const OrderSummary = ({ 
@@ -54,7 +57,9 @@ const OrderSummary = ({
   limitedTimeOffer,
   offerDiscountAmount = 0,
   appliedCoupon,
-  couponDiscountAmount = 0
+  couponDiscountAmount = 0,
+  appliedMilestoneReward,
+  milestoneRewardAmount = 0
 }: OrderSummaryProps) => {
   const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
   const subtotal = packagePrice + addOnsTotal;
@@ -66,7 +71,8 @@ const OrderSummary = ({
 
   const showSpecialOffer = isFirstPurchase || isLoyaltyProgramEnabled || 
     (limitedTimeOffer && offerDiscountAmount > 0) || 
-    (appliedCoupon && couponDiscountAmount > 0);
+    (appliedCoupon && couponDiscountAmount > 0) ||
+    (appliedMilestoneReward && milestoneRewardAmount > 0);
 
   return (
     <div className="mb-8 p-6 bg-gray-50 rounded-md">
@@ -96,6 +102,8 @@ const OrderSummary = ({
             tieredDiscountAmount={tieredDiscountAmount}
             isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
             loyaltyBonusAmount={loyaltyBonusAmount}
+            appliedMilestoneReward={appliedMilestoneReward}
+            milestoneRewardAmount={milestoneRewardAmount}
           />
           
           <OrderTotal 

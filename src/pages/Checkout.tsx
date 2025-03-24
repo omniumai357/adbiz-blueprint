@@ -50,6 +50,10 @@ const Checkout = () => {
     activeOffers,
     availableOffer,
     offerDiscountAmount,
+    // Milestone rewards related
+    appliedMilestoneReward,
+    handleMilestoneRewardApplied,
+    milestoneRewardAmount,
     // Loading states
     isLoading,
     // Calculated values
@@ -83,6 +87,8 @@ const Checkout = () => {
             offerDiscountAmount={offerDiscountAmount}
             appliedCoupon={appliedCoupon ?? undefined}
             couponDiscountAmount={couponDiscountAmount}
+            appliedMilestoneReward={appliedMilestoneReward ?? undefined}
+            milestoneRewardAmount={milestoneRewardAmount}
           />
           
           {showDownloadOptions && orderId ? (
@@ -122,6 +128,9 @@ const Checkout = () => {
               isCheckingCoupon={isCheckingCoupon}
               applyCoupon={applyCoupon}
               removeCoupon={removeCoupon}
+              appliedMilestoneReward={appliedMilestoneReward}
+              milestoneRewardAmount={milestoneRewardAmount}
+              onMilestoneRewardApplied={handleMilestoneRewardApplied}
               totalDiscountAmount={totalDiscountAmount}
               onOrderSuccess={handleOrderSuccess}
               isProfileLoading={isProfileLoading}

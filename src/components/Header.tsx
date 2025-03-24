@@ -1,234 +1,165 @@
-
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/contexts/auth-context";
+import { useProfile } from "@/hooks/data/useProfile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
-const navItems = [
-  { label: "Home", path: "/" },
-  { label: "Services", path: "/services" },
-  { label: "About", path: "/about" },
-  { label: "Contact", path: "/contact" },
-];
-
-export const Header = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const { user, signOut, isAdmin } = useAuth();
+const Header = () => {
+  const { isAuthenticated, logout, user } = useContext(AuthContext);
+  const { profile } = useProfile(user?.id);
+  const navigate = useNavigate();
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    setIsMounted(true);
   }, []);
 
-  // Close mobile menu when path changes
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out backdrop-blur-md",
-        isScrolled
-          ? "py-3 bg-white/80 shadow-sm"
-          : "py-6 bg-transparent"
-      )}
-    >
-      <div className="container px-4 mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <Link 
-          to="/" 
-          className="flex items-center text-xl font-bold transition-opacity hover:opacity-80"
-        >
-          <span className="text-primary">ad</span>
-          <span>biz</span>
-          <span className="text-primary">.pro</span>
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+      <div className="container flex items-center justify-between h-16 px-4">
+        <Link to="/" className="text-2xl font-bold">
+          Your Brand
         </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative",
-                location.pathname === item.path
-                  ? "text-primary after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full"
-                  : "text-foreground/80"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
-          
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary relative",
-                location.pathname === "/admin"
-                  ? "text-primary after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:rounded-full"
-                  : "text-foreground/80"
-              )}
-            >
-              Admin
-            </Link>
+        
+        <nav className="hidden md:flex items-center space-x-6">
+          <Link to="/" className="text-sm font-medium hover:text-primary">
+            Home
+          </Link>
+          <Link to="/services" className="text-sm font-medium hover:text-primary">
+            Services
+          </Link>
+          <Link to="/about" className="text-sm font-medium hover:text-primary">
+            About
+          </Link>
+          <Link to="/contact" className="text-sm font-medium hover:text-primary">
+            Contact
+          </Link>
+          {isAuthenticated && (
+            <>
+              <Link to="/rewards" className="text-sm font-medium hover:text-primary">
+                Rewards
+              </Link>
+              <Link to="/receipts" className="text-sm font-medium hover:text-primary">
+                My Receipts
+              </Link>
+            </>
           )}
-        </nav>
-
-        {/* CTA Button & User Menu */}
-        <div className="hidden md:flex items-center gap-4">
-          {user ? (
+          
+          {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
-                  Account
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <Avatar className="h-8 w-8">
+                    {isMounted && profile?.avatar_url ? (
+                      <AvatarImage src={profile?.avatar_url} alt={profile?.first_name || "Avatar"} />
+                    ) : (
+                      <AvatarFallback>{profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}</AvatarFallback>
+                    )}
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">Admin Dashboard</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to="/profile">My Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/orders">My Orders</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </DropdownMenuItem>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
-              <Button 
-                asChild 
-                variant="ghost" 
-                size="sm"
-              >
-                <Link to="/auth">Sign In</Link>
+            <div className="space-x-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
+                Log In
               </Button>
-              <Button 
-                asChild 
-                className="button-transition hover:shadow-md hover:scale-105"
-              >
-                <Link to="/services">Get Started</Link>
+              <Button size="sm" onClick={() => navigate("/signup")}>
+                Sign Up
               </Button>
-            </>
+            </div>
           )}
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
+        </nav>
+        
+        <Sheet>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-full sm:w-64">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+              <SheetDescription>
+                Navigate through the app.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-4 py-4">
+              <Link to="/" className="text-sm font-medium hover:text-primary">
+                Home
+              </Link>
+              <Link to="/services" className="text-sm font-medium hover:text-primary">
+                Services
+              </Link>
+              <Link to="/about" className="text-sm font-medium hover:text-primary">
+                About
+              </Link>
+              <Link to="/contact" className="text-sm font-medium hover:text-primary">
+                Contact
+              </Link>
+              {isAuthenticated && (
+                <>
+                  <Link to="/rewards" className="text-sm font-medium hover:text-primary">
+                    Rewards
+                  </Link>
+                  <Link to="/receipts" className="text-sm font-medium hover:text-primary">
+                    My Receipts
+                  </Link>
+                </>
+              )}
+              {!isAuthenticated ? (
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
+                    Log In
+                  </Button>
+                  <Button size="sm" onClick={() => navigate("/signup")}>
+                    Sign Up
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
+                    Profile
+                  </Button>
+                  <Button size="sm" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white/80 backdrop-blur-md shadow-lg animate-fade-in">
-          <div className="container px-4 py-6 mx-auto flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "py-2 text-base font-medium transition-colors hover:text-primary",
-                  location.pathname === item.path
-                    ? "text-primary"
-                    : "text-foreground/80"
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-            
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className={cn(
-                  "py-2 text-base font-medium transition-colors hover:text-primary",
-                  location.pathname === "/admin"
-                    ? "text-primary"
-                    : "text-foreground/80"
-                )}
-              >
-                Admin
-              </Link>
-            )}
-            
-            {user ? (
-              <>
-                <div className="border-t border-border my-2 pt-2"></div>
-                <Link
-                  to="/profile"
-                  className="py-2 text-base font-medium transition-colors hover:text-primary"
-                >
-                  My Profile
-                </Link>
-                <Link
-                  to="/orders"
-                  className="py-2 text-base font-medium transition-colors hover:text-primary"
-                >
-                  My Orders
-                </Link>
-                <Button 
-                  variant="destructive"
-                  onClick={signOut}
-                  className="mt-2 w-full justify-start"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button 
-                  asChild 
-                  variant="outline" 
-                  className="w-full"
-                >
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-                <Button 
-                  asChild 
-                  className="w-full"
-                >
-                  <Link to="/services">Get Started</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </header>
   );
 };

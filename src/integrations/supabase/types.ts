@@ -206,6 +206,45 @@ export type Database = {
           },
         ]
       }
+      milestones: {
+        Row: {
+          created_at: string
+          description: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          points_required: number
+          reward_type: string
+          reward_value: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          points_required: number
+          reward_type: string
+          reward_value: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          points_required?: number
+          reward_type?: string
+          reward_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           company_info: Json | null
@@ -325,6 +364,83 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          points_earned: number
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          points_earned: number
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          points_earned?: number
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_milestones: {
+        Row: {
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          current_points: number
+          id: string
+          is_completed: boolean
+          milestone_id: string
+          reward_claimed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_points?: number
+          id?: string
+          is_completed?: boolean
+          milestone_id: string
+          reward_claimed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          current_points?: number
+          id?: string
+          is_completed?: boolean
+          milestone_id?: string
+          reward_claimed?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_milestones_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -336,11 +452,35 @@ export type Database = {
         }
         Returns: string
       }
+      get_user_available_rewards: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          milestone_id: string
+          milestone_name: string
+          milestone_description: string
+          reward_type: string
+          reward_value: number
+          completed_at: string
+          is_claimed: boolean
+        }[]
+      }
       is_admin: {
         Args: {
           user_id: string
         }
         Returns: boolean
+      }
+      update_user_milestone_progress: {
+        Args: {
+          p_user_id: string
+          p_points: number
+          p_activity_type: string
+          p_reference_id?: string
+          p_reference_type?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
