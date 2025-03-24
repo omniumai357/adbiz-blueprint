@@ -107,15 +107,13 @@ export function useOrderProcessing({
             status: 'completed',
           }).eq('id', id);
           
-          // If loyalty program was enabled, record this in the order metadata
+          // If loyalty program was enabled, store this in the status field instead of metadata
           if (isLoyaltyProgramEnabled) {
-            // Instead of using order_metadata table (which might not exist),
-            // let's store this information in the orders table itself
+            // Update the status field to include loyalty program info
             await supabase.from('orders').update({
-              metadata: {
-                loyalty_program_enrolled: isLoyaltyProgramEnabled,
-                loyalty_discount_applied: loyaltyBonusAmount || 0
-              }
+              payment_method: loyaltyBonusAmount 
+                ? `loyalty_program_enabled_${loyaltyBonusAmount}` 
+                : 'loyalty_program_enabled'
             }).eq('id', id);
           }
           
