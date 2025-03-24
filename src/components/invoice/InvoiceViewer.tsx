@@ -52,11 +52,13 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
         if (invoiceError) throw invoiceError;
         if (!invoice) throw new Error('Invoice not found');
         
-        setInvoiceData(invoice as DatabaseInvoice);
+        // Type assertion to ensure all properties are properly typed
+        const typedInvoice = invoice as DatabaseInvoice;
+        setInvoiceData(typedInvoice);
         
         let templateType = 'standard';
-        if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
-          const firstItem = invoice.items[0] as { description: string };
+        if (typedInvoice.items && Array.isArray(typedInvoice.items) && typedInvoice.items.length > 0) {
+          const firstItem = typedInvoice.items[0] as { description: string };
           if (firstItem && typeof firstItem.description === 'string') {
             const itemName = firstItem.description.toLowerCase();
             if (itemName.includes('premium') || itemName.includes('tier3')) {
@@ -67,8 +69,8 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           }
         }
         
-        const invoiceItems: InvoiceItem[] = Array.isArray(invoice.items) 
-          ? invoice.items.map((item: any) => ({
+        const invoiceItems: InvoiceItem[] = Array.isArray(typedInvoice.items) 
+          ? typedInvoice.items.map((item: any) => ({
               description: String(item.description || ''),
               quantity: Number(item.quantity || 1),
               price: Number(item.price || 0),
@@ -79,18 +81,18 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           : [];
           
         const invoiceDataForTemplate: InvoiceData = {
-          orderId: invoice.order_id || 'unknown',
-          customerName: invoice.customer_name,
-          customerEmail: invoice.customer_email,
-          customerPhone: invoice.customer_phone,
-          amount: invoice.amount,
+          orderId: typedInvoice.order_id || 'unknown',
+          customerName: typedInvoice.customer_name,
+          customerEmail: typedInvoice.customer_email,
+          customerPhone: typedInvoice.customer_phone,
+          amount: typedInvoice.amount,
           items: invoiceItems,
-          dueDate: invoice.due_date,
-          invoiceNumber: invoice.invoice_number,
-          userId: invoice.user_id,
-          deliveryMethod: invoice.delivery_method as 'email' | 'sms' | 'both',
+          dueDate: typedInvoice.due_date,
+          invoiceNumber: typedInvoice.invoice_number,
+          userId: typedInvoice.user_id,
+          deliveryMethod: typedInvoice.delivery_method as 'email' | 'sms' | 'both',
           templateType: templateType as 'standard' | 'premium' | 'platinum',
-          notes: invoice.notes
+          notes: typedInvoice.notes
         };
         
         const html = generateInvoiceHtml(invoiceDataForTemplate, templateType);
