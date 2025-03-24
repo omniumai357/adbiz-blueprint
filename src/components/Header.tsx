@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
   DropdownMenuContent,

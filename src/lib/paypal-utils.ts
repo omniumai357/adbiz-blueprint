@@ -1,7 +1,6 @@
-
 import { initializePayPal, savePayPalOrder } from '@/lib/paypal';
 import { Package } from '@/lib/data';
-import { CustomerInfo } from '@/components/checkout/CustomerInfoForm';
+import { CustomerInfo } from '@/components/checkout/customer-info-form';
 
 export interface PayPalOrderDetails {
   packageId: string;

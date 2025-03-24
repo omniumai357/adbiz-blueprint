@@ -1,12 +1,11 @@
-
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
-import { AuthMessage } from "@/components/auth/AuthMessage";
-import { AuthContainer } from "@/components/auth/AuthContainer";
-import { SignInForm } from "@/components/auth/SignInForm";
-import { SignUpForm } from "@/components/auth/SignUpForm";
+import { AuthMessage } from "@/components/auth/auth-message";
+import { AuthContainer } from "@/components/auth/auth-container";
+import { SignInForm } from "@/components/auth/sign-in-form";
+import { SignUpForm } from "@/components/auth/sign-up-form";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("signin");

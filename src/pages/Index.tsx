@@ -1,14 +1,13 @@
-
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ServicePackages from "@/components/ServicePackages";
 import Footer from "@/components/Footer";
-import FeaturesSection from "@/components/home/FeaturesSection";
+import FeaturesSection from "@/components/home/features-section";
 import ServiceCategoriesSection from "@/components/home/ServiceCategoriesSection";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
-import FAQSection from "@/components/home/FAQSection";
-import CTASection from "@/components/home/CTASection";
+import FAQSection from "@/components/home/faq-section";
+import CTASection from "@/components/home/cta-section";
 
 const Index = () => {
   const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});

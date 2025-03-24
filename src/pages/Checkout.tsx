@@ -1,13 +1,13 @@
 
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/ui/use-toast";
 import Header from "@/components/Header";
 import { Elements } from "@stripe/react-stripe-js";
 import { stripePromise } from "@/lib/stripe";
-import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/CustomerInfoForm";
-import OrderSummary from "@/components/checkout/OrderSummary";
-import CardPaymentForm from "@/components/checkout/CardPaymentForm";
+import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-info-form";
+import OrderSummary from "@/components/checkout/order-summary";
+import CardPaymentForm from "@/components/checkout/card-payment-form";
 import PayPalButton from "@/components/PayPalButton";
 import PaymentSelector from "@/components/PaymentSelector";
 import DownloadOptions from "@/components/DownloadOptions";

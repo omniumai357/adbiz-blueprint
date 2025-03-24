@@ -1,10 +1,9 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/ui/use-toast';
 import { Package } from '@/lib/data';
 import { renderPayPalButton } from '@/lib/paypal-utils';
-import { CustomerInfo } from '@/components/checkout/CustomerInfoForm';
+import { CustomerInfo } from '@/components/checkout/customer-info-form';
 
 interface PayPalButtonProps {
   amount: number;
