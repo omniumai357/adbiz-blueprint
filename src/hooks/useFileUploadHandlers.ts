@@ -37,7 +37,7 @@ export const useFileUploadHandlers = ({
     fileType: keyof FileState, 
     e: ChangeEvent<HTMLInputElement> | readonly File[]
   ) => {
-    let selectedFiles: File[];
+    let selectedFiles: File[] = [];
     
     // Check if e is an array of Files or an event using type guard
     if (Array.isArray(e)) {
