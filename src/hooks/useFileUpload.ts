@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -6,7 +7,7 @@ const fileTypeIsValid = (file: File, allowedTypes: string[]) => {
   return allowedTypes.includes(file.type);
 };
 
-interface FileState {
+export interface FileState {
   logo: File | null;
   images: File[];
   videos: File[];

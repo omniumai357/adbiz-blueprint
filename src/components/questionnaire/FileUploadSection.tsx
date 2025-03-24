@@ -1,15 +1,10 @@
+
 import { ChangeEvent, FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
-import { Upload, X, FileText, Image, Video, FileAudio } from "lucide-react";
-
-interface FileState {
-  logo: File | null;
-  images: File[];
-  videos: File[];
-  documents: File[];
-}
+import { Upload, X, FileText, Image, Video } from "lucide-react";
+import { FileState } from "@/hooks/useFileUpload";
 
 interface FileUploadSectionProps {
   files: FileState;
