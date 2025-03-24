@@ -8,7 +8,7 @@ import UploadTips from "./UploadTips";
 
 interface FileUploadSectionProps {
   files: FileState;
-  onFileChange: (fileType: keyof FileState, e: ChangeEvent<HTMLInputElement> | File[]) => void;
+  onFileChange: (fileType: keyof FileState, e: ChangeEvent<HTMLInputElement> | readonly File[]) => void;
   onRemoveFile: (fileType: keyof FileState, index?: number) => void;
   uploadProgress: Record<string, { name: string; progress: number }>;
   uploadError: string | null;
