@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { CheckCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";

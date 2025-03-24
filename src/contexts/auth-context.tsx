@@ -2,9 +2,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useProfile } from "@/hooks/useProfile";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { useAuthActions } from "@/hooks/useAuthActions";
+import { useProfile } from "@/hooks/data/useProfile";
+import { useAdminStatus } from "@/hooks/data/useAdminStatus";
+import { useAuthActions } from "@/hooks/auth/useAuthActions";
 
 interface AuthContextType {
   session: Session | null;

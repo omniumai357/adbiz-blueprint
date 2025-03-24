@@ -1,6 +1,5 @@
-
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/ui/use-toast";
 
 export const useAuthActions = () => {
   // Helper function for consistent error handling

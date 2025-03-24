@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { CustomerInfo } from "./CustomerInfoForm";
+import { CustomerInfo } from "./customer-info-form";
 
 interface CardPaymentFormProps {
   packagePrice: number;
