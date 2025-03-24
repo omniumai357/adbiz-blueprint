@@ -15,7 +15,10 @@ const Receipts = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
-  const { receipts, loading } = useReceipts(user?.id);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5; // Number of receipts per page
+  
+  const { receipts, loading, pagination } = useReceipts(user?.id, currentPage, pageSize);
 
   const viewInvoice = (invoiceNumber: string) => {
     setSelectedInvoice(invoiceNumber);
@@ -27,6 +30,12 @@ const Receipts = () => {
       title: "Download started",
       description: "Your receipt is being downloaded"
     });
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -52,6 +61,8 @@ const Receipts = () => {
             loading={loading}
             onViewInvoice={viewInvoice}
             onDownloadReceipt={downloadReceipt}
+            pagination={pagination}
+            onPageChange={handlePageChange}
           />
         </div>
       </main>

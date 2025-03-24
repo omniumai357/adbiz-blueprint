@@ -2,11 +2,13 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Receipt } from "@/components/receipts/types";
+import { Receipt, PaginatedReceipts } from "@/components/receipts/types";
 
-export const useReceipts = (userId: string | undefined) => {
+export const useReceipts = (userId: string | undefined, page = 1, pageSize = 5) => {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -19,6 +21,24 @@ export const useReceipts = (userId: string | undefined) => {
 
       try {
         setLoading(true);
+        
+        // Get total count first
+        const { count, error: countError } = await supabase
+          .from('orders')
+          .select('id', { count: 'exact' })
+          .eq('user_id', userId)
+          .eq('status', 'completed');
+          
+        if (countError) throw countError;
+        
+        const total = count || 0;
+        setTotalCount(total);
+        setTotalPages(Math.ceil(total / pageSize));
+        
+        // Calculate range for pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
         // Get orders with invoice info
         const { data, error } = await supabase
           .from('orders')
@@ -33,7 +53,8 @@ export const useReceipts = (userId: string | undefined) => {
           `)
           .eq('user_id', userId)
           .eq('status', 'completed')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .range(from, to);
 
         if (error) throw error;
 
@@ -42,15 +63,19 @@ export const useReceipts = (userId: string | undefined) => {
           .map(order => order.package_id)
           .filter(Boolean);
           
-        const { data: packagesData } = await supabase
-          .from('packages')
-          .select('id, title')
-          .in('id', packageIds);
+        let packageMap: Record<string, string> = {};
         
-        const packageMap = packagesData?.reduce((acc: Record<string, string>, pkg: any) => {
-          acc[pkg.id] = pkg.title;
-          return acc;
-        }, {});
+        if (packageIds.length > 0) {
+          const { data: packagesData } = await supabase
+            .from('packages')
+            .select('id, title')
+            .in('id', packageIds);
+          
+          packageMap = packagesData?.reduce((acc: Record<string, string>, pkg: any) => {
+            acc[pkg.id] = pkg.title;
+            return acc;
+          }, {}) || {};
+        }
 
         // Format receipt data
         const formattedReceipts = data.map((order: any) => ({
@@ -75,7 +100,24 @@ export const useReceipts = (userId: string | undefined) => {
     };
 
     fetchReceipts();
-  }, [userId, toast]);
+  }, [userId, page, pageSize, toast]);
 
-  return { receipts, loading };
+  const paginatedResults: PaginatedReceipts = {
+    data: receipts,
+    totalCount,
+    page,
+    pageSize,
+    totalPages
+  };
+
+  return { 
+    receipts: paginatedResults.data, 
+    loading,
+    pagination: {
+      page,
+      pageSize,
+      totalPages,
+      totalCount
+    }
+  };
 };

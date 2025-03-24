@@ -6,3 +6,11 @@ export interface Receipt {
   invoice_number?: string;
   package_title?: string;
 }
+
+export interface PaginatedReceipts {
+  data: Receipt[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
