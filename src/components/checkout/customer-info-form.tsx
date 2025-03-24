@@ -3,13 +3,13 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Card } from "@/components/ui/card";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import CustomerPersonalInfo from "./customer-personal-info";
 import CustomerBusinessInfo from "./customer-business-info";
 import InvoiceDeliveryOptions from "./invoice-delivery-options";
+import CustomerInfoSkeleton from "./customer-info-skeleton";
 import { isValidPhoneNumber, isValidEmail, isValidUrl } from "@/lib/utils/validation-utils";
 
 export interface CustomerInfo {
@@ -95,6 +95,10 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
   const deliveryMethod = form.watch("invoiceDeliveryMethod");
   const phoneRequired = deliveryMethod === 'sms' || deliveryMethod === 'both';
 
+  if (isLoading) {
+    return <CustomerInfoSkeleton />;
+  }
+
   return (
     <Card className="p-6">
       <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
@@ -105,24 +109,17 @@ const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: Custome
         />
       )}
       
-      {isLoading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
-          <p>Loading your information...</p>
-        </div>
-      ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <CustomerPersonalInfo form={form} phoneRequired={phoneRequired} />
-            
-            <CustomerBusinessInfo form={form} />
-            
-            <Separator className="my-6" />
-            
-            <InvoiceDeliveryOptions form={form} />
-          </form>
-        </Form>
-      )}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <CustomerPersonalInfo form={form} phoneRequired={phoneRequired} />
+          
+          <CustomerBusinessInfo form={form} />
+          
+          <Separator className="my-6" />
+          
+          <InvoiceDeliveryOptions form={form} />
+        </form>
+      </Form>
     </Card>
   );
 };

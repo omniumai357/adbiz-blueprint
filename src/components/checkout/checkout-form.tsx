@@ -6,6 +6,7 @@ import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-i
 import PaymentSelector from "@/components/PaymentSelector";
 import CardPaymentForm from "@/components/checkout/card-payment-form";
 import PayPalButton from "@/components/PayPalButton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -42,27 +43,36 @@ const CheckoutForm = ({
         isLoading={isProfileLoading}
       />
       
-      <PaymentSelector 
-        selectedMethod={paymentMethod}
-        onMethodChange={handlePaymentMethodChange}
-      />
-      
-      {paymentMethod === "credit-card" ? (
-        <Elements stripe={stripePromise}>
-          <CardPaymentForm 
-            packagePrice={packagePrice}
-            packageDetails={packageDetails}
-            customerInfo={customerInfo}
-            onSuccess={onOrderSuccess}
-          />
-        </Elements>
+      {isProfileLoading ? (
+        <>
+          <Skeleton className="w-full h-12 mt-8" />
+          <Skeleton className="w-full h-48 mt-4" />
+        </>
       ) : (
-        <PayPalButton 
-          amount={packagePrice} 
-          packageDetails={packageDetails}
-          customerInfo={customerInfo}
-          onSuccess={onOrderSuccess}
-        />
+        <>
+          <PaymentSelector 
+            selectedMethod={paymentMethod}
+            onMethodChange={handlePaymentMethodChange}
+          />
+          
+          {paymentMethod === "credit-card" ? (
+            <Elements stripe={stripePromise}>
+              <CardPaymentForm 
+                packagePrice={packagePrice}
+                packageDetails={packageDetails}
+                customerInfo={customerInfo}
+                onSuccess={onOrderSuccess}
+              />
+            </Elements>
+          ) : (
+            <PayPalButton 
+              amount={packagePrice} 
+              packageDetails={packageDetails}
+              customerInfo={customerInfo}
+              onSuccess={onOrderSuccess}
+            />
+          )}
+        </>
       )}
     </div>
   );
