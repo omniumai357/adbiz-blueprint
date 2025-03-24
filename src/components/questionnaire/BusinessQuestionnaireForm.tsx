@@ -18,6 +18,7 @@ import {
   validateContactInfoStep,
   validateMarketingGoalsStep
 } from "@/utils/questionnaire-validation";
+import { generateUniqueId } from "@/utils/id-generator"; // Adding the missing import
 
 // Define the form schema for validation
 const formSchema = z.object({
@@ -123,6 +124,11 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     }
   };
   
+  // Fixed the function to properly handle the event and call the validation
+  const handleFileUploadNext = () => {
+    nextStep();
+  };
+  
   const onSubmit = async (data: FormValues) => {
     const success = await submitQuestionnaire(data, files, uploadFiles);
     
@@ -194,7 +200,7 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                 </Button>
                 <Button
                   type="button"
-                  onClick={nextStep}
+                  onClick={handleFileUploadNext}
                 >
                   Continue to Review
                 </Button>
