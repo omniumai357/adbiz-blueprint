@@ -9,6 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_questionnaires: {
+        Row: {
+          brand_colors: Json | null
+          business_description: string
+          business_license_number: string | null
+          business_name: string
+          business_size: string | null
+          contact_info: Json
+          created_at: string
+          has_business_license: boolean | null
+          has_logo: boolean | null
+          id: string
+          industry: string
+          marketing_goals: string[]
+          mission_statement: string | null
+          need_logo_design: boolean | null
+          other_industry: string | null
+          service_area: string
+          slogan: string | null
+          social_media: Json | null
+          target_audience: string | null
+          unique_selling_points: string | null
+          updated_at: string
+          uploaded_files: Json | null
+          user_id: string
+          years_in_business: string | null
+        }
+        Insert: {
+          brand_colors?: Json | null
+          business_description: string
+          business_license_number?: string | null
+          business_name: string
+          business_size?: string | null
+          contact_info: Json
+          created_at?: string
+          has_business_license?: boolean | null
+          has_logo?: boolean | null
+          id?: string
+          industry: string
+          marketing_goals: string[]
+          mission_statement?: string | null
+          need_logo_design?: boolean | null
+          other_industry?: string | null
+          service_area: string
+          slogan?: string | null
+          social_media?: Json | null
+          target_audience?: string | null
+          unique_selling_points?: string | null
+          updated_at?: string
+          uploaded_files?: Json | null
+          user_id: string
+          years_in_business?: string | null
+        }
+        Update: {
+          brand_colors?: Json | null
+          business_description?: string
+          business_license_number?: string | null
+          business_name?: string
+          business_size?: string | null
+          contact_info?: Json
+          created_at?: string
+          has_business_license?: boolean | null
+          has_logo?: boolean | null
+          id?: string
+          industry?: string
+          marketing_goals?: string[]
+          mission_statement?: string | null
+          need_logo_design?: boolean | null
+          other_industry?: string | null
+          service_area?: string
+          slogan?: string | null
+          social_media?: Json | null
+          target_audience?: string | null
+          unique_selling_points?: string | null
+          updated_at?: string
+          uploaded_files?: Json | null
+          user_id?: string
+          years_in_business?: string | null
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           active: boolean | null
