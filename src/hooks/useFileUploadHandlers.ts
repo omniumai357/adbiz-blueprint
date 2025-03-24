@@ -39,12 +39,16 @@ export const useFileUploadHandlers = ({
   ) => {
     let selectedFiles: File[] = [];
     
-    if (Array.isArray(e)) {
-      // Handle case when e is an array of Files (convert readonly to mutable array)
+    if ('target' in e) {
+      // This is a ChangeEvent<HTMLInputElement>
+      if (e.target.files) {
+        selectedFiles = Array.from(e.target.files);
+      } else {
+        return;
+      }
+    } else if (Array.isArray(e)) {
+      // This is a readonly File[]
       selectedFiles = Array.from(e);
-    } else if (e.target && e.target.files) {
-      // Handle case when e is a ChangeEvent from input
-      selectedFiles = Array.from(e.target.files);
     } else {
       return;
     }
