@@ -16,6 +16,9 @@ interface CustomerInfo {
   lastName: string;
   company: string;
   email: string;
+  phone?: string;
+  website?: string;
+  invoiceDeliveryMethod?: "email" | "sms" | "both";
 }
 
 export function useCheckout() {

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { formatCurrency } from "@/lib/utils/format-utils";
 import { Separator } from "@/components/ui/separator";
@@ -6,6 +7,7 @@ import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { LimitedTimeOfferInfo } from "./limited-time-offer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface OrderSummaryProps {
   packageName: string;
@@ -32,6 +34,8 @@ interface OrderSummaryProps {
     description?: string;
   };
   couponDiscountAmount?: number;
+  appliedMilestoneReward?: UserMilestone | null;
+  milestoneRewardAmount?: number;
 }
 
 const OrderSummary = ({ 

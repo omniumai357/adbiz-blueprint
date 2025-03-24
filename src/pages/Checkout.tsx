@@ -65,7 +65,16 @@ const Checkout = () => {
 
   // Custom handler for customer info changes to match the expected type
   const handleCustomerInfoChange = (info: CustomerInfo) => {
-    setCustomerInfo(info);
+    setCustomerInfo({
+      firstName: info.firstName,
+      lastName: info.lastName,
+      company: info.company || "",
+      email: info.email,
+      phone: info.phone,
+      website: info.website,
+      invoiceDeliveryMethod: info.invoiceDeliveryMethod,
+      userId: info.userId
+    });
   };
 
   return (
