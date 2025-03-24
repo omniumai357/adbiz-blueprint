@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
@@ -11,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import QuestionnaireProgress from "./QuestionnaireProgress";
-import FileUploadSection from "./FileUploadSection";
+import FileUploadSection from "./file-upload/FileUploadSection";
 import ReviewSection from "./ReviewSection";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import { useFileUpload } from "@/hooks/useFileUpload";

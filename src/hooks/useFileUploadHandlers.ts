@@ -44,7 +44,7 @@ export const useFileUploadHandlers = ({
       // Handle case when e is an array of Files
       selectedFiles = [...e];
     } else {
-      // Handle case when e is an ChangeEvent from input
+      // Handle case when e is a ChangeEvent from input
       if (e.target.files) {
         selectedFiles = Array.from(e.target.files);
       } else {
