@@ -51,7 +51,7 @@ export const ContactForm = () => {
   };
 
   return (
-    <div className="animate-fade-up [animation-delay:300ms]">
+    <div className="animate-fade-up [animation-delay:300ms]" id="email-form">
       {isSubmitted ? (
         <ContactSuccessMessage onReset={handleReset} />
       ) : (

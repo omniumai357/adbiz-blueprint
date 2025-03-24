@@ -5,6 +5,8 @@ import { ContactBanner } from "@/components/contact/contact-banner";
 import { ContactSidebar } from "@/components/contact/contact-sidebar";
 import { ContactForm } from "@/components/contact/contact-form";
 import { ContactFAQ } from "@/components/contact/contact-faq";
+import { ContactCtaPrompt } from "@/components/contact/contact-cta-prompt";
+import { useEffect } from "react";
 import { FAQ } from "@/types/contact";
 
 // FAQ data
@@ -28,6 +30,12 @@ const faqs: FAQ[] = [
 ];
 
 const Contact = () => {
+  // Track page visit for analytics
+  useEffect(() => {
+    // In a real app, you might track this page visit with analytics
+    console.log("Contact page visited", new Date().toISOString());
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -36,8 +44,15 @@ const Contact = () => {
         {/* Contact Banner */}
         <ContactBanner />
         
+        {/* Contextual CTA Prompt Section */}
+        <section className="py-8">
+          <div className="container px-4 mx-auto">
+            <ContactCtaPrompt />
+          </div>
+        </section>
+        
         {/* Contact Info & Form */}
-        <section className="py-16">
+        <section className="py-8">
           <div className="container px-4 mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Information */}
