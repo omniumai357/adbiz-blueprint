@@ -1,69 +1,79 @@
-# Welcome to your Lovable project
 
-## Project info
+# AdBiz.pro - Marketing Services Platform
 
-**URL**: https://lovable.dev/projects/fcb8f418-147e-4a96-a73d-88052798a9e3
+A professional web application for selling marketing service packages including Craigslist posting plans, custom SEO-ad creation, and platinum packages.
 
-## How can I edit this code?
+## Project Overview
 
-There are several ways of editing your application.
+AdBiz.pro is a marketing services platform designed to help businesses increase their online visibility through various advertising solutions. The platform offers different service packages tailored to various business needs and budgets.
 
-**Use Lovable**
+## Core Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fcb8f418-147e-4a96-a73d-88052798a9e3) and start prompting.
+### Marketing Service Packages
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Monthly Posting Plans**
+  - Basic Plan ($129/month): 8 ads/posts with email support
+  - Standard Plan ($199/month): 15 ads/posts with 24/7 support and analytics
+  - Premium Plan ($499/month): 30 ads/posts with dedicated manager and multi-channel posting
 
-**Use your preferred IDE**
+- **Custom SEO-Ad Creation**
+  - Tier 1 ($149): Basic text ad
+  - Tier 2 ($199): Text + image
+  - Tier 3 ($299): Advanced text with overlay
+  - Platinum ($999): Full 12-month campaign with bonus language features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### User Experience
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Modern, minimalist design inspired by Apple's design principles
+- Intuitive navigation and service selection
+- Mobile-responsive layout for all device sizes
+- Smooth animations and transitions
+- Clear service descriptions and pricing
 
-Follow these steps:
+### Admin Functionality
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- Package management
+- Pricing controls
+- Basic analytics dashboard
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Technical Implementation
 
-# Step 3: Install the necessary dependencies.
-npm i
+- **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui
+- **Styling**: Custom design system with animations and transitions
+- **State Management**: React hooks and context
+- **Routing**: React Router for navigation
+- **UI Components**: Custom components with consistent design language
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+## Project Structure
 
-**Edit a file directly in GitHub**
+- `src/components`: Reusable UI components
+- `src/pages`: Main application pages
+- `src/hooks`: Custom React hooks
+- `src/lib`: Utilities and data models
+- `public`: Static assets
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Development
 
-**Use GitHub Codespaces**
+### Prerequisites
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- Node.js (v16 or higher)
+- npm or yarn
 
-## What technologies are used for this project?
+### Setup
 
-This project is built with .
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Start the development server with `npm run dev`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Future Enhancements
 
-## How can I deploy this project?
+- Payment processing integration (Stripe, PayPal)
+- User authentication
+- Order management system
+- Customer dashboard
+- Email notifications
+- Advanced analytics
 
-Simply open [Lovable](https://lovable.dev/projects/fcb8f418-147e-4a96-a73d-88052798a9e3) and click on Share -> Publish.
+## License
 
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+All rights reserved. This project is proprietary and confidential.
