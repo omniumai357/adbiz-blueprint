@@ -2,7 +2,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format-utils";
-import { Package, Discount } from "lucide-react";
+import { Package, PercentIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export interface BundleDiscountInfo {
@@ -39,7 +39,7 @@ const BundleDiscount = ({ discount, subtotal, applicable }: BundleDiscountProps)
     )}>
       <div className="flex items-center space-x-3">
         {applicable ? (
-          <Discount className="h-5 w-5 text-primary" />
+          <PercentIcon className="h-5 w-5 text-primary" />
         ) : (
           <Package className="h-5 w-5 text-muted-foreground" />
         )}
