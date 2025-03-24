@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactory';
+import { InvoiceData } from '@/services/invoice/types';
 import { Button } from '@/components/ui/button';
 import { Loader2, Printer, Download, X } from 'lucide-react';
 
@@ -35,7 +36,7 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
         
         // Determine template type based on items or package info
         let templateType = 'standard';
-        if (invoice.items && invoice.items.length > 0) {
+        if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
           const itemName = invoice.items[0].description.toLowerCase();
           if (itemName.includes('premium') || itemName.includes('tier3')) {
             templateType = 'premium';
@@ -44,8 +45,23 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
           }
         }
         
+        // Convert database invoice to InvoiceData format
+        const invoiceDataForTemplate: InvoiceData = {
+          orderId: invoice.order_id || 'unknown',
+          customerName: invoice.customer_name,
+          customerEmail: invoice.customer_email,
+          customerPhone: invoice.customer_phone,
+          amount: invoice.amount,
+          items: Array.isArray(invoice.items) ? invoice.items : [],
+          dueDate: invoice.due_date,
+          invoiceNumber: invoice.invoice_number,
+          userId: invoice.user_id,
+          deliveryMethod: invoice.delivery_method as 'email' | 'sms' | 'both',
+          templateType: templateType as 'standard' | 'premium' | 'platinum'
+        };
+        
         // Generate the HTML using our template factory
-        const html = generateInvoiceHtml(invoice, templateType);
+        const html = generateInvoiceHtml(invoiceDataForTemplate, templateType);
         setInvoiceHtml(html);
       } catch (err) {
         console.error('Error fetching invoice:', err);
