@@ -8,15 +8,20 @@ export const useAuthNavigation = () => {
 
   const handleSignUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
     const result = await authActions.signUp(email, password, metadata);
-    if (result.success) {
-      navigate("/auth", { state: { message: result.message } });
+    
+    // Check if result has 'success' property and it's true
+    if (result && 'success' in result && result.success) {
+      // Check if result has 'message' property before accessing it
+      const message = 'message' in result ? result.message : undefined;
+      navigate("/auth", { state: { message } });
     }
     return result;
   };
 
   const handleSignIn = async (email: string, password: string) => {
     const result = await authActions.signIn(email, password);
-    if (result.success) {
+    
+    if (result && 'success' in result && result.success) {
       navigate("/");
     }
     return result;
@@ -24,7 +29,8 @@ export const useAuthNavigation = () => {
 
   const handleSignOut = async () => {
     const result = await authActions.signOut();
-    if (result.success) {
+    
+    if (result && 'success' in result && result.success) {
       navigate("/");
     }
     return result;
@@ -32,15 +38,18 @@ export const useAuthNavigation = () => {
 
   const handleResetPassword = async (email: string) => {
     const result = await authActions.resetPassword(email);
-    if (result.success) {
-      navigate("/auth", { state: { message: result.message } });
+    
+    if (result && 'success' in result && result.success) {
+      const message = 'message' in result ? result.message : undefined;
+      navigate("/auth", { state: { message } });
     }
     return result;
   };
 
   const handleUpdatePassword = async (newPassword: string) => {
     const result = await authActions.updatePassword(newPassword);
-    if (result.success) {
+    
+    if (result && 'success' in result && result.success) {
       navigate("/");
     }
     return result;
