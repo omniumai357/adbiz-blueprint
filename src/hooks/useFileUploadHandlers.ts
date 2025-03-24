@@ -48,7 +48,7 @@ export const useFileUploadHandlers = ({
       }
     } else {
       // Handle readonly File[]
-      selectedFiles = Array.from(e);
+      selectedFiles = Array.from(e as readonly File[]);
     }
     
     if (selectedFiles.length === 0) {
