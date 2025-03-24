@@ -138,6 +138,9 @@ export type Database = {
           created_at: string
           customer_email: string
           customer_name: string
+          customer_phone: string | null
+          delivery_method: string
+          delivery_status: string | null
           due_date: string
           id: string
           invoice_number: string
@@ -145,6 +148,7 @@ export type Database = {
           items: Json
           order_id: string | null
           sent_at: string | null
+          sms_sent_at: string | null
           status: string
           updated_at: string
           user_id: string | null
@@ -154,6 +158,9 @@ export type Database = {
           created_at?: string
           customer_email: string
           customer_name: string
+          customer_phone?: string | null
+          delivery_method?: string
+          delivery_status?: string | null
           due_date: string
           id?: string
           invoice_number: string
@@ -161,6 +168,7 @@ export type Database = {
           items: Json
           order_id?: string | null
           sent_at?: string | null
+          sms_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -170,6 +178,9 @@ export type Database = {
           created_at?: string
           customer_email?: string
           customer_name?: string
+          customer_phone?: string | null
+          delivery_method?: string
+          delivery_status?: string | null
           due_date?: string
           id?: string
           invoice_number?: string
@@ -177,6 +188,7 @@ export type Database = {
           items?: Json
           order_id?: string | null
           sent_at?: string | null
+          sms_sent_at?: string | null
           status?: string
           updated_at?: string
           user_id?: string | null

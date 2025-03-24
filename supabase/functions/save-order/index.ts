@@ -56,7 +56,7 @@ serve(async (req) => {
     
     // Insert invoice information if customerInfo is present
     if (orderDetails.customerInfo) {
-      const { firstName, lastName, email } = orderDetails.customerInfo;
+      const { firstName, lastName, email, phone, deliveryMethod } = orderDetails.customerInfo;
       const invoiceNumber = generateInvoiceNumber();
       
       // Set due date to 14 days from now
@@ -74,8 +74,10 @@ serve(async (req) => {
         order_id: orderId,
         customer_email: email,
         customer_name: `${firstName} ${lastName}`,
+        customer_phone: phone,
         amount: orderDetails.packageDetails?.price || orderDetails.amount,
         invoice_number: invoiceNumber,
+        delivery_method: deliveryMethod || 'email',
         items
       });
       
@@ -87,9 +89,11 @@ serve(async (req) => {
             order_id: orderId,
             customer_email: email,
             customer_name: `${firstName} ${lastName}`,
+            customer_phone: phone,
             amount: orderDetails.packageDetails?.price || orderDetails.amount,
             invoice_number: invoiceNumber,
             due_date: dueDate.toISOString(),
+            delivery_method: deliveryMethod || 'email',
             items: items
           })
           .select()
