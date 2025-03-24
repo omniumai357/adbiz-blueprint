@@ -1,20 +1,13 @@
 
 import React from "react";
-import { Elements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/services/payment/stripe-service";
-import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-info-form";
-import PaymentSelector from "@/components/PaymentSelector";
-import CardPaymentForm from "@/components/checkout/card-payment-form";
-import PayPalButton from "@/components/PayPalButton";
 import { Skeleton } from "@/components/ui/skeleton";
+import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-info-form";
 import AddOnsSection from "@/components/checkout/add-ons-section";
-import BundleDiscount from "@/components/checkout/bundle-discount";
-import TieredDiscount from "@/components/checkout/tiered-discount";
-import LoyaltyProgram from "@/components/checkout/loyalty-program";
-import LimitedTimeOffer, { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
-import PersonalizedCoupon from "@/components/checkout/personalized-coupon";
+import DiscountSection from "@/components/checkout/form/discount-section";
+import PaymentSection from "@/components/checkout/form/payment-section";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
+import { LimitedTimeOfferInfo } from "./limited-time-offer";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -85,30 +78,32 @@ const CheckoutForm = ({
   loyaltyBonusAmount = 0,
   onLoyaltyProgramToggle = () => {},
   totalDiscountAmount = 0,
-  // Limited time offer properties
   activeOffers = [],
   availableOffer = null,
   offerDiscountAmount = 0,
-  // Coupon related properties
   personalizedCoupon = null,
   appliedCoupon = null,
   couponDiscountAmount = 0,
   isCheckingCoupon = false,
   applyCoupon = () => {},
   removeCoupon = () => {},
-  // Order success handler
   onOrderSuccess,
   isProfileLoading,
   isLoading = false,
   total,
 }: CheckoutFormProps) => {
-  const handlePaymentMethodChange = (method: PaymentMethod) => {
-    setPaymentMethod(method);
-  };
-
   const selectedAddOns = addOns.filter(addon => selectedAddOnIds.includes(addon.id));
   const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
   const subtotal = packagePrice + addOnsTotal;
+
+  if (isLoading || isProfileLoading) {
+    return (
+      <>
+        <Skeleton className="w-full h-12 mt-8" />
+        <Skeleton className="w-full h-48 mt-4" />
+      </>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -118,139 +113,58 @@ const CheckoutForm = ({
         isLoading={isProfileLoading}
       />
       
-      {isLoading || isProfileLoading ? (
-        <>
-          <Skeleton className="w-full h-12 mt-8" />
-          <Skeleton className="w-full h-48 mt-4" />
-        </>
-      ) : (
-        <>
-          {/* Add-ons section */}
-          {addOns.length > 0 && (
-            <AddOnsSection 
-              addOns={addOns}
-              selectedAddOns={selectedAddOnIds}
-              onAddOnToggle={onAddOnToggle}
-            />
-          )}
-          
-          {/* Discounts and offers section */}
-          <div className="space-y-4">
-            {/* Limited-time offer */}
-            {activeOffers.length > 0 && activeOffers[0] && (
-              <LimitedTimeOffer 
-                offer={activeOffers[0]}
-                subtotal={subtotal}
-                available={!!availableOffer}
-              />
-            )}
-            
-            {/* Personalized coupon */}
-            <PersonalizedCoupon 
-              coupon={personalizedCoupon}
-              onApply={applyCoupon}
-              isApplied={!!appliedCoupon}
-              subtotal={subtotal}
-              appliedDiscount={couponDiscountAmount}
-              isLoading={isCheckingCoupon}
-            />
-            
-            {/* Tiered discount section */}
-            {tieredDiscount && (
-              <TieredDiscount 
-                tier={tieredDiscount}
-                isFirstPurchase={isFirstPurchase}
-                subtotal={subtotal}
-                discountAmount={tieredDiscountAmount}
-              />
-            )}
-            
-            {/* Bundle discount section */}
-            {bundleDiscount && (
-              <BundleDiscount 
-                discount={bundleDiscount}
-                subtotal={subtotal}
-                applicable={isDiscountApplicable}
-              />
-            )}
-            
-            {/* Loyalty program section */}
-            <LoyaltyProgram
-              enabled={isLoyaltyProgramEnabled}
-              onToggle={onLoyaltyProgramToggle}
-              bonusAmount={loyaltyBonusAmount}
-              userId={customerInfo?.userId || null}
-            />
-          </div>
-          
-          {/* Payment section */}
-          <PaymentSelector 
-            selectedMethod={paymentMethod}
-            onMethodChange={handlePaymentMethodChange}
-          />
-          
-          {paymentMethod === "credit-card" ? (
-            <Elements stripe={stripePromise}>
-              <CardPaymentForm 
-                packagePrice={subtotal}
-                packageDetails={{
-                  ...packageDetails,
-                  addOns: selectedAddOns,
-                  discounts: {
-                    bundle: isDiscountApplicable ? bundleDiscount : null,
-                    tiered: tieredDiscount,
-                    isFirstPurchase,
-                    loyaltyProgram: isLoyaltyProgramEnabled ? {
-                      enabled: true,
-                      bonusAmount: loyaltyBonusAmount
-                    } : null,
-                    limitedTimeOffer: availableOffer ? {
-                      name: availableOffer.name,
-                      discountAmount: offerDiscountAmount
-                    } : null,
-                    coupon: appliedCoupon ? {
-                      code: appliedCoupon.code,
-                      discountAmount: couponDiscountAmount
-                    } : null,
-                    totalDiscount: totalDiscountAmount
-                  }
-                }}
-                customerInfo={customerInfo}
-                onSuccess={onOrderSuccess}
-                finalAmount={total}
-              />
-            </Elements>
-          ) : (
-            <PayPalButton 
-              amount={total}
-              packageDetails={{
-                ...packageDetails,
-                addOns: selectedAddOns,
-                discounts: {
-                  bundle: isDiscountApplicable ? bundleDiscount : null,
-                  tiered: tieredDiscount,
-                  isFirstPurchase,
-                  loyaltyProgram: isLoyaltyProgramEnabled ? {
-                    enabled: true,
-                    bonusAmount: loyaltyBonusAmount
-                  } : null,
-                  limitedTimeOffer: availableOffer ? {
-                    name: availableOffer.name,
-                    discountAmount: offerDiscountAmount
-                  } : null,
-                  coupon: appliedCoupon ? {
-                    code: appliedCoupon.code,
-                    discountAmount: couponDiscountAmount
-                  } : null,
-                  totalDiscount: totalDiscountAmount
-                }
-              }}
-              customerInfo={customerInfo}
-              onSuccess={onOrderSuccess}
-            />
-          )}
-        </>
+      {/* Add-ons section */}
+      {addOns.length > 0 && (
+        <AddOnsSection 
+          addOns={addOns}
+          selectedAddOns={selectedAddOnIds}
+          onAddOnToggle={onAddOnToggle}
+        />
       )}
+      
+      {/* Discounts and offers section */}
+      <DiscountSection 
+        subtotal={subtotal}
+        userId={customerInfo?.userId || null}
+        bundleDiscount={bundleDiscount}
+        isDiscountApplicable={isDiscountApplicable}
+        tieredDiscount={tieredDiscount}
+        isFirstPurchase={isFirstPurchase}
+        isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
+        loyaltyBonusAmount={loyaltyBonusAmount}
+        onLoyaltyProgramToggle={onLoyaltyProgramToggle}
+        activeOffers={activeOffers}
+        availableOffer={availableOffer}
+        personalizedCoupon={personalizedCoupon}
+        appliedCoupon={appliedCoupon}
+        couponDiscountAmount={couponDiscountAmount}
+        isCheckingCoupon={isCheckingCoupon}
+        applyCoupon={applyCoupon}
+        removeCoupon={removeCoupon}
+      />
+      
+      {/* Payment section */}
+      <PaymentSection 
+        paymentMethod={paymentMethod}
+        setPaymentMethod={setPaymentMethod}
+        subtotal={subtotal}
+        packageDetails={packageDetails}
+        selectedAddOns={selectedAddOns}
+        customerInfo={customerInfo}
+        onOrderSuccess={onOrderSuccess}
+        bundleDiscount={bundleDiscount}
+        isDiscountApplicable={isDiscountApplicable}
+        tieredDiscount={tieredDiscount}
+        isFirstPurchase={isFirstPurchase}
+        isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
+        loyaltyBonusAmount={loyaltyBonusAmount}
+        availableOffer={availableOffer}
+        offerDiscountAmount={offerDiscountAmount}
+        appliedCoupon={appliedCoupon}
+        couponDiscountAmount={couponDiscountAmount}
+        totalDiscountAmount={totalDiscountAmount}
+        total={total}
+      />
     </div>
   );
 };
