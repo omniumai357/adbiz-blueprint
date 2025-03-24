@@ -11,9 +11,11 @@ interface AuthContextType {
   user: User | null;
   profile: any | null;
   isLoading: boolean;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => Promise<any>;
+  signIn: (email: string, password: string) => Promise<any>;
+  signOut: () => Promise<any>;
+  resetPassword: (email: string) => Promise<any>;
+  updatePassword: (newPassword: string) => Promise<any>;
   isAdmin: boolean;
 }
 
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Use the custom hooks
   const { profile } = useProfile(user?.id);
   const { isAdmin } = useAdminStatus(user?.id);
-  const { signUp, signIn, signOut } = useAuthActions();
+  const { signUp, signIn, signOut, resetPassword, updatePassword } = useAuthActions();
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -69,6 +71,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         signUp,
         signIn,
         signOut,
+        resetPassword,
+        updatePassword,
         isAdmin
       }}
     >

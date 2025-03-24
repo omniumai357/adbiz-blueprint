@@ -1,11 +1,8 @@
 
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 export const useAuthActions = () => {
-  const navigate = useNavigate();
-
   // Helper function for consistent error handling
   const handleAuthError = (error: any, action: string) => {
     console.error(`Auth error during ${action}:`, error);
@@ -25,6 +22,8 @@ export const useAuthActions = () => {
       description: friendlyMessage,
       variant: "destructive",
     });
+    
+    return { error };
   };
 
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
@@ -46,9 +45,9 @@ export const useAuthActions = () => {
         description: "Please check your email for the confirmation link.",
       });
       
-      navigate("/auth", { state: { message: "Please check your email for the confirmation link." } });
+      return { success: true, message: "Please check your email for the confirmation link." };
     } catch (error: any) {
-      handleAuthError(error, "signup");
+      return handleAuthError(error, "signup");
     }
   };
 
@@ -68,9 +67,9 @@ export const useAuthActions = () => {
         description: "You have successfully signed in.",
       });
       
-      navigate("/");
+      return { success: true };
     } catch (error: any) {
-      handleAuthError(error, "signin");
+      return handleAuthError(error, "signin");
     }
   };
 
@@ -87,9 +86,9 @@ export const useAuthActions = () => {
         description: "You have been signed out successfully.",
       });
       
-      navigate("/");
+      return { success: true };
     } catch (error: any) {
-      handleAuthError(error, "signout");
+      return handleAuthError(error, "signout");
     }
   };
 
@@ -108,11 +107,12 @@ export const useAuthActions = () => {
         description: "Please check your email for the password reset link.",
       });
       
-      navigate("/auth", { 
-        state: { message: "Please check your email for the password reset link." } 
-      });
+      return { 
+        success: true, 
+        message: "Please check your email for the password reset link." 
+      };
     } catch (error: any) {
-      handleAuthError(error, "password reset");
+      return handleAuthError(error, "password reset");
     }
   };
 
@@ -131,9 +131,9 @@ export const useAuthActions = () => {
         description: "Your password has been successfully updated.",
       });
       
-      navigate("/");
+      return { success: true };
     } catch (error: any) {
-      handleAuthError(error, "password update");
+      return handleAuthError(error, "password update");
     }
   };
 
