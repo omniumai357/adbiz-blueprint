@@ -60,13 +60,15 @@ export const useReceipts = (
         }
         
         // Get total count with the same filters
-        const { count, error: countError } = await query.count();
+        // Using the correct way to get count with the latest Supabase client
+        const countQuery = query.clone();
+        const { count: total, error: countError } = await countQuery.count();
           
         if (countError) throw countError;
         
-        const total = count || 0;
-        setTotalCount(total);
-        setTotalPages(Math.ceil(total / pageSize));
+        // Set count and calculate total pages
+        setTotalCount(total || 0);
+        setTotalPages(Math.ceil((total || 0) / pageSize));
         
         // Calculate range for pagination
         const from = (page - 1) * pageSize;
