@@ -45,7 +45,7 @@ const Receipts = () => {
             status,
             package_id,
             company_info,
-            invoices!left(invoice_number)
+            invoices(invoice_number)
           `)
           .eq('user_id', user.id)
           .eq('status', 'completed')
@@ -70,7 +70,7 @@ const Receipts = () => {
           id: order.id,
           created_at: order.created_at,
           total_amount: order.total_amount,
-          invoice_number: order.invoices?.invoice_number || undefined,
+          invoice_number: order.invoices && order.invoices[0]?.invoice_number,
           package_title: order.package_id ? packageMap[order.package_id] : undefined
         }));
 
