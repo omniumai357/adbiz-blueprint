@@ -5,6 +5,7 @@ import OrderSummary from "@/components/checkout/order-summary";
 import CheckoutForm from "@/components/checkout/checkout-form";
 import CheckoutSuccess from "@/components/checkout/checkout-success";
 import { useCheckout } from "@/hooks/checkout/useCheckout";
+import { CustomerInfo } from "@/components/checkout/customer-info-form";
 
 const Checkout = () => {
   const {
@@ -62,6 +63,11 @@ const Checkout = () => {
     total
   } = useCheckout();
 
+  // Custom handler for customer info changes to match the expected type
+  const handleCustomerInfoChange = (info: CustomerInfo) => {
+    setCustomerInfo(info);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -102,7 +108,7 @@ const Checkout = () => {
           ) : (
             <CheckoutForm 
               customerInfo={customerInfo}
-              setCustomerInfo={setCustomerInfo}
+              setCustomerInfo={handleCustomerInfoChange}
               paymentMethod={paymentMethod}
               setPaymentMethod={setPaymentMethod}
               packagePrice={packagePrice}

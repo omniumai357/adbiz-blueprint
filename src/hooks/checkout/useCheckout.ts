@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -99,7 +98,6 @@ export function useCheckout() {
   useEffect(() => {
     const fetchAddOns = async () => {
       try {
-        // Fetch add-ons from the database
         const { data: addonsData, error: addonsError } = await supabase
           .from("packages")
           .select("*")
@@ -190,7 +188,6 @@ export function useCheckout() {
     });
   };
   
-  // Add milestone rewards
   const { 
     appliedMilestoneReward,
     handleMilestoneRewardApplied,
@@ -198,7 +195,6 @@ export function useCheckout() {
     awardMilestonePoints
   } = useMilestoneRewards(userId, 0);
 
-  // Include milestone rewards in checkout calculations
   const {
     addOnsTotal,
     subtotal,
@@ -223,36 +219,28 @@ export function useCheckout() {
     appliedMilestoneReward
   });
 
-  // Update the order processing to include milestone rewards
   const handleOrderSuccess = async (orderId: string) => {
     setShowDownloadOptions(true);
     setOrderId(orderId);
 
-    // Generate invoice number
     const newInvoiceNumber = `INV-${Math.floor(Math.random() * 10000)}`;
     setInvoiceNumber(newInvoiceNumber);
 
-    // Optimistically update the UI
     toast({
       title: "Order Successful!",
       description: "Your order has been placed successfully.",
     });
 
-    // Award milestone points for the purchase
     if (userId) {
       await awardMilestonePoints(orderId, total);
     }
 
-    // Start generating the invoice
     setIsGeneratingInvoice(true);
 
-    // Simulate invoice generation delay
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // Stop generating the invoice
     setIsGeneratingInvoice(false);
 
-    // Redirect to the download page after a delay
     setTimeout(() => {
       navigate(`/download?orderId=${orderId}&invoiceNumber=${newInvoiceNumber}`);
     }, 5000);
@@ -300,7 +288,6 @@ export function useCheckout() {
     bundleDiscountAmount,
     tieredDiscountAmount,
     offerDiscountAmount,
-    couponDiscountAmount,
     milestoneRewardAmount,
     totalDiscountAmount,
     total,
