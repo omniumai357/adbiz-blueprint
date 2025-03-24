@@ -2,6 +2,9 @@
 import { useState } from 'react';
 import { validateFiles } from '@/utils/file-validation';
 import { uploadSingleFile, generateFilePath } from '@/utils/file-upload';
+import { useFileUploadState } from './useFileUploadState';
+import { useFileUploadHandlers } from './useFileUploadHandlers';
+import { useFileUploadProgress } from './useFileUploadProgress';
 
 export interface FileState {
   logo: File | null;
@@ -12,89 +15,18 @@ export interface FileState {
 
 export const useFileUpload = () => {
   const [uploading, setUploading] = useState(false);
-  const [files, setFiles] = useState<FileState>({
-    logo: null,
-    images: [],
-    videos: [],
-    documents: [],
-  });
-  const [uploadProgress, setUploadProgress] = useState<Record<string, { name: string; progress: number }>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  /**
-   * Update file state based on type
-   */
-  const updateFileState = (
-    fileType: keyof FileState, 
-    validFiles: File[], 
-    isLogoType: boolean
-  ) => {
-    if (isLogoType) {
-      setFiles(prev => ({ ...prev, [fileType]: validFiles[0] || null }));
-    } else {
-      setFiles(prev => ({ ...prev, [fileType]: [...prev[fileType], ...validFiles] }));
-    }
-  };
-  
-  /**
-   * Handle file selection
-   */
-  const handleFileChange = (
-    fileType: keyof FileState, 
-    e: React.ChangeEvent<HTMLInputElement> | File[]
-  ) => {
-    let selectedFiles: File[];
-    
-    if (Array.isArray(e)) {
-      selectedFiles = e;
-    } else if (e.target.files) {
-      selectedFiles = Array.from(e.target.files);
-    } else {
-      return;
-    }
-    
-    const { validFiles, hasInvalidFiles } = validateFiles(
-      selectedFiles, 
-      fileType as string
-    );
-    
-    if (hasInvalidFiles) {
-      setUploadError(`Some files were not valid ${fileType} formats and were removed.`);
-    } else {
-      setUploadError(null);
-    }
-    
-    const isLogoType = fileType === 'logo';
-    updateFileState(fileType, validFiles, isLogoType);
-  };
-  
-  /**
-   * Remove file from selection
-   */
-  const onRemoveFile = (fileType: keyof FileState, index?: number) => {
-    if (fileType === 'logo') {
-      setFiles(prev => ({ ...prev, logo: null }));
-    } else if (index !== undefined) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
-      }));
-    }
-  };
-  
-  /**
-   * Update progress for a specific file
-   */
-  const updateProgress = (key: string, fileName: string, progress: number) => {
-    setUploadProgress(prev => ({
-      ...prev,
-      [key]: {
-        name: fileName,
-        progress
-      }
-    }));
-  };
-  
+  // Use extracted hooks for better organization
+  const { files, setFiles } = useFileUploadState();
+  const { uploadProgress, updateProgress } = useFileUploadProgress();
+  const { handleFileChange, onRemoveFile } = useFileUploadHandlers({
+    files,
+    setFiles,
+    setUploadError,
+    validateFiles
+  });
+
   /**
    * Upload logo file if it exists
    */
