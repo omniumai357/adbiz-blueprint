@@ -34,12 +34,12 @@ const CustomerSupportChatbot = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Configuration for your Deepseek deployment
-  // You'll need to have Deepseek running on your server or via an API provider
+  // Using import.meta.env which is the Vite way to access environment variables
   const apiConfig = {
     // For self-hosted deployment
-    baseUrl: process.env.REACT_APP_AI_API_URL || 'http://localhost:8000',
+    baseUrl: import.meta.env.VITE_AI_API_URL || 'http://localhost:8000',
     // For cloud provider deployment
-    // apiKey: process.env.REACT_APP_API_KEY,
+    // apiKey: import.meta.env.VITE_API_KEY,
     maxTokens: 500,
     temperature: 0.7,
   };
