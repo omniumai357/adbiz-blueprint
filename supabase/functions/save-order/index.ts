@@ -33,23 +33,55 @@ serve(async (req) => {
       }
     };
     
-    // In a real implementation, you would save the order to the database
-    // For now, we'll just return the order details with a generated ID
+    // Generate a unique order ID
     const orderId = 'order_' + Math.random().toString(36).substring(2, 15);
     
-    // Log the order details for debugging
-    console.log('Saving order:', {
+    // Create the complete order object
+    const completeOrder = {
       id: orderId,
       ...orderWithDownload,
       createdAt: new Date().toISOString()
-    });
+    };
+    
+    // Log the order details for debugging
+    console.log('Saving order:', completeOrder);
+    
+    // Generate invoice number
+    const generateInvoiceNumber = () => {
+      const prefix = 'INV';
+      const timestamp = Date.now().toString().slice(-6);
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      return `${prefix}-${timestamp}-${random}`;
+    };
+    
+    // Insert invoice information if customerInfo is present
+    if (orderDetails.customerInfo) {
+      const { firstName, lastName, email } = orderDetails.customerInfo;
+      const invoiceNumber = generateInvoiceNumber();
+      
+      // Set due date to 14 days from now
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 14);
+      
+      // Create invoice items from package
+      const items = [{
+        description: orderDetails.packageDetails?.title || "Product Purchase",
+        quantity: 1,
+        price: orderDetails.packageDetails?.price || orderDetails.amount
+      }];
+      
+      console.log('Creating invoice:', {
+        order_id: orderId,
+        customer_email: email,
+        customer_name: `${firstName} ${lastName}`,
+        amount: orderDetails.packageDetails?.price || orderDetails.amount,
+        invoice_number: invoiceNumber,
+        items
+      });
+    }
     
     return new Response(
-      JSON.stringify({ 
-        id: orderId,
-        ...orderWithDownload,
-        createdAt: new Date().toISOString()
-      }),
+      JSON.stringify(completeOrder),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
