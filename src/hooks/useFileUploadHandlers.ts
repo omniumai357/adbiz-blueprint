@@ -1,6 +1,6 @@
 
 import { FileState } from './useFileUpload';
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, ChangeEvent } from 'react';
 
 interface UseFileUploadHandlersProps {
   files: FileState;
@@ -35,7 +35,7 @@ export const useFileUploadHandlers = ({
    */
   const handleFileChange = (
     fileType: keyof FileState, 
-    e: React.ChangeEvent<HTMLInputElement> | File[]
+    e: ChangeEvent<HTMLInputElement> | File[]
   ) => {
     let selectedFiles: File[];
     
