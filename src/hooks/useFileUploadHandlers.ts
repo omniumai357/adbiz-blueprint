@@ -39,8 +39,10 @@ export const useFileUploadHandlers = ({
     fileType: keyof FileState, 
     e: ChangeEvent<HTMLInputElement> | readonly File[]
   ) => {
+    // Initialize an empty array for selected files
     let selectedFiles: File[] = [];
     
+    // Handle different input types
     if ('target' in e) {
       // This is a ChangeEvent<HTMLInputElement>
       if (e.target.files) {
