@@ -1,6 +1,8 @@
 
 project_id = "muysdfoszppwodrnyptg"
+
 [api]
 enabled = true
-[api.cors]
+
+[[api.cors]]
 enabled = true
