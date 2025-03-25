@@ -10,6 +10,8 @@ import { ServicesTitle } from '@/components/services/ServicesTitle';
 import { CategorySelection } from '@/components/services/CategorySelection';
 import { PackageFeatures } from '@/components/services/PackageFeatures';
 import { ContactCTA } from '@/components/services/ContactCTA';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const Services = () => {
   const {
@@ -19,6 +21,7 @@ const Services = () => {
     hasPurchased,
     showDownloadModal,
     downloadResource,
+    error,
     handleCategoryChange,
     handleResourceAccess,
     closeDownloadModal
@@ -29,11 +32,20 @@ const Services = () => {
   // Set up toast event listener
   React.useEffect(() => {
     const handleShowToast = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail) {
+      try {
+        const customEvent = event as CustomEvent;
+        if (customEvent.detail) {
+          toast({
+            title: customEvent.detail.title,
+            description: customEvent.detail.description
+          });
+        }
+      } catch (err) {
+        console.error("Error handling toast event:", err);
         toast({
-          title: customEvent.detail.title,
-          description: customEvent.detail.description
+          title: "Error",
+          description: "An error occurred displaying notification",
+          variant: "destructive"
         });
       }
     };
@@ -49,13 +61,26 @@ const Services = () => {
     <>
       <ServicesTitle />
       
-      <CategorySelection />
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      <CategorySelection 
+        selectedCategory={selectedCategory} 
+        onCategoryChange={handleCategoryChange} 
+      />
       
       <div id="packages-grid" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <ServicePackages onCategoryChange={handleCategoryChange} />
       </div>
       
-      <PackageFeatures />
+      <PackageFeatures 
+        selectedCategory={selectedCategory}
+        error={error}
+      />
       
       <ContactCTA />
       
