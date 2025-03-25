@@ -1,22 +1,26 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import { CustomerInfo } from '@/types/checkout';
 
 export const useCustomerInfo = () => {
   const { user } = useAuth();
   const { profile, isLoading, error } = useProfile(user?.id);
   const { toast } = useToast();
   
-  const [customerInfo, setCustomerInfo] = useState({
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     firstName: '',
     lastName: '',
     company: '',
+    email: '',
     address: '',
     city: '',
     state: '',
     zipCode: '',
     country: 'US',
+    invoiceDeliveryMethod: 'email'
   });
   
   const [validationErrors, setValidationErrors] = useState({
@@ -36,7 +40,7 @@ export const useCustomerInfo = () => {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
         company: profile.company || '',
-        // Don't use email and phone if they don't exist on the profile type
+        // Don't try to use fields that don't exist on the profile
       }));
     }
   }, [profile]);

@@ -2,14 +2,7 @@
 import { ReactNode } from "react";
 import { RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-interface PaymentOptionProps {
-  id: string;
-  value: string; 
-  label: string;
-  icon: ReactNode;
-  isSelected: boolean;
-}
+import { PaymentOptionProps } from "@/types/checkout";
 
 export const PaymentOption = ({ id, value, label, icon, isSelected }: PaymentOptionProps) => {
   return (

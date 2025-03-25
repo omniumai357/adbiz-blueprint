@@ -1,13 +1,8 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ContactMethod } from "./types";
+import { PrimaryContactMethodProps } from "@/types/contact";
 import { scrollToElementIfAnchor } from "./contact-utils";
-
-interface PrimaryContactMethodProps {
-  method: ContactMethod;
-  onInteraction?: (id: string) => void;
-}
 
 export const PrimaryContactMethod: React.FC<PrimaryContactMethodProps> = ({ 
   method,

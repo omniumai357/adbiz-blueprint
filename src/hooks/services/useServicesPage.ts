@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -78,7 +79,7 @@ export function useServicesPage() {
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#start-tour') {
-        startTour();
+        startTour("services"); // Pass the required argument here
         window.history.pushState("", document.title, window.location.pathname + window.location.search);
       }
     };

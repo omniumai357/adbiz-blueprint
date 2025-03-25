@@ -10,6 +10,7 @@ import CustomerPersonalInfo from "./customer-personal-info";
 import CustomerBusinessInfo from "./customer-business-info";
 import InvoiceDeliveryOptions from "./invoice-delivery-options";
 import CustomerInfoSkeleton from "./customer-info-skeleton";
+import { CustomerInfo, CustomerInfoFormProps } from "@/types/checkout";
 
 // Define the form schema
 const customerSchema = z.object({
@@ -22,14 +23,6 @@ const customerSchema = z.object({
   invoiceDeliveryMethod: z.enum(["email", "sms", "both"]).default("email"),
   userId: z.string().optional()
 });
-
-export type CustomerInfo = z.infer<typeof customerSchema>;
-
-interface CustomerInfoFormProps {
-  customerInfo: CustomerInfo;
-  onChange: (values: CustomerInfo) => void;
-  isLoading?: boolean;
-}
 
 const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: CustomerInfoFormProps) => {
   const form = useForm<CustomerInfo>({

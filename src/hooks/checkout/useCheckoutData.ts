@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AddOnItem } from "@/components/checkout/add-on-item";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { AddOnItem, CustomerInfo } from "@/types/checkout";
 
 interface UseCheckoutDataOptions {
   userId?: string | null;
@@ -22,6 +21,7 @@ export function useCheckoutData({ userId, profile }: UseCheckoutDataOptions = {}
     lastName: "",
     company: "",
     email: "",
+    invoiceDeliveryMethod: "email"
   });
 
   // Fetch available add-ons
@@ -78,6 +78,7 @@ export function useCheckoutData({ userId, profile }: UseCheckoutDataOptions = {}
         lastName: profile.last_name || "",
         company: profile.company || "",
         email: "",
+        invoiceDeliveryMethod: "email"
       });
     }
   }, [profile]);

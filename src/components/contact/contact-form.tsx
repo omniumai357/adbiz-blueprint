@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { MessageSquare } from "lucide-react";
 import { ContactFormFields } from "@/components/contact/contact-form-fields";
 import { ContactSuccessMessage } from "@/components/contact/contact-success-message";
