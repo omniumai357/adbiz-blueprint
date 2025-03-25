@@ -21,15 +21,19 @@ export const useAvailableRewards = (userId: string | undefined) => {
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2
   });
   
-  const { claimReward, isClaimingReward, claimError } = useRewardStatus(userId);
+  const { claimReward, isClaimingReward, claimError, claimStatus } = useRewardStatus(userId);
 
   return {
     rewards: rewardsQuery.data || [],
     isLoading: rewardsQuery.isLoading,
+    isSuccess: rewardsQuery.isSuccess,
     error: rewardsQuery.error || claimError,
     claimReward,
-    isClaimingReward
+    isClaimingReward,
+    claimStatus,
+    refetch: rewardsQuery.refetch
   };
 };

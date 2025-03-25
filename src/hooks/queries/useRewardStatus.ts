@@ -22,12 +22,16 @@ export function useRewardStatus(userId: string | undefined) {
       // Invalidate rewards query to refresh data
       queryClient.invalidateQueries({ queryKey: ['rewards', { userId }] });
       queryClient.invalidateQueries({ queryKey: ['milestones', { userId }] });
+    },
+    onError: (error) => {
+      console.error("Failed to claim reward:", error);
     }
   });
 
   return {
     claimReward: claimRewardMutation.mutate,
     isClaimingReward: claimRewardMutation.isPending,
-    claimError: claimRewardMutation.error
+    claimError: claimRewardMutation.error,
+    claimStatus: claimRewardMutation.status
   };
 }

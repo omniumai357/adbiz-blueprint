@@ -6,59 +6,10 @@ import AddOnsSection from "@/components/checkout/add-ons-section";
 import DiscountSection from "@/components/checkout/form/discount-section";
 import PaymentSection from "@/components/checkout/form/payment-section";
 import PaymentMethodSection from "@/components/checkout/form/payment-method-section";
-import { AddOnItem } from "./add-on-item";
-import { BundleDiscountInfo } from "./bundle-discount";
-import { LimitedTimeOfferInfo } from "./limited-time-offer";
-import { UserMilestone } from "@/hooks/rewards/useMilestones";
-import { CustomerInfo } from "@/types/checkout";
-
-type PaymentMethod = "credit-card" | "paypal";
 
 interface CheckoutFormProps {
-  customerInfo: CustomerInfo;
-  setCustomerInfo: (info: CustomerInfo) => void;
-  paymentMethod: PaymentMethod;
-  setPaymentMethod: (method: PaymentMethod) => void;
-  packagePrice: number;
-  packageDetails: any;
-  addOns?: AddOnItem[];
-  selectedAddOnIds?: string[];
-  onAddOnToggle?: (id: string) => void;
-  bundleDiscount?: BundleDiscountInfo;
-  isDiscountApplicable?: boolean;
-  tieredDiscount?: {
-    id: string;
-    name: string;
-    description: string;
-    minTotal: number;
-    maxTotal: number;
-    discountAmount: number;
-    discountType: string;
-    firstPurchaseBonus: number;
-  } | null;
-  isFirstPurchase?: boolean;
-  bundleDiscountAmount?: number;
-  tieredDiscountAmount?: number;
-  isLoyaltyProgramEnabled?: boolean;
-  loyaltyBonusAmount?: number;
-  onLoyaltyProgramToggle?: () => void;
-  totalDiscountAmount?: number;
-  activeOffers?: LimitedTimeOfferInfo[];
-  availableOffer?: LimitedTimeOfferInfo | null;
-  offerDiscountAmount?: number;
-  personalizedCoupon?: any;
-  appliedCoupon?: any;
-  couponDiscountAmount?: number;
-  isCheckingCoupon?: boolean;
-  applyCoupon?: (code: string) => void;
-  removeCoupon?: () => void;
-  appliedMilestoneReward?: UserMilestone | null;
-  milestoneRewardAmount?: number;
-  onMilestoneRewardApplied?: (reward: UserMilestone) => void;
+  checkout: ReturnType<typeof import("@/hooks/checkout/useCheckout").useCheckout>;
   onOrderSuccess: (id: string) => void;
-  isProfileLoading: boolean;
-  isLoading?: boolean;
-  total: number;
 }
 
 /**
@@ -70,50 +21,25 @@ interface CheckoutFormProps {
  * - Discounts and offers
  * - Payment options
  * 
- * @param props CheckoutFormProps containing all necessary data and handlers
+ * @param props CheckoutFormProps containing the checkout object and success handler
  */
 const CheckoutForm = ({
-  customerInfo,
-  setCustomerInfo,
-  paymentMethod,
-  setPaymentMethod,
-  packagePrice,
-  packageDetails,
-  addOns = [],
-  selectedAddOnIds = [],
-  onAddOnToggle = () => {},
-  bundleDiscount,
-  isDiscountApplicable = false,
-  tieredDiscount = null,
-  isFirstPurchase = false,
-  bundleDiscountAmount = 0,
-  tieredDiscountAmount = 0,
-  isLoyaltyProgramEnabled = false,
-  loyaltyBonusAmount = 0,
-  onLoyaltyProgramToggle = () => {},
-  totalDiscountAmount = 0,
-  activeOffers = [],
-  availableOffer = null,
-  offerDiscountAmount = 0,
-  personalizedCoupon = null,
-  appliedCoupon = null,
-  couponDiscountAmount = 0,
-  isCheckingCoupon = false,
-  applyCoupon = () => {},
-  removeCoupon = () => {},
-  appliedMilestoneReward = null,
-  milestoneRewardAmount = 0,
-  onMilestoneRewardApplied = () => {},
+  checkout,
   onOrderSuccess,
-  isProfileLoading,
-  isLoading = false,
-  total,
 }: CheckoutFormProps) => {
-  const selectedAddOns = addOns.filter(addon => selectedAddOnIds.includes(addon.id));
-  const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
-  const subtotal = packagePrice + addOnsTotal;
+  const {
+    orderDetails,
+    customerInfo,
+    setCustomerInfo,
+    paymentMethod,
+    setPaymentMethod,
+    addOns,
+    discounts,
+    totals,
+    isLoading
+  } = checkout;
 
-  if (isLoading || isProfileLoading) {
+  if (isLoading || orderDetails.isProfileLoading) {
     return (
       <>
         <Skeleton className="w-full h-12 mt-8" />
@@ -128,39 +54,39 @@ const CheckoutForm = ({
       <CustomerInfoForm 
         customerInfo={customerInfo}
         onChange={setCustomerInfo}
-        isLoading={isProfileLoading}
+        isLoading={orderDetails.isProfileLoading}
       />
       
       {/* Add-ons section */}
-      {addOns.length > 0 && (
+      {addOns.available.length > 0 && (
         <AddOnsSection 
-          addOns={addOns}
-          selectedAddOns={selectedAddOnIds}
-          onAddOnToggle={onAddOnToggle}
+          addOns={addOns.available}
+          selectedAddOns={addOns.selected}
+          onAddOnToggle={addOns.toggle}
         />
       )}
       
       {/* Discounts and offers section */}
       <DiscountSection 
-        subtotal={subtotal}
+        subtotal={totals.subtotal}
         userId={customerInfo?.userId || null}
-        bundleDiscount={bundleDiscount}
-        isDiscountApplicable={isDiscountApplicable}
-        tieredDiscount={tieredDiscount}
-        isFirstPurchase={isFirstPurchase}
-        isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
-        loyaltyBonusAmount={loyaltyBonusAmount}
-        onLoyaltyProgramToggle={onLoyaltyProgramToggle}
-        activeOffers={activeOffers}
-        availableOffer={availableOffer}
-        personalizedCoupon={personalizedCoupon}
-        appliedCoupon={appliedCoupon}
-        couponDiscountAmount={couponDiscountAmount}
-        isCheckingCoupon={isCheckingCoupon}
-        applyCoupon={applyCoupon}
-        removeCoupon={removeCoupon}
-        onMilestoneRewardApplied={onMilestoneRewardApplied}
-        appliedMilestoneReward={appliedMilestoneReward}
+        bundleDiscount={discounts.bundle.info}
+        isDiscountApplicable={discounts.bundle.applicable}
+        tieredDiscount={discounts.tiered.info}
+        isFirstPurchase={discounts.tiered.isFirstPurchase}
+        isLoyaltyProgramEnabled={discounts.loyalty.enabled}
+        loyaltyBonusAmount={discounts.loyalty.amount}
+        onLoyaltyProgramToggle={discounts.loyalty.toggle}
+        activeOffers={discounts.offers.active}
+        availableOffer={discounts.offers.available}
+        personalizedCoupon={discounts.coupons.personal}
+        appliedCoupon={discounts.coupons.applied}
+        couponDiscountAmount={discounts.coupons.amount}
+        isCheckingCoupon={discounts.coupons.isChecking}
+        applyCoupon={discounts.coupons.apply}
+        removeCoupon={discounts.coupons.remove}
+        onMilestoneRewardApplied={discounts.rewards.applyReward}
+        appliedMilestoneReward={discounts.rewards.applied}
       />
       
       {/* Payment method selection */}
@@ -172,24 +98,10 @@ const CheckoutForm = ({
       {/* Payment section */}
       <PaymentSection 
         paymentMethod={paymentMethod}
-        setPaymentMethod={setPaymentMethod}
-        subtotal={subtotal}
-        packageDetails={packageDetails}
-        selectedAddOns={selectedAddOns}
+        packageDetails={orderDetails.packageDetails}
         customerInfo={customerInfo}
+        total={totals.total}
         onOrderSuccess={onOrderSuccess}
-        bundleDiscount={bundleDiscount}
-        isDiscountApplicable={isDiscountApplicable}
-        tieredDiscount={tieredDiscount}
-        isFirstPurchase={isFirstPurchase}
-        isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
-        loyaltyBonusAmount={loyaltyBonusAmount}
-        availableOffer={availableOffer}
-        offerDiscountAmount={offerDiscountAmount}
-        appliedCoupon={appliedCoupon}
-        couponDiscountAmount={couponDiscountAmount}
-        totalDiscountAmount={totalDiscountAmount}
-        total={total}
       />
     </div>
   );

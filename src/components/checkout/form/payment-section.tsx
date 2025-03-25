@@ -4,37 +4,21 @@ import { useToast } from "@/hooks/ui/use-toast";
 import PayPalButton from "@/components/PayPalButton";
 import CardPaymentForm from "@/components/checkout/card-payment-form";
 import { CustomerInfo } from "@/types/checkout";
-import { BundleDiscountInfo } from "../bundle-discount";
-import { LimitedTimeOfferInfo } from "../limited-time-offer";
 
 interface PaymentSectionProps {
   paymentMethod: "credit-card" | "paypal";
-  setPaymentMethod: (method: "credit-card" | "paypal") => void;
-  subtotal: number;
   packageDetails: any;
-  selectedAddOns: any[];
   customerInfo: CustomerInfo;
-  onOrderSuccess: (id: string) => void;
-  bundleDiscount?: BundleDiscountInfo;
-  isDiscountApplicable?: boolean;
-  tieredDiscount?: any;
-  isFirstPurchase?: boolean;
-  isLoyaltyProgramEnabled?: boolean;
-  loyaltyBonusAmount?: number;
-  availableOffer?: LimitedTimeOfferInfo | null;
-  offerDiscountAmount?: number;
-  appliedCoupon?: any;
-  couponDiscountAmount?: number;
-  totalDiscountAmount?: number;
   total: number;
+  onOrderSuccess: (id: string) => void;
 }
 
 const PaymentSection: React.FC<PaymentSectionProps> = ({
   paymentMethod,
   packageDetails,
   customerInfo,
-  onOrderSuccess,
   total,
+  onOrderSuccess,
 }) => {
   const { toast } = useToast();
 

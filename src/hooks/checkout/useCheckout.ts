@@ -16,6 +16,7 @@ import { CustomerInfo } from "@/types/checkout";
  */
 export function useCheckout() {
   // Use our specialized hooks
+  const orderDetails = useOrderDetails();
   const {
     showDownloadOptions,
     orderId,
@@ -28,9 +29,10 @@ export function useCheckout() {
     isProfileLoading,
     profile,
     handleOrderSuccess: handleBaseOrderSuccess
-  } = useOrderDetails();
+  } = orderDetails;
 
   // Use the consolidated hook for add-ons and customer info
+  const checkoutData = useCheckoutData({ userId, profile });
   const {
     availableAddOns,
     selectedAddOnIds,
@@ -39,10 +41,11 @@ export function useCheckout() {
     addOnsTotal,
     customerInfo,
     setCustomerInfo: setBaseCustomerInfo
-  } = useCheckoutData({ userId, profile });
+  } = checkoutData;
 
   const { paymentMethod, setPaymentMethod } = usePaymentOptions();
 
+  const rewardsAndLoyalty = useRewardsAndLoyalty(userId, 0);
   const {
     isLoyaltyProgramEnabled,
     loyaltyBonusAmount,
@@ -51,8 +54,9 @@ export function useCheckout() {
     appliedMilestoneReward,
     handleMilestoneRewardApplied,
     handleOrderSuccessWithRewards
-  } = useRewardsAndLoyalty(userId, 0);
+  } = rewardsAndLoyalty;
 
+  const couponHandling = useCouponHandling();
   const {
     appliedCoupon,
     isCheckingCoupon,
@@ -60,8 +64,9 @@ export function useCheckout() {
     applyCoupon,
     removeCoupon,
     updateCouponDiscountAmount,
-  } = useCouponHandling();
+  } = couponHandling;
 
+  const discountState = useDiscountState();
   const {
     bundleDiscount,
     isDiscountApplicable,
@@ -77,18 +82,10 @@ export function useCheckout() {
     setActiveOffers,
     setAvailableOffer,
     setPersonalizedCoupon
-  } = useDiscountState();
+  } = discountState;
 
   // These calculations are now handled by useCheckoutCalculations
-  const {
-    subtotal,
-    bundleDiscountAmount,
-    tieredDiscountAmount,
-    offerDiscountAmount,
-    milestoneRewardAmount,
-    totalDiscountAmount,
-    total
-  } = useCheckoutCalculations({
+  const calculations = useCheckoutCalculations({
     packagePrice,
     selectedAddOns,
     bundleDiscount,
@@ -101,6 +98,16 @@ export function useCheckout() {
     appliedCoupon,
     appliedMilestoneReward
   });
+  
+  const {
+    subtotal,
+    bundleDiscountAmount,
+    tieredDiscountAmount,
+    offerDiscountAmount,
+    milestoneRewardAmount,
+    totalDiscountAmount,
+    total
+  } = calculations;
 
   // Custom handler for customer info changes to maintain shape
   const setCustomerInfo = (info: CustomerInfo) => {
@@ -131,50 +138,86 @@ export function useCheckout() {
     await handleOrderSuccessWithRewards(orderId, total);
   };
 
+  // We create a simplified API with optional nested objects to reduce prop drilling
   return {
+    // Order details
+    orderDetails: {
+      showDownloadOptions,
+      orderId,
+      invoiceNumber,
+      isGeneratingInvoice,
+      userId,
+      packageName,
+      packagePrice,
+      packageDetails,
+      isProfileLoading,
+    },
+    
+    // Customer info
     customerInfo,
     setCustomerInfo,
+    
+    // Payment method
     paymentMethod,
     setPaymentMethod,
-    showDownloadOptions,
-    orderId,
-    invoiceNumber,
-    isGeneratingInvoice,
-    userId,
-    packageName,
-    packagePrice,
-    packageDetails,
-    isProfileLoading,
+    
+    // Add-ons
+    addOns: {
+      available: availableAddOns,
+      selected: selectedAddOnIds,
+      selectedItems: selectedAddOns,
+      toggle: handleAddOnToggle,
+      total: addOnsTotal,
+    },
+    
+    // Discounts and offers
+    discounts: {
+      bundle: {
+        info: bundleDiscount,
+        applicable: isDiscountApplicable,
+        amount: bundleDiscountAmount,
+      },
+      tiered: {
+        info: appliedTier,
+        isFirstPurchase,
+        amount: tieredDiscountAmount,
+      },
+      loyalty: {
+        enabled: isLoyaltyProgramEnabled,
+        toggle: handleLoyaltyProgramToggle,
+        amount: loyaltyBonusAmount,
+      },
+      offers: {
+        active: activeOffers,
+        available: availableOffer,
+        amount: offerDiscountAmount,
+      },
+      coupons: {
+        personal: personalizedCoupon,
+        applied: appliedCoupon,
+        amount: couponDiscountAmount,
+        isChecking: isCheckingCoupon,
+        apply: applyCoupon,
+        remove: removeCoupon,
+      },
+      rewards: {
+        applied: appliedMilestoneReward,
+        applyReward: handleMilestoneRewardApplied,
+        amount: milestoneRewardAmount,
+      },
+      total: totalDiscountAmount,
+    },
+    
+    // Totals
+    totals: {
+      subtotal,
+      total,
+    },
+    
+    // Actions
     handleOrderSuccess,
-    availableAddOns,
-    selectedAddOnIds,
-    handleAddOnToggle,
-    selectedAddOns,
-    bundleDiscount,
-    isDiscountApplicable,
-    appliedTier,
-    isFirstPurchase,
-    isLoyaltyProgramEnabled,
-    loyaltyBonusAmount,
-    handleLoyaltyProgramToggle,
-    activeOffers,
-    availableOffer,
-    personalizedCoupon,
-    appliedCoupon,
-    couponDiscountAmount,
-    isCheckingCoupon,
-    applyCoupon,
-    removeCoupon,
+    
+    // Loading state
     isLoading: false,
-    addOnsTotal,
-    subtotal,
-    bundleDiscountAmount,
-    tieredDiscountAmount,
-    offerDiscountAmount,
-    milestoneRewardAmount,
-    totalDiscountAmount,
-    total,
-    appliedMilestoneReward,
-    handleMilestoneRewardApplied,
   };
 }

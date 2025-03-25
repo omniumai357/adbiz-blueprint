@@ -21,64 +21,19 @@ import { CustomerInfo } from "@/types/checkout";
  * and business logic, keeping the component focused on presentation.
  */
 const Checkout = () => {
-  const {
-    customerInfo,
+  const checkout = useCheckout();
+  const { 
+    orderDetails, 
+    customerInfo, 
     setCustomerInfo,
-    paymentMethod,
+    paymentMethod, 
     setPaymentMethod,
-    showDownloadOptions,
-    orderId,
-    invoiceNumber,
-    isGeneratingInvoice,
-    userId,
-    packageName,
-    packagePrice,
-    packageDetails,
-    isProfileLoading,
+    addOns,
+    discounts,
+    totals,
     handleOrderSuccess,
-    availableAddOns,
-    selectedAddOnIds,
-    handleAddOnToggle,
-    selectedAddOns,
-    bundleDiscount,
-    isDiscountApplicable,
-    bundleDiscountAmount,
-    appliedTier,
-    isFirstPurchase,
-    tieredDiscountAmount,
-    isLoyaltyProgramEnabled,
-    loyaltyBonusAmount,
-    handleLoyaltyProgramToggle,
-    personalizedCoupon,
-    appliedCoupon,
-    couponDiscountAmount,
-    isCheckingCoupon,
-    applyCoupon,
-    removeCoupon,
-    activeOffers,
-    availableOffer,
-    offerDiscountAmount,
-    appliedMilestoneReward,
-    handleMilestoneRewardApplied,
-    milestoneRewardAmount,
     isLoading,
-    subtotal,
-    totalDiscountAmount,
-    total
-  } = useCheckout();
-
-  const handleCustomerInfoChange = (info: CustomerInfo) => {
-    setCustomerInfo({
-      firstName: info.firstName,
-      lastName: info.lastName,
-      company: info.company || "",
-      email: info.email,
-      phone: info.phone,
-      website: info.website,
-      invoiceDeliveryMethod: info.invoiceDeliveryMethod,
-      userId: info.userId
-    });
-  };
+  } = checkout;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -89,71 +44,38 @@ const Checkout = () => {
           <h1 className="text-3xl font-bold mb-8">Checkout</h1>
           
           <OrderSummary 
-            packageName={packageName} 
-            packagePrice={packagePrice}
-            selectedAddOns={selectedAddOns}
-            appliedDiscount={isDiscountApplicable ? bundleDiscount : undefined}
-            tieredDiscount={appliedTier}
-            isFirstPurchase={isFirstPurchase}
-            bundleDiscountAmount={bundleDiscountAmount}
-            tieredDiscountAmount={tieredDiscountAmount}
-            loyaltyBonusAmount={loyaltyBonusAmount}
-            totalDiscountAmount={totalDiscountAmount}
-            invoiceNumber={invoiceNumber}
-            isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
-            limitedTimeOffer={availableOffer ?? undefined}
-            offerDiscountAmount={offerDiscountAmount}
-            appliedCoupon={appliedCoupon ?? undefined}
-            couponDiscountAmount={couponDiscountAmount}
-            appliedMilestoneReward={appliedMilestoneReward}
-            milestoneRewardAmount={milestoneRewardAmount}
+            packageName={orderDetails.packageName} 
+            packagePrice={orderDetails.packagePrice}
+            selectedAddOns={addOns.selectedItems}
+            appliedDiscount={discounts.bundle.info}
+            tieredDiscount={discounts.tiered.info}
+            isFirstPurchase={discounts.tiered.isFirstPurchase}
+            bundleDiscountAmount={discounts.bundle.amount}
+            tieredDiscountAmount={discounts.tiered.amount}
+            loyaltyBonusAmount={discounts.loyalty.amount}
+            totalDiscountAmount={discounts.total}
+            invoiceNumber={orderDetails.invoiceNumber}
+            isLoyaltyProgramEnabled={discounts.loyalty.enabled}
+            limitedTimeOffer={discounts.offers.available ?? undefined}
+            offerDiscountAmount={discounts.offers.amount}
+            appliedCoupon={discounts.coupons.applied ?? undefined}
+            couponDiscountAmount={discounts.coupons.amount}
+            appliedMilestoneReward={discounts.rewards.applied}
+            milestoneRewardAmount={discounts.rewards.amount}
           />
           
-          {showDownloadOptions && orderId ? (
+          {orderDetails.showDownloadOptions && orderDetails.orderId ? (
             <CheckoutSuccess 
-              orderId={orderId}
-              packageName={packageName}
-              invoiceNumber={invoiceNumber}
-              isGeneratingInvoice={isGeneratingInvoice}
-              userId={userId}
+              orderId={orderDetails.orderId}
+              packageName={orderDetails.packageName}
+              invoiceNumber={orderDetails.invoiceNumber}
+              isGeneratingInvoice={orderDetails.isGeneratingInvoice}
+              userId={orderDetails.userId}
             />
           ) : (
             <CheckoutForm 
-              customerInfo={customerInfo}
-              setCustomerInfo={handleCustomerInfoChange}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              packagePrice={packagePrice}
-              packageDetails={packageDetails}
-              addOns={availableAddOns}
-              selectedAddOnIds={selectedAddOnIds}
-              onAddOnToggle={handleAddOnToggle}
-              bundleDiscount={bundleDiscount}
-              isDiscountApplicable={isDiscountApplicable}
-              tieredDiscount={appliedTier}
-              isFirstPurchase={isFirstPurchase}
-              bundleDiscountAmount={bundleDiscountAmount}
-              tieredDiscountAmount={tieredDiscountAmount}
-              isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
-              loyaltyBonusAmount={loyaltyBonusAmount}
-              onLoyaltyProgramToggle={handleLoyaltyProgramToggle}
-              activeOffers={activeOffers}
-              availableOffer={availableOffer}
-              offerDiscountAmount={offerDiscountAmount}
-              personalizedCoupon={personalizedCoupon}
-              appliedCoupon={appliedCoupon}
-              couponDiscountAmount={couponDiscountAmount}
-              isCheckingCoupon={isCheckingCoupon}
-              applyCoupon={applyCoupon}
-              removeCoupon={removeCoupon}
-              appliedMilestoneReward={appliedMilestoneReward}
-              milestoneRewardAmount={milestoneRewardAmount}
-              onMilestoneRewardApplied={handleMilestoneRewardApplied}
-              totalDiscountAmount={totalDiscountAmount}
+              checkout={checkout}
               onOrderSuccess={handleOrderSuccess}
-              isProfileLoading={isProfileLoading}
-              isLoading={isLoading}
-              total={total}
             />
           )}
         </div>
