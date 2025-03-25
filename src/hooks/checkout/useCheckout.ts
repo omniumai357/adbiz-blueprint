@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useOrderDetails } from "./useOrderDetails";
-import { useAddOnSelection } from "./useAddOnSelection";
-import { useCustomerCheckoutInfo } from "./useCustomerCheckoutInfo";
+import { useCheckoutData } from "./useCheckoutData";
 import { usePaymentOptions } from "./usePaymentOptions";
 import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
 import { useCouponHandling } from "./useCouponHandling";
@@ -26,14 +25,16 @@ export function useCheckout() {
     handleOrderSuccess: handleBaseOrderSuccess
   } = useOrderDetails();
 
+  // Use the new consolidated hook for add-ons and customer info
   const {
     availableAddOns,
     selectedAddOnIds,
     handleAddOnToggle,
-    selectedAddOns
-  } = useAddOnSelection();
-
-  const { customerInfo, setCustomerInfo: setBaseCustomerInfo } = useCustomerCheckoutInfo(profile);
+    selectedAddOns,
+    addOnsTotal,
+    customerInfo,
+    setCustomerInfo: setBaseCustomerInfo
+  } = useCheckoutData({ userId, profile });
 
   const { paymentMethod, setPaymentMethod } = usePaymentOptions();
 
@@ -80,7 +81,6 @@ export function useCheckout() {
   
   // Use the calculations hook
   const {
-    addOnsTotal,
     subtotal,
     milestoneRewardAmount,
     totalDiscountAmount,
@@ -117,7 +117,7 @@ export function useCheckout() {
   useEffect(() => {
     updateLoyaltyBonus(subtotal);
     updateCouponDiscountAmount(subtotal);
-  }, [subtotal]);
+  }, [subtotal, updateLoyaltyBonus, updateCouponDiscountAmount]);
 
   // Combined order success handler
   const handleOrderSuccess = async (orderId: string) => {
