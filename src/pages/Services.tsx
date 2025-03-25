@@ -5,14 +5,19 @@ import { ServicePackages } from '@/components/ServicePackages';
 import { NextStepsSection, getServicePageRecommendations } from '@/components/recommendation/NextStepsSection';
 import { useTour } from '@/contexts/tour-context';
 import { supabase } from '@/integrations/supabase/client';
+import DownloadOptions from '@/components/DownloadOptions';
+import { useToast } from '@/hooks/ui/use-toast';
 
 const Services = () => {
   const [searchParams] = useSearchParams();
-  const { isActive: isTourActive } = useTour();
+  const { isActive: isTourActive, startTour } = useTour();
+  const { toast } = useToast();
   const [viewedPackages, setViewedPackages] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("monthly");
   const [hasPurchased, setHasPurchased] = useState(false);
   const [hasCompletedTour, setHasCompletedTour] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadResource, setDownloadResource] = useState<{id: string, type: string, title: string} | null>(null);
   
   // Track viewed packages
   useEffect(() => {
@@ -64,6 +69,72 @@ const Services = () => {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
+  
+  // Handle resource downloads or access
+  const handleResourceAccess = (resourceId: string, resourceType: string) => {
+    // In a real app, you would check if the user has permission to access this resource
+    // For this demo, we'll just show the download modal
+    
+    let resourceTitle = "";
+    
+    // Determine resource title based on ID
+    if (resourceId === "premium-strategy-guide") {
+      resourceTitle = "Premium Marketing Strategy Guide";
+    } else if (resourceId === "budget-marketing-guide") {
+      resourceTitle = "Effective Marketing on a Budget";
+    } else if (resourceId === "getting-started-guide") {
+      resourceTitle = "Getting Started with Your Package";
+    }
+    
+    setDownloadResource({
+      id: resourceId,
+      type: resourceType,
+      title: resourceTitle
+    });
+    
+    setShowDownloadModal(true);
+  };
+  
+  // Handle anchor links for special actions like starting the tour
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#start-tour') {
+        startTour();
+        // Clear the hash to avoid restarting the tour on refresh
+        window.history.pushState("", document.title, window.location.pathname + window.location.search);
+      }
+    };
+    
+    // Check hash on initial load
+    handleHashChange();
+    
+    // Add event listener for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [startTour]);
+  
+  // Handle custom events (like the copied toast notification from NextStepCard)
+  useEffect(() => {
+    const handleShowToast = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail) {
+        toast({
+          title: customEvent.detail.title,
+          description: customEvent.detail.description
+        });
+      }
+    };
+    
+    window.addEventListener('show-toast', handleShowToast);
+    
+    return () => {
+      window.removeEventListener('show-toast', handleShowToast);
+    };
+  }, [toast]);
 
   return (
     <>
@@ -92,7 +163,7 @@ const Services = () => {
         </button>
       </div>
       
-      {/* Add the personalized next steps recommendations section with tutorials and e-books */}
+      {/* Add the personalized next steps recommendations section with tutorials, e-books, and partner discounts */}
       <NextStepsSection 
         recommendations={getServicePageRecommendations(
           viewedPackages,
@@ -102,7 +173,18 @@ const Services = () => {
         )}
         className="mt-12 mb-8"
         title="Recommended Next Steps"
+        onResourceDownload={handleResourceAccess}
       />
+      
+      {/* Resource download modal */}
+      {showDownloadModal && downloadResource && (
+        <DownloadOptions
+          purchaseId="resource-download"
+          packageName={downloadResource.title}
+          resourceType={downloadResource.type as "ebook" | "tutorial"}
+          resourceTitle={downloadResource.title}
+        />
+      )}
     </>
   );
 };

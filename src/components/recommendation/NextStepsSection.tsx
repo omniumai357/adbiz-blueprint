@@ -1,212 +1,184 @@
 
 import React from "react";
 import { NextStepCard, NextStepRecommendation } from "./NextStepCard";
-import { TourButton } from "@/components/tour/TourButton";
 import { useToast } from "@/hooks/ui/use-toast";
-import { 
-  ArrowRight, 
-  LightbulbIcon, 
-  Star, 
-  Package, 
-  MessageSquare, 
-  CheckCircle,
-  BookOpen,
-  PlayCircle
-} from "lucide-react";
+import { Section } from "@/components/ui/section";
+import { cn } from "@/lib/utils";
 
 interface NextStepsSectionProps {
   recommendations: NextStepRecommendation[];
   className?: string;
   title?: string;
+  onResourceDownload?: (resourceId: string, resourceType: string) => void;
 }
 
-export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
-  recommendations,
+export const NextStepsSection: React.FC<NextStepsSectionProps> = ({ 
+  recommendations, 
   className,
   title = "Recommended Next Steps",
+  onResourceDownload
 }) => {
   const { toast } = useToast();
   
-  if (!recommendations.length) return null;
-  
-  // Sort recommendations by priority (lower number = higher priority)
-  const sortedRecommendations = [...recommendations].sort(
-    (a, b) => a.priority - b.priority
-  );
-
+  // Handle resource downloads
   const handleResourceDownload = (resourceId: string, resourceType: string) => {
-    // In a real implementation, this would trigger download tracking in your backend
-    toast({
-      title: `${resourceType === 'tutorial' ? 'Tutorial' : 'Resource'} Unlocked`,
-      description: `Your ${resourceType} is now available for ${resourceType === 'tutorial' ? 'viewing' : 'download'}.`,
-    });
+    if (onResourceDownload) {
+      onResourceDownload(resourceId, resourceType);
+      return;
+    }
     
-    // Simulate a download delay
-    setTimeout(() => {
-      // Open the download or tutorial page in a new tab/window
-      window.open(`/resources/${resourceType}/${resourceId}`, "_blank");
-    }, 500);
+    // Default handling if no custom handler provided
+    toast({
+      title: `${resourceType === 'ebook' ? 'E-book' : 'Tutorial'} access granted`,
+      description: `You now have access to this resource.`
+    });
   };
+  
+  if (!recommendations || recommendations.length === 0) {
+    return null;
+  }
 
   return (
-    <section className={className}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-medium flex items-center gap-2">
-          <LightbulbIcon className="h-5 w-5 text-yellow-500" />
-          {title}
-        </h3>
-        <div className="flex items-center gap-2">
-          <TourButton className="h-8 w-8" />
-        </div>
-      </div>
-      
+    <div className={cn("space-y-6", className)}>
+      <h2 className="text-2xl font-semibold">{title}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedRecommendations.map((recommendation) => (
-          <NextStepCard
-            key={recommendation.id}
-            recommendation={recommendation}
-            onResourceDownload={handleResourceDownload}
-          />
-        ))}
+        {recommendations
+          .sort((a, b) => a.priority - b.priority)
+          .map((recommendation) => (
+            <NextStepCard 
+              key={recommendation.id} 
+              recommendation={recommendation}
+              onResourceDownload={handleResourceDownload}
+            />
+          ))}
       </div>
-    </section>
+    </div>
   );
 };
 
-// Helper function to generate recommendations based on context
+// Helper function to generate service page recommendations
 export const getServicePageRecommendations = (
-  viewedPackages: string[] = [], 
-  completedTour: boolean = false,
+  viewedPackages: string[] = [],
+  hasCompletedTour: boolean = false,
   selectedCategory: string = "monthly",
   hasPurchased: boolean = false
 ): NextStepRecommendation[] => {
   const recommendations: NextStepRecommendation[] = [];
-
-  // If user hasn't completed the tour, suggest it
-  if (!completedTour) {
+  
+  // Always recommend completing the tour if not completed
+  if (!hasCompletedTour) {
     recommendations.push({
-      id: "tour",
+      id: "tour-recommendation",
       title: "Take a Guided Tour",
-      description: "Explore our services with a step-by-step guide to find what's best for your business.",
+      description: "Discover all the features of our services page with a guided tour.",
       actionText: "Start Tour",
-      actionLink: "#tour-button", // This will be handled by the TourButton
-      icon: <Star className="h-5 w-5" />,
+      actionLink: "#start-tour", // This will be handled by the component
       priority: 1,
       type: "navigation"
     });
   }
-
-  // If user has viewed packages but not chosen one
+  
+  // Recommend packages based on what the user has viewed
   if (viewedPackages.length > 0) {
-    recommendations.push({
-      id: "package-selection",
-      title: "Choose a Package",
-      description: `You've explored our ${selectedCategory} packages. Ready to select one that fits your needs?`,
-      actionText: "View Packages",
-      actionLink: "#packages-grid",
-      icon: <Package className="h-5 w-5" />,
-      priority: 2,
-      type: "navigation"
-    });
+    // If user has viewed packages but not purchased, suggest contacting for consultation
+    if (!hasPurchased) {
+      recommendations.push({
+        id: "contact-consultation",
+        title: "Get a Free Consultation",
+        description: "Speak with our marketing experts to find the perfect package for your business.",
+        actionText: "Book Consultation",
+        actionLink: "/contact?topic=consultation",
+        priority: 2,
+        type: "contact"
+      });
+    }
   } else {
-    // If user hasn't viewed packages yet
+    // If user hasn't viewed any packages, suggest category exploration
     recommendations.push({
       id: "explore-packages",
-      title: "Explore Our Packages",
-      description: "Discover our range of advertising packages designed to boost your business visibility.",
-      actionText: "See Options",
+      title: `Explore ${selectedCategory === 'monthly' ? 'Monthly Services' : 'Custom Ad Creation'}`,
+      description: "Browse our selection of professional marketing packages designed for your needs.",
+      actionText: "View Packages",
       actionLink: "#packages-grid",
-      icon: <Package className="h-5 w-5" />,
       priority: 2,
       type: "navigation"
     });
   }
-
-  // Always recommend contact for personalized assistance
-  recommendations.push({
-    id: "contact-support",
-    title: "Need Personalized Assistance?",
-    description: "Our team can help you choose the right package for your specific needs.",
-    actionText: "Contact Us",
-    actionLink: "/contact?source=services&topic=sales",
-    icon: <MessageSquare className="h-5 w-5" />,
-    priority: 3,
-    type: "contact"
-  });
-
-  // Add checkout recommendation if they've viewed packages
-  if (viewedPackages.length > 0) {
-    recommendations.push({
-      id: "proceed-checkout",
-      title: "Ready to Get Started?",
-      description: "Proceed to checkout to complete your service package selection.",
-      actionText: "Proceed to Checkout",
-      actionLink: `/checkout?package=${viewedPackages[0]}`,
-      icon: <CheckCircle className="h-5 w-5" />,
-      priority: viewedPackages.length > 1 ? 4 : 3,
-      type: "navigation"
-    });
-  }
   
-  // Add free e-book recommendations if the user has purchased or viewed packages
-  if (hasPurchased || viewedPackages.length > 0) {
+  // E-book recommendations based on user behavior
+  if (viewedPackages.includes("premium") || selectedCategory === "premium") {
     recommendations.push({
-      id: "marketing-ebook",
-      title: "Free Marketing E-Book",
-      description: "Download our comprehensive guide to digital marketing strategies for small businesses.",
-      actionText: "Get E-Book",
-      actionLink: "#", // This will be handled by onResourceDownload
-      icon: <BookOpen className="h-5 w-5" />,
+      id: "premium-strategy-ebook",
+      title: "Premium Marketing Strategy Guide",
+      description: "Learn how to maximize your ROI with premium marketing strategies.",
+      actionText: "Download E-book",
+      actionLink: "#",
       priority: 3,
       type: "ebook",
-      resourceId: "marketing-strategies-101"
+      resourceId: "premium-strategy-guide"
     });
-  }
-  
-  // Add tutorial access based on viewed packages and purchase history
-  if (viewedPackages.includes("premium") || viewedPackages.includes("platinum")) {
+  } else if (viewedPackages.includes("standard") || selectedCategory === "standard") {
     recommendations.push({
-      id: "premium-tutorial",
-      title: "Premium Video Tutorial",
-      description: "Access our exclusive tutorial on maximizing ROI with premium advertising packages.",
-      actionText: "Watch Tutorial",
-      actionLink: "#", // This will be handled by onResourceDownload
-      icon: <PlayCircle className="h-5 w-5" />,
-      priority: 2,
-      type: "tutorial",
-      resourceId: "premium-advertising-tutorial"
+      id: "standard-strategy-ebook",
+      title: "Effective Marketing on a Budget",
+      description: "Smart strategies for effective marketing without breaking the bank.",
+      actionText: "Download E-book",
+      actionLink: "#",
+      priority: 3,
+      type: "ebook",
+      resourceId: "budget-marketing-guide"
     });
   }
   
-  // If user has purchased any package, offer advanced tutorials
+  // Tutorial recommendations based on user behavior
   if (hasPurchased) {
     recommendations.push({
-      id: "mastery-tutorial-series",
-      title: "Advertising Mastery Series",
-      description: "Exclusive access to our advanced tutorial series for paying customers.",
-      actionText: "Access Tutorials",
-      actionLink: "#", // This will be handled by onResourceDownload
-      icon: <PlayCircle className="h-5 w-5" />,
-      priority: 1,
+      id: "getting-started-tutorial",
+      title: "Getting Started with Your Package",
+      description: "A step-by-step video guide to make the most of your new marketing services.",
+      actionText: "Watch Tutorial",
+      actionLink: "#",
+      priority: 2,
       type: "tutorial",
-      resourceId: "advertising-mastery-series"
+      resourceId: "getting-started-guide"
     });
   }
   
-  // If user has viewed specific package categories, offer targeted resources
-  if (viewedPackages.includes("premium") || viewedPackages.includes("platinum")) {
+  // Partner discount recommendations
+  // These are available regardless of user behavior but can be more targeted
+  recommendations.push({
+    id: "seo-tool-partner-discount",
+    title: "Exclusive SEO Tool Discount",
+    description: "Get 30% off SEMrush Pro, our recommended SEO platform for marketing analytics.",
+    actionText: "Claim Discount",
+    actionLink: "https://partner.semrush.com/adbiz-special",
+    priority: 4,
+    type: "partner-discount",
+    partnerInfo: {
+      name: "SEMrush",
+      discountPercentage: 30,
+      discountCode: "ADBIZ30",
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+    }
+  });
+  
+  if (viewedPackages.includes("premium") || hasPurchased) {
     recommendations.push({
-      id: "growth-ebook",
-      title: "Business Growth Toolkit",
-      description: "Access our premium resource with advanced growth strategies for established businesses.",
-      actionText: "Download Now",
-      actionLink: "#", // This will be handled by onResourceDownload
-      icon: <BookOpen className="h-5 w-5" />,
-      priority: 2,
-      type: "ebook",
-      resourceId: "business-growth-toolkit"
+      id: "design-tool-partner-discount",
+      title: "Professional Design Suite Offer",
+      description: "Save 25% on Canva Pro annual subscription for creating professional marketing materials.",
+      actionText: "Get Discount",
+      actionLink: "https://partner.canva.com/adbiz-pro",
+      priority: 4,
+      type: "partner-discount",
+      partnerInfo: {
+        name: "Canva",
+        discountPercentage: 25,
+        discountCode: "ADBIZPRO25",
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days from now
+      }
     });
   }
-
+  
   return recommendations;
 };
