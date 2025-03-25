@@ -7,6 +7,7 @@ import { toast } from '@/hooks/ui/use-toast';
 export interface UseFileUploadHandlersProps {
   files: FileState;
   setFiles: React.Dispatch<React.SetStateAction<FileState>>;
+  setUploadError?: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 export interface UseFileUploadHandlersResult {
@@ -17,9 +18,17 @@ export interface UseFileUploadHandlersResult {
 }
 
 const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUploadHandlersResult => {
-  const { files, setFiles } = props;
+  const { files, setFiles, setUploadError: propsSetUploadError } = props;
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { validateFileUpload, formatFileSize } = useFileValidation();
+
+  // Use the provided setUploadError function if available, otherwise use the local one
+  const handleUploadError = (error: string | null) => {
+    if (propsSetUploadError) {
+      propsSetUploadError(error);
+    }
+    setUploadError(error);
+  };
 
   const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
     let newFiles: File[] = [];

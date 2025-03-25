@@ -9,6 +9,7 @@ import FileUploadSection from "./file-upload/FileUploadSection";
 import ReviewSection from "./ReviewSection";
 import { useQuestionnaireForm } from "@/hooks/useQuestionnaireForm";
 import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
+import { FileUploadProvider } from "@/contexts/file-upload-context";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
 
 interface BusinessQuestionnaireFormProps {
@@ -20,13 +21,10 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     form,
     step,
     files,
-    uploadProgress,
     uploadError,
     uploading,
     submitting,
     hasLogo,
-    handleFileChange,
-    onRemoveFile,
     handleBusinessInfoNext,
     handleBrandingContactNext,
     handleMarketingGoalsNext,
@@ -63,72 +61,69 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         <FormValidationMessage message={form.submitError} />
       )}
       
-      <QuestionnaireProvider 
-        form={form} 
-        hasLogo={hasLogo}
-        isSubmitting={submitting}
-        isUploading={uploading}
-        validateStep={validateStep}
-      >
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {step === 1 && (
-              <BusinessInfoStep 
-                onNext={handleBusinessInfoNext}
-              />
-            )}
-            
-            {step === 2 && (
-              <BrandingContactStep 
-                onNext={handleBrandingContactNext}
-                onPrev={prevStep}
-              />
-            )}
-            
-            {step === 3 && (
-              <MarketingGoalsStep 
-                onNext={handleMarketingGoalsNext}
-                onPrev={prevStep}
-                marketingGoalOptions={marketingGoalOptions}
-              />
-            )}
-            
-            {step === 4 && (
-              <>
-                <FileUploadSection
-                  files={files}
-                  onFileChange={handleFileChange}
-                  onRemoveFile={onRemoveFile}
-                  uploadProgress={uploadProgress}
-                  uploadError={uploadError}
-                  hasLogo={hasLogo === "yes"}
+      <FileUploadProvider>
+        <QuestionnaireProvider 
+          form={form} 
+          hasLogo={hasLogo}
+          isSubmitting={submitting}
+          isUploading={uploading}
+          validateStep={validateStep}
+        >
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {step === 1 && (
+                <BusinessInfoStep 
+                  onNext={handleBusinessInfoNext}
                 />
-                
-                <QuestionnaireNavigation
-                  onNext={handleFileUploadNext}
+              )}
+              
+              {step === 2 && (
+                <BrandingContactStep 
+                  onNext={handleBrandingContactNext}
                   onPrev={prevStep}
-                  stepNumber={4}
                 />
-              </>
-            )}
-            
-            {step === 5 && (
-              <>
-                <ReviewSection
-                  formData={form.getValues()}
-                  files={files}
-                  onShowReview={onShowReview}
-                />
-                
-                <QuestionnaireNavigation
+              )}
+              
+              {step === 3 && (
+                <MarketingGoalsStep 
+                  onNext={handleMarketingGoalsNext}
                   onPrev={prevStep}
-                  showSubmitButton={true}
+                  marketingGoalOptions={marketingGoalOptions}
                 />
-              </>
-            )}
-          </form>
-        </Form>
-      </QuestionnaireProvider>
+              )}
+              
+              {step === 4 && (
+                <>
+                  <FileUploadSection
+                    hasLogo={hasLogo === "yes"}
+                  />
+                  
+                  <QuestionnaireNavigation
+                    onNext={handleFileUploadNext}
+                    onPrev={prevStep}
+                    stepNumber={4}
+                  />
+                </>
+              )}
+              
+              {step === 5 && (
+                <>
+                  <ReviewSection
+                    formData={form.getValues()}
+                    files={files}
+                    onShowReview={onShowReview}
+                  />
+                  
+                  <QuestionnaireNavigation
+                    onPrev={prevStep}
+                    showSubmitButton={true}
+                  />
+                </>
+              )}
+            </form>
+          </Form>
+        </QuestionnaireProvider>
+      </FileUploadProvider>
     </div>
   );
 };

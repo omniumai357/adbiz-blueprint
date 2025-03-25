@@ -6,14 +6,15 @@ import { Upload, X, Image } from "lucide-react";
 import { FileState } from "@/hooks/useFileUpload";
 import { useFileValidation } from "@/hooks/file-upload/useFileValidation";
 import { getReadableFileFormats } from "@/utils/file-validation";
+import { useFileUploadContext } from "@/contexts/file-upload-context";
 
 interface LogoUploadProps {
   logo: File | null;
   onFileChange: (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
-  onRemoveFile: (fileType: keyof FileState) => void;
 }
 
-const LogoUpload: FC<LogoUploadProps> = ({ logo, onFileChange, onRemoveFile }) => {
+const LogoUpload: FC<LogoUploadProps> = ({ logo, onFileChange }) => {
+  const { onRemoveFile } = useFileUploadContext();
   const { formatFileSize, getMaxFileSize } = useFileValidation();
   const maxFileSize = getMaxFileSize('logo');
   const readableFormats = getReadableFileFormats('logo');

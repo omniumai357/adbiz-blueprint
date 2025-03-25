@@ -15,7 +15,6 @@ interface FileUploadCategoryProps {
   files: File[];
   acceptFormats: string;
   onFileChange: (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
-  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
 }
 
 const FileUploadCategory: FC<FileUploadCategoryProps> = ({
@@ -25,7 +24,6 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   files,
   acceptFormats,
   onFileChange,
-  onRemoveFile,
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
   const maxFileSize = getMaxFileSize(fileType);
@@ -73,7 +71,7 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
           <FilePreviewGrid
             files={files}
             fileType={fileType}
-            onRemoveFile={onRemoveFile}
+            emptyMessage={`No ${fileType} uploaded yet`}
           />
         )}
       </div>

@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
@@ -125,13 +126,15 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
   // Form submission
   const onSubmit = async (data: QuestionnaireFormValues) => {
     const businessId = generateUniqueId('business');
-    const filesUploaded = await uploadAllFiles(businessId);
+    
+    // Change this to await the promise
+    const filesUploaded = await Promise.resolve(uploadAllFiles(businessId));
     
     if (!filesUploaded) {
       return false;
     }
     
-    const success = await submitQuestionnaire(data, files, () => true);
+    const success = await submitQuestionnaire(data, files, () => Promise.resolve(true));
     
     if (success && onComplete) {
       onComplete({
