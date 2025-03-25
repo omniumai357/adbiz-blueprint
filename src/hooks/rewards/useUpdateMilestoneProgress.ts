@@ -1,5 +1,5 @@
 
-import { milestoneService } from '@/services/milestone/milestone-service';
+import { userActivityService } from '@/services/milestone/user-activity-service';
 import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-service-types';
 
 /**
@@ -31,7 +31,7 @@ export function useUpdateMilestoneProgress() {
    */
   const updateProgress = async (params: UpdateMilestoneProgressParams) => {
     if (!params.userId) return { success: false };
-    return await milestoneService.updateMilestoneProgress(params);
+    return await userActivityService.updateMilestoneProgress(params);
   };
 
   return { updateProgress };

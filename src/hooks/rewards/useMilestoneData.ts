@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { milestoneService } from "@/services/milestone/milestone-service";
+import { milestoneDataService } from "@/services/milestone/milestone-data-service";
+import { rewardsService } from "@/services/milestone/rewards-service";
 import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
 
 /**
@@ -32,10 +33,10 @@ export function useMilestoneData(userId: string | null | undefined) {
     try {
       // Use Promise.all to fetch all data in parallel for better performance
       const [milestonesData, progressData, rewardsData, pointsTotal] = await Promise.all([
-        milestoneService.getUserMilestones(userId),
-        milestoneService.getUserMilestoneProgress(userId),
-        milestoneService.getAvailableRewards(userId),
-        milestoneService.calculateTotalPoints(userId)
+        milestoneDataService.getUserMilestones(userId),
+        milestoneDataService.getUserMilestoneProgress(userId),
+        rewardsService.getAvailableRewards(userId),
+        milestoneDataService.calculateTotalPoints(userId)
       ]);
       
       setMilestones(milestonesData);

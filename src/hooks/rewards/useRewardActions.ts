@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useToast } from "@/hooks/ui/use-toast";
-import { milestoneService } from "@/services/milestone/milestone-service";
+import { rewardsService } from "@/services/milestone/rewards-service";
 import { AvailableReward } from '@/types/api';
 
 /**
@@ -33,7 +33,7 @@ export function useRewardActions(
     setIsProcessing(true);
     
     try {
-      const success = await milestoneService.claimReward(userId, milestoneId);
+      const success = await rewardsService.claimReward(userId, milestoneId);
       
       if (!success) throw new Error("Failed to claim reward");
       

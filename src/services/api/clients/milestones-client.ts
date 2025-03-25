@@ -4,7 +4,7 @@ import { AvailableReward, PaymentProcessParams } from "@/types/api";
 
 /**
  * Milestones API Client
- * This client now delegates to the milestone service for all operations
+ * This client delegates to the milestone service for all operations
  */
 export const milestonesClient = {
   /**
