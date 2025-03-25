@@ -2,7 +2,6 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AuthContextProvider } from './contexts/auth-context';
-import { TourProvider } from './contexts/tour-context';
 import { TourGuide } from './components/tour/TourGuide';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
@@ -12,12 +11,13 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
 import { Toaster } from "@/components/ui/toaster";
+import { PageWithTour } from './components/tour/PageWithTour';
 
 // Create the router with all page routes
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <PageWithTour><Home /></PageWithTour>,
   },
   {
     path: "/checkout",
@@ -29,7 +29,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/services",
-    element: <Services />
+    element: <PageWithTour><Services /></PageWithTour>,
   },
   {
     path: "/about",
@@ -37,7 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/contact",
-    element: <Contact />
+    element: <PageWithTour><Contact /></PageWithTour>,
   },
   {
     path: "/rewards",

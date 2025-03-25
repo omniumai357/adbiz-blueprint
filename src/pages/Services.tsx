@@ -1,11 +1,11 @@
+
 import React from 'react';
-import { PageWithTour } from '@/components/tour/PageWithTour';
 
 // Import any other components needed for the Services page
 
 const Services = () => {
   return (
-    <PageWithTour>
+    <>
       <div id="services-title" className="mb-6">
         <h1 className="text-3xl font-bold">Our Services</h1>
         <p className="text-gray-600">Explore our range of advertising packages designed to boost your business visibility.</p>
@@ -30,7 +30,7 @@ const Services = () => {
           Contact Us
         </button>
       </div>
-    </PageWithTour>
+    </>
   );
 };
 

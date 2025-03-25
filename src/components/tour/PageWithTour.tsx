@@ -1,8 +1,8 @@
 
 import React from "react";
-import { useLocation } from "react-router-dom";
 import { TourProvider } from "@/contexts/tour-context";
 import { TourGuide } from "@/components/tour/TourGuide";
+import { useLocation } from "react-router-dom";
 
 interface PageWithTourProps {
   children: React.ReactNode;

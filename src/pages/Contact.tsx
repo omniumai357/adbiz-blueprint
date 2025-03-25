@@ -1,5 +1,4 @@
 import React from 'react';
-import { PageWithTour } from '@/components/tour/PageWithTour';
 import { getPrioritizedMethods } from '@/components/contact/contact-methods';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ const Contact = () => {
   const contactMethods = getPrioritizedMethods(source, topic, serviceCategory);
   
   return (
-    <PageWithTour>
+    <>
       <div id="contact-banner" className="mb-6">
         <h1 className="text-3xl font-bold">Contact Us</h1>
         <p className="text-gray-600">We're here to help. Reach out to us through any of these channels.</p>
@@ -107,7 +106,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
-    </PageWithTour>
+    </>
   );
 };
 

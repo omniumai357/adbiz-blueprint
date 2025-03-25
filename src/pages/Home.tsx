@@ -1,9 +1,9 @@
+
 import React from 'react';
-import { PageWithTour } from '@/components/tour/PageWithTour';
 
 const Home = () => {
   return (
-    <PageWithTour>
+    <>
       <div id="hero-section" className="mb-8">
         {/* Hero content */}
         <h1 className="text-4xl font-bold mb-4">Welcome to Our Platform</h1>
@@ -21,7 +21,7 @@ const Home = () => {
       <div id="cta-section">
         {/* Call to action content */}
       </div>
-    </PageWithTour>
+    </>
   );
 };
 
