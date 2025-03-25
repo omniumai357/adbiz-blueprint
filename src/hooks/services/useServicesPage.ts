@@ -7,6 +7,29 @@ import { useTour } from '@/contexts/tour-context';
 import { useAuthUser } from '@/hooks/queries/useAuthUser';
 import { useUserOrders } from '@/hooks/queries/useUserOrders';
 
+/**
+ * Custom hook for managing the Services page state and business logic
+ * 
+ * Features:
+ * - Tracks viewed packages
+ * - Manages category selection
+ * - Maintains tour completion state
+ * - Checks user purchase history
+ * - Handles errors and loading states
+ * 
+ * @returns An object containing all state and handlers needed for the Services page
+ * 
+ * @example
+ * const {
+ *   viewedPackages,
+ *   selectedCategory,
+ *   hasCompletedTour,
+ *   hasPurchased,
+ *   error,
+ *   isLoading,
+ *   handleCategoryChange
+ * } = useServicesPage();
+ */
 export function useServicesPage() {
   const [searchParams] = useSearchParams();
   const { isActive: isTourActive, startTour } = useTour();
@@ -20,6 +43,7 @@ export function useServicesPage() {
   const { data: user, isLoading: isUserLoading, error: userError } = useAuthUser();
   const { data: orders, isLoading: isOrdersLoading, error: ordersError } = useUserOrders(user?.id);
   
+  // Track viewed packages from URL parameters
   useEffect(() => {
     const packageParam = searchParams.get('package');
     if (packageParam && !viewedPackages.includes(packageParam)) {
@@ -27,12 +51,14 @@ export function useServicesPage() {
     }
   }, [searchParams, viewedPackages]);
   
+  // Set purchase status based on order history
   useEffect(() => {
     if (orders) {
       setHasPurchased(orders.length > 0);
     }
   }, [orders]);
   
+  // Handle errors from API calls
   useEffect(() => {
     if (userError) {
       const errorMessage = userError instanceof Error ? userError.message : 'Error checking user data';
@@ -49,11 +75,13 @@ export function useServicesPage() {
     }
   }, [userError, ordersError, toast]);
   
+  // Check if guided tour has been completed
   useEffect(() => {
     const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
     setHasCompletedTour(tourCompleted);
   }, []);
   
+  // Update tour completion status when tour ends
   useEffect(() => {
     if (!isTourActive) {
       localStorage.setItem('tour_completed_services', 'true');
@@ -61,6 +89,7 @@ export function useServicesPage() {
     }
   }, [isTourActive]);
 
+  // Handle hash changes for starting the tour
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#start-tour') {
@@ -78,6 +107,11 @@ export function useServicesPage() {
     };
   }, [startTour]);
   
+  /**
+   * Updates the selected category
+   * 
+   * @param category - The new category to select
+   */
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };

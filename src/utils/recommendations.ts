@@ -6,6 +6,21 @@ import { NextStepRecommendation } from "@/components/recommendation/NextStepCard
 
 /**
  * Generates service page recommendations based on user behavior and preferences
+ * 
+ * @param viewedPackages - Array of package IDs that the user has viewed
+ * @param hasCompletedTour - Whether the user has completed the guided tour
+ * @param selectedCategory - The currently selected package category
+ * @param hasPurchased - Whether the user has made any purchases
+ * @returns An array of recommendation objects to display
+ * 
+ * @example
+ * // Generate recommendations based on user behavior
+ * const recommendations = getServicePageRecommendations(
+ *   ['premium', 'standard'],
+ *   true,
+ *   'monthly',
+ *   false
+ * );
  */
 export const getServicePageRecommendations = (
   viewedPackages: string[] = [],
