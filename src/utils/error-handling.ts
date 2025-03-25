@@ -1,5 +1,5 @@
 
-import { toast } from "@/hooks/ui/use-toast";
+import { toast } from "sonner";
 
 /**
  * Custom error types for application-specific errors
@@ -41,6 +41,16 @@ export class PaymentError extends Error {
   }
 }
 
+export class NetworkError extends Error {
+  retryable: boolean;
+  
+  constructor(message: string, retryable: boolean = true) {
+    super(message);
+    this.name = 'NetworkError';
+    this.retryable = retryable;
+  }
+}
+
 /**
  * Format error messages for user display
  */
@@ -57,11 +67,19 @@ export const formatErrorMessage = (error: unknown): string => {
       return error.message || 'Payment processing failed';
     }
     if (error instanceof APIError) {
-      return error.message || 'Service unavailable';
+      return `${error.message || 'Service unavailable'} (${error.statusCode})`;
+    }
+    if (error instanceof NetworkError) {
+      return `${error.message} ${error.retryable ? 'Please try again.' : ''}`;
     }
     
     // Generic error with message
     return error.message || 'An unexpected error occurred';
+  }
+  
+  // Handle non-Error objects with message property
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String(error.message);
   }
   
   // Unknown error type
@@ -85,14 +103,69 @@ export const logError = (error: unknown, context: string = ''): void => {
     if (error.stack) {
       console.error(`${contextPrefix}Stack trace:`, error.stack);
     }
+    
+    // Log additional properties for custom error types
+    if (error instanceof APIError) {
+      console.error(`${contextPrefix}Status Code:`, error.statusCode);
+    }
+    if (error instanceof ValidationError && error.fields) {
+      console.error(`${contextPrefix}Validation Fields:`, error.fields);
+    }
+    if (error instanceof PaymentError && error.code) {
+      console.error(`${contextPrefix}Payment Error Code:`, error.code);
+    }
   }
 };
 
 /**
- * Handle errors with consistent pattern
- * - Logs the error
- * - Shows a toast notification
- * - Returns formatted message for component use
+ * Create a helpful error message for network failures
+ */
+export const createNetworkErrorMessage = (error: unknown): string => {
+  // Check for offline status
+  if (!navigator.onLine) {
+    return "You appear to be offline. Please check your internet connection and try again.";
+  }
+  
+  // Handle timeout errors
+  if (error instanceof Error && error.message.includes('timeout')) {
+    return "The request timed out. The server might be experiencing high load.";
+  }
+  
+  // Handle CORS errors
+  if (error instanceof Error && (
+    error.message.includes('CORS') || 
+    error.message.includes('Cross-Origin')
+  )) {
+    return "A cross-origin error occurred. This is usually a configuration issue.";
+  }
+  
+  return "A network error occurred. Please try again later.";
+};
+
+/**
+ * Check if an error is retryable
+ */
+export const isRetryableError = (error: unknown): boolean => {
+  // Network errors are generally retryable
+  if (error instanceof NetworkError) {
+    return error.retryable;
+  }
+  
+  // Specific status codes that are retryable
+  if (error instanceof APIError) {
+    return [408, 429, 502, 503, 504].includes(error.statusCode);
+  }
+  
+  // Check for offline status
+  if (!navigator.onLine) {
+    return true;
+  }
+  
+  return false;
+};
+
+/**
+ * Handle errors with consistent pattern using Sonner toast
  */
 export const handleError = (
   error: unknown, 
@@ -107,11 +180,13 @@ export const handleError = (
   
   // Show toast if requested
   if (showToast) {
-    toast({
-      title: "Error",
+    toast.error("Error", {
       description: message,
-      variant: "destructive",
-      duration: 5000
+      duration: 5000,
+      action: isRetryableError(error) ? {
+        label: "Retry",
+        onClick: () => window.location.reload()
+      } : undefined
     });
   }
   

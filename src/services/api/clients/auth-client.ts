@@ -20,7 +20,7 @@ export const authClient = {
     if (error) throw error;
     
     // Return the user data wrapped in the expected UserResponse format
-    return { user: data.user };
+    return { user: data?.user || null };
   },
   
   /**

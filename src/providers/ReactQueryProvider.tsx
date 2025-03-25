@@ -12,21 +12,32 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 1,
-        refetchOnWindowFocus: false,
-        // Updated to use the meta property for error handling
-        meta: {
-          onError: (error: Error) => {
-            handleError(error, 'Query Error');
+        retry: (failureCount, error) => {
+          // Don't retry on 4xx errors
+          if (
+            error instanceof Error && 
+            'statusCode' in error && 
+            typeof error.statusCode === 'number' && 
+            error.statusCode >= 400 && 
+            error.statusCode < 500
+          ) {
+            return false;
           }
+          
+          // Retry up to 2 times for other errors
+          return failureCount < 2;
+        },
+        refetchOnWindowFocus: false,
+        gcTime: 1000 * 60 * 10, // 10 minutes
+        
+        onError: (error) => {
+          handleError(error, 'Query Error');
         }
       },
       mutations: {
-        // Updated to use the meta property for error handling
-        meta: {
-          onError: (error: Error, variables: unknown) => {
-            handleError(error, 'Mutation Error');
-          }
+        retry: false,
+        onError: (error, variables, context) => {
+          handleError(error, 'Mutation Error');
         }
       },
     },

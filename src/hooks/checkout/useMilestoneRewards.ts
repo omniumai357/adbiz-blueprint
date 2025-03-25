@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { UserMilestone } from "@/types/api";
 import { useUpdateMilestoneProgress } from "@/hooks/queries/useUpdateMilestoneProgress";
+import { toast } from "sonner";
 
 /**
  * Hook for managing milestone rewards in the checkout process
@@ -22,6 +23,9 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
    */
   const handleMilestoneRewardApplied = (reward: UserMilestone) => {
     setAppliedMilestoneReward(reward);
+    toast.success("Reward applied", {
+      description: `${reward.reward_description || "Discount"} has been applied to your order.`
+    });
   };
 
   /**
@@ -43,18 +47,32 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
    * @param orderAmount - Total amount of the order
    */
   const awardMilestonePoints = async (orderId: string, orderAmount: number) => {
-    if (!userId) return;
+    if (!userId) return false;
     
-    // Base points for completing an order (1 point per $1 spent)
-    const basePoints = Math.floor(orderAmount);
-    
-    await updateProgress({
-      userId,
-      points: basePoints,
-      activityType: 'order_completed',
-      referenceId: orderId,
-      referenceType: 'order'
-    });
+    try {
+      // Base points for completing an order (1 point per $1 spent)
+      const basePoints = Math.floor(orderAmount);
+      
+      await updateProgress({
+        userId,
+        points: basePoints,
+        activityType: 'order_completed',
+        referenceId: orderId,
+        referenceType: 'order'
+      });
+      
+      toast.success("Points awarded!", {
+        description: `You earned ${basePoints} points for your purchase.`
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to award milestone points:", error);
+      toast.error("Failed to award points", {
+        description: "Your purchase was successful, but we couldn't award points at this time."
+      });
+      return false;
+    }
   };
 
   return {
