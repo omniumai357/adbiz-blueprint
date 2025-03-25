@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, LightbulbIcon, BookOpen, Download } from "lucide-react";
+import { ArrowRight, LightbulbIcon, BookOpen, Download, Video, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface NextStepRecommendation {
@@ -14,7 +14,7 @@ export interface NextStepRecommendation {
   actionLink: string;
   icon?: React.ReactNode;
   priority: number;
-  type?: "navigation" | "download" | "ebook" | "contact";
+  type?: "navigation" | "download" | "ebook" | "contact" | "tutorial";
   resourceId?: string;
 }
 
@@ -33,8 +33,8 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({
   
   const handleAction = () => {
     // Handle resource downloads
-    if (recommendation.type === "ebook" && recommendation.resourceId && onResourceDownload) {
-      onResourceDownload(recommendation.resourceId, "ebook");
+    if ((recommendation.type === "ebook" || recommendation.type === "tutorial") && recommendation.resourceId && onResourceDownload) {
+      onResourceDownload(recommendation.resourceId, recommendation.type);
       return;
     }
     
@@ -63,6 +63,8 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({
         return <BookOpen className="h-5 w-5" />;
       case "download":
         return <Download className="h-5 w-5" />;
+      case "tutorial":
+        return <PlayCircle className="h-5 w-5" />;
       default:
         return <LightbulbIcon className="h-5 w-5" />;
     }
@@ -72,8 +74,9 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({
     <Card 
       className={cn(
         "relative overflow-hidden transition-all duration-300 hover:shadow-md border-l-4",
-        recommendation.type === "ebook" ? "border-l-emerald-500" : 
-          recommendation.priority === 1 ? "border-l-primary" : "border-l-muted-foreground",
+        recommendation.type === "tutorial" ? "border-l-purple-500" :
+          recommendation.type === "ebook" ? "border-l-emerald-500" : 
+            recommendation.priority === 1 ? "border-l-primary" : "border-l-muted-foreground",
         className
       )}
     >

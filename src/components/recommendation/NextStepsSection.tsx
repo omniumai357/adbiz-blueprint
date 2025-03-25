@@ -10,7 +10,8 @@ import {
   Package, 
   MessageSquare, 
   CheckCircle,
-  BookOpen
+  BookOpen,
+  PlayCircle
 } from "lucide-react";
 
 interface NextStepsSectionProps {
@@ -36,13 +37,13 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
   const handleResourceDownload = (resourceId: string, resourceType: string) => {
     // In a real implementation, this would trigger download tracking in your backend
     toast({
-      title: "Resource Unlocked",
-      description: `Your ${resourceType} is now available for download.`,
+      title: `${resourceType === 'tutorial' ? 'Tutorial' : 'Resource'} Unlocked`,
+      description: `Your ${resourceType} is now available for ${resourceType === 'tutorial' ? 'viewing' : 'download'}.`,
     });
     
     // Simulate a download delay
     setTimeout(() => {
-      // Open the download in a new tab/window
+      // Open the download or tutorial page in a new tab/window
       window.open(`/resources/${resourceType}/${resourceId}`, "_blank");
     }, 500);
   };
@@ -159,6 +160,36 @@ export const getServicePageRecommendations = (
       priority: 3,
       type: "ebook",
       resourceId: "marketing-strategies-101"
+    });
+  }
+  
+  // Add tutorial access based on viewed packages and purchase history
+  if (viewedPackages.includes("premium") || viewedPackages.includes("platinum")) {
+    recommendations.push({
+      id: "premium-tutorial",
+      title: "Premium Video Tutorial",
+      description: "Access our exclusive tutorial on maximizing ROI with premium advertising packages.",
+      actionText: "Watch Tutorial",
+      actionLink: "#", // This will be handled by onResourceDownload
+      icon: <PlayCircle className="h-5 w-5" />,
+      priority: 2,
+      type: "tutorial",
+      resourceId: "premium-advertising-tutorial"
+    });
+  }
+  
+  // If user has purchased any package, offer advanced tutorials
+  if (hasPurchased) {
+    recommendations.push({
+      id: "mastery-tutorial-series",
+      title: "Advertising Mastery Series",
+      description: "Exclusive access to our advanced tutorial series for paying customers.",
+      actionText: "Access Tutorials",
+      actionLink: "#", // This will be handled by onResourceDownload
+      icon: <PlayCircle className="h-5 w-5" />,
+      priority: 1,
+      type: "tutorial",
+      resourceId: "advertising-mastery-series"
     });
   }
   

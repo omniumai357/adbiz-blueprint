@@ -12,6 +12,7 @@ const Services = () => {
   const [viewedPackages, setViewedPackages] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("monthly");
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [hasCompletedTour, setHasCompletedTour] = useState(false);
   
   // Track viewed packages
   useEffect(() => {
@@ -21,9 +22,9 @@ const Services = () => {
     }
   }, [searchParams]);
   
-  // Check if user has purchased any package
+  // Check if user has purchased any package and completed tour
   useEffect(() => {
-    const checkPurchaseHistory = async () => {
+    const fetchUserData = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -37,14 +38,27 @@ const Services = () => {
             .limit(1);
             
           setHasPurchased(orders && orders.length > 0);
+          
+          // Check if user has completed the tour (this could be stored in a user_activities table in a real app)
+          // For this demo, we'll just use localStorage
+          const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
+          setHasCompletedTour(tourCompleted);
         }
       } catch (error) {
-        console.error("Error checking purchase history:", error);
+        console.error("Error checking user data:", error);
       }
     };
     
-    checkPurchaseHistory();
+    fetchUserData();
   }, []);
+  
+  // Update tour completion status when tour is deactivated
+  useEffect(() => {
+    if (!isTourActive) {
+      localStorage.setItem('tour_completed_services', 'true');
+      setHasCompletedTour(true);
+    }
+  }, [isTourActive]);
 
   // Update selectedCategory when ServicePackages component changes it
   const handleCategoryChange = (category: string) => {
@@ -78,11 +92,11 @@ const Services = () => {
         </button>
       </div>
       
-      {/* Add the personalized next steps recommendations section with e-books */}
+      {/* Add the personalized next steps recommendations section with tutorials and e-books */}
       <NextStepsSection 
         recommendations={getServicePageRecommendations(
           viewedPackages,
-          false, // Replace with actual tour completion status
+          hasCompletedTour,
           selectedCategory,
           hasPurchased
         )}
