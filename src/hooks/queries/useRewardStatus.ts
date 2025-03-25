@@ -37,8 +37,18 @@ export function useRewardStatus(userId: string | undefined) {
     }
   });
 
+  // Create a wrapper function that returns a Promise for compatibility with the RewardCard component
+  const claimRewardWithPromise = (milestoneId: string): Promise<any> => {
+    return new Promise((resolve) => {
+      claimRewardMutation.mutate(milestoneId, {
+        onSuccess: () => resolve(true),
+        onError: () => resolve(false)
+      });
+    });
+  };
+
   return {
-    claimReward: claimRewardMutation.mutate,
+    claimReward: claimRewardWithPromise,
     isClaimingReward: claimRewardMutation.isPending,
     claimError: claimRewardMutation.error,
     claimStatus: claimRewardMutation.status

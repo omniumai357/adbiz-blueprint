@@ -138,7 +138,11 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
                 <RewardCard 
                   key={reward.milestone_id} 
                   reward={reward} 
-                  onClaim={claimReward} 
+                  onClaim={(milestoneId) => {
+                    claimReward(milestoneId);
+                    // Return a resolved promise since the component expects a Promise return type
+                    return Promise.resolve(true);
+                  }} 
                 />
               ))}
             </div>
