@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle } from "lucide-react";
-import { RewardIcon } from './RewardIcon';
+import RewardIcon from './RewardIcon';
 
 interface MilestoneCardProps {
   name: string;
@@ -42,7 +42,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
       <div className={`h-2 ${isCompleted ? 'bg-green-500' : 'bg-primary'}`} />
       <CardContent className="p-6">
         <div className="flex flex-row items-start gap-4">
-          <RewardIcon icon={icon} completed={isCompleted} />
+          <RewardIcon iconName={icon} completed={isCompleted} />
           
           <div className="flex-1">
             <h3 className="font-semibold text-lg">{name}</h3>

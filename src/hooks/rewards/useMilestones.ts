@@ -1,6 +1,5 @@
 
-import { useMilestoneData } from './useMilestoneData';
-import { useRewardActions } from './useRewardActions';
+import { useRewards } from './useRewards';
 import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
 
 /**
@@ -17,24 +16,25 @@ import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
  */
 export function useMilestones(userId: string | null | undefined) {
   const {
-    milestones,
-    progress,
+    allMilestones,
+    activeMilestones,
+    completedMilestones,
     availableRewards,
     totalPoints,
     isLoading,
-    refreshData
-  } = useMilestoneData(userId);
-
-  const { claimReward, isProcessing } = useRewardActions(userId, refreshData);
+    claimReward,
+    refreshRewardsData
+  } = useRewards(userId || undefined);
 
   return {
-    milestones,
-    progress,
+    milestones: allMilestones,
+    progress: activeMilestones,
+    completedMilestones,
     availableRewards,
     totalPoints,
-    isLoading: isLoading || isProcessing,
+    isLoading,
     claimReward,
-    refreshData
+    refreshData: refreshRewardsData
   };
 }
 

@@ -1,6 +1,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from '@/services/api/api-client';
+import { toast } from "sonner";
 
 /**
  * Hook for managing reward claim status
@@ -22,9 +23,17 @@ export function useRewardStatus(userId: string | undefined) {
       // Invalidate rewards query to refresh data
       queryClient.invalidateQueries({ queryKey: ['rewards', { userId }] });
       queryClient.invalidateQueries({ queryKey: ['milestones', { userId }] });
+      
+      // Notify the user
+      toast.success("Reward claimed successfully!", {
+        description: "Your reward has been added to your account."
+      });
     },
     onError: (error) => {
       console.error("Failed to claim reward:", error);
+      toast.error("Failed to claim reward", {
+        description: "There was an error claiming your reward. Please try again."
+      });
     }
   });
 
