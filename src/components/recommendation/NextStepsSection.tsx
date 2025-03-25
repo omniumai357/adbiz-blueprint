@@ -1,8 +1,6 @@
-
 import React from "react";
 import { NextStepCard, NextStepRecommendation } from "./NextStepCard";
 import { useToast } from "@/hooks/ui/use-toast";
-import { Section } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
 
 interface NextStepsSectionProps {

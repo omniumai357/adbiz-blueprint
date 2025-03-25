@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ServicePackages } from '@/components/ServicePackages';
@@ -19,7 +18,6 @@ const Services = () => {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [downloadResource, setDownloadResource] = useState<{id: string, type: string, title: string} | null>(null);
   
-  // Track viewed packages
   useEffect(() => {
     const packageParam = searchParams.get('package');
     if (packageParam && !viewedPackages.includes(packageParam)) {
@@ -27,14 +25,12 @@ const Services = () => {
     }
   }, [searchParams]);
   
-  // Check if user has purchased any package and completed tour
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (user) {
-          // Check if user has any completed orders
           const { data: orders } = await supabase
             .from('orders')
             .select('*')
@@ -44,8 +40,6 @@ const Services = () => {
             
           setHasPurchased(orders && orders.length > 0);
           
-          // Check if user has completed the tour (this could be stored in a user_activities table in a real app)
-          // For this demo, we'll just use localStorage
           const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
           setHasCompletedTour(tourCompleted);
         }
@@ -57,7 +51,6 @@ const Services = () => {
     fetchUserData();
   }, []);
   
-  // Update tour completion status when tour is deactivated
   useEffect(() => {
     if (!isTourActive) {
       localStorage.setItem('tour_completed_services', 'true');
@@ -65,19 +58,13 @@ const Services = () => {
     }
   }, [isTourActive]);
 
-  // Update selectedCategory when ServicePackages component changes it
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
   
-  // Handle resource downloads or access
   const handleResourceAccess = (resourceId: string, resourceType: string) => {
-    // In a real app, you would check if the user has permission to access this resource
-    // For this demo, we'll just show the download modal
-    
     let resourceTitle = "";
     
-    // Determine resource title based on ID
     if (resourceId === "premium-strategy-guide") {
       resourceTitle = "Premium Marketing Strategy Guide";
     } else if (resourceId === "budget-marketing-guide") {
@@ -95,29 +82,23 @@ const Services = () => {
     setShowDownloadModal(true);
   };
   
-  // Handle anchor links for special actions like starting the tour
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#start-tour') {
         startTour();
-        // Clear the hash to avoid restarting the tour on refresh
         window.history.pushState("", document.title, window.location.pathname + window.location.search);
       }
     };
     
-    // Check hash on initial load
     handleHashChange();
     
-    // Add event listener for hash changes
     window.addEventListener('hashchange', handleHashChange);
     
-    // Clean up
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [startTour]);
   
-  // Handle custom events (like the copied toast notification from NextStepCard)
   useEffect(() => {
     const handleShowToast = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -163,7 +144,6 @@ const Services = () => {
         </button>
       </div>
       
-      {/* Add the personalized next steps recommendations section with tutorials, e-books, and partner discounts */}
       <NextStepsSection 
         recommendations={getServicePageRecommendations(
           viewedPackages,
@@ -176,7 +156,6 @@ const Services = () => {
         onResourceDownload={handleResourceAccess}
       />
       
-      {/* Resource download modal */}
       {showDownloadModal && downloadResource && (
         <DownloadOptions
           purchaseId="resource-download"
