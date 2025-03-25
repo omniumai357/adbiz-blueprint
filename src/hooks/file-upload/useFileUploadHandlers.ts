@@ -7,12 +7,13 @@ import { useToast } from '@/hooks/ui/use-toast';
 export interface UseFileUploadHandlersProps {
   files: FileState;
   setFiles: (files: FileState) => void;
+  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 /**
  * Hook for handling file upload operations like adding and removing files
  */
-const useFileUploadHandlers = ({ files, setFiles }: UseFileUploadHandlersProps) => {
+const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploadHandlersProps) => {
   const { toast } = useToast();
 
   /**

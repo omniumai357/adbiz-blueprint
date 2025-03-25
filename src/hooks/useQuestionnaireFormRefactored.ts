@@ -135,7 +135,8 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
     }
     
     // Then submit questionnaire data
-    const uploadFilesPromise = () => Promise.resolve(true);
+    // Modified to use a function that returns a Promise<boolean> instead of a boolean directly
+    const uploadFilesPromise = () => Promise.resolve(filesUploaded);
     const success = await submitQuestionnaire(data, files, uploadFilesPromise);
     
     if (success && onComplete) {

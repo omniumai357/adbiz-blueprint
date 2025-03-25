@@ -24,7 +24,8 @@ export const useFileUpload = () => {
   const { uploadProgress, updateProgress, resetProgress } = useFileUploadProgress();
   const { handleFileChange, onRemoveFile } = useFileUploadHandlers({
     files,
-    setFiles
+    setFiles,
+    setUploadError
   });
 
   /**

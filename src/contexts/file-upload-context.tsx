@@ -20,11 +20,13 @@ const FileUploadContext = createContext<FileUploadContextType | undefined>(undef
 
 export const FileUploadProvider = ({ children }: { children: ReactNode }) => {
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const { files, setFiles, clearFiles } = useFileUploadState();
   const { uploadProgress, resetProgress } = useFileUploadProgress();
-  const { uploadError, handleFileChange, onRemoveFile, setUploadError } = useFileUploadHandlers({ 
+  const { handleFileChange, onRemoveFile } = useFileUploadHandlers({ 
     files, 
-    setFiles 
+    setFiles,
+    setUploadError
   });
 
   const resetUploadState = () => {
