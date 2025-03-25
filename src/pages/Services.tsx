@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -8,6 +7,7 @@ import { ContactCtaPrompt } from "@/components/contact/contact-cta-prompt";
 import { packages, serviceCategories } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { TourButton } from "@/components/tour/TourButton";
 
 const Services = () => {
   const location = useLocation();
@@ -40,11 +40,14 @@ const Services = () => {
         {/* Services Banner */}
         <section className="bg-gradient-to-b from-secondary/50 to-background py-16 mb-8">
           <div className="container px-4 mx-auto">
-            <div className="max-w-2xl mx-auto text-center">
-              <h1 className="text-4xl font-bold mb-4 animate-fade-up">Our Services</h1>
+            <div className="relative max-w-2xl mx-auto text-center">
+              <h1 id="services-title" className="text-4xl font-bold mb-4 animate-fade-up">Our Services</h1>
               <p className="text-muted-foreground animate-fade-up [animation-delay:200ms]">
                 Find the perfect advertising solution tailored to your business needs.
               </p>
+              <div className="absolute top-0 right-0">
+                <TourButton pathId="services-tour" />
+              </div>
             </div>
           </div>
         </section>
@@ -52,7 +55,9 @@ const Services = () => {
         {/* Contextual CTA - Positioned strategically above the category selection */}
         <section className="mb-8">
           <div className="container px-4 mx-auto">
-            <ContactCtaPrompt />
+            <div id="contact-cta">
+              <ContactCtaPrompt />
+            </div>
           </div>
         </section>
         
@@ -60,7 +65,7 @@ const Services = () => {
         <section className="mb-16">
           <div className="container px-4 mx-auto">
             <div className="max-w-4xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up">
+              <div id="category-selection" className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-up">
                 {serviceCategories.map((category) => (
                   <Button
                     key={category.id}
@@ -101,14 +106,16 @@ const Services = () => {
         {/* Packages Grid */}
         <section className="mb-16">
           <div className="container px-4 mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div id="packages-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {filteredPackages.map((pkg, index) => (
                 <div 
                   key={pkg.id} 
                   className="animate-fade-up" 
                   style={{ animationDelay: `${200 + index * 100}ms` }}
                 >
-                  <PackageCard pkg={pkg} />
+                  <div id={index === 0 ? "package-features" : undefined}>
+                    <PackageCard pkg={pkg} />
+                  </div>
                 </div>
               ))}
             </div>

@@ -2,6 +2,8 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AuthContextProvider } from './contexts/auth-context';
+import { TourProvider } from './contexts/tour-context';
+import { TourGuide } from './components/tour/TourGuide';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import Receipts from './pages/Receipts';
@@ -9,6 +11,7 @@ import Services from './pages/Services';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
+import { Toaster } from "@/components/ui/toaster";
 
 // Create the router with all page routes
 const router = createBrowserRouter([
@@ -45,7 +48,11 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthContextProvider>
-      <RouterProvider router={router} />
+      <TourProvider>
+        <RouterProvider router={router} />
+        <TourGuide />
+        <Toaster />
+      </TourProvider>
     </AuthContextProvider>
   );
 }
