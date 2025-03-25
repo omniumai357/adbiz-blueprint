@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { rewardsService } from '@/services/milestone/rewards-service';
+import { apiClient } from '@/services/api/api-client';
 import { AvailableReward } from "@/types/api";
 import { useRewardStatus } from "./useRewardStatus";
 
@@ -17,7 +17,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
     queryKey: ['rewards', { userId }],
     queryFn: async (): Promise<AvailableReward[]> => {
       if (!userId) return [];
-      return await rewardsService.getAvailableRewards(userId);
+      return await apiClient.milestones.getAvailableRewards(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes

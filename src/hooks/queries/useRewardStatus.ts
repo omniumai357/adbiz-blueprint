@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { rewardsService } from '@/services/milestone/rewards-service';
+import { apiClient } from '@/services/api/api-client';
 
 /**
  * Hook for managing reward claim status
@@ -16,7 +16,7 @@ export function useRewardStatus(userId: string | undefined) {
   const claimRewardMutation = useMutation({
     mutationFn: async (milestoneId: string) => {
       if (!userId) throw new Error("User not authenticated");
-      return await rewardsService.claimReward(userId, milestoneId);
+      return await apiClient.milestones.claimReward(userId, milestoneId);
     },
     onSuccess: () => {
       // Invalidate rewards query to refresh data
