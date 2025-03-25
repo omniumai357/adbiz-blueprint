@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -26,7 +27,7 @@ export interface NextStepRecommendation {
 interface NextStepCardProps {
   recommendation: NextStepRecommendation;
   className?: string;
-  onResourceDownload?: () => void;
+  onResourceDownload?: (resourceId: string, resourceType: string) => void;
 }
 
 export const NextStepCard: React.FC<NextStepCardProps> = ({
@@ -39,7 +40,7 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({
   const handleAction = () => {
     // Handle resource downloads
     if ((recommendation.type === "ebook" || recommendation.type === "tutorial") && recommendation.resourceId && onResourceDownload) {
-      onResourceDownload();
+      onResourceDownload(recommendation.resourceId, recommendation.type);
       return;
     }
     

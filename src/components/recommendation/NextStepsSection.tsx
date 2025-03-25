@@ -20,15 +20,15 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
   const { toast } = useToast();
   
   // Handle resource downloads
-  const handleResourceDownload = (recommendation: NextStepRecommendation) => {
-    if (onResourceDownload && recommendation.resourceId && recommendation.type) {
-      onResourceDownload(recommendation.resourceId, recommendation.type);
+  const handleResourceDownload = (resourceId: string, resourceType: string) => {
+    if (onResourceDownload) {
+      onResourceDownload(resourceId, resourceType);
       return;
     }
     
     // Default handling if no custom handler provided
     toast({
-      title: `${recommendation.type === 'ebook' ? 'E-book' : 'Tutorial'} access granted`,
+      title: `${resourceType === 'ebook' ? 'E-book' : 'Tutorial'} access granted`,
       description: `You now have access to this resource.`
     });
   };
@@ -47,7 +47,7 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
             <NextStepCard 
               key={recommendation.id} 
               recommendation={recommendation}
-              onResourceDownload={() => handleResourceDownload(recommendation)}
+              onResourceDownload={(resourceId, resourceType) => handleResourceDownload(resourceId, resourceType)}
             />
           ))}
       </div>
