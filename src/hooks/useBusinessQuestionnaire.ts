@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/use-toast';
+import { useUpdateMilestoneProgress } from '@/hooks/queries/useUpdateMilestoneProgress';
 
 /**
  * Hook for managing the Business Questionnaire page state
@@ -13,6 +14,7 @@ export function useBusinessQuestionnaire() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { updateProgress } = useUpdateMilestoneProgress();
   
   // Handle authentication state and navigation
   useEffect(() => {
@@ -33,6 +35,16 @@ export function useBusinessQuestionnaire() {
     
     // Process completion logic here
     console.log('Questionnaire completed with data:', data);
+    
+    // Award milestone points for completing the questionnaire
+    if (user?.id) {
+      updateProgress({
+        userId: user.id,
+        points: 50,
+        activityType: 'questionnaire_completed',
+        referenceType: 'questionnaire'
+      });
+    }
     
     // Navigate to success page or perform other actions
     setTimeout(() => {

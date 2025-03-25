@@ -2,6 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { milestoneService } from "@/services/milestone/milestone-service";
 import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-service-types';
+import { toast } from "sonner";
 
 /**
  * Hook for updating user milestone progress
@@ -48,8 +49,27 @@ export function useUpdateMilestoneProgress() {
     }
   });
 
+  /**
+   * Update user milestone progress with optional success notification
+   */
+  const updateProgressWithNotification = (
+    params: UpdateMilestoneProgressParams, 
+    showSuccessToast = false
+  ) => {
+    updateMutation.mutate(params, {
+      onSuccess: () => {
+        if (showSuccessToast) {
+          toast.success("Progress updated", {
+            description: `You earned ${params.points} points!`
+          });
+        }
+      }
+    });
+  };
+
   return { 
     updateProgress: updateMutation.mutate,
+    updateProgressWithNotification,
     updateProgressAsync: updateMutation.mutateAsync, // For awaiting the result
     isUpdating: updateMutation.isPending,
     isSuccess: updateMutation.isSuccess,

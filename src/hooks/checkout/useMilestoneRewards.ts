@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { UserMilestone } from "@/types/api";
-import { milestoneService } from "@/services/milestone/milestone-service";
 import { toast } from "sonner";
+import { useUpdateMilestoneProgress } from "@/hooks/queries/useUpdateMilestoneProgress";
 
 /**
  * Hook for managing milestone rewards in the checkout process
@@ -16,6 +16,7 @@ import { toast } from "sonner";
  */
 export function useMilestoneRewards(userId: string | null | undefined, subtotal: number) {
   const [appliedMilestoneReward, setAppliedMilestoneReward] = useState<UserMilestone | null>(null);
+  const { updateProgressAsync } = useUpdateMilestoneProgress();
 
   /**
    * Apply a milestone reward to the current order
@@ -52,7 +53,7 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
       // Base points for completing an order (1 point per $1 spent)
       const basePoints = Math.floor(orderAmount);
       
-      const result = await milestoneService.updateMilestoneProgress({
+      const result = await updateProgressAsync({
         userId,
         points: basePoints,
         activityType: 'order_completed',
