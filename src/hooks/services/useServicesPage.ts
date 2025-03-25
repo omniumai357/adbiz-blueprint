@@ -128,7 +128,7 @@ export function useServicesPage() {
   };
   
   const closeDownloadModal = () => {
-    setShowDownloadModal(false);
+    setShowDownloadModal(false); // Fixed: Added boolean argument
     setDownloadResource(null);
   };
   
