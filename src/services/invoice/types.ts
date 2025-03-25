@@ -1,4 +1,4 @@
-import { InvoiceDeliveryMethod } from "./types";
+
 import { CustomerInfo } from "@/types/checkout";
 
 export interface InvoiceItem {
