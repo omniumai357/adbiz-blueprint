@@ -4,15 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Download, FileImage, FileText, FileVideo, FileAudio, BookOpen, PlayCircle } from "lucide-react";
-import { useDownloadOptions, FileFormat } from "@/hooks/downloads/useDownloadOptions";
+import { useDownloadOptions, FileFormat, UseDownloadOptionsProps } from "@/hooks/downloads/useDownloadOptions";
 
-interface DownloadOptionsProps {
-  purchaseId: string;
-  packageName: string;
-  resourceType?: "package" | "ebook" | "tutorial";
-  resourceTitle?: string;
-  onClose?: () => void;
-}
+// Using the interface from the hook to ensure consistency
+type DownloadOptionsProps = UseDownloadOptionsProps;
 
 const DownloadOptions = ({ 
   purchaseId, 

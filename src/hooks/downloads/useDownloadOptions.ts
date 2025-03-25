@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export type FileFormat = "pdf" | "png" | "video" | "audio" | "epub" | "mobi" | "mp4" | "webinar";
 
-interface UseDownloadOptionsProps {
+export interface UseDownloadOptionsProps {
   purchaseId: string;
   packageName: string;
   resourceType?: "package" | "ebook" | "tutorial";

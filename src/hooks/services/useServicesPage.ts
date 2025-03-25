@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -76,7 +75,7 @@ export function useServicesPage() {
       window.removeEventListener('hashchange', handleHashChange);
     };
   }, [startTour]);
-
+  
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
   };
