@@ -1,7 +1,5 @@
 
 import { FC } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { Form } from "@/components/ui/form";
 
 // Import the smaller components
 import BrandingSection from "./branding-contact/BrandingSection";
@@ -12,12 +10,11 @@ import AddressSection from "./branding-contact/AddressSection";
 import NavigationButtons from "./branding-contact/NavigationButtons";
 
 interface BrandingContactStepProps {
-  form: UseFormReturn<any>;
   onNext: () => void;
   onPrev: () => void;
 }
 
-const BrandingContactStep: FC<BrandingContactStepProps> = ({ form, onNext, onPrev }) => {
+const BrandingContactStep: FC<BrandingContactStepProps> = ({ onNext, onPrev }) => {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-700">
@@ -26,19 +23,19 @@ const BrandingContactStep: FC<BrandingContactStepProps> = ({ form, onNext, onPre
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Branding Section */}
-        <BrandingSection form={form} />
+        <BrandingSection />
         
         {/* Logo Section */}
-        <LogoSection form={form} />
+        <LogoSection />
         
         {/* Color Selection */}
-        <ColorSelection form={form} />
+        <ColorSelection />
         
         {/* Contact Information */}
-        <ContactSection form={form} />
+        <ContactSection />
         
         {/* Address Information */}
-        <AddressSection form={form} />
+        <AddressSection />
       </div>
       
       {/* Navigation Buttons */}

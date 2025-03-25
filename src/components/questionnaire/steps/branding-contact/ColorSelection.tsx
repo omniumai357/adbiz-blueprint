@@ -2,13 +2,11 @@
 import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface ColorSelectionProps {
-  form: UseFormReturn<any>;
-}
-
-const ColorSelection: FC<ColorSelectionProps> = ({ form }) => {
+const ColorSelection: FC = () => {
+  const { form } = useQuestionnaireContext();
+  
   return (
     <div className="md:col-span-2">
       <FormLabel className="block mb-2">Brand Color Preferences</FormLabel>

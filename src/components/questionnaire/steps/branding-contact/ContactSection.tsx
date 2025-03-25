@@ -2,13 +2,11 @@
 import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface ContactSectionProps {
-  form: UseFormReturn<any>;
-}
-
-const ContactSection: FC<ContactSectionProps> = ({ form }) => {
+const ContactSection: FC = () => {
+  const { form } = useQuestionnaireContext();
+  
   return (
     <>
       <FormField

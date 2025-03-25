@@ -2,13 +2,10 @@
 import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface LogoSectionProps {
-  form: UseFormReturn<any>;
-}
-
-const LogoSection: FC<LogoSectionProps> = ({ form }) => {
+const LogoSection: FC = () => {
+  const { form } = useQuestionnaireContext();
   const hasLogo = form.watch("hasLogo");
 
   return (

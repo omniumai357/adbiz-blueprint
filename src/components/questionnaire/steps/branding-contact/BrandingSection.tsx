@@ -3,13 +3,11 @@ import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface BrandingSectionProps {
-  form: UseFormReturn<any>;
-}
+const BrandingSection: FC = () => {
+  const { form } = useQuestionnaireContext();
 
-const BrandingSection: FC<BrandingSectionProps> = ({ form }) => {
   return (
     <>
       <div className="md:col-span-2">

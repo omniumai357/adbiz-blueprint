@@ -1,4 +1,3 @@
-
 import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,21 +5,20 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
 interface MarketingGoalsStepProps {
-  form: UseFormReturn<any>;
   onNext: () => void;
   onPrev: () => void;
   marketingGoalOptions: Array<{ value: string; label: string }>;
 }
 
 const MarketingGoalsStep: FC<MarketingGoalsStepProps> = ({ 
-  form, 
   onNext, 
   onPrev,
   marketingGoalOptions 
 }) => {
+  const { form } = useQuestionnaireContext();
   const hasSocialMedia = form.watch("hasSocialMedia");
   const platformsUsed = form.watch("platformsUsed") || [];
 

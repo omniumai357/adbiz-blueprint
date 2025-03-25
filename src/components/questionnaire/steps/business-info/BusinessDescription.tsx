@@ -2,13 +2,11 @@
 import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface BusinessDescriptionProps {
-  form: UseFormReturn<any>;
-}
-
-const BusinessDescription: FC<BusinessDescriptionProps> = ({ form }) => {
+const BusinessDescription: FC = () => {
+  const { form } = useQuestionnaireContext();
+  
   return (
     <div className="md:col-span-2">
       <FormField

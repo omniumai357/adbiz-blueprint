@@ -9,6 +9,7 @@ import FileUploadSection from "./file-upload/FileUploadSection";
 import ReviewSection from "./ReviewSection";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
 import { useQuestionnaireForm } from "@/hooks/useQuestionnaireForm";
+import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
@@ -48,68 +49,65 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         <FormValidationMessage message={form.submitError} />
       )}
       
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {step === 1 && (
-            <BusinessInfoStep 
-              form={form} 
-              onNext={handleBusinessInfoNext} 
-            />
-          )}
-          
-          {step === 2 && (
-            <BrandingContactStep 
-              form={form} 
-              onNext={handleBrandingContactNext}
-              onPrev={prevStep}
-            />
-          )}
-          
-          {step === 3 && (
-            <MarketingGoalsStep 
-              form={form} 
-              onNext={handleMarketingGoalsNext}
-              onPrev={prevStep}
-              marketingGoalOptions={marketingGoalOptions}
-            />
-          )}
-          
-          {step === 4 && (
-            <>
-              <FileUploadSection
-                files={files}
-                onFileChange={handleFileChange}
-                onRemoveFile={onRemoveFile}
-                uploadProgress={uploadProgress}
-                uploadError={uploadError}
-                hasLogo={hasLogo === "yes"}
-              />
-              
-              <QuestionnaireNavigation
-                onNext={handleFileUploadNext}
+      <QuestionnaireProvider form={form} hasLogo={hasLogo}>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {step === 1 && (
+              <BusinessInfoStep onNext={handleBusinessInfoNext} />
+            )}
+            
+            {step === 2 && (
+              <BrandingContactStep 
+                onNext={handleBrandingContactNext}
                 onPrev={prevStep}
               />
-            </>
-          )}
-          
-          {step === 5 && (
-            <>
-              <ReviewSection
-                formData={form.getValues()}
-                files={files}
-                onShowReview={onShowReview}
-              />
-              
-              <QuestionnaireNavigation
+            )}
+            
+            {step === 3 && (
+              <MarketingGoalsStep 
+                onNext={handleMarketingGoalsNext}
                 onPrev={prevStep}
-                isSubmitting={submitting}
-                isUploading={uploading}
-                showSubmitButton={true}
+                marketingGoalOptions={marketingGoalOptions}
               />
-            </>
-          )}
-        </form>
-      </Form>
+            )}
+            
+            {step === 4 && (
+              <>
+                <FileUploadSection
+                  files={files}
+                  onFileChange={handleFileChange}
+                  onRemoveFile={onRemoveFile}
+                  uploadProgress={uploadProgress}
+                  uploadError={uploadError}
+                  hasLogo={hasLogo === "yes"}
+                />
+                
+                <QuestionnaireNavigation
+                  onNext={handleFileUploadNext}
+                  onPrev={prevStep}
+                />
+              </>
+            )}
+            
+            {step === 5 && (
+              <>
+                <ReviewSection
+                  formData={form.getValues()}
+                  files={files}
+                  onShowReview={onShowReview}
+                />
+                
+                <QuestionnaireNavigation
+                  onPrev={prevStep}
+                  isSubmitting={submitting}
+                  isUploading={uploading}
+                  showSubmitButton={true}
+                />
+              </>
+            )}
+          </form>
+        </Form>
+      </QuestionnaireProvider>
     </div>
   );
 };

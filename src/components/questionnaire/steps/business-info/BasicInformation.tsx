@@ -3,13 +3,11 @@ import { FC } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UseFormReturn } from "react-hook-form";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
-interface BasicInformationProps {
-  form: UseFormReturn<any>;
-}
-
-const BasicInformation: FC<BasicInformationProps> = ({ form }) => {
+const BasicInformation: FC = () => {
+  const { form } = useQuestionnaireContext();
+  
   return (
     <>
       <FormField
