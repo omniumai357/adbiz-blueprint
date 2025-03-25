@@ -1,4 +1,15 @@
 
+import React from "react";
+import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import CheckoutForm from "../checkout-form";
 
-export default CheckoutForm;
+// Wrap the checkout form with error boundary for better error handling
+const CheckoutFormWithErrorHandling = (props: React.ComponentProps<typeof CheckoutForm>) => {
+  return (
+    <ErrorBoundary>
+      <CheckoutForm {...props} />
+    </ErrorBoundary>
+  );
+};
+
+export default CheckoutFormWithErrorHandling;

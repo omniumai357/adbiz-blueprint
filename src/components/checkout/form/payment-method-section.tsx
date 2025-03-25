@@ -1,10 +1,13 @@
 
 import React from "react";
 import PaymentSelector from "@/components/PaymentSelector";
+import { useErrorHandler } from "@/hooks/error/useErrorHandler";
+import { FormError } from "@/components/ui/form-error";
 
 interface PaymentMethodSectionProps {
   paymentMethod: "credit-card" | "paypal";
   onMethodChange: (method: "credit-card" | "paypal") => void;
+  error?: string;
 }
 
 /**
@@ -16,11 +19,21 @@ interface PaymentMethodSectionProps {
  */
 const PaymentMethodSection = ({ 
   paymentMethod, 
-  onMethodChange 
+  onMethodChange,
+  error
 }: PaymentMethodSectionProps) => {
+  const { getFieldError } = useErrorHandler();
+  const paymentMethodError = error || getFieldError('paymentMethod');
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Payment Method</h2>
+      
+      {/* Display error if present */}
+      {paymentMethodError && (
+        <FormError message={paymentMethodError} />
+      )}
+      
       <PaymentSelector
         selectedMethod={paymentMethod}
         onMethodChange={onMethodChange}

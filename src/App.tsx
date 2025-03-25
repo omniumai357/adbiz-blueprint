@@ -2,7 +2,9 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AuthContextProvider } from './contexts/auth-context';
+import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
+import { ErrorBoundary } from './components/error/ErrorBoundary';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import Receipts from './pages/Receipts';
@@ -63,11 +65,15 @@ const router = createBrowserRouter([
 const App = () => {
   return (
     <ReactQueryProvider>
-      <AuthContextProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-        <Sonner />
-      </AuthContextProvider>
+      <ErrorProvider>
+        <AuthContextProvider>
+          <ErrorBoundary>
+            <RouterProvider router={router} />
+            <Toaster />
+            <Sonner />
+          </ErrorBoundary>
+        </AuthContextProvider>
+      </ErrorProvider>
     </ReactQueryProvider>
   );
 };

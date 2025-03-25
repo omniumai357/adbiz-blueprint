@@ -1,5 +1,6 @@
 
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/ui/use-toast";
+import { formatErrorMessage, logError } from "@/utils/error-handling";
 
 /**
  * Show a success toast with a standard format
@@ -37,7 +38,8 @@ export const showSuccessToast = (title: string, description?: string) => {
  * }
  */
 export const showErrorToast = (title: string, error: any) => {
-  const description = error instanceof Error ? error.message : 'An unexpected error occurred';
+  // Use our standardized error formatter
+  const description = formatErrorMessage(error);
   
   toast({
     title,
@@ -47,7 +49,7 @@ export const showErrorToast = (title: string, error: any) => {
   });
   
   // Log error for debugging
-  console.error(`${title}:`, error);
+  logError(error, title);
 };
 
 /**
@@ -65,6 +67,26 @@ export const showInfoToast = (title: string, description?: string) => {
     title,
     description,
     duration: 5000
+  });
+};
+
+/**
+ * Show a warning toast with a standard format
+ * 
+ * @param title - The main warning message
+ * @param description - Optional additional details
+ * 
+ * @example
+ * // Show a warning message
+ * showWarningToast("Session expiring", "Your session will expire in 5 minutes");
+ */
+export const showWarningToast = (title: string, description?: string) => {
+  toast({
+    title,
+    description,
+    duration: 6000,
+    variant: "destructive",
+    className: "bg-amber-500"
   });
 };
 
