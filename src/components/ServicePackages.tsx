@@ -12,12 +12,23 @@ const iconMap = {
   Award: Award,
 };
 
-export const ServicePackages = () => {
+interface ServicePackagesProps {
+  onCategoryChange?: (category: string) => void;
+}
+
+export const ServicePackages: React.FC<ServicePackagesProps> = ({ onCategoryChange }) => {
   const [selectedCategory, setSelectedCategory] = useState("monthly");
 
   const filteredPackages = packages.filter(
     (pkg) => pkg.category === selectedCategory
   );
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    if (onCategoryChange) {
+      onCategoryChange(category);
+    }
+  };
 
   return (
     <section className="py-24" id="packages">
@@ -43,7 +54,7 @@ export const ServicePackages = () => {
                     ? ""
                     : "hover:bg-secondary/50"
                 )}
-                onClick={() => setSelectedCategory(category.id)}
+                onClick={() => handleCategoryChange(category.id)}
               >
                 <Icon className="h-4 w-4" />
                 {category.title}

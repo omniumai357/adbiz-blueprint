@@ -1,9 +1,31 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { ServicePackages } from '@/components/ServicePackages';
+import { NextStepsSection, getServicePageRecommendations } from '@/components/recommendation/NextStepsSection';
+import { useTour } from '@/contexts/tour-context';
 
 // Import any other components needed for the Services page
 
 const Services = () => {
+  const [searchParams] = useSearchParams();
+  const { isActive: isTourActive } = useTour();
+  const [viewedPackages, setViewedPackages] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("monthly");
+  
+  // Track viewed packages
+  useEffect(() => {
+    const packageParam = searchParams.get('package');
+    if (packageParam && !viewedPackages.includes(packageParam)) {
+      setViewedPackages(prev => [...prev, packageParam]);
+    }
+  }, [searchParams]);
+
+  // Update selectedCategory when ServicePackages component changes it
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
   return (
     <>
       <div id="services-title" className="mb-6">
@@ -16,20 +38,31 @@ const Services = () => {
       </div>
       
       <div id="packages-grid" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Packages grid content */}
+        <ServicePackages onCategoryChange={handleCategoryChange} />
       </div>
       
       <div id="package-features" className="mb-8">
         {/* Package features content */}
       </div>
       
-      <div id="contact-cta" className="bg-gray-100 p-6 rounded-lg">
+      <div id="contact-cta" className="bg-gray-100 p-6 rounded-lg mb-8">
         <h3 className="text-xl font-semibold mb-2">Need Assistance?</h3>
         <p className="mb-4">Our team is ready to help you choose the right package for your business needs.</p>
         <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
           Contact Us
         </button>
       </div>
+      
+      {/* Add the personalized next steps recommendations section */}
+      <NextStepsSection 
+        recommendations={getServicePageRecommendations(
+          viewedPackages,
+          false, // Replace with actual tour completion status
+          selectedCategory
+        )}
+        className="mt-12 mb-8"
+        title="Recommended Next Steps"
+      />
     </>
   );
 };
