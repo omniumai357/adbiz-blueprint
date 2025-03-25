@@ -1,29 +1,11 @@
 
-import { useAuth } from "@/contexts/auth-context";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
-import { useToast } from "@/hooks/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BusinessQuestionnaire from "@/components/BusinessQuestionnaire";
+import { useBusinessQuestionnaire } from "@/hooks/useBusinessQuestionnaire";
 
 const BusinessQuestionnairePage = () => {
-  const { user, isLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    // Redirect if not logged in and auth is not loading
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to access the business questionnaire",
-        variant: "destructive",
-      });
-      // Save the current page as the redirect URL
-      navigate("/auth?redirect=/business-questionnaire");
-    }
-  }, [user, isLoading, isAuthenticated, navigate, toast]);
+  const { isLoading, isAuthenticated, handleQuestionnaireComplete } = useBusinessQuestionnaire();
   
   if (isLoading) {
     return (
@@ -56,7 +38,7 @@ const BusinessQuestionnairePage = () => {
             </p>
           </div>
           
-          <BusinessQuestionnaire />
+          <BusinessQuestionnaire onComplete={handleQuestionnaireComplete} />
         </div>
       </main>
       
