@@ -93,22 +93,28 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   
   const hasLogo = form.watch("hasLogo");
 
-  const handleBusinessInfoNext = () => {
+  const handleBusinessInfoNext = (validateOnly = false) => {
     if (validateBusinessInfoStep(form)) {
-      nextStep();
+      if (!validateOnly) nextStep();
+      return true;
     }
+    return false;
   };
   
-  const handleBrandingContactNext = () => {
+  const handleBrandingContactNext = (validateOnly = false) => {
     if (validateContactInfoStep(form)) {
-      nextStep();
+      if (!validateOnly) nextStep();
+      return true;
     }
+    return false;
   };
   
-  const handleMarketingGoalsNext = () => {
+  const handleMarketingGoalsNext = (validateOnly = false) => {
     if (validateMarketingGoalsStep(form)) {
-      nextStep();
+      if (!validateOnly) nextStep();
+      return true;
     }
+    return false;
   };
   
   const handleFileUploadNext = () => {

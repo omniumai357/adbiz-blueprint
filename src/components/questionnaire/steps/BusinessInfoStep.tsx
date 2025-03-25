@@ -10,12 +10,20 @@ import BusinessLicense from "./business-info/BusinessLicense";
 import { Button } from "@/components/ui/button";
 
 interface BusinessInfoStepProps {
-  onNext: () => void;
+  onNext?: () => void;
 }
 
 const BusinessInfoStep: FC<BusinessInfoStepProps> = ({ onNext }) => {
   // Use the context instead of props
-  const { form } = useQuestionnaireContext();
+  const { form, validateStep } = useQuestionnaireContext();
+  
+  const handleNext = () => {
+    if (onNext) {
+      onNext();
+    } else if (validateStep) {
+      validateStep(1);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -40,7 +48,7 @@ const BusinessInfoStep: FC<BusinessInfoStepProps> = ({ onNext }) => {
       <div className="flex justify-end mt-8">
         <Button
           type="button"
-          onClick={onNext}
+          onClick={handleNext}
         >
           Continue
         </Button>

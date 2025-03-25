@@ -37,6 +37,20 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     marketingGoalOptions
   } = useQuestionnaireForm(onComplete);
   
+  // Helper function to validate step by number
+  const validateStep = (stepNumber: number) => {
+    switch (stepNumber) {
+      case 1:
+        return handleBusinessInfoNext(true);
+      case 2:
+        return handleBrandingContactNext(true);
+      case 3:
+        return handleMarketingGoalsNext(true);
+      default:
+        return true;
+    }
+  };
+  
   return (
     <div className="bg-card rounded-lg shadow-sm border p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">
@@ -49,11 +63,17 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         <FormValidationMessage message={form.submitError} />
       )}
       
-      <QuestionnaireProvider form={form} hasLogo={hasLogo}>
+      <QuestionnaireProvider 
+        form={form} 
+        hasLogo={hasLogo}
+        isSubmitting={submitting}
+        isUploading={uploading}
+        validateStep={validateStep}
+      >
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {step === 1 && (
-              <BusinessInfoStep onNext={handleBusinessInfoNext} />
+              <BusinessInfoStep />
             )}
             
             {step === 2 && (
