@@ -14,9 +14,9 @@ export const authClient = {
    */
   getCurrentUser: async (): Promise<UserResponse> => {
     // Properly handle the response from getUser() - this returns { data, error } not a User object
-    const { data, error } = await supabaseClient.auth.getUser();
-    if (error) throw error;
-    return { user: data.user };
+    const response = await supabaseClient.auth.getUser();
+    if (response.error) throw response.error;
+    return { user: response.data.user };
   },
   
   /**

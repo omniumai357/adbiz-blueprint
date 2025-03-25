@@ -103,3 +103,6 @@ export function useMilestones(userId: string | null | undefined) {
     refreshData: fetchData
   };
 }
+
+// Export the types for use in other components
+export type { UserMilestone, MilestoneProgress, AvailableReward };

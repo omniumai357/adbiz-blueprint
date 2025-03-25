@@ -95,6 +95,10 @@ export interface UserMilestone {
   created_at: string;
   updated_at: string;
   milestone?: Milestone;
+  icon?: string;
+  milestone_name?: string;
+  reward_type?: string;
+  reward_value?: number;
 }
 
 export interface UserActivity {
@@ -116,6 +120,16 @@ export interface AvailableReward {
   completed_at: string;
   is_claimed: boolean;
   icon?: string;
+}
+
+// Adding MilestoneProgress interface which was missing
+export interface MilestoneProgress {
+  milestone_id: string;
+  milestone_name: string;
+  points_required: number;
+  current_points: number;
+  progress_percentage: number;
+  icon?: string | null;
 }
 
 // Payment Types
