@@ -1,6 +1,6 @@
 
 import React from 'react';
-import useServicesPage from '@/hooks/services/useServicesPage';
+import { useServicesPage } from '@/hooks/services/useServicesPage';
 import { useToast } from '@/hooks/ui/use-toast';
 import { ServicesTitle } from '@/components/services/ServicesTitle';
 import { useResourceAccess } from '@/hooks/useResourceAccess';
