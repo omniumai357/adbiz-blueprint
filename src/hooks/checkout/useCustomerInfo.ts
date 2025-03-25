@@ -15,21 +15,12 @@ export const useCustomerInfo = () => {
     lastName: '',
     company: '',
     email: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'US',
     invoiceDeliveryMethod: 'email'
   });
   
   const [validationErrors, setValidationErrors] = useState({
     firstName: '',
     lastName: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
   });
   
   // Update customer info when profile data loads
@@ -76,10 +67,6 @@ export const useCustomerInfo = () => {
     const errors = {
       firstName: '',
       lastName: '',
-      address: '',
-      city: '',
-      state: '',
-      zipCode: '',
     };
     
     let isValid = true;
@@ -91,29 +78,6 @@ export const useCustomerInfo = () => {
     
     if (!customerInfo.lastName.trim()) {
       errors.lastName = 'Last name is required';
-      isValid = false;
-    }
-    
-    if (!customerInfo.address.trim()) {
-      errors.address = 'Address is required';
-      isValid = false;
-    }
-    
-    if (!customerInfo.city.trim()) {
-      errors.city = 'City is required';
-      isValid = false;
-    }
-    
-    if (!customerInfo.state.trim()) {
-      errors.state = 'State is required';
-      isValid = false;
-    }
-    
-    if (!customerInfo.zipCode.trim()) {
-      errors.zipCode = 'ZIP code is required';
-      isValid = false;
-    } else if (!/^\d{5}(-\d{4})?$/.test(customerInfo.zipCode)) {
-      errors.zipCode = 'Invalid ZIP code format';
       isValid = false;
     }
     

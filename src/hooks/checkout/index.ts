@@ -14,6 +14,9 @@ export * from './useDiscountState';
 export * from './useCouponHandling';
 export * from './useCheckoutData';  // Add the new consolidated hook
 
+// Export types
+export * from './types';
+
 // Export from useAddOns but rename bundleDiscount to avoid conflicts
 export { 
   useAddOns,
@@ -31,4 +34,3 @@ export {
 // Export from other modules
 export * from './useCoupons';
 export * from './useLimitedTimeOffers';
-export * from './types';
