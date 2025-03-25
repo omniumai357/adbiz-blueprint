@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
+import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 
 // Create the router with all page routes
 const router = createBrowserRouter([
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <Auth />
+  },
+  {
+    path: "/business-questionnaire",
+    element: <BusinessQuestionnairePage />
   },
 ]);
 
