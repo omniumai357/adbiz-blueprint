@@ -5,12 +5,13 @@ import { useToast } from "@/hooks/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Award, Check, ChevronRight } from "lucide-react";
-import { UserMilestone, useMilestones } from "@/hooks/rewards/useMilestones";
+import { CommonMilestoneData, UserMilestone } from "@/types/api";
+import { useMilestones } from "@/hooks/rewards/useMilestones";
 
 interface MilestoneRewardsProps {
   userId: string | null;
-  onRewardApplied: (reward: UserMilestone) => void;
-  appliedReward: UserMilestone | null;
+  onRewardApplied: (reward: UserMilestone | CommonMilestoneData) => void;
+  appliedReward: UserMilestone | CommonMilestoneData | null;
 }
 
 const MilestoneRewards = ({
@@ -21,7 +22,7 @@ const MilestoneRewards = ({
   const { availableRewards, isLoading, claimReward } = useMilestones(userId);
   const { toast } = useToast();
 
-  const handleApplyReward = async (reward: UserMilestone) => {
+  const handleApplyReward = async (reward: CommonMilestoneData) => {
     if (appliedReward) {
       toast({
         description: "You can only apply one reward per order",

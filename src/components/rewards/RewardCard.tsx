@@ -4,10 +4,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Award, Gift, Sparkles, ShoppingBag, DollarSign, MessageSquare, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
-import { UserMilestone } from '@/hooks/rewards/useMilestones';
+import { CommonMilestoneData } from '@/types/api';
 
 interface RewardCardProps {
-  reward: UserMilestone;
+  reward: CommonMilestoneData;
   onClaim: (milestoneId: string) => Promise<any>;
   disabled?: boolean;
 }
@@ -59,8 +59,9 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
     }
   };
 
-  // Format the completion date for display
-  const completedDate = reward.completed_at ? format(new Date(reward.completed_at), 'MMM d, yyyy') : '';
+  // Format the completion date if available
+  const completedDate = 'completed_at' in reward && reward.completed_at ? 
+    format(new Date(reward.completed_at), 'MMM d, yyyy') : '';
   
   return (
     <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 shadow-md hover:shadow-lg transition-all">
@@ -75,7 +76,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Achieved on {completedDate}
+          {completedDate && `Achieved on ${completedDate}`}
         </p>
       </CardHeader>
       <CardContent>

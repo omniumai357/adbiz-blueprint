@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Award, ShoppingBag, DollarSign, MessageSquare, UserCheck, Star } from 'lucide-react';
-import { MilestoneProgress } from '@/hooks/rewards/useMilestones';
+import { MilestoneProgress } from '@/types/api';
 
 interface MilestoneProgressCardProps {
   milestone: MilestoneProgress;

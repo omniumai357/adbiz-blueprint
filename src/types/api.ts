@@ -83,10 +83,20 @@ export interface Milestone {
   updated_at: string;
 }
 
-export interface UserMilestone {
+// Create a common interface for milestone data shared between UserMilestone and AvailableReward
+export interface CommonMilestoneData {
+  milestone_id: string;
+  milestone_name: string;
+  milestone_description?: string;
+  reward_type: string;
+  reward_value: number;
+  icon?: string;
+  is_claimed?: boolean;
+}
+
+export interface UserMilestone extends CommonMilestoneData {
   id: string;
   user_id: string;
-  milestone_id: string;
   current_points: number;
   is_completed: boolean;
   reward_claimed: boolean;
@@ -95,10 +105,6 @@ export interface UserMilestone {
   created_at: string;
   updated_at: string;
   milestone?: Milestone;
-  icon?: string;
-  milestone_name?: string;
-  reward_type?: string;
-  reward_value?: number;
 }
 
 export interface UserActivity {
@@ -111,15 +117,8 @@ export interface UserActivity {
   created_at: string;
 }
 
-export interface AvailableReward {
-  milestone_id: string;
-  milestone_name: string;
-  milestone_description: string;
-  reward_type: string;
-  reward_value: number;
+export interface AvailableReward extends CommonMilestoneData {
   completed_at: string;
-  is_claimed: boolean;
-  icon?: string;
 }
 
 // Adding MilestoneProgress interface which was missing
