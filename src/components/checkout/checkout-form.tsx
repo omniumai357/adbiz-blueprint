@@ -2,10 +2,11 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomerInfoForm from "@/components/checkout/customer-info-form";
-import AddOnsSection from "@/components/checkout/add-ons-section";
 import DiscountSection from "@/components/checkout/form/discount-section";
 import PaymentSection from "@/components/checkout/form/payment-section";
-import PaymentMethodSection from "@/components/checkout/form/payment-method-section";
+import PaymentMethodSelector from "@/components/checkout/form/payment-method-selector";
+import AddOnsSelector from "@/components/checkout/form/add-ons-selector";
+import DiscountDisplay from "@/components/checkout/form/discount-display";
 
 interface CheckoutFormProps {
   checkout: ReturnType<typeof import("@/hooks/checkout/useCheckout").useCheckout>;
@@ -15,11 +16,7 @@ interface CheckoutFormProps {
 /**
  * CheckoutForm Component
  * 
- * Renders the complete checkout form including:
- * - Customer information
- * - Add-on selection
- * - Discounts and offers
- * - Payment options
+ * Renders the complete checkout form using smaller, focused sub-components
  * 
  * @param props CheckoutFormProps containing the checkout object and success handler
  */
@@ -59,12 +56,29 @@ const CheckoutForm = ({
       
       {/* Add-ons section */}
       {addOns.available.length > 0 && (
-        <AddOnsSection 
-          addOns={addOns.available}
+        <AddOnsSelector 
+          availableAddOns={addOns.available}
           selectedAddOns={addOns.selected}
           onAddOnToggle={addOns.toggle}
         />
       )}
+      
+      {/* Discount summary display */}
+      <DiscountDisplay 
+        subtotal={totals.subtotal}
+        bundleDiscount={discounts.bundle.info}
+        bundleDiscountAmount={discounts.bundle.amount}
+        tieredDiscount={discounts.tiered.info}
+        tieredDiscountAmount={discounts.tiered.amount}
+        loyaltyBonusAmount={discounts.loyalty.amount}
+        isLoyaltyProgramEnabled={discounts.loyalty.enabled}
+        offerDiscountAmount={discounts.offers.amount}
+        couponDiscountAmount={discounts.coupons.amount}
+        appliedCoupon={discounts.coupons.applied}
+        milestoneRewardAmount={discounts.rewards.amount}
+        appliedMilestoneReward={discounts.rewards.applied}
+        totalDiscountAmount={discounts.total}
+      />
       
       {/* Discounts and offers section */}
       <DiscountSection 
@@ -90,8 +104,8 @@ const CheckoutForm = ({
       />
       
       {/* Payment method selection */}
-      <PaymentMethodSection
-        paymentMethod={paymentMethod}
+      <PaymentMethodSelector
+        selectedMethod={paymentMethod}
         onMethodChange={setPaymentMethod}
       />
       
