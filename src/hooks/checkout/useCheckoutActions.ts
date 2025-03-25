@@ -14,9 +14,14 @@ export function useCheckoutActions({
     // Call the base order success handler
     handleBaseOrderSuccess(orderId);
     
-    // Award milestone points if applicable - pass the order total if needed
-    // Since this is optional in the main component, default to 0 if not provided
-    await handleOrderSuccessWithRewards(orderId, 0);
+    try {
+      // Award milestone points if applicable
+      // We use a default total of 0 if it's not provided by the caller
+      await handleOrderSuccessWithRewards(orderId, 0);
+    } catch (error) {
+      console.error("Error processing rewards after order success:", error);
+      // We don't want to break the main success flow if rewards fail
+    }
   };
   
   return {

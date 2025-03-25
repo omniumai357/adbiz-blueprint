@@ -1,13 +1,12 @@
 
+import { useState, useEffect } from "react";
 import { useOrderDetails } from "./useOrderDetails";
-import { useCheckoutData } from "./useCheckoutData";
-import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
-import { useCouponHandling } from "./useCouponHandling";
-import { useDiscountState } from "./useDiscountState";
-import { useCheckoutCalculations } from "./useCheckoutCalculations";
 import { useCheckoutState } from "./useCheckoutState";
-import { useCheckoutEffects } from "./useCheckoutEffects";
 import { useCheckoutActions } from "./useCheckoutActions";
+import { useCheckoutDiscounts } from "./useCheckoutDiscounts";
+import { useCheckoutAddOns } from "./useCheckoutAddOns";
+import { useCheckoutTotals } from "./useCheckoutTotals";
+import { useProfile } from "@/hooks/data/useProfile";
 
 /**
  * Main checkout hook that orchestrates the entire checkout flow.
@@ -15,136 +14,86 @@ import { useCheckoutActions } from "./useCheckoutActions";
  * for the checkout page.
  */
 export function useCheckout() {
-  // Use our specialized hooks
+  // Use order details hook for package information
   const orderDetails = useOrderDetails();
   const {
-    showDownloadOptions,
-    orderId,
-    invoiceNumber,
-    isGeneratingInvoice,
     userId,
     packageName,
     packagePrice,
     packageDetails,
-    isProfileLoading,
-    profile,
     handleOrderSuccess: handleBaseOrderSuccess
   } = orderDetails;
 
-  // Use the consolidated hook for add-ons and customer info
-  const checkoutData = useCheckoutData({ userId, profile });
-  const {
-    availableAddOns,
-    selectedAddOnIds,
-    handleAddOnToggle,
-    selectedAddOns,
-    addOnsTotal,
-    customerInfo: baseCustomerInfo,
-    setCustomerInfo: setBaseCustomerInfo
-  } = checkoutData;
+  // Use profile data if available
+  const { profile } = useProfile(userId);
+  
+  // Use customer and payment state management
+  const checkoutState = useCheckoutState();
+  const { customerInfo, setCustomerInfo, paymentMethod, setPaymentMethod } = checkoutState;
+  
+  // Pre-fill customer info with profile data if available
+  useEffect(() => {
+    if (profile) {
+      setCustomerInfo({
+        userId: profile.id,
+        firstName: profile.first_name || "",
+        lastName: profile.last_name || "",
+        company: profile.company || "",
+        email: profile.email || "",
+        invoiceDeliveryMethod: "email"
+      });
+    }
+  }, [profile, setCustomerInfo]);
 
-  // Use the centralized checkout state management hook
-  const { 
-    customerInfo,
-    setCustomerInfo,
-    paymentMethod, 
-    setPaymentMethod 
-  } = useCheckoutState();
-
-  // Handle rewards and loyalty program
-  const rewardsAndLoyalty = useRewardsAndLoyalty(userId, 0);
-  const {
-    isLoyaltyProgramEnabled,
-    loyaltyBonusAmount,
-    handleLoyaltyProgramToggle,
-    updateLoyaltyBonus,
-    appliedMilestoneReward,
-    handleMilestoneRewardApplied,
-    handleOrderSuccessWithRewards
-  } = rewardsAndLoyalty;
-
-  // Handle coupon application and validation
-  const couponHandling = useCouponHandling();
-  const {
-    appliedCoupon,
-    isCheckingCoupon,
-    couponDiscountAmount,
-    applyCoupon,
-    removeCoupon,
-    updateCouponDiscountAmount,
-  } = couponHandling;
-
-  // Manage discount state
-  const discountState = useDiscountState();
-  const {
-    bundleDiscount,
-    isDiscountApplicable,
-    appliedTier,
-    isFirstPurchase,
-    activeOffers,
-    availableOffer,
-    personalizedCoupon,
-    setBundleDiscount,
-    setIsDiscountApplicable,
-    setAppliedTier,
-    setIsFirstPurchase,
-    setActiveOffers,
-    setAvailableOffer,
-    setPersonalizedCoupon
-  } = discountState;
-
-  // Handle checkout calculations
-  const calculations = useCheckoutCalculations({
+  // Use add-ons management
+  const addOns = useCheckoutAddOns();
+  
+  // Track total discount amount for calculations
+  const [totalDiscountAmount, setTotalDiscountAmount] = useState(0);
+  
+  // Calculate totals based on package, add-ons, and discounts
+  const totals = useCheckoutTotals({
     packagePrice,
-    selectedAddOns,
-    bundleDiscount,
-    isDiscountApplicable,
-    tieredDiscount: appliedTier,
-    isFirstPurchase,
-    isLoyaltyProgramEnabled,
-    loyaltyBonusAmount,
-    availableOffer,
-    appliedCoupon,
-    appliedMilestoneReward
+    selectedAddOns: addOns.selectedItems,
+    totalDiscountAmount
   });
   
-  const {
-    subtotal,
-    bundleDiscountAmount,
-    tieredDiscountAmount,
-    offerDiscountAmount,
-    milestoneRewardAmount,
-    totalDiscountAmount,
-    total
-  } = calculations;
-
-  // Manage checkout side effects
-  useCheckoutEffects({
-    subtotal,
-    updateLoyaltyBonus,
-    updateCouponDiscountAmount
-  });
-
-  // Combine order success handling
+  // Use discounts management, passing the current subtotal
+  const discounts = useCheckoutDiscounts(
+    userId,
+    totals.subtotal,
+    addOns.total
+  );
+  
+  // Update total discount amount when any discount changes
+  useEffect(() => {
+    const newTotalDiscount = discounts.getTotalDiscount();
+    setTotalDiscountAmount(newTotalDiscount);
+  }, [
+    discounts.bundle.amount,
+    discounts.tiered.amount,
+    discounts.loyalty.amount,
+    discounts.offers.amount,
+    discounts.coupons.amount,
+    discounts.rewards.amount
+  ]);
+  
+  // Update loyalty bonus and coupon discount when subtotal changes
+  useEffect(() => {
+    discounts.loyalty.updateBonus(totals.subtotal);
+    discounts.coupons.updateAmount(totals.subtotal);
+  }, [totals.subtotal]);
+  
+  // Create combined order success handler
   const actions = useCheckoutActions({
     handleBaseOrderSuccess,
-    handleOrderSuccessWithRewards
+    handleOrderSuccessWithRewards: discounts.rewards.handleOrderSuccess
   });
 
   // We create a simplified API with optional nested objects to reduce prop drilling
   return {
     // Order details
-    orderDetails: {
-      showDownloadOptions,
-      orderId,
-      invoiceNumber,
-      isGeneratingInvoice,
-      userId,
-      packageName,
-      packagePrice,
-      packageDetails,
-      isProfileLoading,
-    },
+    orderDetails,
     
     // Customer info
     customerInfo,
@@ -155,57 +104,29 @@ export function useCheckout() {
     setPaymentMethod,
     
     // Add-ons
-    addOns: {
-      available: availableAddOns,
-      selected: selectedAddOnIds,
-      selectedItems: selectedAddOns,
-      toggle: handleAddOnToggle,
-      total: addOnsTotal,
-    },
+    addOns,
     
     // Discounts and offers
     discounts: {
-      bundle: {
-        info: bundleDiscount,
-        applicable: isDiscountApplicable,
-        amount: bundleDiscountAmount,
-      },
-      tiered: {
-        info: appliedTier,
-        isFirstPurchase,
-        amount: tieredDiscountAmount,
-      },
+      bundle: discounts.bundle,
+      tiered: discounts.tiered,
       loyalty: {
-        enabled: isLoyaltyProgramEnabled,
-        toggle: handleLoyaltyProgramToggle,
-        amount: loyaltyBonusAmount,
+        enabled: discounts.loyalty.enabled,
+        toggle: discounts.loyalty.toggle,
+        amount: discounts.loyalty.amount,
       },
-      offers: {
-        active: activeOffers,
-        available: availableOffer,
-        amount: offerDiscountAmount,
-      },
-      coupons: {
-        personal: personalizedCoupon,
-        applied: appliedCoupon,
-        amount: couponDiscountAmount,
-        isChecking: isCheckingCoupon,
-        apply: applyCoupon,
-        remove: removeCoupon,
-      },
+      offers: discounts.offers,
+      coupons: discounts.coupons,
       rewards: {
-        applied: appliedMilestoneReward,
-        applyReward: handleMilestoneRewardApplied,
-        amount: milestoneRewardAmount,
+        applied: discounts.rewards.applied,
+        applyReward: discounts.rewards.applyReward,
+        amount: discounts.rewards.amount,
       },
       total: totalDiscountAmount,
     },
     
     // Totals
-    totals: {
-      subtotal,
-      total,
-    },
+    totals,
     
     // Actions
     handleOrderSuccess: actions.handleOrderSuccess,

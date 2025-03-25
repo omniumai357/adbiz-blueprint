@@ -13,17 +13,20 @@ export * from './useCheckoutAuth';
 export * from './useCustomerInfo';
 export * from './usePackageDetails';
 export * from './usePaymentMethod';
-export * from './useCheckoutCalculations';
 export * from './useOrderProcessing';
 export * from './useLoyaltyProgram';
 export * from './useOrderDetails';
 export * from './usePaymentOptions';
 export * from './useDiscountState';
 export * from './useCouponHandling';
-export * from './useCheckoutData';
 export * from './useCheckoutState';
 export * from './useCheckoutEffects';
 export * from './useCheckoutActions';
+
+// Export the new refactored hooks
+export * from './useCheckoutAddOns';
+export * from './useCheckoutDiscounts';
+export * from './useCheckoutTotals';
 
 // Export types
 export * from './types';
