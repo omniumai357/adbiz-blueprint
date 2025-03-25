@@ -4,14 +4,14 @@ import { useSearchParams } from 'react-router-dom';
 import { ServicePackages } from '@/components/ServicePackages';
 import { NextStepsSection, getServicePageRecommendations } from '@/components/recommendation/NextStepsSection';
 import { useTour } from '@/contexts/tour-context';
-
-// Import any other components needed for the Services page
+import { supabase } from '@/integrations/supabase/client';
 
 const Services = () => {
   const [searchParams] = useSearchParams();
   const { isActive: isTourActive } = useTour();
   const [viewedPackages, setViewedPackages] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("monthly");
+  const [hasPurchased, setHasPurchased] = useState(false);
   
   // Track viewed packages
   useEffect(() => {
@@ -20,6 +20,31 @@ const Services = () => {
       setViewedPackages(prev => [...prev, packageParam]);
     }
   }, [searchParams]);
+  
+  // Check if user has purchased any package
+  useEffect(() => {
+    const checkPurchaseHistory = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Check if user has any completed orders
+          const { data: orders } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .limit(1);
+            
+          setHasPurchased(orders && orders.length > 0);
+        }
+      } catch (error) {
+        console.error("Error checking purchase history:", error);
+      }
+    };
+    
+    checkPurchaseHistory();
+  }, []);
 
   // Update selectedCategory when ServicePackages component changes it
   const handleCategoryChange = (category: string) => {
@@ -53,12 +78,13 @@ const Services = () => {
         </button>
       </div>
       
-      {/* Add the personalized next steps recommendations section */}
+      {/* Add the personalized next steps recommendations section with e-books */}
       <NextStepsSection 
         recommendations={getServicePageRecommendations(
           viewedPackages,
           false, // Replace with actual tour completion status
-          selectedCategory
+          selectedCategory,
+          hasPurchased
         )}
         className="mt-12 mb-8"
         title="Recommended Next Steps"

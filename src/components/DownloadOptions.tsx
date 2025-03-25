@@ -4,27 +4,46 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Download, FileImage, FileText, FileVideo, FileAudio } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Download, FileImage, FileText, FileVideo, FileAudio, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/ui/use-toast";
 
-type FileFormat = "pdf" | "png" | "video" | "audio";
+type FileFormat = "pdf" | "png" | "video" | "audio" | "epub" | "mobi";
 
 interface DownloadOptionsProps {
   purchaseId: string;
   packageName: string;
+  resourceType?: "package" | "ebook";
+  resourceTitle?: string;
 }
 
-const DownloadOptions = ({ purchaseId, packageName }: DownloadOptionsProps) => {
-  const [selectedFormat, setSelectedFormat] = useState<FileFormat>("pdf");
+const DownloadOptions = ({ 
+  purchaseId, 
+  packageName, 
+  resourceType = "package",
+  resourceTitle
+}: DownloadOptionsProps) => {
+  const [selectedFormat, setSelectedFormat] = useState<FileFormat>(resourceType === "ebook" ? "pdf" : "pdf");
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
-  const formatOptions = [
-    { value: "pdf", label: "PDF Document", icon: FileText },
-    { value: "png", label: "PNG Image", icon: FileImage },
-    { value: "video", label: "Video File", icon: FileVideo },
-    { value: "audio", label: "Audio File", icon: FileAudio },
-  ];
+  const getFormatOptions = () => {
+    if (resourceType === "ebook") {
+      return [
+        { value: "pdf", label: "PDF Document", icon: FileText },
+        { value: "epub", label: "EPUB (for most e-readers)", icon: BookOpen },
+        { value: "mobi", label: "MOBI (for Kindle)", icon: BookOpen },
+      ];
+    }
+    
+    return [
+      { value: "pdf", label: "PDF Document", icon: FileText },
+      { value: "png", label: "PNG Image", icon: FileImage },
+      { value: "video", label: "Video File", icon: FileVideo },
+      { value: "audio", label: "Audio File", icon: FileAudio },
+    ];
+  };
+
+  const formatOptions = getFormatOptions();
 
   const handleDownload = async () => {
     try {
@@ -35,9 +54,13 @@ const DownloadOptions = ({ purchaseId, packageName }: DownloadOptionsProps) => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Simulate successful download
+      const resourceName = resourceType === "ebook" 
+        ? (resourceTitle || "E-book") 
+        : `${packageName} package`;
+        
       toast({
         title: "Download successful",
-        description: `Your ${packageName} package has been downloaded in ${selectedFormat.toUpperCase()} format.`,
+        description: `Your ${resourceName} has been downloaded in ${selectedFormat.toUpperCase()} format.`,
       });
       
       setIsDownloading(false);
@@ -45,7 +68,7 @@ const DownloadOptions = ({ purchaseId, packageName }: DownloadOptionsProps) => {
       console.error("Download error:", error);
       toast({
         title: "Download failed",
-        description: "There was an error downloading your purchase. Please try again.",
+        description: "There was an error downloading your resource. Please try again.",
         variant: "destructive",
       });
       setIsDownloading(false);
@@ -57,17 +80,20 @@ const DownloadOptions = ({ purchaseId, packageName }: DownloadOptionsProps) => {
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Download className="h-4 w-4" />
-          <span>Download Purchase</span>
+          <span>Download {resourceType === "ebook" ? "E-book" : "Purchase"}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Download Your Purchase</DialogTitle>
+          <DialogTitle>
+            Download Your {resourceType === "ebook" ? "E-book" : "Purchase"}
+          </DialogTitle>
         </DialogHeader>
         
         <div className="py-4">
           <p className="text-muted-foreground mb-4">
-            Choose your preferred file format for downloading {packageName}:
+            Choose your preferred file format for downloading{" "}
+            {resourceType === "ebook" ? (resourceTitle || "this e-book") : packageName}:
           </p>
           
           <RadioGroup 
