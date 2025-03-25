@@ -89,3 +89,6 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
     </Card>
   );
 };
+
+// Also export as default for flexibility
+export default MilestoneCard;

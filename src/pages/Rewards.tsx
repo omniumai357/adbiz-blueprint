@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Header from "@/components/Header";
 import MilestonesDashboard from "@/components/rewards/MilestonesDashboard";
 import { useRewardsPage } from "@/hooks/rewards/useRewardsPage";
@@ -25,7 +25,8 @@ import { LoadingContent } from "@/components/ui/loading-content";
  */
 const Rewards = () => {
   // Get current authenticated user and page state from hook
-  const { user, isLoading, error } = useRewardsPage();
+  const { user, isLoading } = useRewardsPage();
+  const [error, setError] = useState<Error | null>(null);
 
   // Skeleton component for when user data is loading
   const RewardsPageSkeleton = () => (

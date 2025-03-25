@@ -1,13 +1,14 @@
 
-import { useState, useEffect } from "react";
-import MilestoneProgressCard from "./MilestoneProgressCard";
-import MilestoneCard from "./MilestoneCard";
+import { useState } from "react";
+import { MilestoneCard } from "./MilestoneCard";
 import RewardCard from "./RewardCard";
 import { useMilestones } from "@/hooks/rewards/useMilestones";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingContent } from "@/components/ui/loading-content";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useRewardActions } from "@/hooks/rewards/useRewardActions";
+import MilestoneProgressCard from "./MilestoneProgressCard";
 
 interface MilestonesDashboardProps {
   userId: string | undefined;
@@ -15,14 +16,19 @@ interface MilestonesDashboardProps {
 
 const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   const {
-    milestonesData,
-    totalPoints,
+    milestones,
+    completedMilestones,
     availableRewards,
+    totalPoints,
     isLoading,
-    error,
-    claimReward,
-    isClaimingReward
+    refreshData
   } = useMilestones(userId);
+
+  // Get reward actions functionality
+  const { claimReward, isProcessing } = useRewardActions(userId || null, refreshData);
+  
+  // State for error tracking
+  const [error, setError] = useState<Error | null>(null);
 
   const MilestonesSkeleton = () => (
     <div className="space-y-6">
@@ -48,14 +54,27 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
     <LoadingContent
       isLoading={isLoading}
       error={error}
-      isEmpty={milestonesData.length === 0 && availableRewards.length === 0}
+      isEmpty={milestones.length === 0 && availableRewards.length === 0}
       emptyContent={<EmptyMilestones />}
       useSkeleton={true}
       skeletonContent={<MilestonesSkeleton />}
     >
       <div className="space-y-6">
         {/* Progress Overview */}
-        <MilestoneProgressCard totalPoints={totalPoints} />
+        <div className="bg-gradient-to-r from-slate-50 to-white p-6 rounded-lg border shadow-sm">
+          <h2 className="text-xl font-semibold mb-2">Your Progress</h2>
+          <p className="text-muted-foreground mb-4">You've earned {totalPoints} total points</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">Available Rewards</h3>
+              <p className="text-2xl font-bold">{availableRewards.length}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">Completed Milestones</h3>
+              <p className="text-2xl font-bold">{completedMilestones.length}</p>
+            </div>
+          </div>
+        </div>
         
         {/* Milestones & Rewards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -65,13 +84,25 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
               key={reward.milestone_id}
               reward={reward}
               onClaim={claimReward}
-              isProcessing={isClaimingReward}
+              disabled={isProcessing}
             />
           ))}
           
           {/* Display milestones */}
-          {milestonesData.map((milestone) => (
-            <MilestoneCard key={milestone.id} milestone={milestone} />
+          {milestones.map((milestone) => (
+            <MilestoneCard 
+              key={milestone.id}
+              name={milestone.milestone_name}
+              description={milestone.milestone_description || ''}
+              icon={milestone.icon}
+              pointsRequired={milestone.milestone?.points_required || 0}
+              currentPoints={milestone.current_points}
+              isCompleted={milestone.is_completed}
+              rewardClaimed={milestone.reward_claimed}
+              onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
+                () => claimReward(milestone.milestone_id) : undefined}
+              isClaimingReward={isProcessing}
+            />
           ))}
         </div>
       </div>

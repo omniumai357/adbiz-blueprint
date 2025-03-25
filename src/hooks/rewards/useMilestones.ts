@@ -1,6 +1,7 @@
 
 import { useRewards } from './useRewards';
 import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
+import { useState } from 'react';
 
 /**
  * Hook for managing user milestones and rewards
@@ -26,6 +27,9 @@ export function useMilestones(userId: string | null | undefined) {
     refreshRewardsData
   } = useRewards(userId || undefined);
 
+  // Error state
+  const [error, setError] = useState<Error | null>(null);
+
   // Transform UserMilestone[] into MilestoneProgress[]
   const milestoneProgress: MilestoneProgress[] = activeMilestones.map(milestone => ({
     milestone_id: milestone.milestone_id,
@@ -45,6 +49,7 @@ export function useMilestones(userId: string | null | undefined) {
     availableRewards,
     totalPoints,
     isLoading,
+    error,
     claimReward,
     refreshData: refreshRewardsData
   };

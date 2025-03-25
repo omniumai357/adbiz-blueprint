@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/ui/use-toast";
 import { rewardsService } from "@/services/milestone/rewards-service";
-import { AvailableReward } from '@/types/api';
 
 /**
  * Hook for managing reward actions
@@ -10,6 +9,7 @@ import { AvailableReward } from '@/types/api';
  * This hook is responsible for:
  * - Claiming rewards
  * - Showing success/error notifications
+ * - Managing processing state
  * 
  * @param userId - The ID of the user claiming rewards
  * @param refreshData - Function to refresh data after claiming a reward
