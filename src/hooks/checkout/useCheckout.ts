@@ -1,13 +1,13 @@
 
-import { useState, useEffect } from "react";
 import { useOrderDetails } from "./useOrderDetails";
 import { useCheckoutData } from "./useCheckoutData";
-import { usePaymentOptions } from "./usePaymentOptions";
 import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
 import { useCouponHandling } from "./useCouponHandling";
 import { useDiscountState } from "./useDiscountState";
 import { useCheckoutCalculations } from "./useCheckoutCalculations";
-import { CustomerInfo } from "@/types/checkout";
+import { useCheckoutState } from "./useCheckoutState";
+import { useCheckoutEffects } from "./useCheckoutEffects";
+import { useCheckoutActions } from "./useCheckoutActions";
 
 /**
  * Main checkout hook that orchestrates the entire checkout flow.
@@ -39,12 +39,19 @@ export function useCheckout() {
     handleAddOnToggle,
     selectedAddOns,
     addOnsTotal,
-    customerInfo,
+    customerInfo: baseCustomerInfo,
     setCustomerInfo: setBaseCustomerInfo
   } = checkoutData;
 
-  const { paymentMethod, setPaymentMethod } = usePaymentOptions();
+  // Use the centralized checkout state management hook
+  const { 
+    customerInfo,
+    setCustomerInfo,
+    paymentMethod, 
+    setPaymentMethod 
+  } = useCheckoutState();
 
+  // Handle rewards and loyalty program
   const rewardsAndLoyalty = useRewardsAndLoyalty(userId, 0);
   const {
     isLoyaltyProgramEnabled,
@@ -56,6 +63,7 @@ export function useCheckout() {
     handleOrderSuccessWithRewards
   } = rewardsAndLoyalty;
 
+  // Handle coupon application and validation
   const couponHandling = useCouponHandling();
   const {
     appliedCoupon,
@@ -66,6 +74,7 @@ export function useCheckout() {
     updateCouponDiscountAmount,
   } = couponHandling;
 
+  // Manage discount state
   const discountState = useDiscountState();
   const {
     bundleDiscount,
@@ -84,7 +93,7 @@ export function useCheckout() {
     setPersonalizedCoupon
   } = discountState;
 
-  // These calculations are now handled by useCheckoutCalculations
+  // Handle checkout calculations
   const calculations = useCheckoutCalculations({
     packagePrice,
     selectedAddOns,
@@ -109,34 +118,18 @@ export function useCheckout() {
     total
   } = calculations;
 
-  // Custom handler for customer info changes to maintain shape
-  const setCustomerInfo = (info: CustomerInfo) => {
-    setBaseCustomerInfo({
-      firstName: info.firstName,
-      lastName: info.lastName,
-      company: info.company || "",
-      email: info.email,
-      phone: info.phone,
-      website: info.website,
-      invoiceDeliveryMethod: info.invoiceDeliveryMethod,
-      userId: info.userId
-    });
-  };
+  // Manage checkout side effects
+  useCheckoutEffects({
+    subtotal,
+    updateLoyaltyBonus,
+    updateCouponDiscountAmount
+  });
 
-  // Update loyalty bonus whenever subtotal changes
-  useEffect(() => {
-    updateLoyaltyBonus(subtotal);
-    updateCouponDiscountAmount(subtotal);
-  }, [subtotal, updateLoyaltyBonus, updateCouponDiscountAmount]);
-
-  // Combined order success handler
-  const handleOrderSuccess = async (orderId: string) => {
-    // Call the base order success handler
-    handleBaseOrderSuccess(orderId);
-    
-    // Award milestone points if applicable
-    await handleOrderSuccessWithRewards(orderId, total);
-  };
+  // Combine order success handling
+  const actions = useCheckoutActions({
+    handleBaseOrderSuccess,
+    handleOrderSuccessWithRewards
+  });
 
   // We create a simplified API with optional nested objects to reduce prop drilling
   return {
@@ -215,7 +208,7 @@ export function useCheckout() {
     },
     
     // Actions
-    handleOrderSuccess,
+    handleOrderSuccess: actions.handleOrderSuccess,
     
     // Loading state
     isLoading: false,

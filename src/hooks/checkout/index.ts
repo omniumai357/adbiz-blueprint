@@ -21,6 +21,9 @@ export * from './usePaymentOptions';
 export * from './useDiscountState';
 export * from './useCouponHandling';
 export * from './useCheckoutData';
+export * from './useCheckoutState';
+export * from './useCheckoutEffects';
+export * from './useCheckoutActions';
 
 // Export types
 export * from './types';
