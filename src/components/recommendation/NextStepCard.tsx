@@ -27,7 +27,7 @@ export interface NextStepRecommendation {
 interface NextStepCardProps {
   recommendation: NextStepRecommendation;
   className?: string;
-  onResourceDownload?: (resourceId: string, resourceType: string) => void;
+  onResourceDownload?: () => void;
 }
 
 export const NextStepCard: React.FC<NextStepCardProps> = ({
@@ -40,7 +40,7 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({
   const handleAction = () => {
     // Handle resource downloads
     if ((recommendation.type === "ebook" || recommendation.type === "tutorial") && recommendation.resourceId && onResourceDownload) {
-      onResourceDownload(recommendation.resourceId, recommendation.type);
+      onResourceDownload();
       return;
     }
     
