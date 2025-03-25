@@ -1,17 +1,28 @@
 
-import { useState } from "react";
+import React from "react";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { CreditCard, Wallet } from "lucide-react";
 import { PaymentOption } from "@/components/payment/payment-option";
 
-type PaymentMethod = "credit-card" | "paypal";
+export type PaymentMethod = "credit-card" | "paypal";
 
 interface PaymentSelectorProps {
   selectedMethod: PaymentMethod;
   onMethodChange: (method: PaymentMethod) => void;
 }
 
-const PaymentSelector = ({ selectedMethod, onMethodChange }: PaymentSelectorProps) => {
+/**
+ * PaymentSelector Component
+ * 
+ * Provides a radio group interface for selecting between different payment methods
+ * 
+ * @param props.selectedMethod - The currently selected payment method
+ * @param props.onMethodChange - Callback fired when payment method changes
+ */
+const PaymentSelector = ({ 
+  selectedMethod, 
+  onMethodChange 
+}: PaymentSelectorProps) => {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Payment Method</h2>

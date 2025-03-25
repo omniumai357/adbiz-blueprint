@@ -30,7 +30,7 @@ export function useCheckout() {
     handleOrderSuccess: handleBaseOrderSuccess
   } = useOrderDetails();
 
-  // Use the new consolidated hook for add-ons and customer info
+  // Use the consolidated hook for add-ons and customer info
   const {
     availableAddOns,
     selectedAddOnIds,
@@ -79,14 +79,12 @@ export function useCheckout() {
     setPersonalizedCoupon
   } = useDiscountState();
 
-  // These state variables should come from useDiscountState
-  const [bundleDiscountAmount, setBundleDiscountAmount] = useState<number>(0);
-  const [tieredDiscountAmount, setTieredDiscountAmount] = useState<number>(0);
-  const [offerDiscountAmount, setOfferDiscountAmount] = useState<number>(0);
-  
-  // Use the calculations hook
+  // These calculations are now handled by useCheckoutCalculations
   const {
     subtotal,
+    bundleDiscountAmount,
+    tieredDiscountAmount,
+    offerDiscountAmount,
     milestoneRewardAmount,
     totalDiscountAmount,
     total

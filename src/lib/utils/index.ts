@@ -13,7 +13,7 @@ export * from './format-utils';
 export * from './validation-utils';
 export * from './dom-utils';
 
-// Re-export the cn utility from the parent utils.ts 
-// to maintain backward compatibility
-import { cn } from '../utils';
-export { cn };
+// Re-export the cn utility which has been moved here from the parent utils.ts
+export function cn(...inputs: any[]) {
+  return import('../utils').then(mod => mod.cn(...inputs));
+}
