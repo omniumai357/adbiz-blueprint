@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -24,13 +23,9 @@ export function useServicesPage() {
   const [downloadResource, setDownloadResource] = useState<DownloadResource | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  // Query user data with React Query
   const { data: user, isLoading: isUserLoading, error: userError } = useAuthUser();
-  
-  // Query user orders with React Query
   const { data: orders, isLoading: isOrdersLoading, error: ordersError } = useUserOrders(user?.id);
   
-  // Update viewed packages when URL changes
   useEffect(() => {
     const packageParam = searchParams.get('package');
     if (packageParam && !viewedPackages.includes(packageParam)) {
@@ -38,14 +33,12 @@ export function useServicesPage() {
     }
   }, [searchParams, viewedPackages]);
   
-  // Update hasPurchased state when orders data loads
   useEffect(() => {
     if (orders) {
       setHasPurchased(orders.length > 0);
     }
   }, [orders]);
   
-  // Handle errors from React Query
   useEffect(() => {
     if (userError) {
       const errorMessage = userError instanceof Error ? userError.message : 'Error checking user data';
@@ -70,13 +63,11 @@ export function useServicesPage() {
     }
   }, [userError, ordersError, toast]);
   
-  // Check if tour has been completed
   useEffect(() => {
     const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
     setHasCompletedTour(tourCompleted);
   }, []);
   
-  // Save tour completion status
   useEffect(() => {
     if (!isTourActive) {
       localStorage.setItem('tour_completed_services', 'true');
@@ -84,7 +75,6 @@ export function useServicesPage() {
     }
   }, [isTourActive]);
 
-  // Handle hash change for starting tour
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#start-tour') {
@@ -138,7 +128,7 @@ export function useServicesPage() {
   };
   
   const closeDownloadModal = () => {
-    setShowDownloadModal(false); // Pass the boolean parameter
+    setShowDownloadModal(false);
     setDownloadResource(null);
   };
   
