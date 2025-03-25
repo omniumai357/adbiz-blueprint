@@ -28,7 +28,7 @@ export function useMilestones(userId: string | null | undefined) {
 
   return {
     milestones: allMilestones,
-    progress: activeMilestones,
+    progress: activeMilestones as MilestoneProgress[], // Ensure the type is MilestoneProgress[]
     completedMilestones,
     availableRewards,
     totalPoints,
