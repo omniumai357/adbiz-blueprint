@@ -1,6 +1,7 @@
 
 import { supabaseClient } from "../supabase-client";
 import { Profile } from "@/types/api";
+import { apiResponseHandler } from "../response-handler";
 
 /**
  * User profiles API Client
@@ -17,14 +18,18 @@ export const profilesClient = {
   getProfile: async (userId: string): Promise<Profile | null> => {
     if (!userId) throw new Error("User ID is required");
     
-    const { data, error } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-      
-    if (error) throw error;
-    return data;
+    return apiResponseHandler.handle(
+      supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle(),
+      {
+        context: 'Get User Profile',
+        transform: (response) => response.data as Profile | null,
+        showErrorToast: true
+      }
+    );
   },
   
   /**
@@ -35,16 +40,23 @@ export const profilesClient = {
    * @returns {Promise<Profile>} The updated profile
    * @throws Will throw an error if the userId is missing or if the update fails
    */
-  updateProfile: async (userId: string, profileData: Partial<Profile>) => {
+  updateProfile: async (userId: string, profileData: Partial<Profile>): Promise<Profile> => {
     if (!userId) throw new Error("User ID is required");
     
-    const { data, error } = await supabaseClient
-      .from('profiles')
-      .update(profileData)
-      .eq('id', userId)
-      .single();
-      
-    if (error) throw error;
-    return data;
+    return apiResponseHandler.handle(
+      supabaseClient
+        .from('profiles')
+        .update(profileData)
+        .eq('id', userId)
+        .select()
+        .maybeSingle(),
+      {
+        context: 'Update User Profile',
+        transform: (response) => response.data as Profile,
+        showErrorToast: true,
+        showSuccessToast: true,
+        successMessage: "Profile updated successfully"
+      }
+    );
   }
 };

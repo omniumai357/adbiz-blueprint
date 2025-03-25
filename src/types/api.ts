@@ -19,6 +19,7 @@ export interface Profile {
   last_name: string | null;
   company: string | null;
   avatar_url: string | null;
+  email?: string; // Added email property
   created_at: string;
   updated_at: string;
 }

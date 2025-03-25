@@ -60,6 +60,14 @@ export function useCheckoutDiscounts(
     offerDiscountAmount
   } = limitedTimeOffers;
 
+  // Calculate total discount from all sources
+  const totalDiscount = bundleDiscountAmount +
+    tieredDiscountAmount +
+    (isLoyaltyProgramEnabled ? loyaltyBonusAmount || 0 : 0) +
+    offerDiscountAmount +
+    couponDiscountAmount +
+    (appliedMilestoneReward ? tieredDiscountAmount : 0);
+
   return {
     // Bundle discounts
     bundle: {
@@ -108,17 +116,10 @@ export function useCheckoutDiscounts(
       handleOrderSuccess: handleOrderSuccessWithRewards
     },
     
-    // Calculate total discount including all types
-    getTotalDiscount: () => {
-      const loyaltyAmount = isLoyaltyProgramEnabled ? loyaltyBonusAmount || 0 : 0;
-      const milestoneAmount = appliedMilestoneReward ? tieredDiscountAmount : 0;
-      
-      return bundleDiscountAmount +
-        tieredDiscountAmount +
-        loyaltyAmount +
-        offerDiscountAmount +
-        couponDiscountAmount +
-        milestoneAmount;
-    }
+    // Total discount amount
+    total: totalDiscount,
+    
+    // Function to get total discount (kept for backward compatibility)
+    getTotalDiscount: () => totalDiscount
   };
 }

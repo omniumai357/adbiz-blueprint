@@ -5,6 +5,7 @@ import { ordersClient } from "./clients/orders-client";
 import { packagesClient } from "./clients/packages-client";
 import { milestonesClient } from "./clients/milestones-client";
 import { adminClient } from "./clients/admin-client";
+import { apiResponseHandler } from "./response-handler";
 
 /**
  * API Client
@@ -50,5 +51,11 @@ export const apiClient = {
    * Admin functions
    * Provides administrative capabilities and permission checks
    */
-  admin: adminClient
+  admin: adminClient,
+  
+  /**
+   * Response handler
+   * Provides standardized response handling for all API calls
+   */
+  responseHandler: apiResponseHandler
 };
