@@ -8,6 +8,13 @@ export * from './usePaymentMethod';
 export * from './useCheckoutCalculations';
 export * from './useOrderProcessing';
 export * from './useLoyaltyProgram';
+export * from './useOrderDetails';
+export * from './useAddOnSelection';
+export * from './useCustomerCheckoutInfo';
+export * from './useRewardsAndLoyalty';
+export * from './usePaymentOptions';
+export * from './useDiscountState';
+export * from './useCouponHandling';
 
 // Export from useAddOns but rename bundleDiscount to avoid conflicts
 export { 
