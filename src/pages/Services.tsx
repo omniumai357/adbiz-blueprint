@@ -5,7 +5,7 @@ import { NextStepsSection, getServicePageRecommendations } from '@/components/re
 import { useTour } from '@/contexts/tour-context';
 import { supabase } from '@/integrations/supabase/client';
 import DownloadOptions from '@/components/DownloadOptions';
-import { useToast } from '@/hooks/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const Services = () => {
   const [searchParams] = useSearchParams();

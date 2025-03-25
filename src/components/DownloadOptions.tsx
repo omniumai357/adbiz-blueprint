@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Download, FileImage, FileText, FileVideo, FileAudio, BookOpen, PlayCircle } from "lucide-react";
-import { useToast } from "@/hooks/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type FileFormat = "pdf" | "png" | "video" | "audio" | "epub" | "mobi" | "mp4" | "webinar";
 
@@ -14,7 +14,7 @@ interface DownloadOptionsProps {
   packageName: string;
   resourceType?: "package" | "ebook" | "tutorial";
   resourceTitle?: string;
-  onClose?: () => void; // Add the onClose prop to the interface
+  onClose?: () => void;
 }
 
 const DownloadOptions = ({ 
