@@ -5,6 +5,7 @@ import LogoUpload from "./LogoUpload";
 import FileUploadCategory from "./FileUploadCategory";
 import UploadTips from "./UploadTips";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
+import { FileState } from "@/hooks/useFileUpload";
 
 interface FileUploadSectionProps {
   hasLogo: boolean;
@@ -18,7 +19,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
     uploadError 
   } = useFileUploadContext();
 
-  const onFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof typeof files) => {
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
     handleFileChange(fileType, e);
   };

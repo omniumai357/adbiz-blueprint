@@ -24,8 +24,7 @@ export const useFileUpload = () => {
   const { uploadProgress, updateProgress, resetProgress } = useFileUploadProgress();
   const { handleFileChange, onRemoveFile } = useFileUploadHandlers({
     files,
-    setFiles,
-    setUploadError
+    setFiles
   });
 
   /**
@@ -42,6 +41,11 @@ export const useFileUpload = () => {
     setUploadError(null);
   };
 
+  /**
+   * Upload files to storage
+   * @param businessId - Unique identifier for the business
+   * @returns Promise<boolean> indicating success or failure
+   */
   const uploadFiles = async (businessId: string): Promise<boolean> => {
     // Simple mock implementation for now
     setUploading(true);

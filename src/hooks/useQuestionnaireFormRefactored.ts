@@ -127,14 +127,16 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
   const onSubmit = async (data: QuestionnaireFormValues) => {
     const businessId = generateUniqueId('business');
     
-    // Change this to await the promise
-    const filesUploaded = await Promise.resolve(uploadAllFiles(businessId));
+    // Upload files first
+    const filesUploaded = await uploadAllFiles(businessId);
     
     if (!filesUploaded) {
       return false;
     }
     
-    const success = await submitQuestionnaire(data, files, () => Promise.resolve(true));
+    // Then submit questionnaire data
+    const uploadFilesPromise = () => Promise.resolve(true);
+    const success = await submitQuestionnaire(data, files, uploadFilesPromise);
     
     if (success && onComplete) {
       onComplete({
