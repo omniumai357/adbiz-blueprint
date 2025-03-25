@@ -9,6 +9,7 @@ import FileUploadSection from "./file-upload/FileUploadSection";
 import ReviewSection from "./ReviewSection";
 import { useQuestionnaireForm } from "@/hooks/useQuestionnaireForm";
 import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
+import QuestionnaireNavigation from "./QuestionnaireNavigation";
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
