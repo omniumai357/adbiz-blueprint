@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useTour } from '@/contexts/tour-context';
 import { useToast } from '@/hooks/use-toast';
+import { useTour } from '@/contexts/tour-context';
+import { useAuthUser } from '@/hooks/queries/useAuthUser';
+import { useUserOrders } from '@/hooks/queries/useUserOrders';
 
 interface DownloadResource {
   id: string;
@@ -23,6 +24,13 @@ export function useServicesPage() {
   const [downloadResource, setDownloadResource] = useState<DownloadResource | null>(null);
   const [error, setError] = useState<string | null>(null);
   
+  // Query user data with React Query
+  const { data: user, isLoading: isUserLoading, error: userError } = useAuthUser();
+  
+  // Query user orders with React Query
+  const { data: orders, isLoading: isOrdersLoading, error: ordersError } = useUserOrders(user?.id);
+  
+  // Update viewed packages when URL changes
   useEffect(() => {
     const packageParam = searchParams.get('package');
     if (packageParam && !viewedPackages.includes(packageParam)) {
@@ -30,44 +38,45 @@ export function useServicesPage() {
     }
   }, [searchParams, viewedPackages]);
   
+  // Update hasPurchased state when orders data loads
   useEffect(() => {
-    const fetchUserData = async () => {
-      setError(null);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data: orders, error: ordersError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'completed')
-            .limit(1);
-            
-          if (ordersError) {
-            throw new Error(ordersError.message);
-          }
-            
-          setHasPurchased(orders && orders.length > 0);
-          
-          const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
-          setHasCompletedTour(tourCompleted);
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error checking user data';
-        setError(errorMessage);
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive"
-        });
-        console.error("Error checking user data:", err);
-      }
-    };
-    
-    fetchUserData();
-  }, [toast]);
+    if (orders) {
+      setHasPurchased(orders.length > 0);
+    }
+  }, [orders]);
   
+  // Handle errors from React Query
+  useEffect(() => {
+    if (userError) {
+      const errorMessage = userError instanceof Error ? userError.message : 'Error checking user data';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Error checking user data:", userError);
+    }
+    
+    if (ordersError) {
+      const errorMessage = ordersError instanceof Error ? ordersError.message : 'Error fetching order data';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      console.error("Error fetching order data:", ordersError);
+    }
+  }, [userError, ordersError, toast]);
+  
+  // Check if tour has been completed
+  useEffect(() => {
+    const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
+    setHasCompletedTour(tourCompleted);
+  }, []);
+  
+  // Save tour completion status
   useEffect(() => {
     if (!isTourActive) {
       localStorage.setItem('tour_completed_services', 'true');
@@ -75,6 +84,7 @@ export function useServicesPage() {
     }
   }, [isTourActive]);
 
+  // Handle hash change for starting tour
   useEffect(() => {
     const handleHashChange = () => {
       if (window.location.hash === '#start-tour') {
@@ -128,7 +138,7 @@ export function useServicesPage() {
   };
   
   const closeDownloadModal = () => {
-    setShowDownloadModal(false); // Fixed: Added boolean argument
+    setShowDownloadModal(false);
     setDownloadResource(null);
   };
   
@@ -140,6 +150,7 @@ export function useServicesPage() {
     showDownloadModal,
     downloadResource,
     error,
+    isLoading: isUserLoading || isOrdersLoading,
     handleCategoryChange,
     handleResourceAccess,
     closeDownloadModal
