@@ -7,7 +7,6 @@ import BrandingContactStep from "./steps/BrandingContactStep";
 import MarketingGoalsStep from "./steps/MarketingGoalsStep";
 import FileUploadSection from "./file-upload/FileUploadSection";
 import ReviewSection from "./ReviewSection";
-import QuestionnaireNavigation from "./QuestionnaireNavigation";
 import { useQuestionnaireForm } from "@/hooks/useQuestionnaireForm";
 import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
 
@@ -73,7 +72,9 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {step === 1 && (
-              <BusinessInfoStep />
+              <BusinessInfoStep 
+                onNext={handleBusinessInfoNext}
+              />
             )}
             
             {step === 2 && (
@@ -105,6 +106,7 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                 <QuestionnaireNavigation
                   onNext={handleFileUploadNext}
                   onPrev={prevStep}
+                  stepNumber={4}
                 />
               </>
             )}
@@ -119,8 +121,6 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                 
                 <QuestionnaireNavigation
                   onPrev={prevStep}
-                  isSubmitting={submitting}
-                  isUploading={uploading}
                   showSubmitButton={true}
                 />
               </>

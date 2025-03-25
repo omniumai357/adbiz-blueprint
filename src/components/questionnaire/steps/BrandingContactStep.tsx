@@ -7,7 +7,7 @@ import LogoSection from "./branding-contact/LogoSection";
 import ColorSelection from "./branding-contact/ColorSelection";
 import ContactSection from "./branding-contact/ContactSection";
 import AddressSection from "./branding-contact/AddressSection";
-import NavigationButtons from "./branding-contact/NavigationButtons";
+import QuestionnaireNavigation from "../QuestionnaireNavigation";
 
 interface BrandingContactStepProps {
   onNext: () => void;
@@ -38,8 +38,11 @@ const BrandingContactStep: FC<BrandingContactStepProps> = ({ onNext, onPrev }) =
         <AddressSection />
       </div>
       
-      {/* Navigation Buttons */}
-      <NavigationButtons onNext={onNext} onPrev={onPrev} />
+      <QuestionnaireNavigation 
+        onNext={onNext} 
+        onPrev={onPrev}
+        stepNumber={2}
+      />
     </div>
   );
 };

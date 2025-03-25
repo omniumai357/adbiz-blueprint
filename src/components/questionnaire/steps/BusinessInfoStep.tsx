@@ -7,24 +7,13 @@ import BasicInformation from "./business-info/BasicInformation";
 import BusinessDetails from "./business-info/BusinessDetails";
 import BusinessDescription from "./business-info/BusinessDescription";
 import BusinessLicense from "./business-info/BusinessLicense";
-import { Button } from "@/components/ui/button";
+import QuestionnaireNavigation from "../QuestionnaireNavigation";
 
 interface BusinessInfoStepProps {
   onNext?: () => void;
 }
 
 const BusinessInfoStep: FC<BusinessInfoStepProps> = ({ onNext }) => {
-  // Use the context instead of props
-  const { form, validateStep } = useQuestionnaireContext();
-  
-  const handleNext = () => {
-    if (onNext) {
-      onNext();
-    } else if (validateStep) {
-      validateStep(1);
-    }
-  };
-  
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-700">
@@ -45,14 +34,10 @@ const BusinessInfoStep: FC<BusinessInfoStepProps> = ({ onNext }) => {
         <BusinessLicense />
       </div>
       
-      <div className="flex justify-end mt-8">
-        <Button
-          type="button"
-          onClick={handleNext}
-        >
-          Continue
-        </Button>
-      </div>
+      <QuestionnaireNavigation 
+        onNext={onNext}
+        stepNumber={1}
+      />
     </div>
   );
 };

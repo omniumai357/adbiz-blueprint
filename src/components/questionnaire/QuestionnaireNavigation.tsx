@@ -1,12 +1,12 @@
 
 import { FC } from "react";
-import NavigationButton from "./NavigationButton";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 
 interface QuestionnaireNavigationProps {
   onNext?: () => void;
   onPrev?: () => void;
-  isSubmitting?: boolean;
-  isUploading?: boolean;
   showSubmitButton?: boolean;
   stepNumber?: number;
 }
@@ -17,25 +17,59 @@ const QuestionnaireNavigation: FC<QuestionnaireNavigationProps> = ({
   showSubmitButton = false,
   stepNumber
 }) => {
+  const { isSubmitting, isUploading, validateStep } = useQuestionnaireContext();
+  
+  const handleNext = () => {
+    if (onNext) {
+      onNext();
+      return;
+    }
+    
+    if (validateStep && stepNumber) {
+      validateStep(stepNumber);
+    }
+  };
+  
   return (
     <div className="flex justify-between mt-8">
       {onPrev && (
-        <NavigationButton
-          direction="prev"
-          onAction={onPrev}
-        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onPrev}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back
+        </Button>
       )}
       
+      <div className="flex-1" />
+      
       {showSubmitButton ? (
-        <NavigationButton
-          direction="submit"
-        />
+        <Button
+          type="submit"
+          disabled={isSubmitting || isUploading}
+          className="flex items-center gap-2"
+        >
+          {isSubmitting || isUploading ? (
+            "Processing..."
+          ) : (
+            <>
+              Submit Questionnaire
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </Button>
       ) : onNext && (
-        <NavigationButton
-          direction="next"
-          onAction={onNext}
-          stepNumber={stepNumber}
-        />
+        <Button
+          type="button"
+          onClick={handleNext}
+          className="flex items-center gap-2"
+        >
+          Continue
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       )}
     </div>
   );
