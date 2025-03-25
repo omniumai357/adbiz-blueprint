@@ -13,10 +13,16 @@ import { useAuth } from "@/contexts/auth-context";
  * - Accessed via the /rewards route
  * - Gets the current user from auth context
  * - Passes user ID to the milestones dashboard
+ * - Displays reward progress and available rewards
  * - Handles both authenticated and unauthenticated states
+ * 
+ * @remarks
+ * The Rewards page integrates with the MilestonesDashboard component to display
+ * user progress towards various milestones. User authentication is handled through
+ * the auth context.
  */
 const Rewards = () => {
-  // Get current authenticated user
+  // Get current authenticated user from context
   const { user } = useAuth();
 
   return (

@@ -16,6 +16,18 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useResourceAccess } from '@/hooks/useResourceAccess';
 import { createToastEvent } from '@/utils/toast-utils';
 
+/**
+ * Services Page Component
+ * 
+ * Displays available service packages and related information.
+ * 
+ * Features:
+ * - Package category selection (monthly, quarterly, annual)
+ * - Dynamic display of packages based on selected category
+ * - Package features listing
+ * - Next steps recommendations
+ * - Resource download options
+ */
 const Services = () => {
   const {
     viewedPackages,

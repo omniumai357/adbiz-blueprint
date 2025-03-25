@@ -6,6 +6,13 @@ import { toast } from "@/hooks/use-toast";
  * 
  * @param title - The main message to display
  * @param description - Optional additional details
+ * 
+ * @example
+ * // Show a simple success message
+ * showSuccessToast("Operation completed");
+ * 
+ * // Show a success message with additional details
+ * showSuccessToast("Profile updated", "Your profile has been successfully updated");
  */
 export const showSuccessToast = (title: string, description?: string) => {
   toast({
@@ -21,6 +28,13 @@ export const showSuccessToast = (title: string, description?: string) => {
  * @param title - The main error message
  * @param error - The error object or message
  * @remarks Also logs the error to the console for debugging
+ * 
+ * @example
+ * try {
+ *   // Some operation that might fail
+ * } catch (error) {
+ *   showErrorToast("Failed to update profile", error);
+ * }
  */
 export const showErrorToast = (title: string, error: any) => {
   const description = error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -41,6 +55,10 @@ export const showErrorToast = (title: string, error: any) => {
  * 
  * @param title - The main message to display
  * @param description - Optional additional details
+ * 
+ * @example
+ * // Show an informational message
+ * showInfoToast("New feature available", "Try our new dashboard layout");
  */
 export const showInfoToast = (title: string, description?: string) => {
   toast({

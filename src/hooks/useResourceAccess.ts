@@ -6,8 +6,13 @@ import { useToast } from "@/hooks/use-toast";
  * Resource interface for handling downloadable content
  */
 export interface Resource {
+  /** Unique identifier for the resource */
   id: string;
+  
+  /** Type of resource (e.g., 'ebook', 'tutorial', 'package') */
   type: string;
+  
+  /** Human-readable title of the resource */
   title: string;
 }
 
@@ -42,7 +47,7 @@ export interface Resource {
  * )}
  */
 export function useResourceAccess() {
-  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState<boolean>(false);
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const { toast } = useToast();
 

@@ -4,14 +4,47 @@ import { useToast } from "@/hooks/use-toast";
 
 export type FileFormat = "pdf" | "png" | "video" | "audio" | "epub" | "mobi" | "mp4" | "webinar";
 
+/**
+ * Props for the useDownloadOptions hook
+ */
 export interface UseDownloadOptionsProps {
+  /**
+   * ID of the purchase
+   */
   purchaseId: string;
+  
+  /**
+   * Name of the package
+   */
   packageName: string;
+  
+  /**
+   * Type of resource being downloaded
+   */
   resourceType?: "package" | "ebook" | "tutorial";
+  
+  /**
+   * Title of the resource
+   */
   resourceTitle?: string;
+  
+  /**
+   * Callback function to be called when the download dialog is closed
+   */
   onClose?: () => void;
 }
 
+/**
+ * Hook for managing download options for packages and resources
+ * 
+ * Handles:
+ * - Format selection logic
+ * - Download simulation
+ * - Success/failure notifications
+ * 
+ * @param props - Configuration props for the download
+ * @returns State and handlers for the download options UI
+ */
 export function useDownloadOptions({
   purchaseId,
   packageName,
@@ -27,6 +60,9 @@ export function useDownloadOptions({
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
+  /**
+   * Gets the appropriate format options based on resource type
+   */
   const getFormatOptions = () => {
     if (resourceType === "ebook") {
       return [
@@ -51,6 +87,12 @@ export function useDownloadOptions({
     ];
   };
 
+  /**
+   * Handles the download process
+   * - Simulates a download with a delay
+   * - Shows success/failure notifications
+   * - Calls onClose callback when complete
+   */
   const handleDownload = async () => {
     try {
       setIsDownloading(true);

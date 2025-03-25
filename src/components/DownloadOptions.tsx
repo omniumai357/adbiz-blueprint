@@ -6,7 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Download, FileImage, FileText, FileVideo, FileAudio, BookOpen, PlayCircle } from "lucide-react";
 import { useDownloadOptions, FileFormat, UseDownloadOptionsProps } from "@/hooks/downloads/useDownloadOptions";
 
-// Using the interface from the hook to ensure consistency
+/**
+ * Component for displaying download options to users
+ * 
+ * Provides a modal dialog with format selection options for downloading
+ * various types of resources (packages, e-books, tutorials).
+ * 
+ * @param purchaseId - ID of the purchase
+ * @param packageName - Name of the package or resource
+ * @param resourceType - Type of resource (package, ebook, tutorial)
+ * @param resourceTitle - Optional title of the resource
+ * @param onClose - Callback function to be called when the dialog is closed
+ */
 type DownloadOptionsProps = UseDownloadOptionsProps;
 
 const DownloadOptions = ({ 
