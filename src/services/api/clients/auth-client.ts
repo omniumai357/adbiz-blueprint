@@ -10,8 +10,9 @@ export const authClient = {
    * Get the current user
    */
   getCurrentUser: async (): Promise<UserResponse> => {
-    const { user } = await supabaseClient.auth.getUser();
-    return { user };
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (error) throw error;
+    return { user: data.user };
   },
   
   /**
