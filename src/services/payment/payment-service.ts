@@ -1,6 +1,6 @@
 
 import { Package } from '@/lib/data';
-import { CustomerInfo } from '@/components/checkout/customer-info-form';
+import { CustomerInfo } from '@/types/checkout';
 import { PayPalService } from './paypal-service';
 import { StripeService } from './stripe-service';
 

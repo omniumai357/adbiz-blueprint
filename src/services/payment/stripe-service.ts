@@ -2,7 +2,7 @@
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from '@/lib/data';
-import { CustomerInfo } from '@/components/checkout/customer-info-form';
+import { CustomerInfo } from '@/types/checkout';
 import { PaymentResult } from './payment-service';
 
 export class StripeService {

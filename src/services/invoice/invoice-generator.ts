@@ -1,6 +1,6 @@
 
 import { InvoiceData, InvoiceItem } from "./types";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { getTemplateForPackage } from "./templates/templateFactory";
 
 /**

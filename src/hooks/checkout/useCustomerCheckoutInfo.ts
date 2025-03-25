@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 
 export function useCustomerCheckoutInfo(profile: any | null) {
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({

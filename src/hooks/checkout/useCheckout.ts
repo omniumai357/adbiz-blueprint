@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useOrderDetails } from "./useOrderDetails";
 import { useCheckoutData } from "./useCheckoutData";
@@ -7,7 +6,7 @@ import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
 import { useCouponHandling } from "./useCouponHandling";
 import { useDiscountState } from "./useDiscountState";
 import { useCheckoutCalculations } from "./useCheckoutCalculations";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 
 export function useCheckout() {
   // Use our specialized hooks

@@ -1,11 +1,10 @@
-
 import React from "react";
 import Header from "@/components/Header";
 import OrderSummary from "@/components/checkout/order-summary";
 import CheckoutForm from "@/components/checkout/checkout-form";
 import CheckoutSuccess from "@/components/checkout/checkout-success";
 import { useCheckout } from "@/hooks/checkout/useCheckout";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 
 const Checkout = () => {
   const {
@@ -23,47 +22,37 @@ const Checkout = () => {
     packageDetails,
     isProfileLoading,
     handleOrderSuccess,
-    // Add-ons related
     availableAddOns,
     selectedAddOnIds,
     handleAddOnToggle,
     selectedAddOns,
-    // Bundle discount related
     bundleDiscount,
     isDiscountApplicable,
     bundleDiscountAmount,
-    // Tiered discount related
     appliedTier,
     isFirstPurchase,
     tieredDiscountAmount,
-    // Loyalty program related
     isLoyaltyProgramEnabled,
     loyaltyBonusAmount,
     handleLoyaltyProgramToggle,
-    // Coupon related
     personalizedCoupon,
     appliedCoupon,
     couponDiscountAmount,
     isCheckingCoupon,
     applyCoupon,
     removeCoupon,
-    // Limited-time offers related
     activeOffers,
     availableOffer,
     offerDiscountAmount,
-    // Milestone rewards related
     appliedMilestoneReward,
     handleMilestoneRewardApplied,
     milestoneRewardAmount,
-    // Loading states
     isLoading,
-    // Calculated values
     subtotal,
     totalDiscountAmount,
     total
   } = useCheckout();
 
-  // Custom handler for customer info changes to match the expected type
   const handleCustomerInfoChange = (info: CustomerInfo) => {
     setCustomerInfo({
       firstName: info.firstName,

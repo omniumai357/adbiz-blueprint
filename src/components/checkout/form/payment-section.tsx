@@ -5,7 +5,7 @@ import { stripePromise } from "@/services/payment/stripe-service";
 import CardPaymentForm from "@/components/checkout/card-payment-form";
 import PayPalButton from "@/components/PayPalButton";
 import PaymentSelector from "@/components/PaymentSelector";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { AddOnItem } from "../add-on-item";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
-import { CustomerInfo } from "./customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { paymentService } from "@/services/payment/payment-service";
 import { formatCurrency } from "@/lib/utils/format-utils";
 

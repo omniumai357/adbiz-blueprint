@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import CustomerInfoForm, { CustomerInfo } from "@/components/checkout/customer-info-form";
+import CustomerInfoForm from "@/components/checkout/customer-info-form";
 import AddOnsSection from "@/components/checkout/add-ons-section";
 import DiscountSection from "@/components/checkout/form/discount-section";
 import PaymentSection from "@/components/checkout/form/payment-section";
@@ -9,6 +8,7 @@ import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { LimitedTimeOfferInfo } from "./limited-time-offer";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
+import { CustomerInfo } from "@/types/checkout";
 
 type PaymentMethod = "credit-card" | "paypal";
 
@@ -41,22 +41,18 @@ interface CheckoutFormProps {
   loyaltyBonusAmount?: number;
   onLoyaltyProgramToggle?: () => void;
   totalDiscountAmount?: number;
-  // Limited time offer properties
   activeOffers?: LimitedTimeOfferInfo[];
   availableOffer?: LimitedTimeOfferInfo | null;
   offerDiscountAmount?: number;
-  // Coupon related properties
   personalizedCoupon?: any;
   appliedCoupon?: any;
   couponDiscountAmount?: number;
   isCheckingCoupon?: boolean;
   applyCoupon?: (code: string) => void;
   removeCoupon?: () => void;
-  // Milestone reward properties
   appliedMilestoneReward?: UserMilestone | null;
   milestoneRewardAmount?: number;
   onMilestoneRewardApplied?: (reward: UserMilestone) => void;
-  // Order success handler
   onOrderSuccess: (id: string) => void;
   isProfileLoading: boolean;
   isLoading?: boolean;

@@ -1,9 +1,8 @@
-
 import React from "react";
 import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UseFormReturn } from "react-hook-form";
-import { CustomerInfo } from "./customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 
 interface InvoiceDeliveryOptionsProps {
   form: UseFormReturn<CustomerInfo>;

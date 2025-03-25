@@ -3,7 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/ui/use-toast";
 import { invoiceService } from "@/services/invoice/invoice-service";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { AddOnItem } from "@/components/checkout/add-on-item";
 import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
 

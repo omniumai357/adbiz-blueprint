@@ -1,5 +1,5 @@
 
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { invoiceGenerator } from "./invoice-generator";
 import { invoiceRepository } from "./invoice-repository";
 import { invoiceDelivery } from "./invoice-delivery";

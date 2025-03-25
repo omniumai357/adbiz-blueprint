@@ -1,7 +1,6 @@
-
 import { PayPalService } from './paypal-service';
 import { Package } from '@/lib/data';
-import { CustomerInfo } from '@/components/checkout/customer-info-form';
+import { CustomerInfo } from '@/types/checkout';
 
 // This is a simple wrapper around the PayPalService
 // Kept for backward compatibility with existing code

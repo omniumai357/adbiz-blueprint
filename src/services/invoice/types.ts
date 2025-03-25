@@ -1,6 +1,5 @@
-
-import { Json } from "@/integrations/supabase/types";
-import { CustomerInfo } from "@/components/checkout/customer-info-form";
+import { InvoiceDeliveryMethod } from "./types";
+import { CustomerInfo } from "@/types/checkout";
 
 export interface InvoiceItem {
   description: string;

@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/use-toast';
 import { Package } from '@/lib/data';
-import { CustomerInfo } from '@/components/checkout/customer-info-form';
+import { CustomerInfo } from '@/types/checkout';
 import { paymentService } from '@/services/payment/payment-service';
 
 interface PayPalButtonProps {

@@ -3,7 +3,7 @@ import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { CustomerInfo } from "./customer-info-form";
+import { CustomerInfo } from "@/types/checkout";
 import { Info } from "lucide-react";
 
 interface CustomerPersonalInfoProps {
