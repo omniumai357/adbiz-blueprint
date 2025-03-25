@@ -23,6 +23,18 @@ export interface Profile {
   updated_at: string;
 }
 
+// Customer Info Types
+export interface CustomerInfo {
+  firstName: string;
+  lastName: string;
+  company?: string;
+  email: string;
+  phone: string;
+  website?: string;
+  invoiceDeliveryMethod?: string;
+  userId?: string;
+}
+
 // Order Types
 export interface Order {
   id: string;
