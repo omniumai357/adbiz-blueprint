@@ -1,6 +1,12 @@
 
+/**
+ * Utility functions for generating recommendation content
+ */
 import { NextStepRecommendation } from "@/components/recommendation/NextStepCard";
 
+/**
+ * Generates service page recommendations based on user behavior and preferences
+ */
 export const getServicePageRecommendations = (
   viewedPackages: string[] = [],
   hasCompletedTour: boolean = false,

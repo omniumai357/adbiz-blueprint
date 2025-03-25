@@ -5,7 +5,7 @@ import { NextStepsSection } from '@/components/recommendation/NextStepsSection';
 import DownloadOptions from '@/components/DownloadOptions';
 import { useServicesPage } from '@/hooks/services/useServicesPage';
 import { useToast } from '@/hooks/use-toast';
-import { getServicePageRecommendations } from '@/services/recommendation/recommendationService';
+import { getServicePageRecommendations } from '@/utils/recommendations';
 
 const Services = () => {
   const {
