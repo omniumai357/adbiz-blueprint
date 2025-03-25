@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { UserMilestone } from "@/hooks/rewards/useMilestones";
-import { useUpdateMilestoneProgress } from "@/hooks/rewards/useUpdateMilestoneProgress";
+import { UserMilestone } from "@/types/api";
+import { useUpdateMilestoneProgress } from "@/hooks/queries/useUpdateMilestoneProgress";
 
 export function useMilestoneRewards(userId: string | null | undefined, subtotal: number) {
   const [appliedMilestoneReward, setAppliedMilestoneReward] = useState<UserMilestone | null>(null);
