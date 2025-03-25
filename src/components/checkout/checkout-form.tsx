@@ -5,6 +5,7 @@ import CustomerInfoForm from "@/components/checkout/customer-info-form";
 import AddOnsSection from "@/components/checkout/add-ons-section";
 import DiscountSection from "@/components/checkout/form/discount-section";
 import PaymentSection from "@/components/checkout/form/payment-section";
+import PaymentMethodSection from "@/components/checkout/form/payment-method-section";
 import { AddOnItem } from "./add-on-item";
 import { BundleDiscountInfo } from "./bundle-discount";
 import { LimitedTimeOfferInfo } from "./limited-time-offer";
@@ -123,6 +124,7 @@ const CheckoutForm = ({
 
   return (
     <div className="space-y-8">
+      {/* Customer Information Section */}
       <CustomerInfoForm 
         customerInfo={customerInfo}
         onChange={setCustomerInfo}
@@ -159,6 +161,12 @@ const CheckoutForm = ({
         removeCoupon={removeCoupon}
         onMilestoneRewardApplied={onMilestoneRewardApplied}
         appliedMilestoneReward={appliedMilestoneReward}
+      />
+      
+      {/* Payment method selection */}
+      <PaymentMethodSection
+        paymentMethod={paymentMethod}
+        onMethodChange={setPaymentMethod}
       />
       
       {/* Payment section */}
