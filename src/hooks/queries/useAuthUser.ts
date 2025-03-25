@@ -1,9 +1,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/api-client";
+import { UserResponse } from "@/types/api";
 
 export const useAuthUser = () => {
-  return useQuery({
+  return useQuery<UserResponse>({
     queryKey: ['auth', 'user'],
     queryFn: async () => {
       return await apiClient.auth.getCurrentUser();

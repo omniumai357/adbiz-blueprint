@@ -1,6 +1,14 @@
 
 import { supabaseClient } from "./supabase-client";
 import { CustomerInfo } from "@/types/checkout";
+import { 
+  UserResponse, 
+  Profile, 
+  Order, 
+  Package,
+  AvailableReward,
+  PaymentProcessParams
+} from "@/types/api";
 
 /**
  * API Client
@@ -16,8 +24,8 @@ export const apiClient = {
     /**
      * Get the current user
      */
-    getCurrentUser: async () => {
-      return await supabaseClient.auth.getUser();
+    getCurrentUser: async (): Promise<UserResponse> => {
+      return await supabaseClient.auth.getCurrentUser();
     },
     
     /**
@@ -35,7 +43,7 @@ export const apiClient = {
     /**
      * Get a user profile by ID
      */
-    getProfile: async (userId: string) => {
+    getProfile: async (userId: string): Promise<Profile | null> => {
       if (!userId) throw new Error("User ID is required");
       return await supabaseClient.profiles.getProfileById(userId);
     },
@@ -43,7 +51,7 @@ export const apiClient = {
     /**
      * Update a user profile
      */
-    updateProfile: async (userId: string, profileData: Partial<any>) => {
+    updateProfile: async (userId: string, profileData: Partial<Profile>) => {
       if (!userId) throw new Error("User ID is required");
       
       const { data, error } = await supabaseClient
@@ -64,7 +72,7 @@ export const apiClient = {
     /**
      * Get orders for a user
      */
-    getUserOrders: async (userId: string) => {
+    getUserOrders: async (userId: string): Promise<Order[]> => {
       if (!userId) return [];
       return await supabaseClient.orders.getOrdersByUserId(userId);
     },
@@ -80,7 +88,7 @@ export const apiClient = {
       companyInfo?: any;
       paymentMethod: string;
       paymentId?: string;
-    }) => {
+    }): Promise<Order> => {
       const { data, error } = await supabaseClient
         .from('orders')
         .insert({
@@ -108,7 +116,7 @@ export const apiClient = {
     /**
      * Get all packages
      */
-    getAllPackages: async () => {
+    getAllPackages: async (): Promise<Package[]> => {
       const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
@@ -121,7 +129,7 @@ export const apiClient = {
     /**
      * Get packages by category
      */
-    getPackagesByCategory: async (category: string) => {
+    getPackagesByCategory: async (category: string): Promise<Package[]> => {
       const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
@@ -135,7 +143,7 @@ export const apiClient = {
     /**
      * Get package by ID
      */
-    getPackageById: async (id: string) => {
+    getPackageById: async (id: string): Promise<Package> => {
       const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
@@ -170,7 +178,7 @@ export const apiClient = {
     /**
      * Get available rewards
      */
-    getAvailableRewards: async (userId: string) => {
+    getAvailableRewards: async (userId: string): Promise<AvailableReward[]> => {
       if (!userId) return [];
       return await supabaseClient.milestones.getAvailableRewards(userId);
     },
@@ -178,7 +186,7 @@ export const apiClient = {
     /**
      * Get milestone icons
      */
-    getMilestoneIcons: async (milestoneIds: string[]) => {
+    getMilestoneIcons: async (milestoneIds: string[]): Promise<{id: string, icon: string}[]> => {
       if (!milestoneIds.length) return [];
       return await supabaseClient.milestones.getMilestoneIcons(milestoneIds);
     },
@@ -186,13 +194,7 @@ export const apiClient = {
     /**
      * Update milestone progress
      */
-    updateMilestoneProgress: async (params: {
-      userId: string;
-      points: number;
-      activityType: string;
-      referenceId?: string;
-      referenceType?: string;
-    }) => {
+    updateMilestoneProgress: async (params: PaymentProcessParams) => {
       return await supabaseClient.milestones.updateMilestoneProgress(params);
     },
     

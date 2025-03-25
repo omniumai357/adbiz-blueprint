@@ -1,19 +1,20 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/api-client";
+import { AvailableReward } from "@/types/api";
 
 export const useAvailableRewards = (userId: string | undefined) => {
   const queryClient = useQueryClient();
 
   const rewardsQuery = useQuery({
     queryKey: ['rewards', { userId }],
-    queryFn: async () => {
+    queryFn: async (): Promise<AvailableReward[]> => {
       if (!userId) return [];
       const rewards = await apiClient.milestones.getAvailableRewards(userId);
       
       if (rewards.length > 0) {
         // Fetch milestone icons
-        const milestoneIds = rewards.map((r: any) => r.milestone_id);
+        const milestoneIds = rewards.map((r: AvailableReward) => r.milestone_id);
         const icons = await apiClient.milestones.getMilestoneIcons(milestoneIds);
         
         // Map icons to rewards
@@ -23,7 +24,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
         }, {});
         
         // Add icons to rewards
-        return rewards.map((reward: any) => ({
+        return rewards.map((reward: AvailableReward) => ({
           ...reward,
           icon: iconMap[reward.milestone_id]
         }));

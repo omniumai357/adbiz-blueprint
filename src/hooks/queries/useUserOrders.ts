@@ -1,9 +1,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/services/api/api-client";
+import { Order } from "@/types/api";
 
 export const useUserOrders = (userId: string | undefined) => {
-  return useQuery({
+  return useQuery<Order[]>({
     queryKey: ['orders', { userId }],
     queryFn: async () => {
       if (!userId) return [];
