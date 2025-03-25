@@ -30,14 +30,18 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
         refetchOnWindowFocus: false,
         gcTime: 1000 * 60 * 10, // 10 minutes
         
-        onError: (error) => {
-          handleError(error, 'Query Error');
+        meta: {
+          onError: (error: Error) => {
+            handleError(error, 'Query Error');
+          }
         }
       },
       mutations: {
         retry: false,
-        onError: (error, variables, context) => {
-          handleError(error, 'Mutation Error');
+        meta: {
+          onError: (error: Error) => {
+            handleError(error, 'Mutation Error');
+          }
         }
       },
     },

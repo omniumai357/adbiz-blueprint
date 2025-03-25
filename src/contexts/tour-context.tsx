@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-type TourStep = {
+export type TourStep = {
   id: string;
   elementId: string;
   title: string;

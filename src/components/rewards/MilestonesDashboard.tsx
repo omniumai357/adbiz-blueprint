@@ -138,10 +138,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
                 <RewardCard 
                   key={reward.milestone_id} 
                   reward={reward} 
-                  onClaim={(milestoneId) => {
-                    claimReward(milestoneId);
-                    return Promise.resolve(true);
-                  }} 
+                  onClaim={claimReward} 
                 />
               ))}
             </div>

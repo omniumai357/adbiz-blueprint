@@ -24,7 +24,7 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
   const handleMilestoneRewardApplied = (reward: UserMilestone) => {
     setAppliedMilestoneReward(reward);
     toast.success("Reward applied", {
-      description: `${reward.reward_description || "Discount"} has been applied to your order.`
+      description: `${reward.milestone_name || "Discount"} has been applied to your order.`
     });
   };
 
