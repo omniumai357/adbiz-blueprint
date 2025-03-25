@@ -11,12 +11,12 @@ export const apiResponseHandler = {
   /**
    * Handle the response from an API call
    * 
-   * @param responsePromise Promise returned by API call
+   * @param responsePromise Promise or Supabase query builder returned by API call
    * @param options Configuration options
    * @returns Promise with transformed data or throws a standardized error
    */
   async handle<T>(
-    responsePromise: Promise<any>,
+    responsePromise: Promise<any> | any,
     options: {
       context?: string;
       transform?: (data: any) => T;
@@ -34,7 +34,7 @@ export const apiResponseHandler = {
     } = options;
 
     try {
-      // Wait for the response
+      // Handle both Promise and Supabase query builder
       const response = await responsePromise;
       
       // Transform the response data
