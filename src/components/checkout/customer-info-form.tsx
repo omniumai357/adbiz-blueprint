@@ -24,6 +24,13 @@ const customerSchema = z.object({
   userId: z.string().optional()
 });
 
+/**
+ * CustomerInfoForm Component
+ * 
+ * Renders a form for collecting customer information during checkout.
+ * 
+ * @param props CustomerInfoFormProps containing current values and change handler
+ */
 const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: CustomerInfoFormProps) => {
   const form = useForm<CustomerInfo>({
     resolver: zodResolver(customerSchema),

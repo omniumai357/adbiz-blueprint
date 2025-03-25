@@ -5,6 +5,12 @@ import { useToast } from "@/hooks/ui/use-toast";
 import { useProfile } from "@/hooks/data/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Hook for managing order details including package information and
+ * order processing status.
+ * 
+ * @returns Object containing order details state and handlers
+ */
 export function useOrderDetails() {
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);

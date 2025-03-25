@@ -3,6 +3,14 @@ import { useState } from "react";
 import { useMilestoneRewards } from "./useMilestoneRewards";
 import { UserMilestone } from "../rewards/useMilestones";
 
+/**
+ * Hook to manage rewards and loyalty program functionality in the checkout process.
+ * This combines loyalty program state and milestone rewards into a unified API.
+ * 
+ * @param userId The current user's ID
+ * @param total The current order total
+ * @returns Object containing rewards and loyalty state and handlers
+ */
 export function useRewardsAndLoyalty(userId: string | undefined, total: number) {
   const [isLoyaltyProgramEnabled, setIsLoyaltyProgramEnabled] = useState<boolean>(false);
   const [loyaltyBonusAmount, setLoyaltyBonusAmount] = useState<number>(0);

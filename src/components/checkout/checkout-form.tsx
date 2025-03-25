@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomerInfoForm from "@/components/checkout/customer-info-form";
@@ -59,6 +60,17 @@ interface CheckoutFormProps {
   total: number;
 }
 
+/**
+ * CheckoutForm Component
+ * 
+ * Renders the complete checkout form including:
+ * - Customer information
+ * - Add-on selection
+ * - Discounts and offers
+ * - Payment options
+ * 
+ * @param props CheckoutFormProps containing all necessary data and handlers
+ */
 const CheckoutForm = ({
   customerInfo,
   setCustomerInfo,

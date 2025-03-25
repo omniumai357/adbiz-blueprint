@@ -30,6 +30,13 @@ interface UseOrderProcessingProps {
   customerInfo: CustomerInfo;
 }
 
+/**
+ * Hook for processing orders after payment is complete.
+ * Handles invoice generation, order recording, and success notifications.
+ * 
+ * @param props UseOrderProcessingProps containing all order details
+ * @returns Object containing order processing state and handlers
+ */
 export function useOrderProcessing({
   userId,
   packageName,

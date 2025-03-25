@@ -3,6 +3,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Hook to manage coupon application, validation, and discount calculation.
+ * 
+ * @returns Object containing coupon state and handlers
+ */
 export function useCouponHandling() {
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);

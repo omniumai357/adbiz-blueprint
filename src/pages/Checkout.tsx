@@ -1,3 +1,4 @@
+
 import React from "react";
 import Header from "@/components/Header";
 import OrderSummary from "@/components/checkout/order-summary";
@@ -6,6 +7,19 @@ import CheckoutSuccess from "@/components/checkout/checkout-success";
 import { useCheckout } from "@/hooks/checkout/useCheckout";
 import { CustomerInfo } from "@/types/checkout";
 
+/**
+ * Checkout Page Component
+ * 
+ * Handles the complete checkout flow including:
+ * - Customer information collection
+ * - Add-on selection
+ * - Discounts and offers
+ * - Payment processing
+ * - Order confirmation
+ * 
+ * The component uses the consolidated useCheckout hook to manage all state
+ * and business logic, keeping the component focused on presentation.
+ */
 const Checkout = () => {
   const {
     customerInfo,

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useOrderDetails } from "./useOrderDetails";
 import { useCheckoutData } from "./useCheckoutData";
@@ -8,6 +9,11 @@ import { useDiscountState } from "./useDiscountState";
 import { useCheckoutCalculations } from "./useCheckoutCalculations";
 import { CustomerInfo } from "@/types/checkout";
 
+/**
+ * Main checkout hook that orchestrates the entire checkout flow.
+ * This consolidates multiple smaller hooks to provide a unified API
+ * for the checkout page.
+ */
 export function useCheckout() {
   // Use our specialized hooks
   const {

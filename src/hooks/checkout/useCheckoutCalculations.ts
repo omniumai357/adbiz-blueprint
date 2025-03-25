@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import { UserMilestone } from "../rewards/useMilestones";
 
+/**
+ * Hook for centralizing all price calculations in the checkout process.
+ * This includes calculating subtotals, discounts, and final totals.
+ * 
+ * @param params Object containing all values needed for calculation
+ * @returns Object containing calculated price values
+ */
 export function useCheckoutCalculations({
   packagePrice,
   selectedAddOns,

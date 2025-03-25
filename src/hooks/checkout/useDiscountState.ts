@@ -3,6 +3,13 @@ import { useState } from "react";
 import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
 import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 
+/**
+ * Hook to manage all discount-related state in the checkout process.
+ * This consolidates bundle discounts, tiered discounts, personalized offers,
+ * and other discount-related state.
+ * 
+ * @returns Object containing all discount-related state and setters
+ */
 export function useDiscountState() {
   const [bundleDiscount, setBundleDiscount] = useState<BundleDiscountInfo | undefined>(undefined);
   const [isDiscountApplicable, setIsDiscountApplicable] = useState<boolean>(false);

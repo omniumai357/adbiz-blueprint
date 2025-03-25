@@ -9,6 +9,14 @@ interface UseCheckoutDataOptions {
   profile?: any | null;
 }
 
+/**
+ * Consolidated hook that manages add-on selection and customer information
+ * for the checkout flow. This combines functionality previously spread across
+ * multiple hooks.
+ * 
+ * @param options Configuration options including user ID and profile data
+ * @returns Object containing add-on and customer info state and handlers
+ */
 export function useCheckoutData({ userId, profile }: UseCheckoutDataOptions = {}) {
   // Add-on selection state
   const [availableAddOns, setAvailableAddOns] = useState<AddOnItem[]>([]);
@@ -77,7 +85,7 @@ export function useCheckoutData({ userId, profile }: UseCheckoutDataOptions = {}
         firstName: profile.first_name || "",
         lastName: profile.last_name || "",
         company: profile.company || "",
-        email: "",
+        email: profile.email || "",
         invoiceDeliveryMethod: "email"
       });
     }
