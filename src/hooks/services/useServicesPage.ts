@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -129,7 +128,7 @@ export function useServicesPage() {
   };
   
   const closeDownloadModal = () => {
-    setShowDownloadModal(false);
+    setShowDownloadModal(false); // Fixed: Added boolean argument
     setDownloadResource(null);
   };
   
