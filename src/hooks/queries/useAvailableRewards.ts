@@ -8,11 +8,16 @@ import { useRewardStatus } from "./useRewardStatus";
  * Hook for fetching and managing available rewards
  * 
  * Fetches available rewards and provides functionality to claim them
+ * Uses optimized caching strategy with configurable stale time
  * 
  * @param userId User ID to fetch rewards for
+ * @param options Optional configuration options
  * @returns Object containing rewards data, loading state, error, and claim functionality
  */
-export const useAvailableRewards = (userId: string | undefined) => {
+export const useAvailableRewards = (
+  userId: string | undefined, 
+  options = { staleTime: 5 * 60 * 1000 } // 5 minutes default stale time
+) => {
   const rewardsQuery = useQuery({
     queryKey: ['rewards', { userId }],
     queryFn: async (): Promise<AvailableReward[]> => {
@@ -20,7 +25,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
       return await apiClient.milestones.getAvailableRewards(userId);
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: options.staleTime,
     retry: 2
   });
   

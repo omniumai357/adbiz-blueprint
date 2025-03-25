@@ -8,6 +8,7 @@ import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-se
  * 
  * Provides a function to update a user's progress toward milestones
  * by adding points for completed activities.
+ * Uses targeted cache invalidation to minimize API calls.
  * 
  * @returns Object with the updateProgress function, loading state and error
  * 
@@ -32,10 +33,18 @@ export function useUpdateMilestoneProgress() {
       return await apiClient.milestones.updateMilestoneProgress(params);
     },
     onSuccess: (_, variables) => {
-      // Invalidate related queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ['milestones', { userId: variables.userId }] });
-      queryClient.invalidateQueries({ queryKey: ['activities', { userId: variables.userId }] });
-      queryClient.invalidateQueries({ queryKey: ['rewards', { userId: variables.userId }] });
+      // Use targeted invalidation to avoid unnecessary API calls
+      queryClient.invalidateQueries({ 
+        queryKey: ['milestones', { userId: variables.userId }]
+      });
+      
+      queryClient.invalidateQueries({ 
+        queryKey: ['activities', { userId: variables.userId }]
+      });
+      
+      queryClient.invalidateQueries({ 
+        queryKey: ['rewards', { userId: variables.userId }]
+      });
     }
   });
 

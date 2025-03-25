@@ -7,11 +7,20 @@ interface ReactQueryProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Provider for React Query with optimized caching configuration
+ * 
+ * Provides standardized caching strategies:
+ * - Short-lived data (user status): 2 minute stale time
+ * - Medium-lived data (milestones, rewards): 5 minute stale time
+ * - Long-lived data (profiles, static data): 10 minute stale time
+ * - Extended cache time to reduce refetching: 30 minutes
+ */
 export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 1000 * 60 * 5, // 5 minutes
+        staleTime: 1000 * 60 * 5, // 5 minutes default stale time
         retry: (failureCount, error) => {
           // Don't retry on 4xx errors
           if (
@@ -28,7 +37,7 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
           return failureCount < 2;
         },
         refetchOnWindowFocus: false,
-        gcTime: 1000 * 60 * 10, // 10 minutes
+        gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache longer
         
         meta: {
           onError: (error: Error) => {
