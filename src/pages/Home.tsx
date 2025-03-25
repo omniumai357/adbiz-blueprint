@@ -1,47 +1,27 @@
-
-import React from "react";
-import { Link } from "react-router-dom";
-import Header from "@/components/Header";
+import React from 'react';
+import { PageWithTour } from '@/components/tour/PageWithTour';
 
 const Home = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <PageWithTour>
+      <div id="hero-section" className="mb-8">
+        {/* Hero content */}
+        <h1 className="text-4xl font-bold mb-4">Welcome to Our Platform</h1>
+        <p className="text-xl mb-6">Boost your business with our premium advertising services.</p>
+      </div>
       
-      <main className="flex-grow pt-32 pb-16">
-        <div className="container px-4 mx-auto max-w-4xl">
-          <h1 className="text-3xl font-bold mb-8">Welcome to Your App</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4">Explore Services</h2>
-              <p className="text-gray-600 mb-4">
-                Check out our range of services and packages tailored to your needs.
-              </p>
-              <Link 
-                to="/services" 
-                className="inline-block bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-              >
-                View Services
-              </Link>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4">Rewards Program</h2>
-              <p className="text-gray-600 mb-4">
-                Earn points and unlock exclusive rewards with our milestone-based program.
-              </p>
-              <Link 
-                to="/rewards" 
-                className="inline-block bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-              >
-                View Rewards
-              </Link>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+      <div id="services-section" className="mb-8">
+        {/* Services content */}
+      </div>
+      
+      <div id="testimonials-section" className="mb-8">
+        {/* Testimonials content */}
+      </div>
+      
+      <div id="cta-section">
+        {/* Call to action content */}
+      </div>
+    </PageWithTour>
   );
 };
 

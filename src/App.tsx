@@ -48,11 +48,8 @@ const router = createBrowserRouter([
 function App() {
   return (
     <AuthContextProvider>
-      <TourProvider>
-        <RouterProvider router={router} />
-        <TourGuide />
-        <Toaster />
-      </TourProvider>
+      <RouterProvider router={router} />
+      <Toaster />
     </AuthContextProvider>
   );
 }

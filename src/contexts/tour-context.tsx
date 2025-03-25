@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 type TourStep = {
   id: string;
@@ -48,17 +47,19 @@ const TourContext = createContext<TourContextType>(defaultContext);
 
 export const useTour = () => useContext(TourContext);
 
-export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const TourProvider: React.FC<{ 
+  children: React.ReactNode;
+  currentPathname?: string;
+}> = ({ children, currentPathname = "/" }) => {
   const [isActive, setIsActive] = useState(false);
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [tourPaths, setTourPaths] = useState<TourPath[]>([]);
-  const location = useLocation();
-
+  
   // Load tour paths based on the current route
   useEffect(() => {
     const loadTourPaths = async () => {
-      const pathname = location.pathname;
+      const pathname = currentPathname;
       
       // Load path-specific tours
       if (pathname.includes("/services")) {
@@ -78,7 +79,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     loadTourPaths();
-  }, [location.pathname]);
+  }, [currentPathname]);
 
   // Save and restore tour progress
   useEffect(() => {
