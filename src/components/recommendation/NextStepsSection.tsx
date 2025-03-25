@@ -6,12 +6,43 @@ import { cn } from "@/lib/utils";
 import { showSuccessToast } from "@/utils/toast-utils";
 
 interface NextStepsSectionProps {
+  /**
+   * Array of recommendations to display
+   */
   recommendations: NextStepRecommendation[];
+  
+  /**
+   * Optional CSS class names to apply to the container
+   */
   className?: string;
+  
+  /**
+   * Optional custom title for the section
+   * @default "Recommended Next Steps"
+   */
   title?: string;
+  
+  /**
+   * Optional handler for resource downloads
+   * If not provided, a default handler with toast notification is used
+   */
   onResourceDownload?: (resourceId: string, resourceType: string) => void;
 }
 
+/**
+ * Renders a section of recommended next steps
+ * 
+ * Features:
+ * - Displays cards for each recommendation
+ * - Sorts recommendations by priority
+ * - Handles resource download actions
+ * - Shows success toasts for downloads
+ * 
+ * @param recommendations - Array of recommendation objects to display
+ * @param className - Optional CSS class names to apply
+ * @param title - Custom section title
+ * @param onResourceDownload - Custom handler for resource downloads
+ */
 export const NextStepsSection: React.FC<NextStepsSectionProps> = ({ 
   recommendations, 
   className,
@@ -20,7 +51,14 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
 }) => {
   const { toast } = useToast();
   
-  // Handle resource downloads
+  /**
+   * Handles resource download requests
+   * 
+   * Either uses the provided custom handler or shows a success toast
+   * 
+   * @param resourceId - ID of the resource being downloaded
+   * @param resourceType - Type of resource (e.g., 'ebook', 'tutorial')
+   */
   const handleResourceDownload = (resourceId: string, resourceType: string) => {
     if (onResourceDownload) {
       onResourceDownload(resourceId, resourceType);
@@ -34,6 +72,7 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
     );
   };
   
+  // Don't render anything if there are no recommendations
   if (!recommendations || recommendations.length === 0) {
     return null;
   }

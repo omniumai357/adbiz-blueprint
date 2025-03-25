@@ -3,6 +3,9 @@ import { toast } from "@/hooks/use-toast";
 
 /**
  * Show a success toast with a standard format
+ * 
+ * @param title - The main message to display
+ * @param description - Optional additional details
  */
 export const showSuccessToast = (title: string, description?: string) => {
   toast({
@@ -14,6 +17,10 @@ export const showSuccessToast = (title: string, description?: string) => {
 
 /**
  * Show an error toast with a standard format
+ * 
+ * @param title - The main error message
+ * @param error - The error object or message
+ * @remarks Also logs the error to the console for debugging
  */
 export const showErrorToast = (title: string, error: any) => {
   const description = error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -31,6 +38,9 @@ export const showErrorToast = (title: string, error: any) => {
 
 /**
  * Show an info toast with a standard format
+ * 
+ * @param title - The main message to display
+ * @param description - Optional additional details
  */
 export const showInfoToast = (title: string, description?: string) => {
   toast({
@@ -42,6 +52,18 @@ export const showInfoToast = (title: string, description?: string) => {
 
 /**
  * Create a toast event that can be dispatched
+ * 
+ * Useful for components that need to trigger toasts outside
+ * the React component tree or from within workers/APIs
+ * 
+ * @param title - The main message to display
+ * @param description - Optional additional details
+ * @returns A CustomEvent that can be dispatched
+ * 
+ * @example
+ * // Create and dispatch a toast event
+ * const toastEvent = createToastEvent('File uploaded', 'Your file was uploaded successfully');
+ * document.dispatchEvent(toastEvent);
  */
 export const createToastEvent = (title: string, description?: string) => {
   return new CustomEvent('show-toast', {

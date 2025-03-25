@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/ui/use-toast";
 
+/**
+ * Represents a milestone in the system
+ * @interface Milestone
+ */
 export interface Milestone {
   id: string;
   name: string;
@@ -14,6 +18,10 @@ export interface Milestone {
   is_active: boolean;
 }
 
+/**
+ * Represents a user's milestone with completion and claiming status
+ * @interface UserMilestone
+ */
 export interface UserMilestone {
   milestone_id: string;
   milestone_name: string;
@@ -25,6 +33,10 @@ export interface UserMilestone {
   icon?: string;
 }
 
+/**
+ * Represents a user's progress toward a milestone
+ * @interface MilestoneProgress
+ */
 export interface MilestoneProgress {
   milestone_id: string;
   milestone_name: string;
@@ -34,6 +46,18 @@ export interface MilestoneProgress {
   icon: string | null;
 }
 
+/**
+ * Hook for managing user milestones and rewards
+ * 
+ * Provides functionality to:
+ * - Fetch all active milestones in the system
+ * - Track user progress toward milestones
+ * - Manage available rewards
+ * - Claim rewards
+ * 
+ * @param userId - The ID of the user whose milestones to manage
+ * @returns Object containing milestone data, rewards, and functions to interact with them
+ */
 export function useMilestones(userId: string | null | undefined) {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [availableRewards, setAvailableRewards] = useState<UserMilestone[]>([]);
@@ -42,7 +66,9 @@ export function useMilestones(userId: string | null | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Fetch all active milestones
+  /**
+   * Fetches all active milestones from the database
+   */
   const fetchMilestones = async () => {
     if (!userId) return;
     
@@ -59,7 +85,10 @@ export function useMilestones(userId: string | null | undefined) {
     }
   };
 
-  // Fetch user milestone progress
+  /**
+   * Fetches the user's progress toward all milestones
+   * Calculates total points earned from all activities
+   */
   const fetchUserProgress = async () => {
     if (!userId) return;
     
@@ -107,11 +136,15 @@ export function useMilestones(userId: string | null | undefined) {
     }
   };
 
-  // Fetch available unclaimed rewards
+  /**
+   * Fetches available unclaimed rewards that the user has earned
+   * Adds milestone icons to the rewards for visual display
+   */
   const fetchAvailableRewards = async () => {
     if (!userId) return;
     
     try {
+      // Call RPC function to get available rewards
       const { data, error } = await supabase
         .rpc('get_user_available_rewards', { p_user_id: userId });
       
@@ -141,7 +174,12 @@ export function useMilestones(userId: string | null | undefined) {
     }
   };
 
-  // Claim a reward
+  /**
+   * Claims a reward for the user
+   * 
+   * @param milestoneId - The ID of the milestone whose reward to claim
+   * @returns The claimed reward, or null if claiming failed
+   */
   const claimReward = async (milestoneId: string) => {
     if (!userId) return;
     

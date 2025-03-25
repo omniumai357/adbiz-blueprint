@@ -12,7 +12,26 @@ interface RewardCardProps {
   disabled?: boolean;
 }
 
+/**
+ * Renders a card displaying a reward the user has earned
+ * 
+ * Shows:
+ * - Reward name with an appropriate icon
+ * - Reward value (discount percentage or amount)
+ * - Date the milestone was achieved
+ * - Button to claim the reward
+ * 
+ * @param reward - The reward data to display
+ * @param onClaim - Function to call when the user claims the reward
+ * @param disabled - Whether the claim button should be disabled
+ */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
+  /**
+   * Maps icon names to Lucide React components
+   * 
+   * @param iconName - The name of the icon to display
+   * @returns The appropriate icon component
+   */
   const getIcon = (iconName?: string) => {
     switch (iconName) {
       case 'shopping-bag':
@@ -30,12 +49,17 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
     }
   };
 
+  /**
+   * Handles the user clicking the claim button
+   * Calls the onClaim function with the milestone ID
+   */
   const handleClaim = async () => {
     if (!disabled) {
       onClaim(reward.milestone_id);
     }
   };
 
+  // Format the completion date for display
   const completedDate = reward.completed_at ? format(new Date(reward.completed_at), 'MMM d, yyyy') : '';
   
   return (

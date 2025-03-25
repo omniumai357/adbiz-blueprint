@@ -12,7 +12,24 @@ interface MilestonesDashboardProps {
   userId: string | null | undefined;
 }
 
+/**
+ * Renders a dashboard for user milestones and rewards
+ * 
+ * Features:
+ * - Displays total points earned
+ * - Shows progress toward active milestones
+ * - Lists available rewards that can be claimed
+ * - Handles the reward claim process
+ * 
+ * Shows appropriate UI states for:
+ * - Not logged in users (sign-in prompt)
+ * - Loading state (skeletons)
+ * - Empty states (no milestones/rewards)
+ * 
+ * @param userId - The ID of the user whose milestones to display
+ */
 const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => {
+  // Get milestone data and functions from the useMilestones hook
   const { 
     progress, 
     availableRewards, 
@@ -21,6 +38,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
     claimReward 
   } = useMilestones(userId);
 
+  // Show sign-in prompt for non-authenticated users
   if (!userId) {
     return (
       <Card className="shadow-md">
@@ -32,6 +50,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
     );
   }
 
+  // Show loading state while fetching data
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -46,6 +65,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
 
   return (
     <div className="space-y-6">
+      {/* Header with total points display */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Your Milestones</h2>
@@ -64,6 +84,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
         </Card>
       </div>
 
+      {/* Tabs for Progress and Rewards */}
       <Tabs defaultValue="progress" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="progress">Progress</TabsTrigger>
@@ -76,6 +97,8 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
             )}
           </TabsTrigger>
         </TabsList>
+        
+        {/* Progress tab content */}
         <TabsContent value="progress">
           {progress.length === 0 ? (
             <Card>
@@ -98,6 +121,7 @@ const MilestonesDashboard: React.FC<MilestonesDashboardProps> = ({ userId }) => 
           )}
         </TabsContent>
         
+        {/* Rewards tab content */}
         <TabsContent value="rewards">
           {availableRewards.length === 0 ? (
             <Card>

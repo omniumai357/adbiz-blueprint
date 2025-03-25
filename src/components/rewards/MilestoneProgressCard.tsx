@@ -9,8 +9,23 @@ interface MilestoneProgressCardProps {
   milestone: MilestoneProgress;
 }
 
+/**
+ * Renders a card displaying a user's progress toward a milestone
+ * 
+ * Shows:
+ * - Milestone name with an appropriate icon
+ * - Current progress (points earned vs. points required)
+ * - Visual progress bar
+ * 
+ * @param milestone - The milestone progress data to display
+ */
 const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({ milestone }) => {
-  // Map milestone icons to Lucide React components
+  /**
+   * Maps milestone icon names to Lucide React components
+   * 
+   * @param iconName - The name of the icon to display
+   * @returns The appropriate icon component
+   */
   const getIcon = (iconName: string | null) => {
     switch (iconName) {
       case 'shopping-bag':
