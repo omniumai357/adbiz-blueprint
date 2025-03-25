@@ -2,6 +2,7 @@
 import { FC } from "react";
 import { Button } from "@/components/ui/button";
 import { X, FileText, Image, Video } from "lucide-react";
+import { formatFileSize } from "@/utils/file-validation";
 
 interface FileItemProps {
   file: File;
@@ -25,15 +26,19 @@ const FileItem: FC<FileItemProps> = ({ file, fileType, index, onRemove }) => {
   };
 
   return (
-    <div className="flex items-center gap-2 bg-secondary p-2 rounded-md">
+    <div className="flex items-center gap-2 bg-secondary p-3 rounded-md shadow-sm transition-colors hover:bg-secondary/80">
       <FileIcon />
-      <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+      <div className="flex flex-col flex-grow min-w-0">
+        <span className="text-sm font-medium truncate">{file.name}</span>
+        <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+      </div>
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        className="h-6 w-6 p-0 rounded-full ml-auto"
+        className="h-7 w-7 p-0 rounded-full ml-auto"
         onClick={onRemove}
+        aria-label="Remove file"
       >
         <X className="h-4 w-4" />
       </Button>

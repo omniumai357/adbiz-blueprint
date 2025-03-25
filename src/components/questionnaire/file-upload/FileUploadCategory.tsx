@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { FileState } from "@/hooks/useFileUpload";
 import FilePreviewGrid from "./FilePreviewGrid";
+import { getReadableFileFormats } from "@/utils/file-validation";
+import { useFileValidation } from "@/hooks/file-upload/useFileValidation";
 
 interface FileUploadCategoryProps {
   title: string;
@@ -25,6 +27,10 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   onFileChange,
   onRemoveFile,
 }) => {
+  const { formatFileSize, getMaxFileSize } = useFileValidation();
+  const maxFileSize = getMaxFileSize(fileType);
+  const readableFormats = getReadableFileFormats(fileType);
+  
   return (
     <div className="space-y-4">
       <div>
@@ -33,28 +39,34 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
           {description}
         </p>
         
-        <div className="flex items-center gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            className="relative"
-            onClick={() => document.getElementById(`${fileType}-upload`)?.click()}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Select {title}
-            <input
-              id={`${fileType}-upload`}
-              type="file"
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              accept={acceptFormats}
-              multiple
-              onChange={(e) => onFileChange(e, fileType)}
-            />
-          </Button>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="relative"
+              onClick={() => document.getElementById(`${fileType}-upload`)?.click()}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Select {title}
+              <input
+                id={`${fileType}-upload`}
+                type="file"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                accept={acceptFormats}
+                multiple
+                onChange={(e) => onFileChange(e, fileType)}
+              />
+            </Button>
+            
+            <span className="text-sm text-muted-foreground">
+              {files.length} file(s) selected
+            </span>
+          </div>
           
-          <span className="text-sm text-muted-foreground">
-            {files.length} file(s) selected
-          </span>
+          <div className="text-xs text-muted-foreground">
+            Accepted formats: {readableFormats} • Max size: {formatFileSize(maxFileSize)}
+          </div>
         </div>
         
         {files.length > 0 && (

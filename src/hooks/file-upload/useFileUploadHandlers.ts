@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
 import { FileState } from '@/hooks/useFileUpload';
 import { useFileValidation } from './useFileValidation';
+import { toast } from '@/hooks/ui/use-toast';
 
 export interface UseFileUploadHandlersProps {
   files: FileState;
@@ -17,7 +19,7 @@ export interface UseFileUploadHandlersResult {
 const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUploadHandlersResult => {
   const { files, setFiles } = props;
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const { validateFileUpload } = useFileValidation();
+  const { validateFileUpload, formatFileSize } = useFileValidation();
 
   const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
     let newFiles: File[] = [];
@@ -45,17 +47,32 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
         ...prev,
         [fileType]: validFiles[0]
       }));
+      
+      if (validFiles.length > 0) {
+        toast({
+          title: "Logo uploaded",
+          description: `${validFiles[0].name} (${formatFileSize(validFiles[0].size)}) added successfully.`
+        });
+      }
+      
       return;
     }
     
     // For other file types, we append to existing files
-    const { validFiles } = validateFileUpload(newFiles, fileType);
+    const { validFiles, hasError } = validateFileUpload(newFiles, fileType);
     
     if (validFiles.length > 0) {
       setFiles(prev => ({
         ...prev,
         [fileType]: [...prev[fileType], ...validFiles]
       }));
+      
+      if (!hasError) {
+        toast({
+          title: `${validFiles.length} ${fileType} added`,
+          description: `Files were added successfully.`
+        });
+      }
     }
   };
 
@@ -65,14 +82,27 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
         ...prev,
         logo: null
       }));
+      toast({
+        title: "Logo removed",
+        description: "The logo file has been removed."
+      });
       return;
     }
     
     if (index !== undefined) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
-      }));
+      setFiles(prev => {
+        const fileName = prev[fileType][index]?.name;
+        const newFiles = prev[fileType].filter((_, i) => i !== index);
+        
+        if (fileName) {
+          toast({
+            title: "File removed",
+            description: `"${fileName}" has been removed.`
+          });
+        }
+        
+        return { ...prev, [fileType]: newFiles };
+      });
     }
   };
 

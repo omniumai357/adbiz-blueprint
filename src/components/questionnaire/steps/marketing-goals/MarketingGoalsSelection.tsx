@@ -2,14 +2,15 @@
 import { FC } from "react";
 import { FormField, FormItem, FormControl, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
+import { useMarketingGoalsForm } from "@/hooks/questionnaire/useMarketingGoalsForm";
+import { cn } from "@/lib/utils";
 
 interface MarketingGoalsSelectionProps {
   marketingGoalOptions: Array<{ value: string; label: string }>;
 }
 
 const MarketingGoalsSelection: FC<MarketingGoalsSelectionProps> = ({ marketingGoalOptions }) => {
-  const { form } = useQuestionnaireContext();
+  const { form, isGoalSelected, toggleGoalSelection } = useMarketingGoalsForm();
   
   return (
     <FormField
@@ -18,41 +19,33 @@ const MarketingGoalsSelection: FC<MarketingGoalsSelectionProps> = ({ marketingGo
       render={() => (
         <FormItem>
           <div className="mb-4">
-            <FormLabel>What are your marketing goals? (Select all that apply) *</FormLabel>
+            <FormLabel className="text-base">What are your marketing goals? (Select all that apply) *</FormLabel>
+            <p className="text-sm text-muted-foreground mt-1">
+              Choose the goals that are most important for your business marketing strategy.
+            </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {marketingGoalOptions.map((goal) => (
-              <FormField
+              <div 
                 key={goal.value}
-                control={form.control}
-                name="marketingGoals"
-                render={({ field }) => {
-                  return (
-                    <FormItem
-                      key={goal.value}
-                      className="flex flex-row items-start space-x-3 space-y-0"
-                    >
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value?.includes(goal.value)}
-                          onCheckedChange={(checked) => {
-                            return checked
-                              ? field.onChange([...field.value, goal.value])
-                              : field.onChange(
-                                  field.value?.filter(
-                                    (value) => value !== goal.value
-                                  )
-                                )
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="font-normal">
-                        {goal.label}
-                      </FormLabel>
-                    </FormItem>
-                  )
-                }}
-              />
+                className={cn(
+                  "flex items-start space-x-3 space-y-0 rounded-md border p-3 transition-colors hover:bg-muted/50 cursor-pointer",
+                  isGoalSelected(goal.value) && "border-primary bg-primary/5"
+                )}
+                onClick={() => toggleGoalSelection(goal.value)}
+              >
+                <FormControl>
+                  <Checkbox
+                    checked={isGoalSelected(goal.value)}
+                    onCheckedChange={() => toggleGoalSelection(goal.value)}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="font-medium cursor-pointer">
+                    {goal.label}
+                  </FormLabel>
+                </div>
+              </div>
             ))}
           </div>
           <FormMessage />

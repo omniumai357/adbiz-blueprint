@@ -15,16 +15,19 @@ const FilePreviewGrid: FC<FilePreviewGridProps> = ({
   onRemoveFile 
 }) => {
   return (
-    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      {files.map((file, index) => (
-        <FileItem 
-          key={`${fileType}-${index}`}
-          file={file}
-          fileType={fileType}
-          index={index}
-          onRemove={() => onRemoveFile(fileType, index)}
-        />
-      ))}
+    <div className="mt-4">
+      <h5 className="text-sm font-medium mb-2">Uploaded Files ({files.length})</h5>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {files.map((file, index) => (
+          <FileItem 
+            key={`${fileType}-${index}-${file.name}`}
+            file={file}
+            fileType={fileType}
+            index={index}
+            onRemove={() => onRemoveFile(fileType, index)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
