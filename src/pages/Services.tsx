@@ -1,106 +1,29 @@
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React from 'react';
 import { ServicePackages } from '@/components/ServicePackages';
-import { NextStepsSection, getServicePageRecommendations } from '@/components/recommendation/NextStepsSection';
-import { useTour } from '@/contexts/tour-context';
-import { supabase } from '@/integrations/supabase/client';
+import { NextStepsSection } from '@/components/recommendation/NextStepsSection';
 import DownloadOptions from '@/components/DownloadOptions';
+import { useServicesPage } from '@/hooks/services/useServicesPage';
 import { useToast } from '@/hooks/use-toast';
+import { getServicePageRecommendations } from '@/services/recommendation/recommendationService';
 
 const Services = () => {
-  const [searchParams] = useSearchParams();
-  const { isActive: isTourActive, startTour } = useTour();
+  const {
+    viewedPackages,
+    selectedCategory,
+    hasCompletedTour,
+    hasPurchased,
+    showDownloadModal,
+    downloadResource,
+    handleCategoryChange,
+    handleResourceAccess,
+    closeDownloadModal
+  } = useServicesPage();
+  
   const { toast } = useToast();
-  const [viewedPackages, setViewedPackages] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("monthly");
-  const [hasPurchased, setHasPurchased] = useState(false);
-  const [hasCompletedTour, setHasCompletedTour] = useState(false);
-  const [showDownloadModal, setShowDownloadModal] = useState(false);
-  const [downloadResource, setDownloadResource] = useState<{id: string, type: string, title: string} | null>(null);
   
-  useEffect(() => {
-    const packageParam = searchParams.get('package');
-    if (packageParam && !viewedPackages.includes(packageParam)) {
-      setViewedPackages(prev => [...prev, packageParam]);
-    }
-  }, [searchParams]);
-  
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          const { data: orders } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'completed')
-            .limit(1);
-            
-          setHasPurchased(orders && orders.length > 0);
-          
-          const tourCompleted = localStorage.getItem('tour_completed_services') === 'true';
-          setHasCompletedTour(tourCompleted);
-        }
-      } catch (error) {
-        console.error("Error checking user data:", error);
-      }
-    };
-    
-    fetchUserData();
-  }, []);
-  
-  useEffect(() => {
-    if (!isTourActive) {
-      localStorage.setItem('tour_completed_services', 'true');
-      setHasCompletedTour(true);
-    }
-  }, [isTourActive]);
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-  };
-  
-  const handleResourceAccess = (resourceId: string, resourceType: string) => {
-    let resourceTitle = "";
-    
-    if (resourceId === "premium-strategy-guide") {
-      resourceTitle = "Premium Marketing Strategy Guide";
-    } else if (resourceId === "budget-marketing-guide") {
-      resourceTitle = "Effective Marketing on a Budget";
-    } else if (resourceId === "getting-started-guide") {
-      resourceTitle = "Getting Started with Your Package";
-    }
-    
-    setDownloadResource({
-      id: resourceId,
-      type: resourceType,
-      title: resourceTitle
-    });
-    
-    setShowDownloadModal(true);
-  };
-  
-  useEffect(() => {
-    const handleHashChange = () => {
-      if (window.location.hash === '#start-tour') {
-        startTour();
-        window.history.pushState("", document.title, window.location.pathname + window.location.search);
-      }
-    };
-    
-    handleHashChange();
-    
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange);
-    };
-  }, [startTour]);
-  
-  useEffect(() => {
+  // Set up toast event listener
+  React.useEffect(() => {
     const handleShowToast = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail) {
@@ -163,7 +86,7 @@ const Services = () => {
           packageName={downloadResource.title}
           resourceType={downloadResource.type as "ebook" | "tutorial"}
           resourceTitle={downloadResource.title}
-          onClose={() => setShowDownloadModal(false)}
+          onClose={closeDownloadModal}
         />
       )}
     </>
