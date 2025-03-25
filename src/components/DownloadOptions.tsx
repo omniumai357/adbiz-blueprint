@@ -14,13 +14,15 @@ interface DownloadOptionsProps {
   packageName: string;
   resourceType?: "package" | "ebook" | "tutorial";
   resourceTitle?: string;
+  onClose?: () => void; // Add the onClose prop to the interface
 }
 
 const DownloadOptions = ({ 
   purchaseId, 
   packageName, 
   resourceType = "package",
-  resourceTitle
+  resourceTitle,
+  onClose
 }: DownloadOptionsProps) => {
   const [selectedFormat, setSelectedFormat] = useState<FileFormat>(
     resourceType === "ebook" ? "pdf" : 
@@ -79,6 +81,11 @@ const DownloadOptions = ({
       });
       
       setIsDownloading(false);
+      
+      // Call the onClose function if it exists
+      if (onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Download error:", error);
       toast({
@@ -93,7 +100,7 @@ const DownloadOptions = ({
   const buttonText = resourceType === "tutorial" ? "Access Tutorial" : "Download";
 
   return (
-    <Dialog>
+    <Dialog defaultOpen onOpenChange={(open) => !open && onClose && onClose()}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           {resourceType === "tutorial" ? <PlayCircle className="h-4 w-4" /> : <Download className="h-4 w-4" />}
