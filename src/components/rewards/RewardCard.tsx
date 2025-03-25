@@ -2,9 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, Gift, Sparkles, ShoppingBag, DollarSign, MessageSquare, UserCheck } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { CommonMilestoneData } from '@/types/api';
+import RewardIcon from './RewardIcon';
 
 interface RewardCardProps {
   reward: CommonMilestoneData;
@@ -27,29 +28,6 @@ interface RewardCardProps {
  */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
   /**
-   * Maps icon names to Lucide React components
-   * 
-   * @param iconName - The name of the icon to display
-   * @returns The appropriate icon component
-   */
-  const getIcon = (iconName?: string) => {
-    switch (iconName) {
-      case 'shopping-bag':
-        return <ShoppingBag className="h-6 w-6 text-primary" />;
-      case 'award':
-        return <Award className="h-6 w-6 text-amber-500" />;
-      case 'dollar-sign':
-        return <DollarSign className="h-6 w-6 text-green-500" />;
-      case 'message-square':
-        return <MessageSquare className="h-6 w-6 text-blue-500" />;
-      case 'user-check':
-        return <UserCheck className="h-6 w-6 text-violet-500" />;
-      default:
-        return <Gift className="h-6 w-6 text-rose-500" />;
-    }
-  };
-
-  /**
    * Handles the user clicking the claim button
    * Calls the onClaim function with the milestone ID
    */
@@ -68,7 +46,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {getIcon(reward.icon)}
+            <RewardIcon iconName={reward.icon} />
             <CardTitle className="text-lg">{reward.milestone_name}</CardTitle>
           </div>
           <div className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
