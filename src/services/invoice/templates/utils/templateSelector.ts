@@ -3,6 +3,8 @@ import { InvoiceTemplate, invoiceTemplates } from '../../types';
 
 /**
  * Default company information to use in templates
+ * 
+ * @returns {Object} Company information including name, address, phone, email, and website
  */
 export function getDefaultCompanyInfo() {
   return {
@@ -16,6 +18,12 @@ export function getDefaultCompanyInfo() {
 
 /**
  * Determine the appropriate template based on package ID or name
+ * 
+ * This function selects the most appropriate invoice template
+ * based on the package tier or identifier provided.
+ * 
+ * @param {string} packageIdentifier - The package ID or name to determine template for
+ * @returns {string} Template name to use ('standard', 'premium', or 'platinum')
  */
 export function getTemplateForPackage(packageIdentifier: string): string {
   // Convert to lowercase for case-insensitive matching

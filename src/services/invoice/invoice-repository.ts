@@ -5,10 +5,17 @@ import { Json } from "@/integrations/supabase/types";
 
 /**
  * Database operations for invoices
+ * 
+ * Repository pattern implementation for invoice data persistence,
+ * providing a clean separation between database operations and
+ * business logic.
  */
 export const invoiceRepository = {
   /**
    * Creates a new invoice in the database
+   * 
+   * @param {InvoiceData} data - Invoice data to persist
+   * @returns {Promise<Object>} Object containing the created invoice or error
    */
   async createInvoice(data: InvoiceData) {
     try {

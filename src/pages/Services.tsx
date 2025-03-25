@@ -11,6 +11,8 @@ import { createToastEvent } from '@/utils/toast-utils';
  * Services Page Component
  * 
  * Displays available service packages and related information.
+ * Manages the state and presentation of service offerings, including
+ * package categories, features, recommendations, and resource downloads.
  * 
  * Features:
  * - Package category selection (monthly, quarterly, annual)
@@ -18,6 +20,7 @@ import { createToastEvent } from '@/utils/toast-utils';
  * - Package features listing
  * - Next steps recommendations
  * - Resource download options
+ * - Toast notifications for important events
  */
 const Services = () => {
   const {
@@ -39,7 +42,10 @@ const Services = () => {
   
   const { toast } = useToast();
   
-  // Set up toast event listener
+  /**
+   * Set up toast event listener to show notifications
+   * based on application events
+   */
   React.useEffect(() => {
     const handleShowToast = (event: Event) => {
       try {

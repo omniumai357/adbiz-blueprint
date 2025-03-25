@@ -13,6 +13,13 @@ export { getTemplateForPackage } from './utils/templateSelector';
 
 /**
  * Generate HTML content based on template and invoice data
+ * 
+ * Factory function that renders the appropriate invoice template based on
+ * the template type and provided invoice data, returning a complete HTML document.
+ * 
+ * @param {InvoiceData} invoiceData - The invoice data to render in the template
+ * @param {string} templateType - The type of template to use ('standard', 'premium', or 'platinum')
+ * @returns {string} Complete HTML document for the invoice
  */
 export const generateInvoiceHtml = (invoiceData: InvoiceData, templateType: string): string => {
   // Get the appropriate template style

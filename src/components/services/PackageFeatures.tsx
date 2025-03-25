@@ -3,12 +3,26 @@ import React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+/**
+ * Props for the PackageFeatures component
+ */
 interface PackageFeaturesProps {
   selectedCategory: string;
   error?: string | null;
 }
 
+/**
+ * PackageFeatures Component
+ * 
+ * Displays a list of features included in the selected service package category.
+ * Features are dynamically shown based on the currently selected category.
+ * 
+ * @param {PackageFeaturesProps} props - Component props
+ * @param {string} props.selectedCategory - The currently selected service category
+ * @param {string|null} [props.error] - Optional error message to display
+ */
 export const PackageFeatures = ({ selectedCategory, error }: PackageFeaturesProps) => {
+  // Features organized by category for easy lookup
   const features = {
     monthly: [
       "Monthly performance reports",
@@ -30,6 +44,7 @@ export const PackageFeatures = ({ selectedCategory, error }: PackageFeaturesProp
     ]
   };
   
+  // Get features for the selected category or default to monthly
   const currentFeatures = features[selectedCategory as keyof typeof features] || features.monthly;
   
   return (

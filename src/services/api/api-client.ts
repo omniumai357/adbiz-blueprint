@@ -10,36 +10,45 @@ import { adminClient } from "./clients/admin-client";
  * API Client
  * 
  * A centralized service for making API calls to different resources.
- * This creates a separation between the data fetching logic and the UI components.
+ * This creates a separation between the data fetching logic and the UI components,
+ * following the repository pattern for better code organization and testability.
+ * 
+ * Each domain area (auth, profiles, etc.) has its own client with specific API methods.
  */
 export const apiClient = {
   /**
    * Authentication
+   * Handles user login, registration, and session management
    */
   auth: authClient,
   
   /**
    * User profile
+   * Manages user profile data like personal info and preferences
    */
   profiles: profilesClient,
   
   /**
    * Orders
+   * Handles order creation, retrieval, and management
    */
   orders: ordersClient,
   
   /**
    * Packages
+   * Manages service packages, pricing, and features
    */
   packages: packagesClient,
   
   /**
    * Milestones and rewards
+   * Handles user achievement tracking and reward management
    */
   milestones: milestonesClient,
   
   /**
    * Admin functions
+   * Provides administrative capabilities and permission checks
    */
   admin: adminClient
 };

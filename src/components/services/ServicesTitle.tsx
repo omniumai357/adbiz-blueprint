@@ -1,6 +1,13 @@
 
 import React from 'react';
 
+/**
+ * ServicesTitle Component
+ * 
+ * Renders the title and description for the Services page.
+ * This component establishes the primary heading and context
+ * for the services being offered.
+ */
 export const ServicesTitle = () => {
   return (
     <div id="services-title" className="mb-6">

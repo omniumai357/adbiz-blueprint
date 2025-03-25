@@ -11,6 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
+/**
+ * Props for the ServicesContent component
+ */
 interface ServicesContentProps {
   viewedPackages: string[];
   selectedCategory: string;
@@ -28,7 +31,11 @@ interface ServicesContentProps {
 /**
  * ServicesContent Component
  * 
- * Contains the main content of the Services page.
+ * Contains the main content of the Services page, organizing the layout and 
+ * presentation of service packages, category selection, feature highlights,
+ * and recommended next steps.
+ * 
+ * Handles loading states, error displays, and resource downloads.
  */
 export const ServicesContent: React.FC<ServicesContentProps> = ({
   viewedPackages,

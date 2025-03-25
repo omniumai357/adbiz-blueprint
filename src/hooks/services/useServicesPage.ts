@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from "@/services/api/api-client";
 
+/**
+ * Service package information interface
+ */
 interface ServicePackage {
   id: string;
   title: string;
@@ -11,11 +14,17 @@ interface ServicePackage {
   category: string;
 }
 
+/**
+ * User data interface containing basic user information
+ */
 interface UserData {
   id: string | undefined;
   email: string | undefined;
 }
 
+/**
+ * Services page state interface defining all state properties and methods
+ */
 interface ServicesPageState {
   packages: ServicePackage[] | null;
   userData: UserData | null;
@@ -29,6 +38,18 @@ interface ServicesPageState {
   handleCategoryChange: (category: string) => void;
 }
 
+/**
+ * Hook for managing the Services page state and operations
+ * 
+ * Handles:
+ * - Loading service packages from the API
+ * - Tracking user data
+ * - Managing category selection
+ * - Tracking viewed packages
+ * - Managing page loading and error states
+ * 
+ * @returns {ServicesPageState} Services page state and handlers
+ */
 const useServicesPage = (): ServicesPageState => {
   const [packages, setPackages] = useState<ServicePackage[] | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -41,6 +62,10 @@ const useServicesPage = (): ServicesPageState => {
   const hasCompletedTour = true;
   const hasPurchased = false;
 
+  /**
+   * Fetches service packages and user data from the API
+   * Tracks viewed packages and manages loading state
+   */
   const fetchServicePackages = async () => {
     try {
       setLoading(true);
@@ -70,10 +95,15 @@ const useServicesPage = (): ServicesPageState => {
     }
   };
 
+  // Fetch packages on component mount
   useEffect(() => {
     fetchServicePackages();
   }, []);
 
+  /**
+   * Handles category change for filtering packages
+   * @param {string} category - The new category to filter by
+   */
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     // In a real app, you might want to fetch packages for this category

@@ -1,6 +1,15 @@
 
 import React from 'react';
 
+/**
+ * ContactCTA Component
+ * 
+ * Displays a call-to-action section encouraging users to contact
+ * the team for assistance with choosing service packages.
+ * 
+ * This component is strategically placed on the Services page
+ * to convert interested users into leads.
+ */
 export const ContactCTA = () => {
   return (
     <div id="contact-cta" className="bg-gray-100 p-6 rounded-lg mb-8">
