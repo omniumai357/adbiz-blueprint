@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/ui/use-toast";
 
 /**
  * Resource interface for handling downloadable content
@@ -36,7 +36,7 @@ export interface Resource {
  * } = useResourceAccess();
  * 
  * // Handle a resource access request
- * handleResourceAccess('premium-strategy-guide', 'ebook');
+ * handleResourceAccess({ id: 'premium-strategy-guide', type: 'ebook' });
  * 
  * // In your component, render the download modal when showDownloadModal is true
  * {showDownloadModal && (
@@ -56,11 +56,28 @@ export function useResourceAccess() {
    * 
    * Maps resource IDs to human-readable titles and shows the download modal
    * 
-   * @param resourceId - The ID of the resource being accessed
-   * @param resourceType - The type of resource (e.g., 'ebook', 'tutorial')
+   * @param resource - The resource being accessed, can be either a resource object or a resource ID with type
    */
-  const handleResourceAccess = (resourceId: string, resourceType: string) => {
+  const handleResourceAccess = (resource: Resource | { id: string, type: string } | any) => {
     try {
+      let resourceId = '';
+      let resourceType = '';
+      
+      // Handle different parameter formats
+      if (typeof resource === 'object') {
+        // If passed a resource object
+        resourceId = resource.id || resource.resourceId || '';
+        resourceType = resource.type || '';
+      } else if (typeof resource === 'string' && arguments.length > 1) {
+        // Legacy format support: (resourceId, resourceType)
+        resourceId = resource;
+        resourceType = arguments[1];
+      } else {
+        // Unexpected format
+        console.error("Unexpected resource format:", resource);
+        return;
+      }
+      
       let resourceTitle = "";
       
       // Map resource IDs to titles - this could be expanded or moved to a separate utility

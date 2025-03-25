@@ -1,7 +1,6 @@
-
 import React from "react";
 import { NextStepCard, NextStepRecommendation } from "./NextStepCard";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { showSuccessToast } from "@/utils/toast-utils";
 
@@ -26,7 +25,7 @@ interface NextStepsSectionProps {
    * Optional handler for resource downloads
    * If not provided, a default handler with toast notification is used
    */
-  onResourceDownload?: (resourceId: string, resourceType: string) => void;
+  onResourceDownload?: (resource: any) => void;
 }
 
 /**
@@ -61,7 +60,10 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
    */
   const handleResourceDownload = (resourceId: string, resourceType: string) => {
     if (onResourceDownload) {
-      onResourceDownload(resourceId, resourceType);
+      onResourceDownload({
+        id: resourceId,
+        type: resourceType
+      });
       return;
     }
     
