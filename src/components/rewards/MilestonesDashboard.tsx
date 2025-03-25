@@ -21,6 +21,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
     availableRewards,
     totalPoints,
     isLoading,
+    error,
     refreshData
   } = useMilestones(userId);
 
@@ -28,7 +29,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   const { claimReward, isProcessing } = useRewardActions(userId || null, refreshData);
   
   // State for error tracking
-  const [error, setError] = useState<Error | null>(null);
+  const [localError, setLocalError] = useState<Error | null>(null);
 
   const MilestonesSkeleton = () => (
     <div className="space-y-6">
@@ -53,7 +54,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   return (
     <LoadingContent
       isLoading={isLoading}
-      error={error}
+      error={error || localError}
       isEmpty={milestones.length === 0 && availableRewards.length === 0}
       emptyContent={<EmptyMilestones />}
       useSkeleton={true}

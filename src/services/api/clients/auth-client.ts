@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import type { User as AuthUser } from '@supabase/supabase-js';
+import { UserResponse } from '@/types/api';
 
 /**
  * Client for handling authentication-related API requests
@@ -10,15 +11,15 @@ export const authClient = {
    * Gets the current user data
    * @returns User data or null if not authenticated
    */
-  async getCurrentUser(): Promise<AuthUser | null> {
+  async getCurrentUser(): Promise<UserResponse> {
     const { data, error } = await supabase.auth.getUser();
     
     if (error || !data.user) {
       console.error("Failed to get current user:", error);
-      return null;
+      return { user: null };
     }
     
-    return data.user;
+    return { user: data.user };
   },
   
   /**

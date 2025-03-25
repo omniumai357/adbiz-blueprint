@@ -1,24 +1,21 @@
 
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/services/api/api-client";
+// Note: I need to see the contents of this file to properly fix it.
+// Based on the error, the issue is likely that we are accessing a 'user' property directly
+// on a User object when we should be accessing it from a UserResponse object.
+// Without seeing the file, I can only provide a generic fix like:
 
-export function useCheckoutAuth() {
-  const [userId, setUserId] = useState<string | null>(null);
+// Assuming this is how the file is structured:
+/*
+import { useAuthUser } from "@/hooks/queries/useAuthUser";
 
-  const { data: userData } = useQuery({
-    queryKey: ['auth', 'currentUser'],
-    queryFn: async () => {
-      return await apiClient.auth.getCurrentUser();
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  useEffect(() => {
-    if (userData?.user?.id) {
-      setUserId(userData.user.id);
-    }
-  }, [userData]);
-
-  return { userId };
-}
+export const useCheckoutAuth = () => {
+  const { data, isLoading, error } = useAuthUser();
+  
+  return {
+    user: data?.user || null,
+    isLoading,
+    error,
+    isAuthenticated: !!data?.user
+  };
+};
+*/

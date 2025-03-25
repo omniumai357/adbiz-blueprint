@@ -25,8 +25,8 @@ import { LoadingContent } from "@/components/ui/loading-content";
  */
 const Rewards = () => {
   // Get current authenticated user and page state from hook
-  const { user, isLoading } = useRewardsPage();
-  const [error, setError] = useState<Error | null>(null);
+  const { user, isLoading, error: pageError } = useRewardsPage();
+  const [error, setError] = useState<Error | null>(pageError ? new Error(pageError) : null);
 
   // Skeleton component for when user data is loading
   const RewardsPageSkeleton = () => (
