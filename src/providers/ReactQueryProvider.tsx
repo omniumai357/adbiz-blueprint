@@ -1,6 +1,6 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { handleError } from "@/utils/error-handling";
 
 interface ReactQueryProviderProps {
@@ -17,7 +17,7 @@ interface ReactQueryProviderProps {
  * - Extended cache time to reduce refetching: 30 minutes
  */
 export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
-  // Create a client
+  // Create a client - using the constructor directly without useState
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
