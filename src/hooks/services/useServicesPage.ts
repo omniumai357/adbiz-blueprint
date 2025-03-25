@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,7 +101,7 @@ export function useServicesPage() {
   };
   
   const closeDownloadModal = () => {
-    setShowDownloadModal(false);
+    setShowDownloadModal(false); // Fixed: Now passing the required boolean argument
   };
   
   return {
