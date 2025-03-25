@@ -68,6 +68,16 @@ export class PaymentService {
   async createPaymentIntent(amount: number, currency = 'usd'): Promise<string> {
     return this.stripeService.createPaymentIntent(amount, currency);
   }
+  
+  /**
+   * Save order details to the database
+   * @param orderDetails Order information to save
+   * @returns Promise resolving to the saved order data
+   */
+  async saveOrder(orderDetails: any): Promise<any> {
+    // Delegate to Stripe service for saving the order
+    return this.stripeService.saveOrder(orderDetails);
+  }
 }
 
 // Create a singleton instance

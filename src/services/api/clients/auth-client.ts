@@ -13,9 +13,9 @@ export const authClient = {
    * @throws Will throw an error if the user retrieval fails
    */
   getCurrentUser: async (): Promise<UserResponse> => {
-    const response = await supabaseClient.auth.getUser();
-    if (response.error) throw response.error;
-    return { user: response.data.user };
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (error) throw error;
+    return { user: data.user };
   },
   
   /**

@@ -53,24 +53,22 @@ export class StripeService {
       }
 
       // Save the order
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('save-order', {
-        body: {
-          packageId: packageDetails.id,
-          total_amount: packageDetails.price,
-          contact_info: customerInfo,
-          company_info: {
-            name: customerInfo.company,
-            website: customerInfo.website || '',
-          },
-          payment_method: 'credit-card',
-        }
-      });
+      const orderDetails = {
+        packageId: packageDetails.id,
+        total_amount: packageDetails.price,
+        contact_info: customerInfo,
+        company_info: {
+          name: customerInfo.company,
+          website: customerInfo.website || '',
+        },
+        payment_method: 'credit-card',
+      };
       
-      if (orderError) throw new Error(orderError.message);
+      const savedOrder = await this.saveOrder(orderDetails);
       
       return {
         success: true,
-        orderId: orderData.id
+        orderId: savedOrder.id
       };
     } catch (err: any) {
       console.error("Payment error:", err);
@@ -78,6 +76,26 @@ export class StripeService {
         success: false,
         error: err.message || "An error occurred with your payment"
       };
+    }
+  }
+  
+  /**
+   * Save order details to the database
+   * @param orderDetails Order information to save
+   * @returns Promise resolving to the saved order data
+   */
+  async saveOrder(orderDetails: any): Promise<any> {
+    try {
+      const { data, error } = await supabase.functions.invoke('save-order', {
+        body: orderDetails
+      });
+      
+      if (error) throw new Error(error.message);
+      
+      return data;
+    } catch (error) {
+      console.error("Error saving order:", error);
+      throw error;
     }
   }
 }
