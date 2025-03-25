@@ -162,6 +162,7 @@ const Services = () => {
           packageName={downloadResource.title}
           resourceType={downloadResource.type as "ebook" | "tutorial"}
           resourceTitle={downloadResource.title}
+          onClose={() => setShowDownloadModal(false)}
         />
       )}
     </>
