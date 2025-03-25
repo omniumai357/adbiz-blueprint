@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { FileState } from "@/hooks/useFileUpload";
-import FileItem from "./FileItem";
+import FilePreviewGrid from "./FilePreviewGrid";
 
 interface FileUploadCategoryProps {
   title: string;
@@ -58,17 +58,11 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
         </div>
         
         {files.length > 0 && (
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {files.map((file, index) => (
-              <FileItem 
-                key={`${fileType}-${index}`}
-                file={file}
-                fileType={fileType}
-                index={index}
-                onRemove={() => onRemoveFile(fileType, index)}
-              />
-            ))}
-          </div>
+          <FilePreviewGrid
+            files={files}
+            fileType={fileType}
+            onRemoveFile={onRemoveFile}
+          />
         )}
       </div>
     </div>

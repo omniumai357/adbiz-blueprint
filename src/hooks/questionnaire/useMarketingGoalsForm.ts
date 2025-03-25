@@ -4,25 +4,19 @@ import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 export function useMarketingGoalsForm() {
   const { form } = useQuestionnaireContext();
   
-  // Get form values
-  const hasSocialMedia = form.watch("hasSocialMedia");
-  const platformsUsed = form.watch("platformsUsed") || [];
+  // Get form values for marketing goals
+  const marketingGoals = form.watch("marketingGoals") || [];
   
-  // Determine which social media fields to show based on selected platforms
-  const showFacebookField = platformsUsed.includes("facebook");
-  const showInstagramField = platformsUsed.includes("instagram");
-  const showTwitterField = platformsUsed.includes("twitter");
-  const showLinkedinField = platformsUsed.includes("linkedin");
-  const showOtherField = platformsUsed.includes("other");
+  // Helper to check if a goal is selected
+  const isGoalSelected = (goalValue: string) => marketingGoals.includes(goalValue);
+  
+  // Calculate form completeness for this section
+  const hasSelectedGoals = marketingGoals.length > 0;
   
   return {
     form,
-    hasSocialMedia,
-    platformsUsed,
-    showFacebookField,
-    showInstagramField,
-    showTwitterField,
-    showLinkedinField,
-    showOtherField
+    marketingGoals,
+    isGoalSelected,
+    hasSelectedGoals
   };
 }
