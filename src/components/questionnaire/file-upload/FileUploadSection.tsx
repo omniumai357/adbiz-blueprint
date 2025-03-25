@@ -1,33 +1,26 @@
 
 import { ChangeEvent, FC } from "react";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
-import { FileState } from "@/hooks/useFileUpload";
 import LogoUpload from "./LogoUpload";
 import FileUploadCategory from "./FileUploadCategory";
 import UploadTips from "./UploadTips";
+import { useFileUploadContext } from "@/contexts/file-upload-context";
 
 interface FileUploadSectionProps {
-  files: FileState;
-  onFileChange: (fileType: keyof FileState, e: ChangeEvent<HTMLInputElement> | readonly File[]) => void;
-  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
-  uploadProgress: Record<string, { name: string; progress: number }>;
-  uploadError: string | null;
   hasLogo: boolean;
 }
 
-const FileUploadSection: FC<FileUploadSectionProps> = ({
-  files,
-  onFileChange,
-  onRemoveFile,
-  uploadProgress,
-  uploadError,
-  hasLogo,
-}) => {
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
+const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
+  const { 
+    files, 
+    handleFileChange, 
+    uploadProgress, 
+    uploadError 
+  } = useFileUploadContext();
+
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof typeof files) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    
-    // Pass the event directly to onFileChange
-    onFileChange(fileType, e);
+    handleFileChange(fileType, e);
   };
 
   return (
@@ -49,8 +42,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
       {hasLogo && (
         <LogoUpload 
           logo={files.logo}
-          onFileChange={handleFileChange}
-          onRemoveFile={onRemoveFile}
+          onFileChange={onFileChange}
         />
       )}
       
@@ -61,8 +53,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
         fileType="images"
         files={files.images}
         acceptFormats=".jpg,.jpeg,.png,.gif,.webp"
-        onFileChange={handleFileChange}
-        onRemoveFile={onRemoveFile}
+        onFileChange={onFileChange}
       />
       
       {/* Videos Upload */}
@@ -72,8 +63,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
         fileType="videos"
         files={files.videos}
         acceptFormats=".mp4,.mov,.webm"
-        onFileChange={handleFileChange}
-        onRemoveFile={onRemoveFile}
+        onFileChange={onFileChange}
       />
       
       {/* Documents Upload */}
@@ -83,8 +73,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({
         fileType="documents"
         files={files.documents}
         acceptFormats=".pdf,.doc,.docx"
-        onFileChange={handleFileChange}
-        onRemoveFile={onRemoveFile}
+        onFileChange={onFileChange}
       />
       
       <UploadTips />
