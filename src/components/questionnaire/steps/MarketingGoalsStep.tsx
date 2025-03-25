@@ -1,10 +1,11 @@
 
 import { FC } from "react";
-import { useQuestionnaireContext } from "@/contexts/questionnaire-context";
 import SocialMediaSection from "./marketing-goals/SocialMediaSection";
 import MarketingGoalsSelection from "./marketing-goals/MarketingGoalsSelection";
 import AudienceSection from "./marketing-goals/AudienceSection";
 import QuestionnaireNavigation from "../QuestionnaireNavigation";
+import { useMarketingGoalsForm } from "@/hooks/questionnaire/useMarketingGoalsForm";
+import MarketingStepHeader from "./marketing-goals/MarketingStepHeader";
 
 interface MarketingGoalsStepProps {
   onNext: () => void;
@@ -17,11 +18,14 @@ const MarketingGoalsStep: FC<MarketingGoalsStepProps> = ({
   onPrev,
   marketingGoalOptions 
 }) => {
+  const { hasSelectedGoals } = useMarketingGoalsForm();
+  
+  // Check if this step is complete for navigation
+  const isStepComplete = hasSelectedGoals;
+  
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-700">
-        Marketing Goals & Online Presence
-      </h3>
+      <MarketingStepHeader />
       
       <div className="grid grid-cols-1 gap-6">
         {/* Social Media Section */}
@@ -38,6 +42,7 @@ const MarketingGoalsStep: FC<MarketingGoalsStepProps> = ({
         onNext={onNext} 
         onPrev={onPrev}
         stepNumber={3}
+        isStepComplete={isStepComplete}
       />
     </div>
   );

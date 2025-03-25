@@ -9,13 +9,15 @@ interface QuestionnaireNavigationProps {
   onPrev?: () => void;
   showSubmitButton?: boolean;
   stepNumber?: number;
+  isStepComplete?: boolean;
 }
 
 const QuestionnaireNavigation: FC<QuestionnaireNavigationProps> = ({
   onNext,
   onPrev,
   showSubmitButton = false,
-  stepNumber
+  stepNumber,
+  isStepComplete = true
 }) => {
   const { isSubmitting, isUploading, validateStep } = useQuestionnaireContext();
   
@@ -65,6 +67,7 @@ const QuestionnaireNavigation: FC<QuestionnaireNavigationProps> = ({
         <Button
           type="button"
           onClick={handleNext}
+          disabled={!isStepComplete}
           className="flex items-center gap-2"
         >
           Continue
