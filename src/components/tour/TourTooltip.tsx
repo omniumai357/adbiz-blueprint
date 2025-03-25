@@ -30,7 +30,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   isLastStep,
 }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const [arrowPosition, setArrowPosition] = useState({ top: 0, left: 0 });
+  const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
 
   useEffect(() => {
     const calculatePosition = () => {
