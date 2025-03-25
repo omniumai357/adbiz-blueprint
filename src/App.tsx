@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { AuthContextProvider } from './contexts/auth-context';
@@ -12,7 +13,6 @@ import Rewards from './pages/Rewards';
 import Auth from './pages/Auth';
 import { Toaster } from "@/components/ui/toaster";
 import { PageWithTour } from './components/tour/PageWithTour';
-import { BrowserRouter as Router } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 
@@ -63,13 +63,11 @@ const router = createBrowserRouter([
 const App = () => {
   return (
     <ReactQueryProvider>
-      <Router>
-        <AuthContextProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-          <Sonner />
-        </AuthContextProvider>
-      </Router>
+      <AuthContextProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+        <Sonner />
+      </AuthContextProvider>
     </ReactQueryProvider>
   );
 };
