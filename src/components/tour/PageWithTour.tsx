@@ -1,20 +1,16 @@
 
-import React from "react";
-import { TourProvider } from "@/contexts/tour-context";
-import { TourGuide } from "@/components/tour/TourGuide";
-import { useLocation } from "react-router-dom";
+import React, { ReactNode } from 'react';
+import { TourGuide } from './TourGuide';
 
 interface PageWithTourProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const PageWithTour: React.FC<PageWithTourProps> = ({ children }) => {
-  const location = useLocation();
-
+export const PageWithTour = ({ children }: PageWithTourProps) => {
   return (
-    <TourProvider currentPathname={location.pathname}>
+    <>
       {children}
       <TourGuide />
-    </TourProvider>
+    </>
   );
 };

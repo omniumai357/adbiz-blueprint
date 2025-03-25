@@ -10,6 +10,7 @@ import Services from './pages/Services';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
+import Auth from './pages/Auth';
 import { Toaster } from "@/components/ui/toaster";
 import { PageWithTour } from './components/tour/PageWithTour';
 
@@ -42,6 +43,18 @@ const router = createBrowserRouter([
   {
     path: "/rewards",
     element: <Rewards />
+  },
+  {
+    path: "/auth",
+    element: <Auth />
+  },
+  {
+    path: "/login",
+    element: <Auth />
+  },
+  {
+    path: "/signup",
+    element: <Auth />
   },
 ]);
 

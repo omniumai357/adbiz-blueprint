@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -24,9 +23,24 @@ import {
 import { Menu } from "lucide-react";
 
 const Header = () => {
-  const { isAuthenticated, signOut, user, profile } = useAuth();
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
+  
+  // Create a safe version of useAuth that provides defaults if outside of AuthProvider
+  let authContext;
+  try {
+    authContext = useAuth();
+  } catch (e) {
+    console.error("Auth context not available:", e);
+    authContext = {
+      isAuthenticated: false,
+      signOut: () => {},
+      user: null,
+      profile: null
+    };
+  }
+  
+  const { isAuthenticated, signOut, user, profile } = authContext;
 
   useEffect(() => {
     setIsMounted(true);
@@ -90,10 +104,10 @@ const Header = () => {
             </DropdownMenu>
           ) : (
             <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
                 Log In
               </Button>
-              <Button size="sm" onClick={() => navigate("/signup")}>
+              <Button size="sm" onClick={() => navigate("/auth?tab=signup")}>
                 Sign Up
               </Button>
             </div>
@@ -138,10 +152,10 @@ const Header = () => {
               )}
               {!isAuthenticated ? (
                 <div className="space-y-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
+                  <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
                     Log In
                   </Button>
-                  <Button size="sm" onClick={() => navigate("/signup")}>
+                  <Button size="sm" onClick={() => navigate("/auth?tab=signup")}>
                     Sign Up
                   </Button>
                 </div>
