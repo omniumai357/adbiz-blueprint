@@ -75,7 +75,7 @@ const Checkout = () => {
           ) : (
             <CheckoutForm 
               checkout={checkout}
-              onOrderSuccess={handleOrderSuccess}
+              onOrderSuccess={(orderId) => handleOrderSuccess(orderId)}
             />
           )}
         </div>
