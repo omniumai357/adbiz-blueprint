@@ -6,6 +6,7 @@ import { useCustomerCheckoutInfo } from "./useCustomerCheckoutInfo";
 import { usePaymentOptions } from "./usePaymentOptions";
 import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
 import { useCouponHandling } from "./useCouponHandling";
+import { useDiscountState } from "./useDiscountState";
 import { useCheckoutCalculations } from "./useCheckoutCalculations";
 import { CustomerInfo } from "@/components/checkout/customer-info-form";
 
@@ -55,17 +56,27 @@ export function useCheckout() {
     updateCouponDiscountAmount,
   } = useCouponHandling();
 
-  // Discount state
-  const [bundleDiscount, setBundleDiscount] = useState<any>(undefined);
-  const [isDiscountApplicable, setIsDiscountApplicable] = useState<boolean>(false);
-  const [appliedTier, setAppliedTier] = useState<any>(null);
-  const [isFirstPurchase, setIsFirstPurchase] = useState<boolean>(false);
-  const [activeOffers, setActiveOffers] = useState<any[]>([]);
-  const [availableOffer, setAvailableOffer] = useState<any>(null);
-  const [personalizedCoupon, setPersonalizedCoupon] = useState<any>(null);
-  const [offerDiscountAmount, setOfferDiscountAmount] = useState<number>(0);
+  const {
+    bundleDiscount,
+    isDiscountApplicable,
+    appliedTier,
+    isFirstPurchase,
+    activeOffers,
+    availableOffer,
+    personalizedCoupon,
+    setBundleDiscount,
+    setIsDiscountApplicable,
+    setAppliedTier,
+    setIsFirstPurchase,
+    setActiveOffers,
+    setAvailableOffer,
+    setPersonalizedCoupon
+  } = useDiscountState();
+
+  // These state variables should come from useDiscountState
   const [bundleDiscountAmount, setBundleDiscountAmount] = useState<number>(0);
   const [tieredDiscountAmount, setTieredDiscountAmount] = useState<number>(0);
+  const [offerDiscountAmount, setOfferDiscountAmount] = useState<number>(0);
   
   // Use the calculations hook
   const {
