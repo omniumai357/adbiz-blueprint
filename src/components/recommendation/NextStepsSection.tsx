@@ -3,6 +3,7 @@ import React from "react";
 import { NextStepCard, NextStepRecommendation } from "./NextStepCard";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { showSuccessToast } from "@/utils/toast-utils";
 
 interface NextStepsSectionProps {
   recommendations: NextStepRecommendation[];
@@ -27,10 +28,10 @@ export const NextStepsSection: React.FC<NextStepsSectionProps> = ({
     }
     
     // Default handling if no custom handler provided
-    toast({
-      title: `${resourceType === 'ebook' ? 'E-book' : 'Tutorial'} access granted`,
-      description: `You now have access to this resource.`
-    });
+    showSuccessToast(
+      `${resourceType === 'ebook' ? 'E-book' : 'Tutorial'} access granted`,
+      `You now have access to this resource.`
+    );
   };
   
   if (!recommendations || recommendations.length === 0) {

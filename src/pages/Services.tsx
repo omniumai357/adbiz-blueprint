@@ -13,6 +13,8 @@ import { ContactCTA } from '@/components/services/ContactCTA';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useResourceAccess } from '@/hooks/useResourceAccess';
+import { createToastEvent } from '@/utils/toast-utils';
 
 const Services = () => {
   const {
@@ -20,14 +22,17 @@ const Services = () => {
     selectedCategory,
     hasCompletedTour,
     hasPurchased,
-    showDownloadModal,
-    downloadResource,
     error,
     isLoading,
-    handleCategoryChange,
-    handleResourceAccess,
-    closeDownloadModal
+    handleCategoryChange
   } = useServicesPage();
+  
+  const { 
+    showDownloadModal, 
+    selectedResource, 
+    handleResourceAccess, 
+    closeDownloadModal 
+  } = useResourceAccess();
   
   const { toast } = useToast();
   
@@ -109,12 +114,12 @@ const Services = () => {
         onResourceDownload={handleResourceAccess}
       />
       
-      {showDownloadModal && downloadResource && (
+      {showDownloadModal && selectedResource && (
         <DownloadOptions
           purchaseId="resource-download"
-          packageName={downloadResource.title}
-          resourceType={downloadResource.type as "ebook" | "tutorial"}
-          resourceTitle={downloadResource.title}
+          packageName={selectedResource.title}
+          resourceType={selectedResource.type as "ebook" | "tutorial"}
+          resourceTitle={selectedResource.title}
           onClose={closeDownloadModal}
         />
       )}

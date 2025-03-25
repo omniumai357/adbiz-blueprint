@@ -4,12 +4,11 @@ import { useLocation } from "react-router-dom";
 import { getPrioritizedMethods } from "./contact-methods";
 import { PrimaryContactMethod } from "./primary-contact-method";
 import { SecondaryContactMethods } from "./secondary-contact-methods";
-import { useToast } from "@/hooks/use-toast";
+import { showInfoToast } from "@/utils/toast-utils";
 
 export const ContactCtaPrompt = () => {
   const location = useLocation();
   const [isVisible, setIsVisible] = useState(false);
-  const { toast } = useToast();
   
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -48,11 +47,10 @@ export const ContactCtaPrompt = () => {
     console.log(`CTA interaction: ${methodId} from ${detectedSource || 'direct'}`);
     
     // Show feedback to user
-    toast({
-      title: "Contact option selected",
-      description: `We'll help you through your preferred ${methodId} channel.`,
-      duration: 3000
-    });
+    showInfoToast(
+      "Contact option selected",
+      `We'll help you through your preferred ${methodId} channel.`
+    );
   };
   
   return (
