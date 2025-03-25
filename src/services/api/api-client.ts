@@ -46,7 +46,7 @@ export const apiClient = {
     updateProfile: async (userId: string, profileData: Partial<any>) => {
       if (!userId) throw new Error("User ID is required");
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('profiles')
         .update(profileData)
         .eq('id', userId)
@@ -81,7 +81,7 @@ export const apiClient = {
       paymentMethod: string;
       paymentId?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('orders')
         .insert({
           user_id: orderData.userId,
@@ -109,7 +109,7 @@ export const apiClient = {
      * Get all packages
      */
     getAllPackages: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
         .eq('active', true);
@@ -122,7 +122,7 @@ export const apiClient = {
      * Get packages by category
      */
     getPackagesByCategory: async (category: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
         .eq('category', category)
@@ -136,7 +136,7 @@ export const apiClient = {
      * Get package by ID
      */
     getPackageById: async (id: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('packages')
         .select('*')
         .eq('id', id)
@@ -173,6 +173,14 @@ export const apiClient = {
     getAvailableRewards: async (userId: string) => {
       if (!userId) return [];
       return await supabaseClient.milestones.getAvailableRewards(userId);
+    },
+    
+    /**
+     * Get milestone icons
+     */
+    getMilestoneIcons: async (milestoneIds: string[]) => {
+      if (!milestoneIds.length) return [];
+      return await supabaseClient.milestones.getMilestoneIcons(milestoneIds);
     },
     
     /**

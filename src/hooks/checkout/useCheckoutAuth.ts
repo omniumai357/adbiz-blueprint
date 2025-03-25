@@ -6,20 +6,20 @@ import { apiClient } from "@/services/api/api-client";
 export function useCheckoutAuth() {
   const [userId, setUserId] = useState<string | null>(null);
 
-  const { data } = useQuery({
+  const { data: user } = useQuery({
     queryKey: ['auth', 'currentUser'],
     queryFn: async () => {
-      const { data } = await apiClient.auth.getCurrentUser();
-      return data.user;
+      const userData = await apiClient.auth.getCurrentUser();
+      return userData?.user || null;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   useEffect(() => {
-    if (data?.id) {
-      setUserId(data.id);
+    if (user?.id) {
+      setUserId(user.id);
     }
-  }, [data]);
+  }, [user]);
 
   return { userId };
 }

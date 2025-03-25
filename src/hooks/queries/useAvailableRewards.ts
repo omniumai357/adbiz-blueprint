@@ -14,7 +14,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
       if (rewards.length > 0) {
         // Fetch milestone icons
         const milestoneIds = rewards.map((r: any) => r.milestone_id);
-        const icons = await supabaseClient.milestones.getMilestoneIcons(milestoneIds);
+        const icons = await apiClient.milestones.getMilestoneIcons(milestoneIds);
         
         // Map icons to rewards
         const iconMap = (icons || []).reduce((map: Record<string, string>, m) => {
