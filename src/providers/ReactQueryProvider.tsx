@@ -17,7 +17,8 @@ interface ReactQueryProviderProps {
  * - Extended cache time to reduce refetching: 30 minutes
  */
 export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
-  const [queryClient] = useState(() => new QueryClient({
+  // Create a client
+  const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes default stale time
@@ -56,7 +57,7 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
         }
       },
     },
-  }));
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
