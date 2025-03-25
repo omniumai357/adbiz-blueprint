@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { UserMilestone } from "@/types/api";
-import { useUpdateMilestoneProgress } from "@/hooks/queries/useUpdateMilestoneProgress";
+import { milestoneService } from "@/services/milestone/milestone-service";
 import { toast } from "sonner";
 
 /**
@@ -16,7 +16,6 @@ import { toast } from "sonner";
  */
 export function useMilestoneRewards(userId: string | null | undefined, subtotal: number) {
   const [appliedMilestoneReward, setAppliedMilestoneReward] = useState<UserMilestone | null>(null);
-  const { updateProgress } = useUpdateMilestoneProgress();
 
   /**
    * Apply a milestone reward to the current order
@@ -53,7 +52,7 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
       // Base points for completing an order (1 point per $1 spent)
       const basePoints = Math.floor(orderAmount);
       
-      await updateProgress({
+      const result = await milestoneService.updateMilestoneProgress({
         userId,
         points: basePoints,
         activityType: 'order_completed',
@@ -61,11 +60,13 @@ export function useMilestoneRewards(userId: string | null | undefined, subtotal:
         referenceType: 'order'
       });
       
-      toast.success("Points awarded!", {
-        description: `You earned ${basePoints} points for your purchase.`
-      });
+      if (result.success) {
+        toast.success("Points awarded!", {
+          description: `You earned ${basePoints} points for your purchase.`
+        });
+      }
       
-      return true;
+      return result.success;
     } catch (error) {
       console.error("Failed to award milestone points:", error);
       toast.error("Failed to award points", {

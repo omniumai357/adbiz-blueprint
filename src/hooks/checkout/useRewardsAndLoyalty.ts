@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useMilestoneRewards } from "./useMilestoneRewards";
 import { UserMilestone } from "../rewards/useMilestones";
+import { milestoneService } from "@/services/milestone/milestone-service";
 
 /**
  * Hook to manage rewards and loyalty program functionality in the checkout process.
@@ -37,7 +38,13 @@ export function useRewardsAndLoyalty(userId: string | undefined, total: number) 
 
   const handleOrderSuccessWithRewards = async (orderId: string, orderTotal: number) => {
     if (userId) {
-      await awardMilestonePoints(orderId, orderTotal);
+      await milestoneService.updateMilestoneProgress({
+        userId,
+        points: Math.floor(orderTotal),
+        activityType: 'order_completed',
+        referenceId: orderId,
+        referenceType: 'order'
+      });
     }
   };
 

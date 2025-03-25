@@ -1,7 +1,7 @@
 
-import { useRewards } from './useRewards';
+import { useState, useEffect } from "react";
+import { milestoneService } from "@/services/milestone/milestone-service";
 import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
-import { useState } from 'react';
 
 /**
  * Hook for managing user milestones and rewards
@@ -16,42 +16,87 @@ import { useState } from 'react';
  * @returns Object containing milestone data, rewards, and functions to interact with them
  */
 export function useMilestones(userId: string | null | undefined) {
-  const {
-    allMilestones,
-    activeMilestones,
-    completedMilestones,
-    availableRewards,
-    totalPoints,
-    isLoading,
-    claimReward,
-    refreshRewardsData
-  } = useRewards(userId || undefined);
-
-  // Error state
+  const [milestones, setMilestones] = useState<UserMilestone[]>([]);
+  const [availableRewards, setAvailableRewards] = useState<AvailableReward[]>([]);
+  const [progress, setProgress] = useState<MilestoneProgress[]>([]);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isClaimingReward, setIsClaimingReward] = useState(false);
 
-  // Transform UserMilestone[] into MilestoneProgress[]
-  const milestoneProgress: MilestoneProgress[] = activeMilestones.map(milestone => ({
-    milestone_id: milestone.milestone_id,
-    milestone_name: milestone.milestone_name,
-    points_required: milestone.milestone?.points_required || 0,
-    current_points: milestone.current_points,
-    progress_percentage: milestone.milestone?.points_required 
-      ? Math.min(100, Math.round((milestone.current_points / milestone.milestone.points_required) * 100))
-      : 0,
-    icon: milestone.icon
-  }));
+  /**
+   * Fetches all milestone data for the user
+   */
+  const fetchData = async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    
+    try {
+      // Use Promise.all to fetch all data in parallel for better performance
+      const [milestonesData, progressData, rewardsData, pointsTotal] = await Promise.all([
+        milestoneService.getUserMilestones(userId),
+        milestoneService.getUserMilestoneProgress(userId),
+        milestoneService.getAvailableRewards(userId),
+        milestoneService.calculateTotalPoints(userId)
+      ]);
+      
+      setMilestones(milestonesData);
+      setProgress(progressData);
+      setAvailableRewards(rewardsData);
+      setTotalPoints(pointsTotal);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching milestone data:', err);
+      setError(err instanceof Error ? err : new Error('Unknown error fetching milestone data'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Claims a reward for the user
+   */
+  const claimReward = async (milestoneId: string) => {
+    if (!userId) return false;
+    setIsClaimingReward(true);
+    
+    try {
+      const success = await milestoneService.claimReward(userId, milestoneId);
+      if (success) {
+        // Refresh data after successful claim
+        await fetchData();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error claiming reward:', err);
+      return false;
+    } finally {
+      setIsClaimingReward(false);
+    }
+  };
+
+  // Load all data when component mounts or userId changes
+  useEffect(() => {
+    fetchData();
+  }, [userId]);
+
+  // Filter milestones into active/completed
+  const activeMilestones = milestones.filter(milestone => !milestone.is_completed);
+  const completedMilestones = milestones.filter(milestone => milestone.is_completed);
 
   return {
-    milestones: allMilestones,
-    progress: milestoneProgress,
+    milestones,
+    progress,
+    activeMilestones,
     completedMilestones,
     availableRewards,
     totalPoints,
     isLoading,
     error,
     claimReward,
-    refreshData: refreshRewardsData
+    isClaimingReward,
+    refreshData: fetchData
   };
 }
 

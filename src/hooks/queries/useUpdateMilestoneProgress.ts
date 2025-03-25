@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from '@/services/api/api-client';
+import { milestoneService } from "@/services/milestone/milestone-service";
 import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-service-types';
 
 /**
@@ -30,7 +30,7 @@ export function useUpdateMilestoneProgress() {
   const updateMutation = useMutation({
     mutationFn: async (params: UpdateMilestoneProgressParams) => {
       if (!params.userId) return { success: false };
-      return await apiClient.milestones.updateMilestoneProgress(params);
+      return await milestoneService.updateMilestoneProgress(params);
     },
     onSuccess: (_, variables) => {
       // Use targeted invalidation to avoid unnecessary API calls

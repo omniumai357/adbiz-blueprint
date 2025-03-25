@@ -27,4 +27,15 @@ export class MilestoneBaseService {
       throw error;
     }
   }
+  
+  /**
+   * Common error handling method for milestone service operations
+   * @param error The error that occurred
+   * @param operation Description of the operation that failed
+   * @returns void
+   */
+  protected handleError(error: any, operation: string): void {
+    console.error(`Error during ${operation}:`, error);
+    throw error;
+  }
 }

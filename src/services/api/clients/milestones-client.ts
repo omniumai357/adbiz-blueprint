@@ -1,6 +1,7 @@
 
 import { milestoneService } from '@/services/milestone/milestone-service';
 import { AvailableReward, PaymentProcessParams } from "@/types/api";
+import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-service-types';
 
 /**
  * Milestones API Client
@@ -38,7 +39,7 @@ export const milestonesClient = {
   /**
    * Update milestone progress
    */
-  updateMilestoneProgress: async (params: PaymentProcessParams) => {
+  updateMilestoneProgress: async (params: UpdateMilestoneProgressParams) => {
     return await milestoneService.updateMilestoneProgress(params);
   },
   
@@ -47,5 +48,12 @@ export const milestonesClient = {
    */
   claimReward: async (userId: string, milestoneId: string) => {
     return await milestoneService.claimReward(userId, milestoneId);
+  },
+  
+  /**
+   * Calculate total points
+   */
+  calculateTotalPoints: async (userId: string) => {
+    return await milestoneService.calculateTotalPoints(userId);
   }
 };
