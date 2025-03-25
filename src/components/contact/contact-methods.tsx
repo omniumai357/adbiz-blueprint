@@ -53,7 +53,8 @@ export const allContactMethods: ContactMethod[] = [
 
 export const getPrioritizedMethods = (
   source: string = "",
-  topic: string = ""
+  topic: string = "",
+  serviceCategory?: string
 ): ContactMethod[] => {
   let methods = [...allContactMethods];
   
@@ -78,6 +79,25 @@ export const getPrioritizedMethods = (
       priority: method.id === "chat" ? 1 : 
                 method.id === "phone" ? 2 : method.priority
     }));
+    
+    // Custom prompts for service pages
+    if (serviceCategory) {
+      methods = methods.map(method => {
+        if (method.id === "chat") {
+          return {
+            ...method,
+            prompt: `Questions about our ${serviceCategory} services? Chat with an expert now.`
+          };
+        }
+        if (method.id === "phone") {
+          return {
+            ...method,
+            prompt: `For detailed ${serviceCategory} pricing and options, speak with our specialists.`
+          };
+        }
+        return method;
+      });
+    }
   }
   
   // Adjust prompts based on topic if provided

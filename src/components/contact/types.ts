@@ -10,3 +10,19 @@ export interface ContactMethod {
   href: string;
   priority: number;
 }
+
+export type ContactFormData = {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  preferredContact?: string;
+  company?: string;
+  serviceInterest?: string[];
+};
+
+export type FAQ = {
+  question: string;
+  answer: string;
+};

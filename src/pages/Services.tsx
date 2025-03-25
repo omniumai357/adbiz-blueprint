@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PackageCard from "@/components/PackageCard";
+import { ContactCtaPrompt } from "@/components/contact/contact-cta-prompt";
 import { packages, serviceCategories } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,13 @@ const Services = () => {
                 Find the perfect advertising solution tailored to your business needs.
               </p>
             </div>
+          </div>
+        </section>
+        
+        {/* Contextual CTA - Positioned strategically above the category selection */}
+        <section className="mb-8">
+          <div className="container px-4 mx-auto">
+            <ContactCtaPrompt />
           </div>
         </section>
         
