@@ -1,12 +1,9 @@
 
 import React from "react";
-import { Elements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/services/payment/stripe-service";
-import CardPaymentForm from "@/components/checkout/card-payment-form";
+import { useToast } from "@/hooks/ui/use-toast";
 import PayPalButton from "@/components/PayPalButton";
-import PaymentSelector from "@/components/PaymentSelector";
+import CardPaymentForm from "@/components/checkout/card-payment-form";
 import { CustomerInfo } from "@/types/checkout";
-import { AddOnItem } from "../add-on-item";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";
 
@@ -15,96 +12,59 @@ interface PaymentSectionProps {
   setPaymentMethod: (method: "credit-card" | "paypal") => void;
   subtotal: number;
   packageDetails: any;
-  selectedAddOns: AddOnItem[];
+  selectedAddOns: any[];
   customerInfo: CustomerInfo;
   onOrderSuccess: (id: string) => void;
-  bundleDiscount: BundleDiscountInfo | undefined;
-  isDiscountApplicable: boolean;
-  tieredDiscount: any;
-  isFirstPurchase: boolean;
-  isLoyaltyProgramEnabled: boolean;
-  loyaltyBonusAmount: number;
-  availableOffer: LimitedTimeOfferInfo | null;
-  offerDiscountAmount: number;
-  appliedCoupon: any;
-  couponDiscountAmount: number;
-  totalDiscountAmount: number;
+  bundleDiscount?: BundleDiscountInfo;
+  isDiscountApplicable?: boolean;
+  tieredDiscount?: any;
+  isFirstPurchase?: boolean;
+  isLoyaltyProgramEnabled?: boolean;
+  loyaltyBonusAmount?: number;
+  availableOffer?: LimitedTimeOfferInfo | null;
+  offerDiscountAmount?: number;
+  appliedCoupon?: any;
+  couponDiscountAmount?: number;
+  totalDiscountAmount?: number;
   total: number;
 }
 
-const PaymentSection = ({
+const PaymentSection: React.FC<PaymentSectionProps> = ({
   paymentMethod,
-  setPaymentMethod,
-  subtotal,
   packageDetails,
-  selectedAddOns,
   customerInfo,
   onOrderSuccess,
-  bundleDiscount,
-  isDiscountApplicable,
-  tieredDiscount,
-  isFirstPurchase,
-  isLoyaltyProgramEnabled,
-  loyaltyBonusAmount,
-  availableOffer,
-  offerDiscountAmount,
-  appliedCoupon,
-  couponDiscountAmount,
-  totalDiscountAmount,
-  total
-}: PaymentSectionProps) => {
-  const handlePaymentMethodChange = (method: "credit-card" | "paypal") => {
-    setPaymentMethod(method);
-  };
+  total,
+}) => {
+  const { toast } = useToast();
 
-  const discountsData = {
-    bundle: isDiscountApplicable ? bundleDiscount : null,
-    tiered: tieredDiscount,
-    isFirstPurchase,
-    loyaltyProgram: isLoyaltyProgramEnabled ? {
-      enabled: true,
-      bonusAmount: loyaltyBonusAmount
-    } : null,
-    limitedTimeOffer: availableOffer ? {
-      name: availableOffer.name,
-      discountAmount: offerDiscountAmount
-    } : null,
-    coupon: appliedCoupon ? {
-      code: appliedCoupon.code,
-      discountAmount: couponDiscountAmount
-    } : null,
-    totalDiscount: totalDiscountAmount
-  };
-
-  const packageWithAddOns = {
-    ...packageDetails,
-    addOns: selectedAddOns,
-    discounts: discountsData
+  const handleOrderSuccess = (orderId: string) => {
+    toast({
+      title: "Payment successful!",
+      description: "Your order has been processed successfully.",
+    });
+    
+    onOrderSuccess(orderId);
   };
 
   return (
     <div className="space-y-6">
-      <PaymentSelector 
-        selectedMethod={paymentMethod}
-        onMethodChange={handlePaymentMethodChange}
-      />
+      <h2 className="text-xl font-semibold">Payment</h2>
       
       {paymentMethod === "credit-card" ? (
-        <Elements stripe={stripePromise}>
-          <CardPaymentForm 
-            packagePrice={subtotal}
-            packageDetails={packageWithAddOns}
-            customerInfo={customerInfo}
-            onSuccess={onOrderSuccess}
-            finalAmount={total}
-          />
-        </Elements>
-      ) : (
-        <PayPalButton 
-          amount={total}
-          packageDetails={packageWithAddOns}
+        <CardPaymentForm
+          packagePrice={packageDetails.price}
+          packageDetails={packageDetails}
           customerInfo={customerInfo}
-          onSuccess={onOrderSuccess}
+          onSuccess={handleOrderSuccess}
+          finalAmount={total}
+        />
+      ) : (
+        <PayPalButton
+          amount={total}
+          packageDetails={packageDetails}
+          customerInfo={customerInfo}
+          onSuccess={handleOrderSuccess}
         />
       )}
     </div>

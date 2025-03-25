@@ -3,6 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { milestoneDataService } from '@/services/milestone/milestone-data-service';
 import { userActivityService } from '@/services/milestone/user-activity-service';
 
+/**
+ * Hook for fetching user milestone data
+ * 
+ * Fetches milestones and user activities, and calculates total points
+ * 
+ * @param userId User ID to fetch milestones for
+ * @returns Object containing milestone data, total points, loading state and error
+ */
 export const useUserMilestones = (userId: string | undefined) => {
   const milestonesQuery = useQuery({
     queryKey: ['milestones', { userId }],
