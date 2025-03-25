@@ -35,7 +35,29 @@ export class MilestoneService implements MilestoneServiceInterface {
         .eq('user_id', userId);
       
       if (error) throw error;
-      return data || [];
+      
+      // Transform the data to match the UserMilestone type expected structure
+      const transformedData: UserMilestone[] = (data || []).map(item => ({
+        id: item.id,
+        user_id: item.user_id,
+        milestone_id: item.milestone_id,
+        current_points: item.current_points,
+        is_completed: item.is_completed,
+        reward_claimed: item.reward_claimed,
+        completed_at: item.completed_at,
+        claimed_at: item.claimed_at,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        milestone: item.milestone,
+        // Add the required fields from the milestone for the UserMilestone interface
+        milestone_name: item.milestone?.name || '',
+        milestone_description: item.milestone?.description,
+        reward_type: item.milestone?.reward_type || '',
+        reward_value: item.milestone?.reward_value || 0,
+        icon: item.milestone?.icon
+      }));
+      
+      return transformedData;
     } catch (error) {
       console.error('Error fetching user milestones:', error);
       throw error;

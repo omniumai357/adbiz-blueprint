@@ -61,7 +61,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
 
   // Format the completion date if available
   const completedDate = 'completed_at' in reward && reward.completed_at ? 
-    format(new Date(reward.completed_at), 'MMM d, yyyy') : '';
+    format(new Date(reward.completed_at as string), 'MMM d, yyyy') : '';
   
   return (
     <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 shadow-md hover:shadow-lg transition-all">
