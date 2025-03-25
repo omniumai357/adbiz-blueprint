@@ -1,6 +1,6 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabaseClient } from "@/services/api/supabase-client";
+import { apiClient } from "@/services/api/api-client";
 
 interface UpdateMilestoneProgressParams {
   userId: string;
@@ -16,7 +16,7 @@ export function useUpdateMilestoneProgress() {
   const updateProgress = useMutation({
     mutationFn: async (params: UpdateMilestoneProgressParams) => {
       if (!params.userId) return { success: false };
-      return await supabaseClient.milestones.updateMilestoneProgress(params);
+      return await apiClient.milestones.updateMilestoneProgress(params);
     },
     onSuccess: (_, variables) => {
       // Invalidate related queries to refresh data

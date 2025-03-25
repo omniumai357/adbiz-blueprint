@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Receipt, PaginatedReceipts, ReceiptSearchParams } from "@/components/receipts/types";
@@ -10,23 +11,17 @@ export const useReceipts = (
   pageSize = 5,
   searchParams: ReceiptSearchParams = {}
 ) => {
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchReceipts = async () => {
-      if (!userId) {
-        setReceipts([]);
-        setLoading(false);
-        return;
-      }
-
+  // Use React Query to fetch receipts
+  const receiptsQuery = useQuery({
+    queryKey: ['receipts', { userId, page, pageSize, ...searchParams }],
+    queryFn: async () => {
+      if (!userId) return { data: [], totalCount: 0 };
+      
       try {
-        setLoading(true);
-        
         // Function to apply filters to a query
         const applyFilters = (baseQuery: any) => {
           let filteredQuery = baseQuery.eq('user_id', userId).eq('status', 'completed');
@@ -72,11 +67,11 @@ export const useReceipts = (
           
         if (countError) throw countError;
         
-        // Set count and calculate total pages
-        setTotalCount(total || 0);
-        setTotalPages(Math.ceil((total || 0) / pageSize));
-        
-        // Create a query for the data
+        // Calculate range for pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        // Get orders with applied filters and pagination
         let dataQuery = supabase
           .from('orders')
           .select('id, created_at, total_amount, status, package_id, company_info, invoices(invoice_number)');
@@ -84,11 +79,6 @@ export const useReceipts = (
         // Apply the same filters to the data query
         dataQuery = applyFilters(dataQuery);
         
-        // Calculate range for pagination
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-
-        // Get orders with applied filters and pagination
         const { data, error } = await dataQuery
           .order('created_at', { ascending: false })
           .range(from, to);
@@ -123,7 +113,10 @@ export const useReceipts = (
           package_title: order.package_id ? packageMap[order.package_id] : undefined
         }));
 
-        setReceipts(formattedReceipts);
+        return { 
+          data: formattedReceipts,
+          totalCount: total || 0
+        };
       } catch (error) {
         console.error("Error fetching receipts:", error);
         toast({
@@ -131,25 +124,32 @@ export const useReceipts = (
           description: "Please try again later",
           variant: "destructive"
         });
-      } finally {
-        setLoading(false);
+        throw error;
       }
-    };
+    },
+    enabled: !!userId,
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Failed to load receipts",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+      }
+    }
+  });
 
-    fetchReceipts();
-  }, [userId, page, pageSize, toast, searchParams]);
-
-  const paginatedResults: PaginatedReceipts = {
-    data: receipts,
-    totalCount,
-    page,
-    pageSize,
-    totalPages
-  };
+  // Set pagination data when query results change
+  useEffect(() => {
+    if (receiptsQuery.data) {
+      setTotalCount(receiptsQuery.data.totalCount);
+      setTotalPages(Math.ceil(receiptsQuery.data.totalCount / pageSize));
+    }
+  }, [receiptsQuery.data, pageSize]);
 
   return { 
-    receipts: paginatedResults.data, 
-    loading,
+    receipts: receiptsQuery.data?.data || [], 
+    loading: receiptsQuery.isLoading,
     pagination: {
       page,
       pageSize,

@@ -1,13 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabaseClient } from "@/services/api/supabase-client";
+import { apiClient } from "@/services/api/api-client";
 
 export const useUserMilestones = (userId: string | undefined) => {
   const milestonesQuery = useQuery({
     queryKey: ['milestones', { userId }],
     queryFn: async () => {
       if (!userId) return [];
-      return await supabaseClient.milestones.getUserMilestones(userId);
+      return await apiClient.milestones.getUserMilestones(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -17,7 +17,7 @@ export const useUserMilestones = (userId: string | undefined) => {
     queryKey: ['activities', { userId }],
     queryFn: async () => {
       if (!userId) return [];
-      return await supabaseClient.milestones.getUserActivities(userId);
+      return await apiClient.milestones.getUserActivities(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes

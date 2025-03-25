@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabaseClient } from "@/services/api/supabase-client";
+import { apiClient } from "@/services/api/api-client";
 
 export const useAvailableRewards = (userId: string | undefined) => {
   const queryClient = useQueryClient();
@@ -9,7 +9,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
     queryKey: ['rewards', { userId }],
     queryFn: async () => {
       if (!userId) return [];
-      const rewards = await supabaseClient.milestones.getAvailableRewards(userId);
+      const rewards = await apiClient.milestones.getAvailableRewards(userId);
       
       if (rewards.length > 0) {
         // Fetch milestone icons
@@ -38,7 +38,7 @@ export const useAvailableRewards = (userId: string | undefined) => {
   const claimRewardMutation = useMutation({
     mutationFn: async (milestoneId: string) => {
       if (!userId) throw new Error("User not authenticated");
-      return await supabaseClient.milestones.claimReward(userId, milestoneId);
+      return await apiClient.milestones.claimReward(userId, milestoneId);
     },
     onSuccess: () => {
       // Invalidate rewards query to refresh data

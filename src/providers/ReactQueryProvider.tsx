@@ -14,14 +14,20 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
         staleTime: 1000 * 60 * 5, // 5 minutes
         retry: 1,
         refetchOnWindowFocus: false,
-        onError: (error) => {
-          handleError(error, 'Query Error');
-        },
+        // Updated to use the meta property for error handling
+        meta: {
+          onError: (error: Error) => {
+            handleError(error, 'Query Error');
+          }
+        }
       },
       mutations: {
-        onError: (error, variables) => {
-          handleError(error, 'Mutation Error');
-        },
+        // Updated to use the meta property for error handling
+        meta: {
+          onError: (error: Error, variables: unknown) => {
+            handleError(error, 'Mutation Error');
+          }
+        }
       },
     },
   }));

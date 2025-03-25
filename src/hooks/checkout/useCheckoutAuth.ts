@@ -1,20 +1,25 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/services/api/api-client";
 
 export function useCheckoutAuth() {
   const [userId, setUserId] = useState<string | null>(null);
 
+  const { data } = useQuery({
+    queryKey: ['auth', 'currentUser'],
+    queryFn: async () => {
+      const { data } = await apiClient.auth.getCurrentUser();
+      return data.user;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      }
-    };
-    
-    checkUser();
-  }, []);
+    if (data?.id) {
+      setUserId(data.id);
+    }
+  }, [data]);
 
   return { userId };
 }

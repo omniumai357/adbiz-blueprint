@@ -1,13 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabaseClient } from "@/services/api/supabase-client";
+import { apiClient } from "@/services/api/api-client";
 
 export const useUserProfile = (userId: string | undefined) => {
   return useQuery({
     queryKey: ['profile', { userId }],
     queryFn: async () => {
       if (!userId) return null;
-      return await supabaseClient.profiles.getProfileById(userId);
+      return await apiClient.profiles.getProfile(userId);
     },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000, // 10 minutes
