@@ -1,13 +1,13 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/services/api/api-client";
+import { milestoneService } from '@/services/milestone/milestone-service';
 
 export const useUserMilestones = (userId: string | undefined) => {
   const milestonesQuery = useQuery({
     queryKey: ['milestones', { userId }],
     queryFn: async () => {
       if (!userId) return [];
-      return await apiClient.milestones.getUserMilestones(userId);
+      return await milestoneService.getUserMilestones(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -17,7 +17,7 @@ export const useUserMilestones = (userId: string | undefined) => {
     queryKey: ['activities', { userId }],
     queryFn: async () => {
       if (!userId) return [];
-      return await apiClient.milestones.getUserActivities(userId);
+      return await milestoneService.getUserActivities(userId);
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes

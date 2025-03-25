@@ -1,14 +1,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/services/api/api-client";
-
-interface UpdateMilestoneProgressParams {
-  userId: string;
-  points: number;
-  activityType: string;
-  referenceId?: string;
-  referenceType?: string;
-}
+import { milestoneService } from '@/services/milestone/milestone-service';
+import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-service-types';
 
 export function useUpdateMilestoneProgress() {
   const queryClient = useQueryClient();
@@ -16,7 +9,7 @@ export function useUpdateMilestoneProgress() {
   const updateProgress = useMutation({
     mutationFn: async (params: UpdateMilestoneProgressParams) => {
       if (!params.userId) return { success: false };
-      return await apiClient.milestones.updateMilestoneProgress(params);
+      return await milestoneService.updateMilestoneProgress(params);
     },
     onSuccess: (_, variables) => {
       // Invalidate related queries to refresh data
