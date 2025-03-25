@@ -2,7 +2,7 @@
 import { Receipt } from "@/components/receipts/types";
 import ReceiptCard from "@/components/receipts/ReceiptCard";
 import EmptyState from "@/components/receipts/EmptyState";
-import LoadingState from "@/components/receipts/LoadingState";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { 
   Pagination, 
   PaginationContent, 
@@ -11,6 +11,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
+import { LoadingContent } from "@/components/ui/loading-content";
+import { ReceiptsSkeletonList } from "./ReceiptsSkeletonList";
 
 interface ReceiptsListProps {
   receipts: Receipt[];
@@ -24,6 +26,7 @@ interface ReceiptsListProps {
     totalCount: number;
   };
   onPageChange: (page: number) => void;
+  error?: Error | null;
 }
 
 const ReceiptsList = ({ 
@@ -32,16 +35,9 @@ const ReceiptsList = ({
   onViewInvoice, 
   onDownloadReceipt,
   pagination,
-  onPageChange
+  onPageChange,
+  error
 }: ReceiptsListProps) => {
-  if (loading) {
-    return <LoadingState />;
-  }
-  
-  if (receipts.length === 0) {
-    return <EmptyState />;
-  }
-  
   // Generate page numbers to display
   const getPageNumbers = () => {
     const { page, totalPages } = pagination;
@@ -60,56 +56,67 @@ const ReceiptsList = ({
   };
   
   const pageNumbers = getPageNumbers();
-  
+
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        {receipts.map((receipt) => (
-          <ReceiptCard
-            key={receipt.id}
-            receipt={receipt}
-            onViewInvoice={onViewInvoice}
-            onDownloadReceipt={onDownloadReceipt}
-          />
-        ))}
+    <LoadingContent 
+      isLoading={loading}
+      error={error}
+      loadingText="Loading your receipts..."
+      errorText="Failed to load receipts"
+      isEmpty={receipts.length === 0}
+      emptyContent={<EmptyState />}
+      useSkeleton={true}
+      skeletonContent={<ReceiptsSkeletonList />}
+    >
+      <div className="space-y-6">
+        <div className="space-y-4">
+          {receipts.map((receipt) => (
+            <ReceiptCard
+              key={receipt.id}
+              receipt={receipt}
+              onViewInvoice={onViewInvoice}
+              onDownloadReceipt={onDownloadReceipt}
+            />
+          ))}
+        </div>
+        
+        {pagination.totalPages > 1 && (
+          <Pagination className="my-4">
+            <PaginationContent>
+              {pagination.page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => onPageChange(pagination.page - 1)} 
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+              
+              {pageNumbers.map(pageNumber => (
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink
+                    isActive={pageNumber === pagination.page}
+                    onClick={() => onPageChange(pageNumber)}
+                    className={pageNumber === pagination.page ? "" : "cursor-pointer"}
+                  >
+                    {pageNumber}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              
+              {pagination.page < pagination.totalPages && (
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => onPageChange(pagination.page + 1)} 
+                    className="cursor-pointer"
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
-      
-      {pagination.totalPages > 1 && (
-        <Pagination className="my-4">
-          <PaginationContent>
-            {pagination.page > 1 && (
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => onPageChange(pagination.page - 1)} 
-                  className="cursor-pointer"
-                />
-              </PaginationItem>
-            )}
-            
-            {pageNumbers.map(pageNumber => (
-              <PaginationItem key={pageNumber}>
-                <PaginationLink
-                  isActive={pageNumber === pagination.page}
-                  onClick={() => onPageChange(pageNumber)}
-                  className={pageNumber === pagination.page ? "" : "cursor-pointer"}
-                >
-                  {pageNumber}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            
-            {pagination.page < pagination.totalPages && (
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={() => onPageChange(pagination.page + 1)} 
-                  className="cursor-pointer"
-                />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
-    </div>
+    </LoadingContent>
   );
 };
 

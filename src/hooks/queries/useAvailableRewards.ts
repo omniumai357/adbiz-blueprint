@@ -26,18 +26,31 @@ export const useAvailableRewards = (
     },
     enabled: !!userId,
     staleTime: options.staleTime,
-    retry: 2
+    retry: 2,
+    placeholderData: [], // Provide placeholder data to prevent null checks
   });
   
-  const { claimReward, isClaimingReward, claimError, claimStatus } = useRewardStatus(userId);
+  const { 
+    claimReward, 
+    isClaimingReward, 
+    claimError, 
+    claimStatus, 
+    isLoading: isClaimLoading 
+  } = useRewardStatus(userId);
 
   return {
     rewards: rewardsQuery.data || [],
     isLoading: rewardsQuery.isLoading,
+    isInitialLoading: rewardsQuery.isLoading && !rewardsQuery.isFetched, // For initial load vs. refetch
+    isFetching: rewardsQuery.isFetching, // When refreshing data in background
+    isRefetching: rewardsQuery.isRefetching, // When manually triggered refresh
     isSuccess: rewardsQuery.isSuccess,
+    isError: rewardsQuery.isError,
     error: rewardsQuery.error || claimError,
+    isEmpty: (rewardsQuery.data?.length || 0) === 0,
     claimReward,
     isClaimingReward,
+    isProcessing: isClaimingReward || rewardsQuery.isFetching, // Combined loading state
     claimStatus,
     refetch: rewardsQuery.refetch
   };

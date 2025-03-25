@@ -25,6 +25,7 @@ export const useUserMilestones = (
     },
     enabled: !!userId,
     staleTime: options.staleTime,
+    placeholderData: [], // Provide placeholder data to avoid null checks
   });
 
   const activitiesQuery = useQuery({
@@ -35,6 +36,7 @@ export const useUserMilestones = (
     },
     enabled: !!userId,
     staleTime: options.staleTime,
+    placeholderData: [], // Provide placeholder data
   });
 
   // Calculate total points from activities
@@ -43,10 +45,26 @@ export const useUserMilestones = (
     0
   ) || 0;
 
+  // Combined loading states
+  const isLoading = milestonesQuery.isLoading || activitiesQuery.isLoading;
+  const isFetching = milestonesQuery.isFetching || activitiesQuery.isFetching;
+  
   return {
     milestonesData: milestonesQuery.data || [],
     totalPoints,
-    isLoading: milestonesQuery.isLoading || activitiesQuery.isLoading,
-    error: milestonesQuery.error || activitiesQuery.error
+    isLoading, // Any data is loading initially
+    isFetching, // Any data is being fetched (background or initial)
+    isRefetching: milestonesQuery.isRefetching || activitiesQuery.isRefetching,
+    milestonesLoading: milestonesQuery.isLoading, // Milestone-specific loading
+    activitiesLoading: activitiesQuery.isLoading, // Activities-specific loading
+    isInitialLoading: isLoading && (!milestonesQuery.isFetched || !activitiesQuery.isFetched),
+    isSuccess: milestonesQuery.isSuccess && activitiesQuery.isSuccess,
+    isError: milestonesQuery.isError || activitiesQuery.isError,
+    error: milestonesQuery.error || activitiesQuery.error,
+    isEmpty: (milestonesQuery.data?.length || 0) === 0,
+    refetch: () => {
+      milestonesQuery.refetch();
+      activitiesQuery.refetch();
+    }
   };
 };

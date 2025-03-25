@@ -1,26 +1,31 @@
-
-import { supabaseClient } from "../supabase-client";
-import { UserResponse } from "@/types/api";
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@/types/api';
 
 /**
- * Authentication API Client
- * Handles user authentication operations like retrieving user data and signing out
+ * Client for handling authentication-related API requests
  */
 export const authClient = {
   /**
-   * Get the current user
-   * @returns {Promise<UserResponse>} Promise resolving to the current user data
-   * @throws Will throw an error if the user retrieval fails
+   * Gets the current user data
+   * @returns User data or null if not authenticated
    */
-  getCurrentUser: async (): Promise<UserResponse> => {
-    // Get the current user session from Supabase
-    const { data, error } = await supabaseClient.auth.getUser();
+  async getCurrentUser(): Promise<User | null> {
+    const { data: { user }, error } = await supabase.auth.getUser();
     
-    // If there was an error, throw it
-    if (error) throw error;
+    if (error || !user) {
+      console.error("Failed to get current user:", error);
+      return null;
+    }
     
-    // Return the user data wrapped in the expected UserResponse format
-    return { user: data?.user || null };
+    return {
+      id: user.id,
+      email: user.email || '',
+      username: user.user_metadata?.username || '',
+      firstName: user.user_metadata?.firstName || '',
+      lastName: user.user_metadata?.lastName || '',
+      role: user.user_metadata?.role || 'customer',
+      avatarUrl: user.user_metadata?.avatarUrl || null
+    };
   },
   
   /**
@@ -28,6 +33,6 @@ export const authClient = {
    * @returns {Promise<void>} Promise resolving when sign out is complete
    */
   signOut: async () => {
-    return await supabaseClient.auth.signOut();
+    return await supabase.auth.signOut();
   }
 };

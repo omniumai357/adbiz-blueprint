@@ -27,7 +27,7 @@ import { UpdateMilestoneProgressParams } from '@/services/milestone/milestone-se
 export function useUpdateMilestoneProgress() {
   const queryClient = useQueryClient();
   
-  const updateProgress = useMutation({
+  const updateMutation = useMutation({
     mutationFn: async (params: UpdateMilestoneProgressParams) => {
       if (!params.userId) return { success: false };
       return await apiClient.milestones.updateMilestoneProgress(params);
@@ -49,8 +49,13 @@ export function useUpdateMilestoneProgress() {
   });
 
   return { 
-    updateProgress: updateProgress.mutate,
-    isUpdating: updateProgress.isPending,
-    error: updateProgress.error
+    updateProgress: updateMutation.mutate,
+    updateProgressAsync: updateMutation.mutateAsync, // For awaiting the result
+    isUpdating: updateMutation.isPending,
+    isSuccess: updateMutation.isSuccess,
+    isError: updateMutation.isError,
+    error: updateMutation.error,
+    status: updateMutation.status,
+    reset: updateMutation.reset
   };
 }

@@ -51,7 +51,10 @@ export function useRewardStatus(userId: string | undefined) {
   return {
     claimReward: claimRewardWithPromise,
     isClaimingReward: claimRewardMutation.isPending,
+    claimStatus: claimRewardMutation.status,
     claimError: claimRewardMutation.error,
-    claimStatus: claimRewardMutation.status
+    isLoading: claimRewardMutation.isPending, // Standardized isLoading property
+    isSuccess: claimRewardMutation.isSuccess, // Standardized isSuccess property
+    isError: claimRewardMutation.isError      // Standardized isError property
   };
 }

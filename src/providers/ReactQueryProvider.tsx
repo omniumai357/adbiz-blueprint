@@ -38,6 +38,8 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
         },
         refetchOnWindowFocus: false,
         gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache longer
+        refetchOnReconnect: "always", // Refetch when connection restored
+        placeholderData: (previousData) => previousData, // Keep previous data while refetching
         
         meta: {
           onError: (error: Error) => {

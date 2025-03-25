@@ -7,7 +7,7 @@ import { getServicePageRecommendations } from '@/utils/recommendations';
 import { CategorySelection } from '@/components/services/CategorySelection';
 import { PackageFeatures } from '@/components/services/PackageFeatures';
 import { ContactCTA } from '@/components/services/ContactCTA';
-import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingContent } from '@/components/ui/loading-content';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -50,6 +50,18 @@ export const ServicesContent: React.FC<ServicesContentProps> = ({
   closeDownloadModal,
   handleCategoryChange,
 }) => {
+  // Skeleton component for packages
+  const PackagesSkeleton = () => (
+    <div className="space-y-4 mb-8">
+      <div className="h-[200px] w-full rounded-lg bg-muted animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-[300px] rounded-lg bg-muted animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <>
       {error && (
@@ -64,20 +76,16 @@ export const ServicesContent: React.FC<ServicesContentProps> = ({
         onCategoryChange={handleCategoryChange} 
       />
       
-      {isLoading ? (
-        <div className="space-y-4 mb-8">
-          <Skeleton className="h-[200px] w-full rounded-lg" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Skeleton className="h-[300px] rounded-lg" />
-            <Skeleton className="h-[300px] rounded-lg" />
-            <Skeleton className="h-[300px] rounded-lg" />
-          </div>
-        </div>
-      ) : (
+      <LoadingContent
+        isLoading={isLoading}
+        error={error ? new Error(error) : null}
+        useSkeleton={true}
+        skeletonContent={<PackagesSkeleton />}
+      >
         <div id="packages-grid" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <ServicePackages onCategoryChange={handleCategoryChange} />
         </div>
-      )}
+      </LoadingContent>
       
       <PackageFeatures 
         selectedCategory={selectedCategory}
