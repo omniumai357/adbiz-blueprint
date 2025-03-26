@@ -52,6 +52,67 @@ export function useToggle(initialState: boolean = false) {
 }
 
 /**
+ * Creates a hook for managing form step navigation
+ * 
+ * @param initialStep Initial step number
+ * @param totalSteps Total number of steps
+ * @returns Object with step navigation state and functions
+ */
+export function useFormSteps(initialStep: number = 1, totalSteps: number) {
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  
+  const goToStep = useCallback((step: number) => {
+    if (step >= 1 && step <= totalSteps) {
+      setCurrentStep(step);
+    }
+  }, [totalSteps]);
+  
+  const nextStep = useCallback(() => {
+    if (currentStep < totalSteps) {
+      // Mark current step as completed
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps(prev => [...prev, currentStep]);
+      }
+      setCurrentStep(s => s + 1);
+      return true;
+    }
+    return false;
+  }, [currentStep, totalSteps, completedSteps]);
+  
+  const prevStep = useCallback(() => {
+    if (currentStep > 1) {
+      setCurrentStep(s => s - 1);
+      return true;
+    }
+    return false;
+  }, [currentStep]);
+  
+  const markStepComplete = useCallback((step: number) => {
+    if (step >= 1 && step <= totalSteps && !completedSteps.includes(step)) {
+      setCompletedSteps(prev => [...prev, step]);
+    }
+  }, [totalSteps, completedSteps]);
+  
+  const isStepComplete = useCallback((step: number) => {
+    return completedSteps.includes(step);
+  }, [completedSteps]);
+  
+  return {
+    currentStep,
+    completedSteps,
+    isFirstStep: currentStep === 1,
+    isLastStep: currentStep === totalSteps,
+    goToStep,
+    nextStep,
+    prevStep,
+    markStepComplete,
+    isStepComplete,
+    progress: (completedSteps.length / totalSteps) * 100
+  };
+}
+
+/**
  * Creates a hook for managing a collection of items
  * 
  * @param initialItems Initial collection of items
@@ -83,5 +144,59 @@ export function useCollection<T extends { id: string }>(initialItems: T[] = []) 
     updateItem,
     hasItem: useCallback((id: string) => items.some(item => item.id === id), [items]),
     clear: useCallback(() => setItems([]), [])
+  };
+}
+
+/**
+ * Creates a hook for managing form validation state
+ * 
+ * @param validateFn Function to validate form values
+ * @returns Object with validation state and functions
+ */
+export function useFormValidation<T>(validateFn: (values: T) => Record<string, string>) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isValidating, setIsValidating] = useState(false);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  
+  const validate = useCallback((values: T): boolean => {
+    setIsValidating(true);
+    const validationErrors = validateFn(values);
+    setErrors(validationErrors);
+    setIsValidating(false);
+    return Object.keys(validationErrors).length === 0;
+  }, [validateFn]);
+  
+  const clearErrors = useCallback(() => {
+    setErrors({});
+  }, []);
+  
+  const setFieldTouched = useCallback((field: string, isTouched: boolean = true) => {
+    setTouchedFields(current => {
+      const updated = new Set(current);
+      if (isTouched) {
+        updated.add(field);
+      } else {
+        updated.delete(field);
+      }
+      return updated;
+    });
+  }, []);
+  
+  const getFieldError = useCallback((field: string): string | undefined => {
+    if (touchedFields.has(field)) {
+      return errors[field];
+    }
+    return undefined;
+  }, [errors, touchedFields]);
+  
+  return {
+    errors,
+    isValidating,
+    touchedFields,
+    validate,
+    clearErrors,
+    setFieldTouched,
+    getFieldError,
+    hasErrors: Object.keys(errors).length > 0
   };
 }
