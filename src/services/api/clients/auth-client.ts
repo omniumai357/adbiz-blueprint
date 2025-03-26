@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { User as AuthUser } from '@supabase/supabase-js';
+import type { User as AuthUser, Session, AuthResponse } from '@supabase/supabase-js';
 import { UserResponse } from '@/types/api';
 
 /**
@@ -24,9 +24,10 @@ export const authClient = {
   
   /**
    * Sign out the current user
-   * @returns {Promise<void>} Promise resolving when sign out is complete
+   * @returns {Promise<{ error: Error | null }>} Promise resolving when sign out is complete
    */
-  signOut: async () => {
-    return await supabase.auth.signOut();
+  async signOut(): Promise<{ error: Error | null }> {
+    const { error } = await supabase.auth.signOut();
+    return { error };
   }
 };

@@ -7,9 +7,23 @@ export interface ApiResponse<T> {
   error: Error | null;
 }
 
+// API Error Response Type
+export interface ApiErrorResponse {
+  message: string;
+  status?: number;
+  code?: string;
+}
+
 // Auth Types
 export interface UserResponse {
   user: User | null;
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: User | null;
+  error?: Error | null;
+  message?: string;
 }
 
 // Profile Types
@@ -19,7 +33,7 @@ export interface Profile {
   last_name: string | null;
   company: string | null;
   avatar_url: string | null;
-  email?: string; // Added email property
+  email?: string;
   created_at: string;
   updated_at: string;
 }
@@ -122,7 +136,6 @@ export interface AvailableReward extends CommonMilestoneData {
   completed_at: string;
 }
 
-// Adding MilestoneProgress interface which was missing
 export interface MilestoneProgress {
   milestone_id: string;
   milestone_name: string;
@@ -139,4 +152,25 @@ export interface PaymentProcessParams {
   activityType: string;
   referenceId?: string;
   referenceType?: string;
+}
+
+// File Upload Types
+export interface FileUploadResult {
+  success: boolean;
+  publicUrl?: string;
+  error?: Error | null;
+}
+
+// API Pagination Types
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

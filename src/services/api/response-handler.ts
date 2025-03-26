@@ -4,6 +4,17 @@ import { formatErrorMessage, logError, APIError } from '@/utils/error-handling';
 import { ApiResponse } from '@/types/api';
 
 /**
+ * Configuration options for the API response handler
+ */
+export interface ApiResponseHandlerOptions<T> {
+  context?: string;
+  transform?: (data: any) => T;
+  showErrorToast?: boolean;
+  showSuccessToast?: boolean;
+  successMessage?: string;
+}
+
+/**
  * Standardized API response handler that provides consistent error handling
  * and data transformation for all API client methods.
  */
@@ -17,13 +28,7 @@ export const apiResponseHandler = {
    */
   async handle<T>(
     responsePromise: Promise<any> | any,
-    options: {
-      context?: string;
-      transform?: (data: any) => T;
-      showErrorToast?: boolean;
-      showSuccessToast?: boolean;
-      successMessage?: string;
-    } = {}
+    options: ApiResponseHandlerOptions<T> = {}
   ): Promise<T> {
     const {
       context = 'API Request',
