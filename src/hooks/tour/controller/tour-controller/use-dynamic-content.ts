@@ -8,8 +8,8 @@ import { processDynamicContent, updateStepContent } from '../step-processor';
  */
 export function useDynamicContent(
   visibleSteps: TourStep[],
-  setVisibleSteps: (steps: TourStep[]) => void,
-  setTourPaths: (paths: TourPath[]) => void
+  setVisibleSteps: React.Dispatch<React.SetStateAction<TourStep[]>>,
+  setTourPaths: React.Dispatch<React.SetStateAction<TourPath[]>>
 ) {
   // Process dynamic content for steps
   const processStepDynamicContent = useCallback(async (steps: TourStep[]): Promise<TourStep[]> => {
@@ -22,10 +22,10 @@ export function useDynamicContent(
 
   // Set dynamic content for a specific step
   const setDynamicContent = useCallback((stepId: string, content: string) => {
-    setVisibleSteps((prev: TourStep[]) => updateStepContent(prev, stepId, content));
+    setVisibleSteps(prev => updateStepContent(prev, stepId, content));
     
     // Also update the original tour path to persist changes
-    setTourPaths((prev: TourPath[]) => prev.map(path => {
+    setTourPaths(prev => prev.map(path => {
       return {
         ...path,
         steps: path.steps.map(step => {
