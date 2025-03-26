@@ -1,5 +1,6 @@
 
 import { TourPath, TourStep, StepUserRole, StepTrigger } from "@/contexts/tour-context";
+import { DynamicContentProvider, ConditionEvaluator } from "@/hooks/tour/analytics/types";
 
 /**
  * Helper function to create tour paths with conditional steps
@@ -32,6 +33,32 @@ export function createTourPath(
 }
 
 /**
+ * Creates a basic tour step with required fields
+ * 
+ * @param id Unique step identifier
+ * @param elementId Target DOM element ID
+ * @param title Step title
+ * @param content Step content
+ * @param position Position relative to target element
+ * @returns A basic TourStep
+ */
+export function createStep(
+  id: string,
+  elementId: string,
+  title: string,
+  content: string,
+  position: "top" | "right" | "bottom" | "left" = "bottom"
+): TourStep {
+  return {
+    id,
+    elementId,
+    title,
+    content,
+    position
+  };
+}
+
+/**
  * Creates a conditional step that only shows when the condition is true
  * 
  * @param step The tour step to make conditional
@@ -40,7 +67,7 @@ export function createTourPath(
  */
 export function conditionalStep(
   step: TourStep,
-  condition: () => boolean
+  condition: ConditionEvaluator
 ): TourStep {
   return {
     ...step,
@@ -199,6 +226,75 @@ export function metadataEnhancedStep(
     ...step,
     metadata
   };
+}
+
+/**
+ * Creates a step with dynamic content that can be loaded asynchronously
+ * 
+ * @param step Base tour step to enhance
+ * @param contentProvider Function that returns content string or Promise<string>
+ * @returns Enhanced step with dynamic content loading capability
+ */
+export function dynamicContentStep(
+  step: TourStep,
+  contentProvider: DynamicContentProvider
+): TourStep {
+  const originalContent = step.content;
+  
+  return {
+    ...step,
+    // Store the original content as fallback
+    metadata: {
+      ...step.metadata,
+      originalContent,
+      dynamicContentProvider: contentProvider
+    },
+    // We'll replace this in the tour controller when the step is loaded
+    content: originalContent
+  };
+}
+
+/**
+ * Creates a step with feature flag condition
+ * 
+ * @param step Base tour step
+ * @param featureFlag Feature flag name to check
+ * @returns Step that only appears when feature flag is enabled
+ */
+export function featureFlagStep(
+  step: TourStep,
+  featureFlag: string
+): TourStep {
+  return conditionalStep(step, () => {
+    // Simple feature flag check implementation
+    // In a real app, this would use your feature flag system
+    const enabledFlags = localStorage.getItem('enabledFeatureFlags');
+    if (!enabledFlags) return false;
+    
+    try {
+      const flags = JSON.parse(enabledFlags);
+      return !!flags[featureFlag];
+    } catch (e) {
+      return false;
+    }
+  });
+}
+
+/**
+ * Creates a step that's shown based on user's tour completion history
+ * 
+ * @param step Base tour step
+ * @param requiredCompletedTours Array of tour IDs that must be completed
+ * @returns Step that only appears when user has completed specified tours
+ */
+export function progressBasedStep(
+  step: TourStep,
+  requiredCompletedTours: string[]
+): TourStep {
+  return conditionalStep(step, () => {
+    const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
+    return requiredCompletedTours.every(tourId => completedTours.includes(tourId));
+  });
 }
 
 /**

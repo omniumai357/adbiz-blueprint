@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useTour } from "@/contexts/tour-context";
 import { TourTooltip } from "./TourTooltip";
 import { TourOverlay } from "./TourOverlay";
@@ -9,6 +9,7 @@ import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
 import { useAuth } from "@/contexts/auth-context";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
+import { processDynamicContent } from "@/hooks/tour/controller/step-processor";
 
 export const TourGuide: React.FC = () => {
   const {
@@ -22,11 +23,13 @@ export const TourGuide: React.FC = () => {
     handleKeyNavigation,
     currentPath,
     availablePaths,
+    setDynamicContent,
   } = useTour();
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   const isMobile = useMediaQuery("(max-width: 640px)");
   const analytics = useTourAnalytics();
+  const [isProcessingDynamicContent, setIsProcessingDynamicContent] = useState(false);
   
   // Try to get user information from auth context first
   let userId: string | undefined;
@@ -44,6 +47,27 @@ export const TourGuide: React.FC = () => {
     userType = 'anonymous'; // Default user type when profile isn't available
   }
 
+  // Process dynamic content when step changes
+  useEffect(() => {
+    const processDynamicStepContent = async () => {
+      if (!currentStepData || !currentStepData.metadata?.dynamicContentProvider) return;
+      
+      setIsProcessingDynamicContent(true);
+      try {
+        const processedStep = await processDynamicContent(currentStepData);
+        if (processedStep.content !== currentStepData.content) {
+          setDynamicContent(currentStepData.id, processedStep.content);
+        }
+      } catch (error) {
+        console.error("Error processing dynamic content:", error);
+      } finally {
+        setIsProcessingDynamicContent(false);
+      }
+    };
+    
+    processDynamicStepContent();
+  }, [currentStepData, setDynamicContent]);
+
   // Track when a tour is completed
   useEffect(() => {
     if (isActive && currentStep === totalSteps - 1 && currentPath) {
@@ -57,7 +81,7 @@ export const TourGuide: React.FC = () => {
   }, [isActive, currentStep, totalSteps, currentPath]);
 
   // Handle custom interactions with tour elements
-  const handleInteraction = (interactionType: string) => {
+  const handleInteraction = useCallback((interactionType: string) => {
     if (!currentStepData || !currentPath) return;
     
     const pathData = availablePaths.find(path => path.id === currentPath);
@@ -71,7 +95,7 @@ export const TourGuide: React.FC = () => {
       userId,
       userType
     );
-  };
+  }, [currentStepData, currentPath, availablePaths, analytics, currentStep, userId, userType]);
 
   // Add keyboard navigation event listener
   useEffect(() => {
@@ -94,7 +118,7 @@ export const TourGuide: React.FC = () => {
   }, [isActive, handleKeyNavigation]);
 
   // Handle tour closing with analytics
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     handleInteraction('close_button_clicked');
     
     // Check if the step has custom actions defined
@@ -103,10 +127,10 @@ export const TourGuide: React.FC = () => {
     }
     
     endTour();
-  };
+  }, [handleInteraction, currentStepData, endTour]);
   
   // Handle next step with analytics
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     handleInteraction('next_button_clicked');
     
     // Check if the step has custom actions defined
@@ -115,10 +139,10 @@ export const TourGuide: React.FC = () => {
     }
     
     nextStep();
-  };
+  }, [handleInteraction, currentStepData, nextStep]);
   
   // Handle previous step with analytics
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     handleInteraction('prev_button_clicked');
     
     // Check if the step has custom actions defined
@@ -127,7 +151,7 @@ export const TourGuide: React.FC = () => {
     }
     
     prevStep();
-  };
+  }, [handleInteraction, currentStepData, prevStep]);
 
   if (!isActive || !currentStepData) {
     return null;
@@ -142,6 +166,11 @@ export const TourGuide: React.FC = () => {
   const prevLabel = currentStepData.actions?.prev?.label;
   const skipLabel = currentStepData.actions?.skip?.label;
 
+  // Show loading state for dynamic content
+  const content = isProcessingDynamicContent 
+    ? "Loading personalized content..." 
+    : currentStepData.content;
+
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
     return (
@@ -152,7 +181,7 @@ export const TourGuide: React.FC = () => {
         />
         <TourDrawer 
           title={currentStepData.title}
-          content={currentStepData.content}
+          content={content}
           media={currentStepData.media}
           currentStep={currentStep}
           totalSteps={totalSteps}
@@ -180,7 +209,7 @@ export const TourGuide: React.FC = () => {
           targetElement={targetElement}
           position={currentStepData.position || "bottom"}
           title={currentStepData.title}
-          content={currentStepData.content}
+          content={content}
           media={currentStepData.media}
           stepInfo={`${currentStep + 1} of ${totalSteps}`}
           onPrev={currentStep > 0 ? handlePrev : undefined}

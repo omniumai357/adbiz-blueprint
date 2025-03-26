@@ -1,5 +1,5 @@
-
 import { TourStep, TourPath } from '@/contexts/tour-context';
+import { DynamicContentProvider } from '@/hooks/tour/analytics/types';
 
 /**
  * Filters tour steps based on conditions
@@ -44,4 +44,57 @@ export const findTourPathById = (
 ): TourPath | undefined => {
   if (!pathId) return undefined;
   return tourPaths.find((path) => path.id === pathId);
+};
+
+/**
+ * Processes dynamic content for a step
+ * @param step The step to process
+ * @returns Promise that resolves to the step with processed content
+ */
+export const processDynamicContent = async (step: TourStep): Promise<TourStep> => {
+  // Check if step has a dynamic content provider
+  if (step.metadata?.dynamicContentProvider) {
+    try {
+      const contentProvider = step.metadata.dynamicContentProvider as DynamicContentProvider;
+      const dynamicContent = await Promise.resolve(contentProvider());
+      
+      return {
+        ...step,
+        content: dynamicContent || step.metadata.originalContent || step.content
+      };
+    } catch (error) {
+      console.error('Error loading dynamic content for step:', step.id, error);
+      // Fall back to original content
+      return {
+        ...step,
+        content: step.metadata.originalContent || step.content
+      };
+    }
+  }
+  
+  // Return step unchanged if it has no dynamic content
+  return step;
+};
+
+/**
+ * Updates a step's content
+ * @param steps Array of steps
+ * @param stepId ID of step to update
+ * @param content New content
+ * @returns Updated array of steps
+ */
+export const updateStepContent = (
+  steps: TourStep[],
+  stepId: string,
+  content: string
+): TourStep[] => {
+  return steps.map(step => {
+    if (step.id === stepId) {
+      return {
+        ...step,
+        content
+      };
+    }
+    return step;
+  });
 };

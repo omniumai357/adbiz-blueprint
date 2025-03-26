@@ -4,6 +4,7 @@ import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
 import { useAuth } from "@/contexts/auth-context";
+import { DynamicContentProvider } from "@/hooks/tour/analytics/types";
 
 export type StepConditionFn = () => boolean;
 
@@ -82,6 +83,7 @@ type TourContextType = {
   availablePaths: TourPath[];
   handleKeyNavigation: (event: React.KeyboardEvent) => void;
   visibleSteps: TourStep[];
+  setDynamicContent: (stepId: string, content: string) => void;
 };
 
 const defaultContext: TourContextType = {
@@ -98,6 +100,7 @@ const defaultContext: TourContextType = {
   availablePaths: [],
   handleKeyNavigation: () => {},
   visibleSteps: [],
+  setDynamicContent: () => {},
 };
 
 const TourContext = createContext<TourContextType>(defaultContext);

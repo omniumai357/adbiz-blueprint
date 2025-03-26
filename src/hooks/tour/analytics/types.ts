@@ -25,3 +25,13 @@ export type TourAnalyticsData = {
   timestamp: number;
   metadata?: Record<string, any>;
 };
+
+/**
+ * Content provider type for dynamic step content
+ */
+export type DynamicContentProvider = () => string | Promise<string>;
+
+/**
+ * Condition evaluator type
+ */
+export type ConditionEvaluator = () => boolean | Promise<boolean>;

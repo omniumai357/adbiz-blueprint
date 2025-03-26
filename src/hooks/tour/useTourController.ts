@@ -13,7 +13,9 @@ import {
 import { 
   getVisibleSteps, 
   getCurrentStepData, 
-  findTourPathById 
+  findTourPathById,
+  processDynamicContent,
+  updateStepContent
 } from './controller/step-processor';
 import { handleKeyNavigation } from './controller/key-navigation';
 
@@ -80,13 +82,25 @@ export function useTourController(
     }
   }, [isActive, currentPath, currentStep]);
 
-  // Filter steps based on conditional logic
+  // Process dynamic content when steps change
   useEffect(() => {
-    const currentPathData = findTourPathById(tourPaths, currentPath);
-    if (currentPathData) {
-      const filtered = getVisibleSteps(currentPathData);
-      setVisibleSteps(filtered);
-    }
+    const processDynamicSteps = async () => {
+      const currentPathData = findTourPathById(tourPaths, currentPath);
+      if (currentPathData) {
+        let filteredSteps = getVisibleSteps(currentPathData);
+        
+        // Process any dynamic content in the steps
+        const processedSteps = await Promise.all(
+          filteredSteps.map(async (step) => {
+            return await processDynamicContent(step);
+          })
+        );
+        
+        setVisibleSteps(processedSteps);
+      }
+    };
+    
+    processDynamicSteps();
   }, [currentPath, tourPaths]);
 
   // Get the current path data
@@ -234,6 +248,27 @@ export function useTourController(
     return visibleSteps.length || 0;
   }, [visibleSteps]);
 
+  // Set dynamic content for a specific step
+  const setDynamicContent = useCallback((stepId: string, content: string) => {
+    setVisibleSteps(prev => updateStepContent(prev, stepId, content));
+    
+    // Also update the original tour path to persist changes
+    setTourPaths(prev => prev.map(path => {
+      return {
+        ...path,
+        steps: path.steps.map(step => {
+          if (step.id === stepId) {
+            return {
+              ...step,
+              content
+            };
+          }
+          return step;
+        })
+      };
+    }));
+  }, []);
+
   return {
     isActive,
     currentPath,
@@ -248,5 +283,6 @@ export function useTourController(
     availablePaths: tourPaths,
     handleKeyNavigation: keyboardNavigationHandler,
     visibleSteps,
+    setDynamicContent,
   };
 }
