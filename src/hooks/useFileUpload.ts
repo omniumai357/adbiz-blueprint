@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useFileUploadState } from './useFileUploadState';
 import { useFileUploadProgress } from './useFileUploadProgress';
-import useFileUploadHandlers from './file-upload/useFileUploadHandlers';
+import { useFileUploadHandlers } from './file-upload/useFileUploadHandlers';
 
 export interface FileState {
   logo: File | null;

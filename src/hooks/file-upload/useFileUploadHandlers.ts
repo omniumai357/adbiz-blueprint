@@ -2,7 +2,7 @@
 import { useState, useCallback, ChangeEvent } from "react";
 import { toast } from "sonner";
 import { FileState } from "@/hooks/useFileUpload";
-import { validateFile } from "@/utils/file-validation";
+import { validateFiles } from "@/utils/file-validation";
 
 export function useFileUploadHandlers(
   initialState: FileState = { logo: null, images: [], videos: [], documents: [] }
@@ -24,18 +24,14 @@ export function useFileUploadHandlers(
     const newFiles = Array.from(event.target.files);
     setUploadError(null);
     
-    // Validate each file
-    const invalidFiles = newFiles.filter(file => {
-      const { valid, message } = validateFile(file, fileType);
-      if (!valid && message) {
-        toast.error(message);
-        return true;
-      }
-      return false;
-    });
+    // Validate files
+    const { validFiles, hasInvalidFiles } = validateFiles(newFiles, fileType);
     
-    // If any files are invalid, don't process further
-    if (invalidFiles.length > 0) return;
+    if (hasInvalidFiles) {
+      toast.error(`Some files have invalid types. Only supported formats for ${fileType} were added.`);
+    }
+    
+    if (validFiles.length === 0) return;
     
     // Process valid files
     setFiles(prevFiles => {
@@ -43,19 +39,16 @@ export function useFileUploadHandlers(
       if (fileType === "logo") {
         return {
           ...prevFiles,
-          logo: newFiles[0]
+          logo: validFiles[0]
         };
       }
       
       // For other file types, append to existing array
-      // Make sure we convert it to an array first if it's not already
-      const existingFiles = Array.isArray(prevFiles[fileType]) ? 
-        prevFiles[fileType] as File[] : 
-        [];
+      const existingFiles = prevFiles[fileType] as File[];
       
       return {
         ...prevFiles,
-        [fileType]: [...existingFiles, ...newFiles]
+        [fileType]: [...existingFiles, ...validFiles]
       };
     });
     
@@ -80,10 +73,7 @@ export function useFileUploadHandlers(
       
       // For other file types, remove by index
       if (typeof indexOrFile === "number") {
-        // Make sure we're dealing with an array
-        const existingFiles = Array.isArray(prevFiles[fileType]) ? 
-          prevFiles[fileType] as File[] : 
-          [];
+        const existingFiles = prevFiles[fileType] as File[];
         
         const updatedFiles = [...existingFiles];
         updatedFiles.splice(indexOrFile, 1);
