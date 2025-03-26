@@ -1,7 +1,7 @@
 
 import { ChangeEvent } from 'react';
 import { FileState } from '@/hooks/useFileUpload';
-import { validateFiles, isFileSizeValid } from '@/utils/file-validation';
+import { validateFiles } from '@/utils/file-validation';
 import { useToast } from '@/hooks/ui/use-toast';
 
 export interface UseFileUploadHandlersProps {
@@ -52,42 +52,16 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
       if (validFiles.length > 0) {
         const logoFile = validFiles[0];
         
-        // Check logo file size
-        const maxSize = 5 * 1024 * 1024; // 5MB
-        if (!isFileSizeValid(logoFile, maxSize)) {
-          toast({
-            variant: "destructive",
-            title: "File too large",
-            description: "Logo file size must be less than 5MB.",
-          });
-          return;
-        }
-        
         setFiles({ ...files, logo: logoFile });
       }
       return;
     }
     
     // Handle multiple files (images, videos, documents)
-    const maxSize = fileType === 'videos' ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
-    
-    // Filter out files that are too large
-    const validSizedFiles = validFiles.filter(file => {
-      const isValid = isFileSizeValid(file, maxSize);
-      if (!isValid) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: `${file.name} exceeds the maximum file size.`,
-        });
-      }
-      return isValid;
-    });
-    
     // Update files state
     setFiles({
       ...files,
-      [fileType]: [...files[fileType], ...validSizedFiles],
+      [fileType]: [...files[fileType], ...validFiles],
     });
   };
   
