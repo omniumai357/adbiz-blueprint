@@ -48,7 +48,18 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
         }
 
         if (existingCoupons) {
-          setCoupon(existingCoupons as Coupon);
+          // Explicitly cast the data with the defined interface to avoid deep type instantiation
+          const typedCoupon: Coupon = {
+            id: existingCoupons.id,
+            code: existingCoupons.code,
+            type: existingCoupons.type,
+            discount_percentage: existingCoupons.discount_percentage,
+            description: existingCoupons.description,
+            expires_at: existingCoupons.expires_at,
+            is_active: existingCoupons.is_active,
+            created_at: existingCoupons.created_at
+          };
+          setCoupon(typedCoupon);
           setLoading(false);
           return;
         }
@@ -74,8 +85,19 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
           
         if (insertError) {
           console.error("Error creating coupon:", insertError);
-        } else {
-          setCoupon(newCoupon as Coupon);
+        } else if (newCoupon) {
+          // Explicitly cast the new coupon data to avoid deep type instantiation
+          const typedNewCoupon: Coupon = {
+            id: newCoupon.id,
+            code: newCoupon.code,
+            type: newCoupon.type,
+            discount_percentage: newCoupon.discount_percentage,
+            description: newCoupon.description,
+            expires_at: newCoupon.expires_at,
+            is_active: newCoupon.is_active,
+            created_at: newCoupon.created_at
+          };
+          setCoupon(typedNewCoupon);
         }
       } catch (error) {
         console.error("Unexpected error:", error);
