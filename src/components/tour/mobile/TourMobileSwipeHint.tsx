@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, SwipeHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, FlipHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -31,7 +31,7 @@ export const TourMobileSwipeHint: React.FC<TourMobileSwipeHintProps> = ({
     return (
       <div className={cn("flex justify-center mt-2 text-xs text-muted-foreground", className)}>
         <div className="flex items-center gap-1 opacity-70">
-          <SwipeHorizontal className="h-3 w-3" />
+          <FlipHorizontal className="h-3 w-3" />
           <span>Swipe to navigate</span>
         </div>
       </div>

@@ -10,6 +10,7 @@ interface TourMediaProps {
     animation?: string;
   };
   title: string;
+  className?: string;
 }
 
 const animationClasses = {
@@ -27,7 +28,7 @@ const animationClasses = {
   "spin": "animate-spin",
 };
 
-export const TourMedia: React.FC<TourMediaProps> = ({ media, title }) => {
+export const TourMedia: React.FC<TourMediaProps> = ({ media, title, className }) => {
   if (!media) return null;
   
   const mediaAnimation = media.animation || "fade-in";
@@ -40,7 +41,7 @@ export const TourMedia: React.FC<TourMediaProps> = ({ media, title }) => {
           <img 
             src={media.url} 
             alt={media.alt || title} 
-            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
+            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass, className)}
           />
         </div>
       );
@@ -49,7 +50,7 @@ export const TourMedia: React.FC<TourMediaProps> = ({ media, title }) => {
         <div className="mt-2 mb-3 flex justify-center">
           <video 
             src={media.url} 
-            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
+            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass, className)}
             controls
             muted
             autoPlay
@@ -63,7 +64,7 @@ export const TourMedia: React.FC<TourMediaProps> = ({ media, title }) => {
           <img 
             src={media.url} 
             alt={media.alt || title} 
-            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
+            className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass, className)}
           />
         </div>
       );
