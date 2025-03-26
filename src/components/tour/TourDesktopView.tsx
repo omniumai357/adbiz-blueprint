@@ -1,75 +1,80 @@
-
-import React, { forwardRef, useImperativeHandle, useRef } from "react";
-import { TourTooltip } from "./TourTooltip";
+import React, { forwardRef, useImperativeHandle } from "react";
+import { TourTooltip } from "./tooltip/TourTooltip";
 
 export interface TourDesktopViewHandle {
-  focusElement: (selector: string) => boolean;
-  focusElementByIndex: (index: number) => boolean;
-  getFirstFocusableElement: () => HTMLElement | null;
-  getLastFocusableElement: () => HTMLElement | null;
-  getFocusableElements: () => HTMLElement[];
+  focusFirstInteractiveElement: () => void;
+  focusCloseButton: () => void;
 }
 
-// Re-export TourTooltip as TourDesktopView for naming consistency with proper ref forwarding
-export const TourDesktopView = forwardRef<TourDesktopViewHandle, React.ComponentProps<typeof TourTooltip>>((props, ref) => {
-  const innerRef = useRef<HTMLDivElement>(null);
-  
-  // Get all focusable elements within the tooltip
-  const getFocusableElements = () => {
-    if (!innerRef.current) return [];
-    
-    return Array.from(
-      innerRef.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
-    ).filter(
-      (el) => !el.hasAttribute('disabled') && 
-              !el.getAttribute('aria-hidden') && 
-              el.getBoundingClientRect().width > 0
-    ) as HTMLElement[];
+export interface TourDesktopViewProps {
+  targetElement: HTMLElement;
+  position?: "top" | "right" | "bottom" | "left";
+  title: string;
+  content: string;
+  stepInfo: string;
+  onPrev?: () => void;
+  onNext: () => void;
+  onClose: () => void;
+  isLastStep: boolean;
+  animation?: string;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
   };
-  
-  // Expose the focus methods to the parent component
-  useImperativeHandle(ref, () => ({
-    focusElement: (selector: string) => {
-      if (innerRef.current) {
-        try {
-          const element = innerRef.current.querySelector(selector) as HTMLElement;
-          if (element) {
-            element.focus();
-            return true;
+  nextLabel?: string;
+  prevLabel?: string;
+  skipLabel?: string;
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  currentStep: number;
+  totalSteps: number;
+  showKeyboardShortcuts?: () => void;
+  tooltipRef?: React.RefObject<HTMLDivElement>;
+  hasTouchCapability?: boolean;
+}
+
+export const TourDesktopView = forwardRef<TourDesktopViewHandle, TourDesktopViewProps>(
+  (props, ref) => {
+    const tooltipRef = React.useRef<HTMLDivElement>(null);
+    
+    // Expose methods to parent components
+    useImperativeHandle(ref, () => ({
+      focusFirstInteractiveElement: () => {
+        if (tooltipRef.current) {
+          const firstButton = tooltipRef.current.querySelector('button') as HTMLButtonElement;
+          if (firstButton) {
+            firstButton.focus();
           }
-        } catch (e) {
-          console.error(`Failed to focus element with selector ${selector}:`, e);
+        }
+      },
+      focusCloseButton: () => {
+        if (tooltipRef.current) {
+          const closeButton = tooltipRef.current.querySelector('[data-tour-action="close"]') as HTMLButtonElement;
+          if (closeButton) {
+            closeButton.focus();
+          }
         }
       }
-      return false;
-    },
-    focusElementByIndex: (index: number) => {
-      const focusableElements = getFocusableElements();
-      
-      if (focusableElements.length > index && index >= 0) {
-        try {
-          focusableElements[index].focus();
-          return true;
-        } catch (e) {
-          console.error(`Failed to focus element at index ${index}:`, e);
-        }
-      }
-      return false;
-    },
-    getFirstFocusableElement: () => {
-      const elements = getFocusableElements();
-      return elements.length > 0 ? elements[0] : null;
-    },
-    getLastFocusableElement: () => {
-      const elements = getFocusableElements();
-      return elements.length > 0 ? elements[elements.length - 1] : null;
-    },
-    getFocusableElements
-  }));
-  
-  return <TourTooltip {...props} ref={innerRef} />;
-});
+    }));
+
+    return (
+      <TourTooltip
+        ref={tooltipRef}
+        {...props}
+      />
+    );
+  }
+);
 
 TourDesktopView.displayName = "TourDesktopView";

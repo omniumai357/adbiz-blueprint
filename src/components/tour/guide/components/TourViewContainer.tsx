@@ -85,7 +85,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
       transition={supportedTransition}
       spotlight={spotlight}
       onShowKeyboardShortcuts={showKeyboardShortcutsHelp}
-      deviceType={deviceType}
+      deviceType={deviceType as "mobile" | "tablet" | "desktop"}
     />
   ) : (
     <TourDesktopView
@@ -112,7 +112,6 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
       totalSteps={totalSteps}
       showKeyboardShortcuts={showKeyboardShortcutsHelp}
       tooltipRef={tooltipRef}
-      hasTouchCapability={hasTouchCapability}
     />
   );
 };

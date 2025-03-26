@@ -68,7 +68,7 @@ export const TourAccessibilityManager: React.FC<TourAccessibilityManagerProps> =
         isActive={isActive} 
         onSkipToMain={handleSkipToMain}
         isTouchDevice={hasTouchCapability}
-        deviceType={deviceType}
+        deviceType={deviceType as "mobile" | "tablet" | "desktop"}
       />
       
       {/* Enhanced screen reader announcements */}
