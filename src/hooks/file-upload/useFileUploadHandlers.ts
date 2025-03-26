@@ -4,12 +4,20 @@ import { toast } from "sonner";
 import { FileState } from "@/hooks/useFileUpload";
 import { validateFiles } from "@/utils/file-validation";
 
-export function useFileUploadHandlers(
-  initialState: FileState = { logo: null, images: [], videos: [], documents: [] }
-) {
-  const [files, setFiles] = useState<FileState>(initialState);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  
+export interface UseFileUploadHandlersProps {
+  files: FileState;
+  setFiles: React.Dispatch<React.SetStateAction<FileState>>;
+  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+/**
+ * Hook for handling file upload interactions
+ */
+export function useFileUploadHandlers({
+  files,
+  setFiles, 
+  setUploadError
+}: UseFileUploadHandlersProps) {
   /**
    * Handle file input change
    * @param fileType Type of file being uploaded
@@ -54,7 +62,7 @@ export function useFileUploadHandlers(
     
     // Reset the file input
     event.target.value = "";
-  }, []);
+  }, [setFiles, setUploadError]);
   
   /**
    * Remove a file from the state
@@ -86,14 +94,10 @@ export function useFileUploadHandlers(
       
       return prevFiles;
     });
-  }, []);
+  }, [setFiles]);
   
   return {
-    files,
-    setFiles,
     handleFileChange,
-    onRemoveFile,
-    uploadError,
-    setUploadError
+    onRemoveFile
   };
 }
