@@ -72,19 +72,17 @@ export {
 
 // Re-export dependency enhancers
 export {
-  dependentOnSteps,
-  dependentOnPaths,
+  dependentStep,
   branchingStep,
   reEntryPoint,
   sectionStep
-} from './enhancers/dependencyEnhancers';
+} from './core/dependency/enhancers';
 
 // Re-export dependency management tools
 export {
   TourDependencyManager,
-  createStepDependency,
-  dependentStep
-} from './core/tourDependencyManager';
+  createStepDependency
+} from './core/dependency';
 
 // Re-export existing tour paths for backward compatibility
 export { defaultTourPath } from './default-tour';

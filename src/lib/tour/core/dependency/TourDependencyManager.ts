@@ -1,24 +1,6 @@
 
-import { TourStep, TourPath } from "@/contexts/tour/types";
-
-/**
- * Represents a dependency relationship between steps
- */
-interface StepDependency {
-  sourceStepId: string;
-  targetStepId: string;
-  type: 'hard' | 'soft'; // hard = must complete, soft = should complete
-  condition?: () => boolean;
-}
-
-/**
- * Represents a node in the dependency graph
- */
-interface DependencyNode {
-  stepId: string;
-  dependencies: string[]; // IDs of steps this step depends on
-  dependents: string[]; // IDs of steps that depend on this step
-}
+import { TourPath, TourStep } from "@/contexts/tour/types";
+import { StepDependency, DependencyNode } from './types';
 
 /**
  * Manages complex dependencies between tour steps
@@ -245,73 +227,4 @@ export class TourDependencyManager {
     
     return manager;
   }
-}
-
-/**
- * Factory function to create a dependency between steps
- */
-export function createStepDependency(
-  sourceStepId: string,
-  targetStepId: string,
-  type: 'hard' | 'soft' = 'hard',
-  condition?: () => boolean
-): { sourceStepId: string; targetStepId: string; type: 'hard' | 'soft'; condition?: () => boolean } {
-  return {
-    sourceStepId,
-    targetStepId,
-    type,
-    condition
-  };
-}
-
-/**
- * Enhancer that adds dependencies to a step
- */
-export function dependentStep(
-  dependencies: string | string[],
-  type: 'hard' | 'soft' = 'hard'
-) {
-  return (step: TourStep): TourStep => {
-    const deps = Array.isArray(dependencies) ? dependencies : [dependencies];
-    
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        dependencies: deps,
-        dependencyType: type
-      }
-    };
-  };
-}
-
-/**
- * Enhancer that adds branching logic to a step
- */
-export function branchingStep(
-  branches: {
-    condition: () => boolean;
-    targetStepId: string;
-    label?: string;
-  }[]
-) {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        branches
-      },
-      actions: {
-        ...(step.actions || {}),
-        next: {
-          ...(step.actions?.next || {}),
-          onClick: () => {
-            // This will be processed by the tour controller to determine the next step
-            return { type: 'BRANCH', branches };
-          }
-        }
-      }
-    };
-  };
 }

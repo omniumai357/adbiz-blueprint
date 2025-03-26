@@ -36,7 +36,7 @@ export function useEnhancedTourNavigation(
   const nextStep = useCallback(() => {
     if (!currentStepData || !currentPathData) return;
     
-    // Track the current step interaction as "completed" instead of using the non-existent trackStepComplete
+    // Track the current step interaction as "completed"
     analytics.trackStepInteraction(
       currentPathData,
       currentStepData,

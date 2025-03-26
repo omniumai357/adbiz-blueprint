@@ -1,7 +1,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
-import { TourDependencyManager } from '@/lib/tour/core/tourDependencyManager';
+import { TourDependencyManager } from '@/lib/tour/core/dependency/TourDependencyManager';
 
 /**
  * Hook for managing tour step dependencies
