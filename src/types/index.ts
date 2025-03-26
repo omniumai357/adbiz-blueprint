@@ -29,3 +29,6 @@ export type {
 
 // Export contact types
 export * from './contact';
+
+// Export shared interfaces
+export * from './shared-interfaces';

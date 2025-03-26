@@ -53,3 +53,46 @@ export interface ServiceRegistry {
   register<T>(name: string, service: T): void;
   has(name: string): boolean;
 }
+
+// Feature communication interface
+export interface FeatureCommunication<T = unknown> {
+  source: string;
+  target: string;
+  action: string;
+  payload?: T;
+  metadata?: Record<string, unknown>;
+}
+
+// Application event interface
+export interface AppEvent<T = unknown> {
+  type: string;
+  payload?: T;
+  timestamp: number;
+  source: string;
+}
+
+// Feature configuration interface
+export interface FeatureConfig {
+  enabled: boolean;
+  name: string;
+  version: string;
+  dependencies: string[];
+  settings?: Record<string, unknown>;
+}
+
+// Integration point definition
+export interface IntegrationPoint {
+  name: string;
+  provider: string;
+  consumer: string;
+  contract: string;
+  version: string;
+}
+
+// Feature boundary interface
+export interface FeatureBoundary {
+  name: string;
+  publicAPI: string[];
+  internalComponents: string[];
+  dependencies: string[];
+}
