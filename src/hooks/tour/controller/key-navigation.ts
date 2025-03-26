@@ -1,6 +1,7 @@
 
 import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export type NavigationHandler = {
   nextStep: () => void;
@@ -32,6 +33,7 @@ export const handleKeyNavigation = (
     userId?: string;
     userType?: string;
     handlers: NavigationHandler;
+    isMobileDevice?: boolean;
   }
 ): void => {
   const { 
@@ -42,7 +44,8 @@ export const handleKeyNavigation = (
     visibleSteps,
     userId,
     userType,
-    handlers 
+    handlers,
+    isMobileDevice = false
   } = options;
   
   if (!isActive) return;
@@ -55,8 +58,35 @@ export const handleKeyNavigation = (
   
   const { nextStep, prevStep, endTour, trackInteraction } = handlers;
   
+  // On mobile, we might want to handle keyboard events differently
+  // For example, virtual keyboards on mobile can behave differently
+  if (isMobileDevice) {
+    // For mobile, only handle Escape key for now
+    // Let touch gestures handle the rest
+    if (event.key === 'Escape') {
+      trackInteraction(
+        pathData,
+        currentStepData,
+        currentStep,
+        `key_navigation_${event.key}`,
+        userId,
+        userType
+      );
+      endTour();
+    }
+    return;
+  }
+  
+  // Only apply keyboard shortcuts if specified in the step or using defaults
+  const keyboardShortcuts = currentStepData.keyboardShortcuts || {
+    next: 'ArrowRight',
+    previous: 'ArrowLeft',
+    close: 'Escape'
+  };
+  
+  // Standard desktop keyboard navigation
   switch(event.key) {
-    case 'ArrowRight':
+    case keyboardShortcuts.next:
     case 'Enter':
       trackInteraction(
         pathData,
@@ -68,18 +98,20 @@ export const handleKeyNavigation = (
       );
       nextStep();
       break;
-    case 'ArrowLeft':
-      trackInteraction(
-        pathData,
-        currentStepData,
-        currentStep,
-        `key_navigation_${event.key}`,
-        userId,
-        userType
-      );
-      prevStep();
+    case keyboardShortcuts.previous:
+      if (currentStep > 0) {
+        trackInteraction(
+          pathData,
+          currentStepData,
+          currentStep,
+          `key_navigation_${event.key}`,
+          userId,
+          userType
+        );
+        prevStep();
+      }
       break;
-    case 'Escape':
+    case keyboardShortcuts.close:
       trackInteraction(
         pathData,
         currentStepData,
@@ -93,4 +125,13 @@ export const handleKeyNavigation = (
     default:
       break;
   }
+};
+
+/**
+ * Hook to detect if the current browser is on a mobile device
+ * for use with key navigation
+ */
+export const useMobileKeyboardDetection = () => {
+  const isMobile = useIsMobile();
+  return isMobile;
 };

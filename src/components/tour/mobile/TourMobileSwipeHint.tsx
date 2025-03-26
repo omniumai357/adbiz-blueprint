@@ -1,23 +1,45 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, SwipeHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface TourMobileSwipeHintProps {
   currentStep: number;
   totalSteps: number;
   onNext: () => void;
   onPrev: () => void;
+  className?: string;
 }
 
 export const TourMobileSwipeHint: React.FC<TourMobileSwipeHintProps> = ({
   currentStep,
   totalSteps,
   onNext,
-  onPrev
+  onPrev,
+  className
 }) => {
+  const isLandscape = useMediaQuery("(orientation: landscape)");
+  const hasMultipleSteps = totalSteps > 1;
+  
+  // Skip rendering if only one step
+  if (!hasMultipleSteps) return null;
+  
+  // For landscape orientation or small heights, use a more compact hint
+  if (isLandscape || useMediaQuery("(max-height: 700px)")) {
+    return (
+      <div className={cn("flex justify-center mt-2 text-xs text-muted-foreground", className)}>
+        <div className="flex items-center gap-1 opacity-70">
+          <SwipeHorizontal className="h-3 w-3" />
+          <span>Swipe to navigate</span>
+        </div>
+      </div>
+    );
+  }
+  
   return (
-    <div className="flex justify-center mt-4 text-sm text-muted-foreground font-medium">
+    <div className={cn("flex justify-center mt-4 text-sm text-muted-foreground font-medium", className)}>
       <span className="inline-flex items-center">
         {currentStep > 0 && (
           <Button 

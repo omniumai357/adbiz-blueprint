@@ -10,6 +10,7 @@ import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigatio
 import { TourMobileView } from "./TourMobileView";
 import { TourTooltip } from "./TourTooltip";
 import { TourPath } from "./path/TourPath";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const TourGuide: React.FC = () => {
   const {
@@ -33,7 +34,7 @@ export const TourGuide: React.FC = () => {
   
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  const isMobile = useMediaQuery("(max-width: 640px)");
+  const isMobile = useIsMobile();
   
   const { userId, userType } = useUserContext();
   
@@ -106,10 +107,17 @@ export const TourGuide: React.FC = () => {
       }
       
       const stepNumber = currentStep + 1;
-      const announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+      let announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+      
+      if (isMobile) {
+        announcement += '. You can swipe left to continue or swipe right to go back.';
+      } else {
+        announcement += '. Use arrow keys to navigate.';
+      }
+      
       liveRegion.textContent = announcement;
     }
-  }, [isActive, currentStepData, currentStep, totalSteps, content]);
+  }, [isActive, currentStepData, currentStep, totalSteps, content, isMobile]);
 
   if (!isActive || !currentStepData) {
     return null;
