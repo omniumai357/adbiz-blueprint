@@ -9,7 +9,7 @@ import { useUserContext } from "@/hooks/tour/useUserContext";
 import { useTourCompletionTracker } from "@/hooks/tour/useTourCompletionTracker";
 import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigation";
 import { TourMobileView } from "./TourMobileView";
-import { TourDesktopView } from "./TourDesktopView";
+import { TourTooltip } from "./TourTooltip";
 
 export const TourGuide: React.FC = () => {
   const {
@@ -64,18 +64,16 @@ export const TourGuide: React.FC = () => {
   const highlightAnimation = currentStepData.animation?.highlight || "pulse";
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
   const exitAnimation = currentStepData.animation?.exit;
-  const transitionType = currentStepData.animation?.transition || "slide";
-  const transitionDuration = currentStepData.animation?.duration || 300;
+  
+  // Extract transition settings
+  const transition = currentStepData.transition || {
+    type: "fade" as const,
+    direction: "right" as const,
+    duration: 300
+  };
   
   // Extract spotlight settings if present
   const spotlight = currentStepData.spotlight;
-  
-  // Create transition object for components
-  const transition = {
-    type: transitionType as "fade" | "slide" | "zoom" | "flip" | "none",
-    direction: "right" as "up" | "down" | "left" | "right",
-    duration: transitionDuration
-  };
 
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
@@ -98,20 +96,25 @@ export const TourGuide: React.FC = () => {
 
   // For desktop, use tooltips that point to elements
   return (
-    <TourDesktopView
-      currentStepData={currentStepData}
+    <TourTooltip
+      targetElement={targetElement!}
+      position={currentStepData.position || "bottom"}
+      title={currentStepData.title}
       content={content}
-      targetElement={targetElement}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
+      stepInfo={`${currentStep + 1} of ${totalSteps}`}
+      onPrev={currentStep > 0 ? handlePrev : undefined}
       onNext={handleNext}
-      onPrev={handlePrev}
       onClose={handleClose}
-      highlightAnimation={highlightAnimation}
-      entryAnimation={entryAnimation}
-      exitAnimation={exitAnimation}
+      isLastStep={currentStep === totalSteps - 1}
+      animation={entryAnimation}
+      media={currentStepData.media}
+      nextLabel={currentStepData.actions?.next?.label}
+      prevLabel={currentStepData.actions?.prev?.label}
+      skipLabel={currentStepData.actions?.skip?.label}
       transition={transition}
       spotlight={spotlight}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
     />
   );
 };

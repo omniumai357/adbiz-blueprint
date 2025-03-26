@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
@@ -12,6 +11,8 @@ export type StepAnimation = {
   entry?: string;
   exit?: string;
   highlight?: string;
+  transition?: string;
+  duration?: number;
 };
 
 export type StepTrigger = {
@@ -36,6 +37,7 @@ export type TourStep = {
     type: "image" | "video" | "gif";
     url: string;
     alt?: string;
+    animation?: string;
   };
   actions?: {
     next?: {
@@ -55,6 +57,17 @@ export type TourStep = {
   triggers?: StepTrigger[];
   priority?: number;
   metadata?: Record<string, any>;
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
 };
 
 export type TourPath = {

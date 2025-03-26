@@ -92,7 +92,7 @@ export const useTooltipPosition = (
     };
   }, [targetElement, position]);
 
-  const tooltipStyles = {
+  const tooltipStyles: React.CSSProperties = {
     position: 'absolute',
     top: `${tooltipPosition.top}px`,
     left: `${tooltipPosition.left}px`,
@@ -109,7 +109,7 @@ export const useTooltipPosition = (
     transition: `opacity ${transitionDuration}ms ease-in-out, transform ${transitionDuration}ms ease-in-out`,
   };
 
-  const arrowStyles = {
+  const arrowStyles: React.CSSProperties = {
     position: 'absolute',
     top: arrowPosition.top,
     left: arrowPosition.left,

@@ -1,36 +1,24 @@
 
+import { createTourPath } from "./core/tourPathFactory";
 import { 
-  createTourPathFromGroups,
-} from './index';
+  featureStepsGroup,
+  welcomeStepsGroup
+} from "./home/step-groups";
 
-// Import step groups
-import {
-  introductionStepGroup,
-  featureHighlightsStepGroup,
-  advancedFeaturesStepGroup,
-  adminFeaturesStepGroup
-} from './home/step-groups';
-
-// Create the home tour by composing step groups
-export const homeTourPath = createTourPathFromGroups(
+export const homeTourPath = createTourPath(
   "home-tour",
   "Home Page Tour",
   [
-    'home-introduction',   // Basic intro for all users
-    'home-features',       // Feature highlights for all users
-    'home-advanced',       // Advanced features for registered users
-    'home-admin'           // Admin features only for admins
+    ...welcomeStepsGroup.steps,
+    ...featureStepsGroup.steps
   ],
   {
     allowSkip: true,
     showProgress: true,
-    // Filter out steps that don't have elements on the page
-    filterSteps: (step) => {
-      return !!document.getElementById(step.elementId);
-    },
+    autoStart: false,
     metadata: {
-      category: 'onboarding',
-      importance: 'high'
+      pageContext: "home",
+      importance: "high"
     }
   }
 );

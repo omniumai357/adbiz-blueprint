@@ -60,10 +60,7 @@ export function mediaEnhancedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      media: {
-        ...media,
-        animation: media.animation || "fade-in"
-      }
+      media
     };
   };
 }
@@ -161,6 +158,7 @@ export function visuallyEnhancedStep(
       type: "image" | "video" | "gif";
       url: string;
       alt?: string;
+      animation?: string;
     };
   }
 ): (step: TourStep) => TourStep {
