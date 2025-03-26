@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/features/auth";
+import { useService } from "@/hooks/services/useService";
 import { usePackages } from "@/hooks/queries/usePackages";
 
 /**
@@ -25,6 +26,9 @@ export function useServicesPage() {
   const [hasCompletedTour, setHasCompletedTour] = useState<boolean>(false);
   const [hasPurchased, setHasPurchased] = useState<boolean>(false);
   
+  // Use milestone service for any reward-related functionality
+  const milestoneService = useService<any>('milestone');
+  
   // Update error state if packages query fails
   useEffect(() => {
     if (packagesError) {
@@ -40,6 +44,18 @@ export function useServicesPage() {
     // Track that user has viewed this category
     if (!viewedPackages.includes(category)) {
       setViewedPackages(prev => [...prev, category]);
+      
+      // If user is authenticated, record this activity
+      if (user?.id) {
+        // Use milestone service to record activity
+        milestoneService.updateMilestoneProgress({
+          userId: user.id,
+          points: 5,
+          activityType: 'viewed_package_category',
+          referenceType: 'package_category',
+          referenceId: category
+        }).catch(err => console.error('Failed to record package view:', err));
+      }
     }
   };
   

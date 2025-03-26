@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
@@ -17,8 +17,14 @@ import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 import { AuthContextProvider } from '@/features/auth';
+import { initializeServices } from './services/registry/init';
 
 const App = () => {
+  // Initialize services when the app starts
+  useEffect(() => {
+    initializeServices();
+  }, []);
+
   return (
     <ErrorProvider>
       <AuthContextProvider>
