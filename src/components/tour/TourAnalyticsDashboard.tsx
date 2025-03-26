@@ -82,36 +82,40 @@ export const TourAnalyticsDashboard: React.FC = () => {
     const dropOffByStep: Record<string, Record<number, number>> = {};
     
     tourPaths.forEach(pathId => {
-      dropOffByStep[pathId] = {};
-      
-      const abandonEvents = analyticsData
-        .filter(item => 
-          (item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned') && 
-          (item.pathId === pathId || item.tourId === pathId) && 
-          typeof item.stepIndex === 'number'
-        );
-      
-      abandonEvents.forEach(item => {
-        if (typeof item.stepIndex === 'number') {
-          dropOffByStep[pathId][item.stepIndex] = 
-            (dropOffByStep[pathId][item.stepIndex] || 0) + 1;
-        }
-      });
+      if (pathId) {
+        dropOffByStep[pathId] = {};
+        
+        const abandonEvents = analyticsData
+          .filter(item => 
+            (item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned') && 
+            (item.pathId === pathId || item.tourId === pathId) && 
+            typeof item.stepIndex === 'number'
+          );
+        
+        abandonEvents.forEach(item => {
+          if (typeof item.stepIndex === 'number') {
+            dropOffByStep[pathId][item.stepIndex] = 
+              (dropOffByStep[pathId][item.stepIndex] || 0) + 1;
+          }
+        });
+      }
     });
     
     const result: { step: number; [key: string]: number | string }[] = [];
     
     tourPaths.forEach(pathId => {
-      const steps = Object.keys(dropOffByStep[pathId]).map(Number);
-      if (steps.length > 0) {
-        const maxStep = Math.max(...steps);
-        
-        for (let i = 0; i <= maxStep; i++) {
-          if (!result[i]) {
-            result[i] = { step: i };
-          }
+      if (pathId) {
+        const steps = Object.keys(dropOffByStep[pathId]).map(Number);
+        if (steps.length > 0) {
+          const maxStep = Math.max(...steps);
           
-          result[i][pathId] = dropOffByStep[pathId][i] || 0;
+          for (let i = 0; i <= maxStep; i++) {
+            if (!result[i]) {
+              result[i] = { step: i };
+            }
+            
+            result[i][pathId] = dropOffByStep[pathId][i] || 0;
+          }
         }
       }
     });
@@ -227,9 +231,12 @@ export const TourAnalyticsDashboard: React.FC = () => {
                 <Legend />
                 {[...new Set(analyticsData
                   .filter(item => (item.eventType === 'tour_started' || item.event === 'tour_started'))
-                  .map(item => item.pathId || item.tourId))].map((pathId, index) => (
-                  <Bar key={pathId} dataKey={pathId} fill={COLORS[index % COLORS.length]} name={pathId} />
-                ))}
+                  .map(item => item.pathId || item.tourId))]
+                  .filter(Boolean)
+                  .map((pathId, index) => (
+                    <Bar key={pathId} dataKey={pathId} fill={COLORS[index % COLORS.length]} name={pathId} />
+                  ))
+                }
               </BarChart>
             </ResponsiveContainer>
           </TabsContent>

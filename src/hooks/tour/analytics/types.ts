@@ -16,9 +16,9 @@ export interface TourAnalyticsData {
   interactionType?: TourInteractionType;
   timestamp: number;
   metadata?: Record<string, any>;
-  // Added properties to fix errors
-  event: TourAnalyticsEventType;
-  pathId: string;
+  // Added properties for backward compatibility
+  event?: TourAnalyticsEventType;
+  pathId?: string;
 }
 
 export type TourAnalyticsEventType = 
@@ -49,7 +49,16 @@ export type TourInteractionType =
   | 'jump_backward'
   | 'zoom'
   | 'pan'
-  | 'show_shortcut_help';
+  | 'show_shortcut_help'
+  | 'completed'
+  | 'go_back'
+  | 'jump_to_step_0' // Supporting dynamic step jump interactions
+  | 'jump_to_step_1'
+  | 'jump_to_step_2'
+  | 'jump_to_step_3'
+  | 'jump_to_step_4'
+  | 'jump_to_step_5'
+  | string; // Allow string for dynamic step interactions
 
 export type TourAnalyticsEvent = {
   type: TourAnalyticsEventType;

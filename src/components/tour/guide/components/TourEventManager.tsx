@@ -18,9 +18,12 @@ export const TourEventManager: React.FC = () => {
   
   const { userId, userType } = useUserContext();
   
+  // Get current path ID safely
+  const currentPathId = currentPath ? currentPath.id : null;
+  
   const { handleNext, handlePrev, handleClose } = useTourInteractions(
     currentStepData,
-    currentPath?.id || null,
+    currentPathId,
     availablePaths,
     currentStep,
     userId,

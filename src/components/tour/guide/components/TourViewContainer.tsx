@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { useTour } from "@/contexts/tour";
 import { useDevice } from "@/hooks/use-mobile";
@@ -32,11 +31,13 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   const desktopViewRef = useRef<TourDesktopViewHandle>(null);
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   
+  const currentPathId = currentPath ? currentPath.id : null;
+  
   const { content } = useTourDynamicContent(currentStepData, setDynamicContent);
   
   const { handleNext, handlePrev, handleClose } = useTourInteractions(
     currentStepData,
-    currentPath?.id || null,
+    currentPathId,
     availablePaths,
     currentStep,
     userId,
@@ -67,8 +68,6 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   
   const spotlight = currentStepData.spotlight;
   
-  // Enhanced device-specific rendering
-  // Use mobile view for mobile devices and tablets in portrait mode
   const useMobileView = isMobile || (isTablet && hasTouchCapability);
   
   return useMobileView ? (

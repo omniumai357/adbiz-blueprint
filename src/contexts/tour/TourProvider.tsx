@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
@@ -8,7 +7,7 @@ import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
 import { TourThemeName } from '@/lib/tour/types/theme';
 import { defaultContext } from './defaults';
-import { TourContextType } from './types';
+import { TourContextType, TourPath } from './types';
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -67,16 +66,34 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     };
   }, [theme]);
   
-  // Combine the controller with our custom config
-  const contextValue: TourContextType = {
+  // Adapt the tour controller to match the TourContextType
+  const adaptedController: TourContextType = {
     ...defaultContext,
     ...tourController,
     customConfig,
-    setCustomConfig
+    setCustomConfig,
+    // Make sure currentPath is a TourPath object
+    currentPath: tourController.currentPath ? 
+      (typeof tourController.currentPath === 'string' ? 
+        tourController.availablePaths.find(p => p.id === tourController.currentPath) || null : 
+        tourController.currentPath) : 
+      null,
+    // Make sure setDynamicContent has the correct signature
+    setDynamicContent: (content: string) => {
+      if (typeof tourController.setDynamicContent === 'function') {
+        // If the original function takes two args, we'll pass the current step id as first arg
+        if (tourController.setDynamicContent.length > 1 && tourController.currentStepData) {
+          tourController.setDynamicContent(tourController.currentStepData.id, content);
+        } else {
+          // Otherwise just pass the content
+          tourController.setDynamicContent(content);
+        }
+      }
+    }
   };
   
   return (
-    <TourContext.Provider value={contextValue}>
+    <TourContext.Provider value={adaptedController}>
       <TourAnnouncer 
         isActive={tourController.isActive}
         currentStepData={tourController.currentStepData}

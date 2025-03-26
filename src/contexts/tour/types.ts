@@ -112,7 +112,7 @@ export interface TourContextType {
   currentStep: number;
   totalSteps: number;
   currentStepData: TourStep | null;
-  currentPath: string | null; // Change to string to match implementation
+  currentPath: TourPath | null; // Changed from string to TourPath
   availablePaths: TourPath[];
   nextStep: () => void;
   prevStep: () => void;
@@ -125,7 +125,7 @@ export interface TourContextType {
   goToPath: (pathId: string, stepIndex?: number) => void;
   registerPath: (path: TourPath) => void;
   unregisterPath: (pathId: string) => void;
-  setDynamicContent: (content: string) => void;
+  setDynamicContent: (content: string) => void; // Changed to match implementation
   setAvailablePaths: (paths: TourPath[]) => void;
   customConfig: {
     theme: TourThemeName;

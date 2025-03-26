@@ -1,5 +1,5 @@
 
-import { TourAnalyticsEvent, TourAnalyticsData, TourAnalyticsEventType } from './types';
+import { TourAnalyticsEvent, TourAnalyticsData, TourAnalyticsEventType, TourInteractionType } from './types';
 import { storeAnalyticsData } from './storage-service';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 
@@ -10,12 +10,13 @@ import { TourPath, TourStep } from '@/contexts/tour/types';
  */
 export const trackEvent = (
   event: TourAnalyticsEventType,
-  data: Omit<TourAnalyticsData, 'timestamp' | 'event'>
+  data: Omit<TourAnalyticsData, 'timestamp' | 'event' | 'eventType'>
 ) => {
   // Create the full analytics data object
   const analyticsData: TourAnalyticsData = {
     ...data,
-    event: event,
+    event: event, // For backward compatibility
+    eventType: event,
     timestamp: Date.now(),
   };
 
@@ -43,6 +44,8 @@ export const trackTourStarted = (
     pathId: pathId,
     tourId: pathId,
     tourName: pathName,
+    userId,
+    userType,
   });
 };
 
@@ -149,7 +152,7 @@ export const trackStepInteraction = (
   tourPath: TourPath | string,
   step: TourStep,
   stepIndex: number,
-  interactionType: string,
+  interactionType: TourInteractionType,
   userId?: string,
   userType?: string
 ) => {
