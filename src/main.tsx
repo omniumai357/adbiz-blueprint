@@ -1,19 +1,11 @@
-
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { Toaster } from '@/components/ui/toaster'
-import { ReactQueryProvider } from "@/providers/ReactQueryProvider"
-import App from './App'
-import './index.css'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './index.css';
+import './i18n';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ReactQueryProvider>
-      <BrowserRouter>
-        <App />
-        <Toaster />
-      </BrowserRouter>
-    </ReactQueryProvider>
+    <App />
   </React.StrictMode>,
-)
+);

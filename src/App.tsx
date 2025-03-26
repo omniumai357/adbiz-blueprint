@@ -1,6 +1,9 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { LanguageProvider } from './contexts/language-context';
+import './App.css';
+import './i18n';
 
-import React, { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
 import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -21,37 +24,40 @@ import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 import { AuthContextProvider } from '@/features/auth';
 import { initializeServices } from './services/registry/init';
 
-const App = () => {
-  // Initialize services when the app starts
+const App: React.FC = () => {
   useEffect(() => {
     initializeServices();
   }, []);
 
   return (
-    <ErrorProvider>
-      <AuthContextProvider>
-        <ErrorBoundary>
-          <Routes>
-            <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
-            <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
-            <Route path="/receipts" element={<Receipts />} />
-            <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
-            <Route path="/rewards" element={<Rewards />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/signup" element={<Auth />} />
-            <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
-          </Routes>
-          <Toaster />
-          <Sonner />
-          <TourGuide />
-          <TourHeaderButton />
-          <WelcomeTourModal />
-        </ErrorBoundary>
-      </AuthContextProvider>
-    </ErrorProvider>
+    <BrowserRouter>
+      <LanguageProvider>
+        <ErrorProvider>
+          <AuthContextProvider>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
+                <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
+                <Route path="/receipts" element={<Receipts />} />
+                <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
+                <Route path="/rewards" element={<Rewards />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/signup" element={<Auth />} />
+                <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
+              </Routes>
+              <Toaster />
+              <Sonner />
+              <TourGuide />
+              <TourHeaderButton />
+              <WelcomeTourModal />
+            </ErrorBoundary>
+          </AuthContextProvider>
+        </ErrorProvider>
+      </LanguageProvider>
+    </BrowserRouter>
   );
 };
 

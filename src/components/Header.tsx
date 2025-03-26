@@ -1,177 +1,59 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/auth-context";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from './language/LanguageSelector';
+import { useAuth } from "@/features/auth";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LogOut } from "lucide-react";
 
-const Header = () => {
-  const navigate = useNavigate();
-  const [isMounted, setIsMounted] = useState(false);
+const Header: React.FC = () => {
+  const { t } = useTranslation();
   
-  // Create a safe version of useAuth that provides defaults if outside of AuthProvider
-  let authContext;
-  try {
-    authContext = useAuth();
-  } catch (e) {
-    console.error("Auth context not available:", e);
-    authContext = {
-      isAuthenticated: false,
-      signOut: () => {},
-      user: null,
-      profile: null
-    };
-  }
-  
-  const { isAuthenticated, signOut, user, profile } = authContext;
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const handleLogout = () => {
-    signOut();
-    navigate("/");
-  };
+  const { user, signOut } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
-      <div className="container flex items-center justify-between h-16 px-4">
-        <Link to="/" className="text-2xl font-bold">
-          Your Brand
+    <header className="bg-white shadow">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link to="/" className="text-xl font-bold">
+          My App
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link to="/" className="text-sm font-medium hover:text-primary">
-            Home
-          </Link>
-          <Link to="/services" className="text-sm font-medium hover:text-primary">
-            Services
-          </Link>
-          <Link to="/about" className="text-sm font-medium hover:text-primary">
-            About
-          </Link>
-          <Link to="/contact" className="text-sm font-medium hover:text-primary">
-            Contact
-          </Link>
-          {isAuthenticated && (
-            <>
-              <Link to="/rewards" className="text-sm font-medium hover:text-primary">
-                Rewards
-              </Link>
-              <Link to="/receipts" className="text-sm font-medium hover:text-primary">
-                My Receipts
-              </Link>
-            </>
-          )}
-          
-          {isAuthenticated ? (
+        <div className="flex items-center gap-4">
+          <LanguageSelector variant="minimal" />
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0 rounded-full">
                   <Avatar className="h-8 w-8">
-                    {isMounted && profile?.avatar_url ? (
-                      <AvatarImage src={profile?.avatar_url} alt={profile?.first_name || "Avatar"} />
-                    ) : (
-                      <AvatarFallback>{profile?.first_name?.charAt(0)}{profile?.last_name?.charAt(0)}</AvatarFallback>
-                    )}
+                    <AvatarImage src={user?.image} alt={user?.name || "Avatar"} />
+                    <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">Profile</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span>{t('auth.signOut')}</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="space-x-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
-                Log In
-              </Button>
-              <Button size="sm" onClick={() => navigate("/auth?tab=signup")}>
-                Sign Up
-              </Button>
-            </div>
+            <>
+              <Link to="/sign-in">
+                <Button variant="outline">{t('auth.signIn')}</Button>
+              </Link>
+              <Link to="/sign-up">
+                <Button>{t('auth.signUp')}</Button>
+              </Link>
+            </>
           )}
-        </nav>
-        
-        <Sheet>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <Menu className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full sm:w-64">
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-              <SheetDescription>
-                Navigate through the app.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="grid gap-4 py-4">
-              <Link to="/" className="text-sm font-medium hover:text-primary">
-                Home
-              </Link>
-              <Link to="/services" className="text-sm font-medium hover:text-primary">
-                Services
-              </Link>
-              <Link to="/about" className="text-sm font-medium hover:text-primary">
-                About
-              </Link>
-              <Link to="/contact" className="text-sm font-medium hover:text-primary">
-                Contact
-              </Link>
-              {isAuthenticated && (
-                <>
-                  <Link to="/rewards" className="text-sm font-medium hover:text-primary">
-                    Rewards
-                  </Link>
-                  <Link to="/receipts" className="text-sm font-medium hover:text-primary">
-                    My Receipts
-                  </Link>
-                </>
-              )}
-              {!isAuthenticated ? (
-                <div className="space-y-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate("/auth")}>
-                    Log In
-                  </Button>
-                  <Button size="sm" onClick={() => navigate("/auth?tab=signup")}>
-                    Sign Up
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate("/profile")}>
-                    Profile
-                  </Button>
-                  <Button size="sm" onClick={handleLogout}>
-                    Logout
-                  </Button>
-                </div>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+        </div>
       </div>
     </header>
   );

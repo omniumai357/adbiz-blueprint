@@ -1,0 +1,44 @@
+
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Se produjo un error",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "submit": "Enviar",
+    "back": "Atrás",
+    "next": "Siguiente"
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "signUp": "Registrarse",
+    "signOut": "Cerrar Sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidó su contraseña?",
+    "createAccount": "Crear una cuenta",
+    "alreadyHaveAccount": "¿Ya tiene una cuenta?"
+  },
+  "rewards": {
+    "title": "Recompensas",
+    "description": "Gane puntos y desbloquee descuentos especiales",
+    "yourProgress": "Su Progreso",
+    "pointsEarned": "Ha ganado {{points}} puntos en total",
+    "availableRewards": "Recompensas Disponibles",
+    "completedMilestones": "Hitos Completados",
+    "claimReward": "Reclamar Recompensa",
+    "claimed": "Reclamada",
+    "pointsToGo": "{{points}} puntos por recorrer",
+    "rewardClaimed": "Recompensa Reclamada",
+    "noMilestones": "No Hay Hitos Disponibles",
+    "startEarning": "¡Comience a usar nuestros servicios para ganar puntos y desbloquear recompensas!"
+  },
+  "language": {
+    "selectLanguage": "Seleccionar Idioma",
+    "en": "English",
+    "es": "Español",
+    "fr": "Français"
+  }
+}

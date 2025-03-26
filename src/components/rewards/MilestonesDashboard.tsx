@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { MilestoneCard } from "./MilestoneCard";
 import RewardCard from "./RewardCard";
 import { useMilestones } from "@/hooks/rewards/useMilestones";
@@ -15,6 +16,7 @@ interface MilestonesDashboardProps {
 }
 
 const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
+  const { t } = useTranslation();
   const {
     milestones,
     completedMilestones,
@@ -44,9 +46,9 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
 
   const EmptyMilestones = () => (
     <div className="p-6 text-center border rounded-lg">
-      <h3 className="text-lg font-medium mb-2">No Milestones Available</h3>
+      <h3 className="text-lg font-medium mb-2">{t('rewards.noMilestones')}</h3>
       <p className="text-muted-foreground">
-        Start using our services to earn points and unlock rewards!
+        {t('rewards.startEarning')}
       </p>
     </div>
   );
@@ -63,15 +65,17 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
       <div className="space-y-6">
         {/* Progress Overview */}
         <div className="bg-gradient-to-r from-slate-50 to-white p-6 rounded-lg border shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">Your Progress</h2>
-          <p className="text-muted-foreground mb-4">You've earned {totalPoints} total points</p>
+          <h2 className="text-xl font-semibold mb-2">{t('rewards.yourProgress')}</h2>
+          <p className="text-muted-foreground mb-4">
+            {t('rewards.pointsEarned', { points: totalPoints })}
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Available Rewards</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('rewards.availableRewards')}</h3>
               <p className="text-2xl font-bold">{availableRewards.length}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Completed Milestones</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('rewards.completedMilestones')}</h3>
               <p className="text-2xl font-bold">{completedMilestones.length}</p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
@@ -27,6 +28,8 @@ interface RewardCardProps {
  * @param disabled - Whether the claim button should be disabled
  */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
+  const { t } = useTranslation();
+  
   /**
    * Handles the user clicking the claim button
    * Calls the onClaim function with the milestone ID
@@ -68,7 +71,7 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
           className="w-full"
         >
           <Sparkles className="h-4 w-4 mr-2" />
-          {reward.is_claimed ? 'Claimed' : 'Claim Reward'}
+          {reward.is_claimed ? t('rewards.claimed') : t('rewards.claimReward')}
         </Button>
       </CardFooter>
     </Card>

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   onClaimReward,
   isClaimingReward = false
 }) => {
+  const { t } = useTranslation();
   const progress = Math.min(100, Math.round((currentPoints / pointsRequired) * 100));
   const pointsRemaining = pointsRequired - currentPoints;
   
@@ -57,7 +59,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
                 <Progress value={progress} className="h-2" />
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                   <Clock className="h-3 w-3" />
-                  <span>{pointsRemaining} points to go</span>
+                  <span>{t('rewards.pointsToGo', { points: pointsRemaining })}</span>
                 </p>
               </div>
             )}
@@ -73,7 +75,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
             className="w-full"
             variant="default"
           >
-            {isClaimingReward ? "Processing..." : "Claim Reward"}
+            {isClaimingReward ? "Processing..." : t('rewards.claimReward')}
           </Button>
         </CardFooter>
       )}
@@ -82,7 +84,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
         <CardFooter className="bg-green-50 px-6 py-3">
           <div className="w-full flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
             <CheckCircle className="h-4 w-4" />
-            <span>Reward Claimed</span>
+            <span>{t('rewards.rewardClaimed')}</span>
           </div>
         </CardFooter>
       )}
