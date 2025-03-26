@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerFooter } from "@/components/ui/drawer";
@@ -7,6 +7,7 @@ import { TourOverlay } from "./TourOverlay";
 import { TourStep } from "@/contexts/tour-context";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { useTourGestures } from "@/hooks/tour/useTourGestures";
 
 interface TourMobileViewProps {
   currentStepData: TourStep;
@@ -44,44 +45,35 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   transition,
   spotlight
 }) => {
-  // Handle swipe gestures for mobile
-  const handleTouchStart = React.useRef<number | null>(null);
-  const handleTouchMove = React.useRef<number | null>(null);
-  const [progressValue, setProgressValue] = React.useState(0);
+  const [progressValue, setProgressValue] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
   
-  React.useEffect(() => {
-    // Calculate progress percentage
+  // Calculate progress percentage
+  useEffect(() => {
     setProgressValue(((currentStep + 1) / totalSteps) * 100);
   }, [currentStep, totalSteps]);
   
-  const onTouchStart = (e: React.TouchEvent) => {
-    handleTouchStart.current = e.targetTouches[0].clientX;
-  };
+  // Initialize gesture handlers
+  const { touchHandlers } = useTourGestures({
+    onSwipeLeft: onNext,
+    onSwipeRight: currentStep > 0 ? onPrev : undefined,
+  });
   
-  const onTouchMove = (e: React.TouchEvent) => {
-    handleTouchMove.current = e.targetTouches[0].clientX;
-  };
-  
-  const onTouchEnd = () => {
-    if (!handleTouchStart.current || !handleTouchMove.current) return;
-    
-    const diff = handleTouchStart.current - handleTouchMove.current;
-    const threshold = 50; // Minimum swipe distance
-    
-    if (diff > threshold) {
-      // Swiped left - go next
-      onNext();
-    } else if (diff < -threshold) {
-      // Swiped right - go previous
-      if (currentStep > 0) {
-        onPrev();
-      }
+  // Ensure target element is scrolled into view with a smooth animation
+  useEffect(() => {
+    if (targetElement && targetElement.scrollIntoView) {
+      setIsScrolling(true);
+      const timeout = setTimeout(() => {
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center'
+        });
+        // Reset scrolling state after animation completes
+        setTimeout(() => setIsScrolling(false), 500);
+      }, 100);
+      return () => clearTimeout(timeout);
     }
-    
-    // Reset values
-    handleTouchStart.current = null;
-    handleTouchMove.current = null;
-  };
+  }, [targetElement, currentStep]);
 
   // Animation class mappings with enhanced options
   const animationClasses = {
@@ -115,7 +107,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   // Render step dots to show progress
   const renderStepDots = () => {
     return (
-      <div className="flex justify-center space-x-1 mt-2">
+      <div className="flex justify-center space-x-1.5 mt-2">
         {Array.from({ length: totalSteps }).map((_, index) => (
           <div 
             key={index}
@@ -127,6 +119,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
                   ? "bg-primary/60" 
                   : "bg-gray-300"
             )}
+            aria-label={`Step ${index + 1} of ${totalSteps}`}
           />
         ))}
       </div>
@@ -185,18 +178,6 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   const prevLabel = currentStepData.actions?.prev?.label;
   const skipLabel = currentStepData.actions?.skip?.label;
 
-  // Ensure target element is scrolled into view with a smooth animation when available
-  React.useEffect(() => {
-    if (targetElement && targetElement.scrollIntoView) {
-      setTimeout(() => {
-        targetElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center'
-        });
-      }, 100);
-    }
-  }, [targetElement, currentStep]);
-
   return (
     <>
       <TourOverlay 
@@ -219,9 +200,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
           
           <div 
             className="px-4 pb-4 text-muted-foreground"
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
+            {...touchHandlers}
           >
             {/* Progress bar */}
             <Progress value={progressValue} className="h-1 mb-4" />

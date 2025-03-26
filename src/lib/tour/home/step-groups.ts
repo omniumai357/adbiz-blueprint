@@ -7,7 +7,8 @@ import {
   dynamicContentStep,
   roleRestrictedStep,
   stepInGroup,
-  transitionStep
+  transitionStep,
+  spotlightStep
 } from '@/lib/tour/index';
 
 /**
@@ -25,7 +26,6 @@ export const introductionStepGroup = createStepGroup(
         'This is our homepage where you can learn about our services and get started with our platform.',
         'bottom'
       ),
-      // Compose enhancers by creating a function that applies both enhancers
       step => {
         // Apply stepInGroup first
         const withGroup = stepInGroup('home-introduction')(step);
@@ -81,10 +81,13 @@ export const featureHighlightsStepGroup = createStepGroup(
       ),
       step => {
         const withGroup = stepInGroup('home-features')(step);
-        return transitionStep({
+        return spotlightStep({
+          intensity: "medium",
+          pulseEffect: true
+        })(transitionStep({
           type: "fade",
           duration: 300
-        })(withGroup);
+        })(withGroup));
       }
     ),
     
@@ -98,10 +101,13 @@ export const featureHighlightsStepGroup = createStepGroup(
       ),
       step => {
         const withGroup = stepInGroup('home-features')(step);
-        return transitionStep({
+        return spotlightStep({
+          intensity: "high",
+          color: "rgba(99, 102, 241, 0.7)"
+        })(transitionStep({
           type: "zoom",
           duration: 350
-        })(withGroup);
+        })(withGroup));
       }
     ),
   ],

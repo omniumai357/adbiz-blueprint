@@ -59,13 +59,6 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
       window.addEventListener('resize', updateDimensions);
       window.addEventListener('scroll', updateDimensions);
       
-      // Scroll element into view with a small offset
-      targetElement.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'center' 
-      });
-
       return () => {
         window.removeEventListener('resize', updateDimensions);
         window.removeEventListener('scroll', updateDimensions);
@@ -89,11 +82,11 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
     
     const intensity = spotlight.intensity || "medium";
     const { shadow, blur } = intensityMap[intensity];
-    const color = spotlight.color || "rgba(139, 92, 246, 0.7)";
+    const color = spotlight.color || "rgba(99, 102, 241, 0.7)"; // Updated to use indigo color for consistency
     
     return {
       boxShadow: `${shadow} ${color}`,
-      backdropFilter: spotlight.fadeBackground ? `brightness(${blur})` : "brightness(60%)",
+      backdropFilter: spotlight.fadeBackground ? `brightness(${blur})` : "brightness(65%)",
     };
   };
 
@@ -113,7 +106,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
       case "bounce":
         return "animate-bounce border-primary";
       case "glow":
-        return "border-primary shadow-[0_0_10px_2px_rgba(139,92,246,0.7)]";
+        return "border-primary shadow-[0_0_10px_3px_rgba(99,102,241,0.7)]";
       case "ping":
         return "animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] border-primary";
       case "solid":
@@ -121,13 +114,13 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
       case "dashed":
         return "border-dashed border-primary animate-pulse";
       case "spotlight":
-        return "border-primary shadow-[0_0_15px_5px_rgba(139,92,246,0.8)]";
+        return "border-primary shadow-[0_0_15px_5px_rgba(99,102,241,0.8)]";
       case "highlight-pulse":
-        return "border-primary shadow-[0_0_12px_3px_rgba(139,92,246,0.6)] animate-pulse";
+        return "border-primary shadow-[0_0_12px_3px_rgba(99,102,241,0.7)] animate-pulse";
       case "focus-ring":
-        return "border-primary shadow-[0_0_0_4px_rgba(139,92,246,0.3)] scale-105";
+        return "border-primary shadow-[0_0_0_4px_rgba(99,102,241,0.3)] scale-105";
       case "zoom-pulse":
-        return "border-primary shadow-[0_0_12px_3px_rgba(139,92,246,0.6)] animate-[scale-pulse_1.5s_ease-in-out_infinite]";
+        return "border-primary shadow-[0_0_12px_3px_rgba(99,102,241,0.7)] animate-[pulse_2s_ease-in-out_infinite]";
       default:
         return "animate-pulse border-primary";
     }
@@ -150,15 +143,17 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
   // Enhanced overlay with improved animations and transitions
   return (
     <div 
-      className={cn("fixed inset-0 z-50 pointer-events-none", getAnimationClass())}
-      style={{ 
-        backdropFilter: 'brightness(60%)', 
-        zIndex: 9998,
-        opacity: visible ? 1 : 0,
-        ...getTransitionStyle(),
-        ...getSpotlightStyles()
-      }}
+      className={cn("fixed inset-0 z-50 pointer-events-none overflow-hidden", getAnimationClass())}
+      style={{ zIndex: 9998 }}
     >
+      <div 
+        className={cn("fixed inset-0 bg-black/50 pointer-events-none", getAnimationClass())}
+        style={{ 
+          opacity: visible ? 1 : 0,
+          ...getTransitionStyle(),
+          ...getSpotlightStyles()
+        }}
+      />
       {/* Enhanced cutout area with better animations */}
       <div
         className={cn(
