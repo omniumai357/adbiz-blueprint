@@ -1,3 +1,4 @@
+
 export interface TourStep {
   id: string;
   title: string;
@@ -36,7 +37,17 @@ export interface TourStep {
   onBeforeStep?: () => Promise<boolean> | boolean;
   onAfterStep?: () => void;
   delay?: number;
-  animation?: string;
+  animation?: string | {
+    entry?: string;
+    highlight?: string;
+    exit?: string;
+  };
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
   disableOverlay?: boolean;
   disableScrolling?: boolean;
   disableCloseOnEsc?: boolean;
@@ -51,4 +62,90 @@ export interface TourStep {
     enable?: boolean;
     intensity?: number;
   };
+  // Add additional properties needed by enhancers
+  metadata?: Record<string, any>;
+  dependencies?: string[];
+  triggers?: {
+    event: string;
+    element?: string;
+    condition?: () => boolean;
+    action: () => void;
+  }[];
+  priority?: number;
+  userRoles?: string[];
+  path?: string;
+  spotlight?: {
+    intensity?: "low" | "medium" | "high"; 
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  keyboardShortcuts?: Record<string, string>;
+}
+
+export interface TourPath {
+  id: string;
+  name?: string;
+  steps: TourStep[];
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  config?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    autoStart?: boolean;
+    completionCallback?: () => void;
+    metadata?: Record<string, any>;
+    userRoles?: string[];
+    accessibility?: {
+      announceSteps?: boolean;
+      keyboardNavigation?: boolean;
+      restoreFocus?: boolean;
+      focusTrap?: boolean;
+    };
+  };
+}
+
+export interface TourContextType {
+  isActive: boolean;
+  currentStep: number;
+  totalSteps: number;
+  currentStepData: TourStep | null;
+  currentPath: TourPath | null | string;
+  availablePaths: TourPath[];
+  
+  // Tour navigation
+  nextStep: () => void;
+  prevStep: () => void;
+  goToStep: (step: number) => void;
+  startTour: (pathId: string) => void;
+  endTour: () => void;
+  pauseTour: () => void;
+  resumeTour: () => void;
+  resetTour: () => void;
+  goToPath: (pathId: string) => void;
+  
+  // Tour state management
+  registerPath: (path: TourPath) => void;
+  unregisterPath: (pathId: string) => void;
+  setDynamicContent: (stepId: string, content: string) => void;
+  setAvailablePaths: (paths: TourPath[]) => void;
+  
+  // Custom configuration
+  customConfig: {
+    theme?: string;
+    isMobile?: boolean;
+    [key: string]: any;
+  };
+  setCustomConfig: (config: any) => void;
+  
+  // Additional properties
+  handleKeyNavigation: (event: KeyboardEvent) => void;
+  visibleSteps: TourStep[];
+  content: string;
 }

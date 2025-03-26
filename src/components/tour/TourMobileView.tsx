@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -67,8 +68,15 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
     preventDefaultOnSwipe: true,
   });
   
+  // Extract entry animation based on the animation type
+  const entryAnimation = typeof currentStepData.animation === 'object' && currentStepData.animation?.entry 
+    ? currentStepData.animation.entry 
+    : typeof currentStepData.animation === 'string' 
+      ? currentStepData.animation 
+      : "fade-in";
+  
   const { animationClass } = useTooltipAnimation(
-    currentStepData.animation?.entry || "fade-in",
+    entryAnimation,
     transition
   );
   

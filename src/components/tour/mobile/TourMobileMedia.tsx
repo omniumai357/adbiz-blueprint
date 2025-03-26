@@ -1,7 +1,7 @@
 
 import React from "react";
 import { TourMedia } from "../tooltip/TourMedia";
-import { TourStep } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour/types";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
