@@ -10,6 +10,8 @@ import { useTourContent } from './controller/use-tour-content';
 import { useTourHandlers } from './controller/use-tour-handlers';
 import { useTourKeyboard } from './controller/use-tour-keyboard';
 import { getCurrentStepData } from './controller/step-processor';
+import { useTourInteractions } from './controller/interactions/use-tour-interactions';
+import { useTourAccessibility } from './controller/accessibility/use-tour-accessibility';
 
 /**
  * Custom hook for managing tour state and navigation
@@ -118,43 +120,30 @@ export function useTourController(
       }
     }
   );
+  
+  // Tour interactions for handling user actions
+  const interactions = useTourInteractions(
+    getCurrentStepData(visibleSteps, currentStep),
+    currentPath,
+    tourPaths,
+    currentStep,
+    userId,
+    userType,
+    { nextStep, prevStep, endTour }
+  );
+
+  // Accessibility enhancements
+  const accessibility = useTourAccessibility(
+    isActive,
+    currentStep,
+    totalSteps,
+    getCurrentStepData(visibleSteps, currentStep)
+  );
 
   // Handle keyboard navigation
-  const handleNavigationAction = useCallback((
-    event: React.KeyboardEvent | KeyboardEvent, 
-    action: 'next' | 'previous' | 'first' | 'last' | 'close' | 'jump_forward' | 'jump_backward' | 'show_shortcuts_help'
-  ) => {
-    event.preventDefault();
-    
-    switch (action) {
-      case 'next':
-        nextStep();
-        break;
-      case 'previous':
-        prevStep();
-        break;
-      case 'first':
-        goToStep(0);
-        break;
-      case 'last':
-        goToStep(visibleSteps.length - 1);
-        break;
-      case 'jump_forward':
-        goToStep(Math.min(currentStep + 3, visibleSteps.length - 1));
-        break;
-      case 'jump_backward':
-        goToStep(Math.max(currentStep - 3, 0));
-        break;
-      case 'close':
-        endTour();
-        break;
-      // 'show_shortcuts_help' is handled by the component using this hook
-    }
-  }, [nextStep, prevStep, goToStep, endTour, currentStep, visibleSteps.length]);
-
   const { handleKeyNavigation } = useTourKeyboard(
     isActive,
-    handleNavigationAction,
+    interactions.handleNavigationAction,
     {
       enableHomeEndKeys: true,
       enablePageKeys: true,
@@ -168,12 +157,15 @@ export function useTourController(
   
   // Get dynamic content for current step
   const content = currentStepData ? getContentForStep(currentStepData) : '';
+  
+  // Calculate total steps
+  const totalSteps = visibleSteps?.length || 0;
 
   return {
     isActive,
     currentPath,
     currentStep,
-    totalSteps: visibleSteps.length,
+    totalSteps,
     startTour,
     endTour,
     nextStep,
@@ -185,5 +177,7 @@ export function useTourController(
     visibleSteps,
     setDynamicContent,
     content,
+    ...interactions,
+    ...accessibility
   };
 }

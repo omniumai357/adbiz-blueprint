@@ -45,6 +45,70 @@ export function useTourInteractions(
     analytics.trackStepInteraction,
     { nextStep, prevStep, endTour }
   );
+  
+  // Handle navigation actions (used by keyboard shortcuts)
+  const handleNavigationAction = useCallback((
+    event: React.KeyboardEvent | KeyboardEvent, 
+    action: 'next' | 'previous' | 'first' | 'last' | 'close' | 'jump_forward' | 'jump_backward' | 'show_shortcuts_help'
+  ) => {
+    event.preventDefault();
+    
+    switch (action) {
+      case 'next':
+        buttonInteractions.handleNext();
+        break;
+      case 'previous':
+        buttonInteractions.handlePrev();
+        break;
+      case 'first':
+        // Logic to go to first step
+        analytics.trackStepInteraction('jump_to_first', { 
+          userId, 
+          userType,
+          currentPath,
+          currentStep
+        });
+        // Implementation would go here
+        break;
+      case 'last':
+        // Logic to go to last step
+        analytics.trackStepInteraction('jump_to_last', { 
+          userId, 
+          userType,
+          currentPath,
+          currentStep
+        });
+        // Implementation would go here
+        break;
+      case 'jump_forward':
+        // Logic to jump forward multiple steps
+        analytics.trackStepInteraction('jump_forward', { 
+          userId, 
+          userType,
+          currentPath,
+          currentStep
+        });
+        // Implementation would go here
+        break;
+      case 'jump_backward':
+        // Logic to jump backward multiple steps
+        analytics.trackStepInteraction('jump_backward', { 
+          userId, 
+          userType,
+          currentPath,
+          currentStep
+        });
+        // Implementation would go here
+        break;
+      case 'close':
+        buttonInteractions.handleClose();
+        break;
+      // 'show_shortcuts_help' would be handled by the component using this hook
+    }
+  }, [buttonInteractions, analytics, userId, userType, currentPath, currentStep]);
 
-  return buttonInteractions;
+  return {
+    ...buttonInteractions,
+    handleNavigationAction
+  };
 }
