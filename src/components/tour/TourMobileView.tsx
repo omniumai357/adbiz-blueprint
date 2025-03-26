@@ -1,9 +1,9 @@
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerFooter } from "@/components/ui/drawer";
 import { TourOverlay } from "./TourOverlay";
-import { TourStep } from "@/contexts/tour-context";
 import { cn } from "@/lib/utils";
 import { useTourGestures } from "@/hooks/tour/useTourGestures";
 import { TourMobileProgress } from "./mobile/TourMobileProgress";
@@ -130,7 +130,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
           onClose={onClose}
           animationClass={animationClass}
           touchHandlers={touchHandlers}
-          deviceType={actualDeviceType}
+          deviceType={actualDeviceType as "mobile" | "tablet" | "desktop"}
         />
       )}
     </>

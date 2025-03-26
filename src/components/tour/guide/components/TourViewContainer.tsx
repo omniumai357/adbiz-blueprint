@@ -112,6 +112,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
       totalSteps={totalSteps}
       showKeyboardShortcuts={showKeyboardShortcutsHelp}
       tooltipRef={tooltipRef}
+      hasTouchCapability={hasTouchCapability}
     />
   );
 };
