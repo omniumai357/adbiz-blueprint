@@ -100,7 +100,9 @@ export function useTourAnalyticsIntegration(
       handlers
     };
 
-    handleKeyNavigation(event, navigationConfig);
+    // Pass event and navigationConfig to the handleKeyNavigation function
+    // Fixing the error by passing the correct number of arguments (3)
+    handleKeyNavigation(event, navigationConfig, handlers);
   }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction, goToStep, showKeyboardShortcutsHelp]);
 
   return {
