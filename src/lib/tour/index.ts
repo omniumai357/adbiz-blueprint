@@ -2,9 +2,27 @@
 // Re-export core tour path and step creation functions
 export { 
   createTourPath,
+  createTourPathFromGroups,
   createStep,
   enhanceStep
 } from './core/tourPathFactory';
+
+// Re-export step group functions
+export {
+  createStepGroup,
+  getStepGroup,
+  getAllStepGroups,
+  composeStepGroups,
+  stepInGroup
+} from './core/tourStepGroups';
+
+// Re-export tour composition utilities
+export {
+  createCustomTour,
+  createOnboardingTour,
+  createFeatureTour,
+  getStepGroupsByTag
+} from './utils/tour-composer';
 
 // Re-export condition enhancers
 export { 
