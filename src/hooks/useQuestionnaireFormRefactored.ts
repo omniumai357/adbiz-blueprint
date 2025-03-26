@@ -79,7 +79,7 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
   
   // File uploads
   const { files, uploading } = useFileUploadContext();
-  const { uploadAllFiles, isUploading } = useFileUploadService();
+  const { uploadFile, isUploading } = useFileUploadService();
   
   // Form submission
   const { submitting, submitQuestionnaire } = useQuestionnaireSubmit();
@@ -127,8 +127,37 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
   const onSubmit = async (data: QuestionnaireFormValues) => {
     const businessId = generateUniqueId('business');
     
-    // Upload files first
-    const filesUploaded = await uploadAllFiles(businessId);
+    // Handle file uploads manually since we don't have uploadAllFiles method
+    let filesUploaded = true;
+    
+    try {
+      // Upload logo if exists
+      if (files.logo) {
+        const logoUrl = await uploadFile(files.logo, `${businessId}/logo`);
+        if (!logoUrl) filesUploaded = false;
+      }
+      
+      // Upload images
+      for (const image of files.images) {
+        const imageUrl = await uploadFile(image, `${businessId}/images`);
+        if (!imageUrl) filesUploaded = false;
+      }
+      
+      // Upload videos
+      for (const video of files.videos) {
+        const videoUrl = await uploadFile(video, `${businessId}/videos`);
+        if (!videoUrl) filesUploaded = false;
+      }
+      
+      // Upload documents
+      for (const document of files.documents) {
+        const docUrl = await uploadFile(document, `${businessId}/documents`);
+        if (!docUrl) filesUploaded = false;
+      }
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      filesUploaded = false;
+    }
     
     if (!filesUploaded) {
       return false;
