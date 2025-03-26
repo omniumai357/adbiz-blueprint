@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useToggle } from '@/patterns/hooks/useToggle';
 import { TourPath, TourStep } from '@/contexts/tour-context';
@@ -14,10 +15,21 @@ export function useTourController(
   currentPathname: string = '/'
 ) {
   // Use the existing useToggle hook for active state
-  const [isActive, toggleActive] = useToggle(false);
+  const [isActive, toggle] = useToggle(false);
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [tourPaths, setTourPaths] = useState<TourPath[]>(initialPaths);
+  
+  // Toggle active state with explicit boolean
+  const toggleActive = useCallback((state?: boolean) => {
+    if (typeof state === 'boolean') {
+      if (state !== isActive) {
+        toggle();
+      }
+    } else {
+      toggle();
+    }
+  }, [isActive, toggle]);
   
   // Load path-specific tours based on current route
   useEffect(() => {

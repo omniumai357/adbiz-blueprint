@@ -10,7 +10,7 @@ export type TourStep = {
   position?: "top" | "right" | "bottom" | "left";
 };
 
-type TourPath = {
+export type TourPath = {
   id: string;
   name: string;
   steps: TourStep[];
