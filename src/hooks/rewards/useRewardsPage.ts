@@ -17,7 +17,7 @@ import { useAuth } from "@/features/auth";
  */
 export function useRewardsPage() {
   const { user, isLoading } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | string | null>(null);
   
   // Additional reward-specific logic can be added here
   

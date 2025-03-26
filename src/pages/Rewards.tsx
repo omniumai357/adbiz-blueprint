@@ -29,13 +29,18 @@ const Rewards: React.FC = () => {
 
   // Error state
   if (error) {
+    // Handle different error types - error can be Error object or string
+    const errorMessage = typeof error === 'object' && error !== null 
+      ? error.message || 'Unknown error' 
+      : error;
+      
     return (
       <>
         <Header />
         <Container className="py-12">
           <h1 className="text-3xl font-bold mb-2">{t('rewards.title')}</h1>
           <div className="bg-red-50 text-red-500 p-4 rounded-lg mt-8">
-            <p>Error loading rewards: {error.message}</p>
+            <p>Error loading rewards: {errorMessage}</p>
           </div>
         </Container>
         <Footer />
