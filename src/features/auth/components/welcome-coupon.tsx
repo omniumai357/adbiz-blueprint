@@ -1,10 +1,12 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Confetti } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckIcon, CopyIcon, Sparkles } from "lucide-react";
-import { useToast } from "@/hooks/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
 type WelcomeCouponProps = {
   userId: string;
@@ -12,171 +14,139 @@ type WelcomeCouponProps = {
 
 export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
   const [coupon, setCoupon] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCopied, setIsCopied] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [copySuccess, setCopySuccess] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchWelcomeCoupon = async () => {
+    const fetchCoupon = async () => {
       try {
-        // Check if user already has a welcome coupon
-        const { data: existingCoupons, error: checkError } = await supabase
-          .from("user_coupons")
-          .select("*, coupons(*)")
-          .eq("user_id", userId)
-          .eq("coupon_type", "welcome")
+        // Check if there's an existing coupon first
+        const { data: existingCoupons, error: fetchError } = await supabase
+          .from('coupons')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('type', 'welcome')
           .single();
 
-        if (checkError && checkError.code !== "PGRST116") {
-          console.error("Error checking for existing coupon:", checkError);
-          throw checkError;
-        }
-
-        if (existingCoupons) {
-          setCoupon(existingCoupons.coupons);
-          setIsLoading(false);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error("Error fetching coupon:", fetchError);
+          setLoading(false);
           return;
         }
 
-        // No existing coupon, create one
-        const welcomeCode = `WELCOME${Math.floor(1000 + Math.random() * 9000)}`;
+        if (existingCoupons) {
+          setCoupon(existingCoupons);
+          setLoading(false);
+          return;
+        }
+
+        // Generate a welcome coupon if none exists
+        const discountAmount = 15; // 15% welcome discount
+        const couponCode = `WELCOME-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
         
-        // Create new coupon in coupons table
-        const { data: newCoupon, error: couponError } = await supabase
-          .from("coupons")
+        const { data: newCoupon, error: insertError } = await supabase
+          .from('coupons')
           .insert({
-            code: welcomeCode,
-            discount_percentage: 10,
-            valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-            active: true,
-            description: "Welcome discount for new users",
-            coupon_type: "welcome"
+            user_id: userId,
+            code: couponCode,
+            type: 'welcome',
+            discount_percentage: discountAmount,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            description: 'Welcome discount for new users',
+            max_uses: 1,
+            is_active: true
           })
           .select()
           .single();
-
-        if (couponError) {
-          console.error("Error creating welcome coupon:", couponError);
-          throw couponError;
+          
+        if (insertError) {
+          console.error("Error creating coupon:", insertError);
+        } else {
+          setCoupon(newCoupon);
         }
-
-        // Link coupon to user
-        const { error: linkError } = await supabase
-          .from("user_coupons")
-          .insert({
-            user_id: userId,
-            coupon_id: newCoupon.id,
-            coupon_type: "welcome",
-            created_at: new Date().toISOString()
-          });
-
-        if (linkError) {
-          console.error("Error linking coupon to user:", linkError);
-          throw linkError;
-        }
-
-        setCoupon(newCoupon);
       } catch (error) {
-        console.error("Error generating welcome coupon:", error);
+        console.error("Unexpected error:", error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     if (userId) {
-      fetchWelcomeCoupon();
+      fetchCoupon();
     }
   }, [userId]);
 
-  const handleCopyCode = () => {
+  const handleCopy = () => {
     if (coupon?.code) {
       navigator.clipboard.writeText(coupon.code);
-      setIsCopied(true);
+      setCopySuccess(true);
       toast({
-        title: "Code copied!",
-        description: "Coupon code has been copied to clipboard.",
+        title: "Copied!",
+        description: "Coupon code copied to clipboard"
       });
       
       setTimeout(() => {
-        setIsCopied(false);
-      }, 3000);
+        setCopySuccess(false);
+      }, 2000);
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="pt-6">
-          <div className="flex justify-center items-center h-32">
-            <div className="animate-pulse">
-              <div className="h-4 w-48 bg-muted rounded mb-4"></div>
-              <div className="h-8 w-32 bg-muted rounded mx-auto mb-4"></div>
-              <div className="h-10 w-full bg-muted rounded"></div>
-            </div>
-          </div>
+      <Card className="border-purple-200 bg-purple-50">
+        <CardHeader className="pb-2">
+          <Skeleton className="h-6 w-48 bg-purple-200" />
+          <Skeleton className="h-4 w-36 mt-1 bg-purple-200" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-16 w-full bg-purple-200 mb-4" />
+          <Skeleton className="h-10 w-full bg-purple-200" />
         </CardContent>
       </Card>
     );
   }
 
   if (!coupon) {
-    return (
-      <Card className="border-primary/20 bg-destructive/5">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Something went wrong</CardTitle>
-          <CardDescription>
-            We couldn't generate your welcome coupon. Please try refreshing the page.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
+    return null;
   }
 
-  const validUntil = new Date(coupon.valid_until).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card className="border-purple-200 bg-purple-50">
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg flex items-center">
-              <Sparkles className="h-5 w-5 mr-2 text-primary" />
-              Welcome Discount
-            </CardTitle>
-            <CardDescription>
-              Special offer for new accounts
-            </CardDescription>
-          </div>
-          <div className="bg-primary text-primary-foreground px-2 py-1 rounded-full text-xs font-bold">
-            {coupon.discount_percentage}% OFF
-          </div>
-        </div>
+        <CardTitle className="text-lg flex items-center text-purple-800">
+          <Confetti className="h-5 w-5 mr-2 text-purple-600" />
+          Welcome Discount
+        </CardTitle>
+        <CardDescription className="text-purple-700">
+          A special offer just for you!
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-sm mb-4">
-          {coupon.description || "Use this coupon on your first purchase!"}
-          <span className="block text-xs text-muted-foreground mt-1">
-            Valid until {validUntil}
-          </span>
-        </p>
-        
-        <div className="flex gap-2">
-          <div className="bg-muted/70 flex-grow rounded-md p-2.5 flex items-center justify-center font-mono text-sm">
-            {coupon.code}
+        <div className="bg-white p-4 rounded-md border border-purple-200 mb-4 text-center">
+          <p className="text-sm text-purple-700 mb-2">Your coupon code:</p>
+          <div className="flex items-center justify-center space-x-3">
+            <code className="relative rounded bg-purple-100 px-[0.5rem] py-[0.3rem] font-mono text-lg font-semibold text-purple-900">
+              {coupon.code}
+            </code>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-purple-300 text-purple-700 hover:bg-purple-100"
+              onClick={handleCopy}
+            >
+              {copySuccess ? "Copied!" : "Copy"}
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            onClick={handleCopyCode}
-            className="shrink-0"
-          >
-            {isCopied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
-          </Button>
+          <div className="mt-2 flex justify-center">
+            <Badge className="bg-purple-600">
+              {coupon.discount_percentage}% OFF
+            </Badge>
+          </div>
         </div>
+        <p className="text-xs text-purple-700 text-center">
+          Apply this coupon during checkout. Expires in 30 days.
+        </p>
       </CardContent>
     </Card>
   );

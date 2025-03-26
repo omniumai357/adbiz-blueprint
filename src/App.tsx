@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { AuthContextProvider } from './contexts/auth-context';
 import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -18,6 +17,7 @@ import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
+import { AuthContextProvider } from '@/features/auth';
 
 // Create the router with all page routes
 const router = createBrowserRouter([

@@ -1,115 +1,63 @@
 
 import { useState } from 'react';
-import { FileState } from '@/hooks/useFileUpload';
-import { uploadSingleFile, generateFilePath } from '@/utils/file-upload';
-import { useFileUploadContext } from '@/contexts/file-upload-context';
+import { supabase } from '@/integrations/supabase/client';
+import { useFileUploadContext } from '@/features/file-upload';
 
-/**
- * Hook to handle all file upload operations to storage
- */
 export const useFileUploadService = () => {
+  const { addUploadedFile, updateUploadProgress } = useFileUploadContext();
   const [isUploading, setIsUploading] = useState(false);
-  const { files, uploadProgress, setUploadError } = useFileUploadContext();
+  const [error, setError] = useState<Error | null>(null);
 
-  /**
-   * Upload a single file to storage
-   * @param businessId - ID of the business
-   * @param fileType - Type of file (logo, images, videos, documents)
-   * @param file - The file to upload
-   * @param index - Optional index for array files
-   * @returns Promise with upload result
-   */
-  const uploadFile = async (
-    businessId: string,
-    fileType: keyof FileState,
-    file: File,
-    index?: number
-  ): Promise<{ success: boolean; url?: string }> => {
-    try {
-      const filePath = generateFilePath(businessId, fileType, file, index);
-      const bucket = 'business-files';
-      
-      const { success, error, publicUrl } = await uploadSingleFile(bucket, filePath, file, {
-        onProgress: (progress) => {
-          // Update progress tracking
-          const fileId = `${fileType}-${index || 0}`;
-          // Update progress logic would go here
-        }
-      });
-      
-      if (!success || error) {
-        throw error || new Error(`Failed to upload ${fileType}`);
-      }
-      
-      return { success: true, url: publicUrl };
-    } catch (error) {
-      console.error(`Error uploading ${fileType}:`, error);
-      setUploadError(`Failed to upload ${fileType}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      return { success: false };
-    }
-  };
-  
-  /**
-   * Upload all files for a business
-   * @param businessId - ID of the business
-   * @returns Promise with boolean indicating success
-   */
-  const uploadAllFiles = async (businessId: string): Promise<boolean> => {
-    if (!businessId) {
-      setUploadError('Missing business ID for file upload');
-      return false;
-    }
-    
+  const uploadFile = async (file: File, path: string): Promise<string | null> => {
     setIsUploading(true);
+    setError(null);
     
     try {
-      const uploadResults: { type: string; success: boolean; url?: string }[] = [];
-      
-      // Upload logo if present
-      if (files.logo) {
-        const logoResult = await uploadFile(businessId, 'logo', files.logo);
-        uploadResults.push({ type: 'logo', ...logoResult });
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${path}/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('uploads')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+          onUploadProgress: (progress) => {
+            const percent = Math.round((progress.loaded / progress.total) * 100);
+            updateUploadProgress(file.name, percent);
+          },
+        });
+
+      if (error) {
+        throw error;
       }
-      
-      // Upload images
-      for (let i = 0; i < files.images.length; i++) {
-        const imageResult = await uploadFile(businessId, 'images', files.images[i], i);
-        uploadResults.push({ type: 'image', ...imageResult });
-      }
-      
-      // Upload videos
-      for (let i = 0; i < files.videos.length; i++) {
-        const videoResult = await uploadFile(businessId, 'videos', files.videos[i], i);
-        uploadResults.push({ type: 'video', ...videoResult });
-      }
-      
-      // Upload documents
-      for (let i = 0; i < files.documents.length; i++) {
-        const docResult = await uploadFile(businessId, 'documents', files.documents[i], i);
-        uploadResults.push({ type: 'document', ...docResult });
-      }
-      
-      // Check if any uploads failed
-      const hasFailures = uploadResults.some(result => !result.success);
-      
-      if (hasFailures) {
-        setUploadError('Some files failed to upload. Please try again.');
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error uploading files:', error);
-      setUploadError('An unexpected error occurred during file upload');
-      return false;
+
+      const { data: urlData } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(filePath);
+
+      // Add to context state
+      addUploadedFile({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        path: filePath,
+        url: urlData.publicUrl,
+      });
+
+      return urlData.publicUrl;
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      setError(err instanceof Error ? err : new Error('Unknown error during upload'));
+      return null;
     } finally {
       setIsUploading(false);
     }
   };
-  
+
   return {
     uploadFile,
-    uploadAllFiles,
-    isUploading
+    isUploading,
+    error
   };
 };
