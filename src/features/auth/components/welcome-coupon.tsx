@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { PartyPopper } from "lucide-react"; // Changed from Confetti to PartyPopper
+import { PartyPopper } from "lucide-react"; 
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,16 +12,20 @@ type WelcomeCouponProps = {
   userId: string;
 };
 
-// Define a proper type for the coupon to avoid infinite type instantiation
+// Define a proper type for the coupon to match the actual database structure
 interface Coupon {
   id: string;
   code: string;
-  type?: string;
   discount_percentage: number;
   description?: string;
-  expires_at?: string;
-  is_active?: boolean;
+  valid_until?: string;
+  active?: boolean;
   created_at?: string;
+  updated_at?: string;
+  user_id?: string;
+  current_uses?: number;
+  max_uses?: number;
+  discount_amount?: number;
 }
 
 export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
@@ -38,7 +42,7 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
           .from('coupons')
           .select('*')
           .eq('user_id', userId)
-          .eq('type', 'welcome')
+          .eq('active', true)
           .single();
 
         if (fetchError && fetchError.code !== 'PGRST116') {
@@ -52,12 +56,16 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
           const typedCoupon: Coupon = {
             id: existingCoupons.id,
             code: existingCoupons.code,
-            type: existingCoupons.type,
             discount_percentage: existingCoupons.discount_percentage,
             description: existingCoupons.description,
-            expires_at: existingCoupons.expires_at,
-            is_active: existingCoupons.is_active,
-            created_at: existingCoupons.created_at
+            valid_until: existingCoupons.valid_until,
+            active: existingCoupons.active,
+            created_at: existingCoupons.created_at,
+            updated_at: existingCoupons.updated_at,
+            user_id: existingCoupons.user_id,
+            current_uses: existingCoupons.current_uses,
+            max_uses: existingCoupons.max_uses,
+            discount_amount: existingCoupons.discount_amount
           };
           setCoupon(typedCoupon);
           setLoading(false);
@@ -73,12 +81,11 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
           .insert({
             user_id: userId,
             code: couponCode,
-            type: 'welcome',
             discount_percentage: discountAmount,
-            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
             description: 'Welcome discount for new users',
             max_uses: 1,
-            is_active: true
+            active: true
           })
           .select()
           .single();
@@ -90,12 +97,16 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
           const typedNewCoupon: Coupon = {
             id: newCoupon.id,
             code: newCoupon.code,
-            type: newCoupon.type,
             discount_percentage: newCoupon.discount_percentage,
             description: newCoupon.description,
-            expires_at: newCoupon.expires_at,
-            is_active: newCoupon.is_active,
-            created_at: newCoupon.created_at
+            valid_until: newCoupon.valid_until,
+            active: newCoupon.active,
+            created_at: newCoupon.created_at,
+            updated_at: newCoupon.updated_at,
+            user_id: newCoupon.user_id,
+            current_uses: newCoupon.current_uses,
+            max_uses: newCoupon.max_uses,
+            discount_amount: newCoupon.discount_amount
           };
           setCoupon(typedNewCoupon);
         }
