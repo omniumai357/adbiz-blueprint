@@ -7,6 +7,7 @@ import { TourDrawer } from "./TourDrawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
+import { useAuth } from "@/contexts/auth-context";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
 
 export const TourGuide: React.FC = () => {
@@ -25,12 +26,23 @@ export const TourGuide: React.FC = () => {
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   const isMobile = useMediaQuery("(max-width: 640px)");
-  const { data: authData } = useAuthUser();
   const analytics = useTourAnalytics();
   
-  // Get user information for interaction tracking
-  const userId = authData?.user?.id;
-  const userType = authData?.profile?.role || 'anonymous';
+  // Try to get user information from auth context first
+  let userId: string | undefined;
+  let userType: string | undefined;
+  
+  try {
+    // Use the auth context if available
+    const { user, profile } = useAuth();
+    userId = user?.id;
+    userType = profile?.role || 'anonymous';
+  } catch (error) {
+    // Fallback to useAuthUser if auth context isn't available
+    const { data: authData } = useAuthUser();
+    userId = authData?.user?.id;
+    userType = 'anonymous'; // Default user type when profile isn't available
+  }
 
   // Handle custom interactions with tour elements
   const handleInteraction = (interactionType: string) => {

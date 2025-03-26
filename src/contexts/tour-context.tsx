@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
+import { useAuth } from "@/contexts/auth-context";
 
 export type StepConditionFn = () => boolean;
 
@@ -71,11 +72,22 @@ export const TourProvider: React.FC<{
 }> = ({ children, currentPathname }) => {
   const location = useLocation();
   const pathname = currentPathname || location.pathname;
-  const { data: authData } = useAuthUser();
   
-  // Get user information for analytics
-  const userId = authData?.user?.id;
-  const userType = authData?.profile?.role || 'anonymous';
+  // Try to get user information from the auth context first
+  let userId: string | undefined;
+  let userType: string | undefined;
+  
+  try {
+    // Use the auth context if available
+    const { user, profile } = useAuth();
+    userId = user?.id;
+    userType = profile?.role || 'anonymous';
+  } catch (error) {
+    // Fallback to useAuthUser if auth context isn't available
+    const { data: authData } = useAuthUser();
+    userId = authData?.user?.id;
+    userType = 'anonymous'; // Default user type when profile isn't available
+  }
   
   // Use our hook to manage tour state with user context for analytics
   const tourController = useTourController([], pathname, userId, userType);
