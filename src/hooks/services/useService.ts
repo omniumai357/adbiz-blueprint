@@ -1,5 +1,6 @@
 
 import { serviceRegistry } from '@/services/registry/service-registry';
+import { ServiceKey, ServiceType } from '@/services/registry/registry-types';
 
 /**
  * Hook to access services from the service registry
@@ -13,7 +14,10 @@ import { serviceRegistry } from '@/services/registry/service-registry';
  * 
  * // Get the payment service
  * const paymentService = useService('payment');
+ * 
+ * @param key The service key to retrieve
+ * @returns The requested service instance
  */
-export function useService<T>(key: 'api' | 'payment' | 'milestone' | 'invoice' | 'supabase'): T {
-  return serviceRegistry.get<T>(key);
+export function useService<K extends ServiceKey>(key: K): ServiceType<K> {
+  return serviceRegistry.get<K>(key);
 }

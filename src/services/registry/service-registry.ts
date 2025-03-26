@@ -14,8 +14,7 @@ import { paymentService } from '../payment/payment-service';
 import { milestoneService } from '../milestone/milestone-service';
 import { invoiceService } from '../invoice/invoice-service';
 import { supabaseClient } from '../api/supabase-client';
-
-type RegistryKey = 'api' | 'payment' | 'milestone' | 'invoice' | 'supabase';
+import { ServiceKey, ServiceType } from './registry-types';
 
 // Service registry to store and retrieve service instances
 class ServiceRegistry {
@@ -43,7 +42,7 @@ class ServiceRegistry {
    * @param key Service identifier
    * @param implementation Service implementation
    */
-  public register<T>(key: string, implementation: T): void {
+  public register<K extends ServiceKey>(key: K, implementation: ServiceType<K>): void {
     this.services.set(key, implementation);
   }
 
@@ -53,7 +52,7 @@ class ServiceRegistry {
    * @returns The service implementation
    * @throws Error if service is not registered
    */
-  public get<T>(key: RegistryKey): T {
+  public get<K extends ServiceKey>(key: K): ServiceType<K> {
     if (!this.initialized) {
       this.initialize();
     }
@@ -63,7 +62,7 @@ class ServiceRegistry {
       throw new Error(`Service '${key}' not registered`);
     }
 
-    return service as T;
+    return service as ServiceType<K>;
   }
 
   /**
@@ -71,7 +70,7 @@ class ServiceRegistry {
    * @param key Service identifier
    * @returns True if the service is registered
    */
-  public has(key: string): boolean {
+  public has(key: ServiceKey): boolean {
     return this.services.has(key);
   }
 
@@ -80,7 +79,7 @@ class ServiceRegistry {
    * @param key Service identifier
    * @param mockImplementation Mock service implementation
    */
-  public mock<T>(key: RegistryKey, mockImplementation: T): void {
+  public mock<K extends ServiceKey>(key: K, mockImplementation: ServiceType<K>): void {
     this.register(key, mockImplementation);
   }
 
