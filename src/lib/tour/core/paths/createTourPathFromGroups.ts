@@ -32,5 +32,6 @@ export function createTourPathFromGroups(
   // Compose steps from the specified groups
   const composedSteps = composeStepGroups(groupIds, { filterSteps, transformStep });
   
-  return createTourPath(id, name, composedSteps, pathOptions);
+  // Create the tour path with the composed steps
+  return createTourPath(id, composedSteps, pathOptions);
 }

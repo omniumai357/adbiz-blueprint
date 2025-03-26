@@ -1,7 +1,7 @@
 
-import { TourAnalyticsEvent, TourAnalyticsData } from './types';
+import { TourAnalyticsEvent, TourAnalyticsData, TourAnalyticsEventType } from './types';
 import { storeAnalyticsData } from './storage-service';
-import { TourPath, TourStep } from '@/contexts/tour-context';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
  * Track a tour analytics event
@@ -9,13 +9,13 @@ import { TourPath, TourStep } from '@/contexts/tour-context';
  * @param data Additional data about the event
  */
 export const trackEvent = (
-  event: TourAnalyticsEvent,
-  data: Omit<TourAnalyticsData, 'event' | 'timestamp'>
+  event: TourAnalyticsEventType,
+  data: Omit<TourAnalyticsData, 'timestamp' | 'event'>
 ) => {
   // Create the full analytics data object
   const analyticsData: TourAnalyticsData = {
     ...data,
-    event,
+    event: event,
     timestamp: Date.now(),
   };
 
@@ -32,16 +32,17 @@ export const trackEvent = (
  * Track when a tour is started
  */
 export const trackTourStarted = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   userId?: string,
   userType?: string
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('tour_started', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
-    totalSteps: tourPath.steps.length,
-    userId,
-    userType,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
   });
 };
 
@@ -49,15 +50,19 @@ export const trackTourStarted = (
  * Track when a tour is completed
  */
 export const trackTourCompleted = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   userId?: string,
   userType?: string,
   metadata?: Record<string, any>
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('tour_completed', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
-    totalSteps: tourPath.steps.length,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
+    totalSteps: typeof tourPath !== 'string' ? tourPath.steps.length : undefined,
     userId,
     userType,
     metadata,
@@ -68,16 +73,20 @@ export const trackTourCompleted = (
  * Track when a tour is abandoned
  */
 export const trackTourAbandoned = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   stepIndex: number,
   userId?: string,
   userType?: string
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('tour_abandoned', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
     stepIndex,
-    totalSteps: tourPath.steps.length,
+    totalSteps: typeof tourPath !== 'string' ? tourPath.steps.length : undefined,
     userId,
     userType,
   });
@@ -87,18 +96,22 @@ export const trackTourAbandoned = (
  * Track when a step is viewed
  */
 export const trackStepViewed = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   step: TourStep,
   stepIndex: number,
   userId?: string,
   userType?: string
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('step_viewed', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
     stepId: step.id,
     stepIndex,
-    totalSteps: tourPath.steps.length,
+    totalSteps: typeof tourPath !== 'string' ? tourPath.steps.length : undefined,
     userId,
     userType,
   });
@@ -108,18 +121,22 @@ export const trackStepViewed = (
  * Track when a step is skipped
  */
 export const trackStepSkipped = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   step: TourStep,
   stepIndex: number,
   userId?: string,
   userType?: string
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('step_skipped', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
     stepId: step.id,
     stepIndex,
-    totalSteps: tourPath.steps.length,
+    totalSteps: typeof tourPath !== 'string' ? tourPath.steps.length : undefined,
     userId,
     userType,
   });
@@ -129,21 +146,26 @@ export const trackStepSkipped = (
  * Track when a user interacts with a step
  */
 export const trackStepInteraction = (
-  tourPath: TourPath,
+  tourPath: TourPath | string,
   step: TourStep,
   stepIndex: number,
   interactionType: string,
   userId?: string,
   userType?: string
 ) => {
+  const pathId = typeof tourPath === 'string' ? tourPath : tourPath.id;
+  const pathName = typeof tourPath === 'string' ? pathId : (tourPath.name || tourPath.id);
+  
   trackEvent('step_interaction', {
-    pathId: tourPath.id,
-    pathName: tourPath.name,
+    pathId: pathId,
+    tourId: pathId,
+    tourName: pathName,
     stepId: step.id,
     stepIndex,
-    totalSteps: tourPath.steps.length,
+    totalSteps: typeof tourPath !== 'string' ? tourPath.steps.length : undefined,
     userId,
     userType,
+    interactionType,
     metadata: { interactionType },
   });
 };

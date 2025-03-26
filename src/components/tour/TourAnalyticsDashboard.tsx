@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -46,9 +47,9 @@ export const TourAnalyticsDashboard: React.FC = () => {
   }, [toast]);
 
   const getCompletionRateData = () => {
-    const tourStarts = analyticsData.filter(item => item.event === 'tour_started').length;
-    const tourCompletions = analyticsData.filter(item => item.event === 'tour_completed').length;
-    const tourAbandons = analyticsData.filter(item => item.event === 'tour_abandoned').length;
+    const tourStarts = analyticsData.filter(item => item.eventType === 'tour_started' || item.event === 'tour_started').length;
+    const tourCompletions = analyticsData.filter(item => item.eventType === 'tour_completed' || item.event === 'tour_completed').length;
+    const tourAbandons = analyticsData.filter(item => item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned').length;
     
     return [
       { name: 'Completed', value: tourCompletions },
@@ -58,7 +59,7 @@ export const TourAnalyticsDashboard: React.FC = () => {
   };
 
   const getStepViewData = () => {
-    const stepViews = analyticsData.filter(item => item.event === 'step_viewed');
+    const stepViews = analyticsData.filter(item => item.eventType === 'step_viewed' || item.event === 'step_viewed');
     const stepCounts: Record<string, number> = {};
 
     stepViews.forEach(item => {
@@ -75,8 +76,8 @@ export const TourAnalyticsDashboard: React.FC = () => {
 
   const getDropOffData = () => {
     const tourPaths = [...new Set(analyticsData
-      .filter(item => item.event === 'tour_started')
-      .map(item => item.pathId))];
+      .filter(item => (item.eventType === 'tour_started' || item.event === 'tour_started'))
+      .map(item => item.pathId || item.tourId))];
     
     const dropOffByStep: Record<string, Record<number, number>> = {};
     
@@ -85,8 +86,8 @@ export const TourAnalyticsDashboard: React.FC = () => {
       
       const abandonEvents = analyticsData
         .filter(item => 
-          item.event === 'tour_abandoned' && 
-          item.pathId === pathId && 
+          (item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned') && 
+          (item.pathId === pathId || item.tourId === pathId) && 
           typeof item.stepIndex === 'number'
         );
       
@@ -225,8 +226,8 @@ export const TourAnalyticsDashboard: React.FC = () => {
                 <Tooltip />
                 <Legend />
                 {[...new Set(analyticsData
-                  .filter(item => item.event === 'tour_started')
-                  .map(item => item.pathId))].map((pathId, index) => (
+                  .filter(item => (item.eventType === 'tour_started' || item.event === 'tour_started'))
+                  .map(item => item.pathId || item.tourId))].map((pathId, index) => (
                   <Bar key={pathId} dataKey={pathId} fill={COLORS[index % COLORS.length]} name={pathId} />
                 ))}
               </BarChart>

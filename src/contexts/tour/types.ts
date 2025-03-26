@@ -112,7 +112,7 @@ export interface TourContextType {
   currentStep: number;
   totalSteps: number;
   currentStepData: TourStep | null;
-  currentPath: TourPath | null;
+  currentPath: string | null; // Change to string to match implementation
   availablePaths: TourPath[];
   nextStep: () => void;
   prevStep: () => void;

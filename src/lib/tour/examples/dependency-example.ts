@@ -1,69 +1,89 @@
 
+import { TourPath, TourStep } from "@/contexts/tour/types";
+import { createStep } from "../core/steps/createStep";
+import { createTourPath } from "../core/paths/createTourPath";
+
 /**
- * This file contains examples of using the dependency system
- * in the tour component.
+ * Example of a tour path with dependencies between steps
  */
+export const dependencyExamplePath: TourPath = createTourPath(
+  "dependency-example",
+  [
+    // Step 1: Introduction step
+    createStep(
+      "intro-step",
+      "intro-element",
+      "Welcome to Dependencies",
+      "This tour will show how steps can depend on each other.",
+      "bottom"
+    ),
+    
+    // Step 2: First feature that must be completed before step 3
+    createStep(
+      "feature-one",
+      "feature-one-element",
+      "First Feature",
+      "This is the first feature. The next step depends on this one.",
+      "right"
+    ),
+    
+    // Step 3: Depends on step 2
+    createStep(
+      "feature-two",
+      "feature-two-element",
+      "Second Feature",
+      "This step depends on the first feature step.",
+      "top"
+    ),
+    
+    // Step 4: Independent step
+    createStep(
+      "feature-three",
+      "feature-three-element",
+      "Third Feature",
+      "This is an independent feature that doesn't have dependencies.",
+      "left"
+    ),
+    
+    // Step 5: Final step that depends on all previous steps
+    createStep(
+      "conclusion",
+      "conclusion-element",
+      "Conclusion",
+      "You've seen all the features now!",
+      "bottom"
+    )
+  ],
+  {
+    name: "Dependency Example Tour",
+    allowSkip: true,
+    showProgress: true
+  }
+);
 
-import { createTourPath, createStep, enhanceStep } from '../core/tourPathFactory';
-import { 
-  dependentStep, 
-  branchingStep, 
-  reEntryPoint, 
-  sectionStep 
-} from '../core/dependency/enhancers';
-import { TourDependencyManager, createStepDependency } from '../core/dependency';
-
-// Example 1: Simple sequential dependency
-const simpleSequentialPath = createTourPath('simple-sequential', [
-  createStep('intro', 'intro', 'Introduction', 'This is the first step', 'bottom'),
+/**
+ * Function to add dependencies to steps after creation
+ */
+export function addDependenciesToSteps(path: TourPath): TourPath {
+  // Create a deep copy of the path to avoid mutating the original
+  const newPath = JSON.parse(JSON.stringify(path)) as TourPath;
   
-  // Step that depends on the intro step
-  dependentStep(
-    createStep('features', 'features', 'Features', 'This shows all the features', 'top'),
-    'intro' // Dependent on intro step
-  ),
+  // Add dependencies
+  if (newPath.steps.length >= 3) {
+    // Step 3 depends on step 2
+    if (newPath.steps[2].metadata === undefined) {
+      newPath.steps[2].metadata = {};
+    }
+    newPath.steps[2].metadata.dependencies = ["feature-one"];
+  }
   
-  // Step that depends on the features step
-  dependentStep(
-    createStep('conclusion', 'conclusion', 'Conclusion', 'This is the final step', 'right'),
-    'features' // Dependent on features step
-  )
-]);
-
-// Example 2: Branching path with conditional step
-const branchingExamplePath = createTourPath('branching-example', [
-  createStep('start', 'start', 'Start', 'This is the starting point', 'bottom'),
+  if (newPath.steps.length >= 5) {
+    // Final step depends on all previous features
+    if (newPath.steps[4].metadata === undefined) {
+      newPath.steps[4].metadata = {};
+    }
+    newPath.steps[4].metadata.dependencies = ["feature-one", "feature-two", "feature-three"];
+  }
   
-  // Branch based on a condition
-  branchingStep(
-    createStep('branch-point', 'branch-point', 'Branch Point', 'The tour will branch from here', 'top'),
-    () => Math.random() > 0.5, // Condition
-    'path-a-1', // True path
-    'path-b-1'  // False path
-  ),
-  
-  // Path A steps
-  createStep('path-a-1', 'path-a-1', 'Path A - Step 1', 'You are on path A, step 1', 'right'),
-  
-  createStep('path-a-2', 'path-a-2', 'Path A - Step 2', 'You are on path A, step 2', 'right'),
-  
-  // Path B steps
-  createStep('path-b-1', 'path-b-1', 'Path B - Step 1', 'You are on path B, step 1', 'left'),
-  
-  createStep('path-b-2', 'path-b-2', 'Path B - Step 2', 'You are on path B, step 2', 'left'),
-  
-  // Re-entry point where both paths converge
-  reEntryPoint(
-    createStep('convergence', 'convergence', 'Convergence', 'Both paths converge here', 'bottom'),
-    ['path-a-2', 'path-b-2'] // Steps that lead to this one
-  ),
-  
-  // Final step after convergence
-  createStep('final', 'final', 'Final Step', 'This is the final step of the tour', 'bottom')
-]);
-
-// Export examples
-export const dependencyExamples = {
-  simpleSequentialPath,
-  branchingExamplePath
-};
+  return newPath;
+}

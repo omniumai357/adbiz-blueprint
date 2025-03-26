@@ -1,28 +1,34 @@
 
 import { TourAnalyticsData } from './types';
 
+const STORAGE_KEY = 'tourAnalytics';
+
 /**
- * Stores analytics data in localStorage
- * @param data Analytics data to store
+ * Store analytics data in localStorage
+ * @param data The analytics data to store
  */
 export const storeAnalyticsData = (data: TourAnalyticsData): void => {
   try {
-    const existingData = localStorage.getItem('tourAnalytics');
-    const analyticsArray = existingData ? JSON.parse(existingData) : [];
-    analyticsArray.push(data);
-    localStorage.setItem('tourAnalytics', JSON.stringify(analyticsArray));
+    // Load existing data
+    const existingData = loadAnalyticsData();
+    
+    // Add new data
+    const updatedData = [...existingData, data];
+    
+    // Store in localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
   } catch (error) {
-    console.error('Failed to store tour analytics:', error);
+    console.error('Failed to store analytics data:', error);
   }
 };
 
 /**
- * Loads tour analytics data from storage
- * @returns Array of analytics events or empty array if none found
+ * Load analytics data from localStorage
+ * @returns Array of stored analytics data
  */
 export const loadAnalyticsData = (): TourAnalyticsData[] => {
   try {
-    const storedData = localStorage.getItem('tourAnalytics');
+    const storedData = localStorage.getItem(STORAGE_KEY);
     return storedData ? JSON.parse(storedData) : [];
   } catch (error) {
     console.error('Failed to load analytics data:', error);
@@ -31,15 +37,12 @@ export const loadAnalyticsData = (): TourAnalyticsData[] => {
 };
 
 /**
- * Clears all stored tour analytics data
- * @returns True if successful, false otherwise
+ * Clear all stored analytics data
  */
-export const clearAnalyticsData = (): boolean => {
+export const clearAnalyticsData = (): void => {
   try {
-    localStorage.removeItem('tourAnalytics');
-    return true;
+    localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
     console.error('Failed to clear analytics data:', error);
-    return false;
   }
 };

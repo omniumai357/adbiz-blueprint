@@ -31,7 +31,6 @@ import {
  */
 export const checkoutTourPath = createTourPath(
   "checkout-tour",
-  "Checkout Page Tour",
   [
     enhanceStep(
       createWelcomeStep(),

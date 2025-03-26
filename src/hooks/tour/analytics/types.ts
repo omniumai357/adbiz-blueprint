@@ -16,6 +16,9 @@ export interface TourAnalyticsData {
   interactionType?: TourInteractionType;
   timestamp: number;
   metadata?: Record<string, any>;
+  // Added properties to fix errors
+  event: TourAnalyticsEventType;
+  pathId: string;
 }
 
 export type TourAnalyticsEventType = 
@@ -24,7 +27,13 @@ export type TourAnalyticsEventType =
   | 'tour_skip'
   | 'step_view'
   | 'step_interaction'
-  | 'step_timeout';
+  | 'step_timeout'
+  | 'tour_started'
+  | 'tour_completed'
+  | 'tour_abandoned'
+  | 'step_viewed'
+  | 'step_skipped'
+  | 'step_interaction';
 
 export type TourInteractionType = 
   | 'next'
