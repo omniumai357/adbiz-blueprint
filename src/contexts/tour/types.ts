@@ -132,4 +132,5 @@ export type TourContextType = {
   handleKeyNavigation: (event: React.KeyboardEvent) => void;
   visibleSteps: TourStep[];
   setDynamicContent: (stepId: string, content: string) => void;
+  content?: string; // Add this property to resolve the error
 };

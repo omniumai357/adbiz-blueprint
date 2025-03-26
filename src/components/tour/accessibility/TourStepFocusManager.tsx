@@ -41,7 +41,9 @@ export const TourStepFocusManager: React.FC<TourStepFocusManagerProps> = ({
         const liveRegion = document.getElementById('tour-announcer');
         if (liveRegion) {
           const stepNumber = currentStep + 1;
-          liveRegion.textContent = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+          // Use currentStepData.content if content is undefined
+          const stepContent = content || currentStepData.content || '';
+          liveRegion.textContent = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${stepContent}`;
         }
       }, 150);
     }

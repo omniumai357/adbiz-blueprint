@@ -28,7 +28,9 @@ export const TourLiveAnnouncer: React.FC<TourLiveAnnouncerProps> = ({
       }
       
       const stepNumber = currentStep + 1;
-      let announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+      // Use currentStepData.content if content is undefined
+      const stepContent = content || currentStepData.content || '';
+      let announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${stepContent}`;
       
       if (isMobile) {
         announcement += '. You can swipe left to continue or swipe right to go back.';
