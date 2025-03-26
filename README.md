@@ -84,6 +84,14 @@ npm run dev
 
 4. The application will be available at http://localhost:5173
 
+## Development Standards
+
+We maintain strict development standards to ensure code quality and consistency:
+
+- [Code Standards](src/docs/CODE_STANDARDS.md) - Coding conventions and patterns
+- [Directory Structure](src/DIRECTORY_STRUCTURE.md) - Project organization
+- [Import Standards](src/docs/IMPORT_STANDARDS.md) - Import ordering and barrel exports
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
