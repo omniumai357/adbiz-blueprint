@@ -1,6 +1,7 @@
 
 import { useCallback } from "react";
 import { TourThemeColors } from "../../types/theme";
+import { themeRegistry } from "../../services/theme-registry";
 
 /**
  * Hook to manage theme colors and CSS variables
@@ -10,6 +11,7 @@ export function useThemeColors() {
   /**
    * Apply CSS variables to the document root
    * @param colors Theme colors to apply
+   * @param themeId The ID of the theme being applied
    * @param viewport Optional viewport specific overrides
    */
   const applyThemeColors = useCallback((
@@ -18,7 +20,7 @@ export function useThemeColors() {
     viewport?: 'mobile' | 'tablet' | 'desktop'
   ) => {
     // Get the theme preset for the given viewport if available
-    const themePreset = window.themeRegistry?.getTheme?.(themeId);
+    const themePreset = themeRegistry.getTheme(themeId);
     // Only access responsive property if it exists
     const viewportColors = viewport && themePreset?.responsive?.[viewport];
     
