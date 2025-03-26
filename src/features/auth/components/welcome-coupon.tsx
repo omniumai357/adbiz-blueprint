@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Confetti } from "lucide-react";
+import { PartyPopper } from "lucide-react"; // Changed from Confetti to PartyPopper
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +115,7 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
     <Card className="border-purple-200 bg-purple-50">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center text-purple-800">
-          <Confetti className="h-5 w-5 mr-2 text-purple-600" />
+          <PartyPopper className="h-5 w-5 mr-2 text-purple-600" />
           Welcome Discount
         </CardTitle>
         <CardDescription className="text-purple-700">

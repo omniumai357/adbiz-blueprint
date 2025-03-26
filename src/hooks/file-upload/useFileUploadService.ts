@@ -1,10 +1,17 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useFileUploadContext } from '@/features/file-upload';
+
+type UploadedFile = {
+  name: string;
+  size: number;
+  type: string;
+  path: string;
+  url: string;
+};
 
 export const useFileUploadService = () => {
-  const { addUploadedFile, updateUploadProgress } = useFileUploadContext();
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -22,10 +29,6 @@ export const useFileUploadService = () => {
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          onUploadProgress: (progress) => {
-            const percent = Math.round((progress.loaded / progress.total) * 100);
-            updateUploadProgress(file.name, percent);
-          },
         });
 
       if (error) {
@@ -36,14 +39,16 @@ export const useFileUploadService = () => {
         .from('uploads')
         .getPublicUrl(filePath);
 
-      // Add to context state
-      addUploadedFile({
+      // Add to local state
+      const newFile = {
         name: file.name,
         size: file.size,
         type: file.type,
         path: filePath,
         url: urlData.publicUrl,
-      });
+      };
+      
+      setUploadedFiles(prev => [...prev, newFile]);
 
       return urlData.publicUrl;
     } catch (err) {
@@ -57,6 +62,7 @@ export const useFileUploadService = () => {
 
   return {
     uploadFile,
+    uploadedFiles,
     isUploading,
     error
   };

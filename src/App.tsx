@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
@@ -15,71 +15,32 @@ import Auth from './pages/Auth';
 import { Toaster } from "@/components/ui/toaster";
 import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 import { AuthContextProvider } from '@/features/auth';
 
-// Create the router with all page routes
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <PageWithTour><Home /></PageWithTour>,
-  },
-  {
-    path: "/checkout",
-    element: <Checkout />
-  },
-  {
-    path: "/receipts",
-    element: <Receipts />
-  },
-  {
-    path: "/services",
-    element: <PageWithTour><Services /></PageWithTour>,
-  },
-  {
-    path: "/about",
-    element: <About />
-  },
-  {
-    path: "/contact",
-    element: <PageWithTour><Contact /></PageWithTour>,
-  },
-  {
-    path: "/rewards",
-    element: <Rewards />
-  },
-  {
-    path: "/auth",
-    element: <Auth />
-  },
-  {
-    path: "/login",
-    element: <Auth />
-  },
-  {
-    path: "/signup",
-    element: <Auth />
-  },
-  {
-    path: "/business-questionnaire",
-    element: <BusinessQuestionnairePage />
-  },
-]);
-
 const App = () => {
   return (
-    <ReactQueryProvider>
-      <ErrorProvider>
-        <AuthContextProvider>
-          <ErrorBoundary>
-            <RouterProvider router={router} />
-            <Toaster />
-            <Sonner />
-          </ErrorBoundary>
-        </AuthContextProvider>
-      </ErrorProvider>
-    </ReactQueryProvider>
+    <ErrorProvider>
+      <AuthContextProvider>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/receipts" element={<Receipts />} />
+            <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/signup" element={<Auth />} />
+            <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
+          </Routes>
+          <Toaster />
+          <Sonner />
+        </ErrorBoundary>
+      </AuthContextProvider>
+    </ErrorProvider>
   );
 };
 
