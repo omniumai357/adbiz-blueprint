@@ -4,27 +4,13 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
 
-// Import translation files for initial load
-import enCommon from './locales/en/common.json';
-import enAuth from './locales/en/auth.json';
-import enRewards from './locales/en/rewards.json';
-import enLanguage from './locales/en/language.json';
-import esCommon from './locales/es/common.json';
-import esAuth from './locales/es/auth.json';
-import esRewards from './locales/es/rewards.json';
-import esLanguage from './locales/es/language.json';
-import frCommon from './locales/fr/common.json';
-import frAuth from './locales/fr/auth.json';
-import frRewards from './locales/fr/rewards.json';
-import frLanguage from './locales/fr/language.json';
-
 // Namespace configuration
 export const defaultNS = 'common';
 export const namespaces = ['common', 'auth', 'rewards', 'language', 'tour'];
 
 // Configure i18next
 i18n
-  // Use HTTP backend for dynamic loading (for future use)
+  // Use HTTP backend for dynamic loading
   .use(Backend)
   // Detect user language
   .use(LanguageDetector)
@@ -35,28 +21,24 @@ i18n
     // Use separate namespaces for better organization
     ns: namespaces,
     defaultNS,
-    resources: {
-      en: {
-        common: enCommon,
-        auth: enAuth,
-        rewards: enRewards,
-        language: enLanguage
-      },
-      es: {
-        common: esCommon,
-        auth: esAuth,
-        rewards: esRewards,
-        language: esLanguage
-      },
-      fr: {
-        common: frCommon,
-        auth: frAuth,
-        rewards: frRewards,
-        language: frLanguage
-      }
+    
+    // Enable dynamic loading of translation files
+    backend: {
+      // Path where resources get loaded from
+      loadPath: '/src/i18n/locales/{{lng}}/{{ns}}.json',
+      // Path to post missing keys
+      addPath: '/src/i18n/locales/{{lng}}/{{ns}}.missing.json',
     },
+    
+    // Common options
     fallbackLng: 'en',
     debug: process.env.NODE_ENV === 'development',
+    
+    // Preload these languages
+    preload: ['en'],
+    
+    // Separate load for namespaces
+    partialBundledLanguages: true,
     
     // Interpolation options
     interpolation: {
