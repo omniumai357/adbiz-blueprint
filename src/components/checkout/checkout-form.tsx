@@ -9,7 +9,7 @@ import AddOnsSelector from "@/components/checkout/form/add-ons-selector";
 import DiscountDisplay from "@/components/checkout/form/discount-display";
 
 interface CheckoutFormProps {
-  checkout: ReturnType<typeof import("@/hooks/checkout/useCheckout").useCheckout>;
+  checkout: ReturnType<typeof import("@/hooks/checkout/useCheckoutConsolidated").useCheckoutConsolidated>;
   onOrderSuccess: (id: string) => void;
 }
 
@@ -25,7 +25,8 @@ const CheckoutForm = ({
   onOrderSuccess,
 }: CheckoutFormProps) => {
   const {
-    orderDetails,
+    isLoading,
+    isProfileLoading,
     customerInfo,
     setCustomerInfo,
     paymentMethod,
@@ -33,10 +34,10 @@ const CheckoutForm = ({
     addOns,
     discounts,
     totals,
-    isLoading
+    packageDetails
   } = checkout;
 
-  if (isLoading || orderDetails.isProfileLoading) {
+  if (isLoading || isProfileLoading) {
     return (
       <>
         <Skeleton className="w-full h-12 mt-8" />
@@ -51,7 +52,7 @@ const CheckoutForm = ({
       <CustomerInfoForm 
         customerInfo={customerInfo}
         onChange={setCustomerInfo}
-        isLoading={orderDetails.isProfileLoading}
+        isLoading={isProfileLoading}
       />
       
       {/* Add-ons section */}
@@ -112,7 +113,7 @@ const CheckoutForm = ({
       {/* Payment section */}
       <PaymentSection 
         paymentMethod={paymentMethod}
-        packageDetails={orderDetails.packageDetails}
+        packageDetails={packageDetails}
         customerInfo={customerInfo}
         total={totals.total}
         onOrderSuccess={onOrderSuccess}

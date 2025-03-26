@@ -19,7 +19,8 @@ import { useParams } from "react-router-dom";
  */
 const Checkout = () => {
   const { packageId } = useParams<{ packageId: string }>();
-  const { user } = useAuthUser();
+  const { data: userData } = useAuthUser();
+  const userId = userData?.user?.id;
   const api = useService('api');
   const [packageDetails, setPackageDetails] = useState<PackageDetails | null>(null);
   const [isLoadingPackage, setIsLoadingPackage] = useState(true);
@@ -46,7 +47,7 @@ const Checkout = () => {
   // Use the consolidated checkout hook
   const checkout = useCheckoutConsolidated(
     packageDetails || { id: "", title: "", price: 0, description: "", features: [] },
-    user?.id
+    userId
   );
   
   if (isLoadingPackage) {
@@ -116,7 +117,7 @@ const Checkout = () => {
               packageName={packageDetails.title}
               invoiceNumber={checkout.invoiceNumber}
               isGeneratingInvoice={checkout.isGeneratingInvoice}
-              userId={user?.id}
+              userId={userId}
             />
           ) : (
             <CheckoutForm 
