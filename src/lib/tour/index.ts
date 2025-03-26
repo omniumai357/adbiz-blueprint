@@ -1,3 +1,4 @@
+
 // Re-export core tour path and step creation functions
 export { 
   createTourPath,

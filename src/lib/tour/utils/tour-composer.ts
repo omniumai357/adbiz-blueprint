@@ -1,5 +1,5 @@
 
-import { TourPath, TourStep } from "@/contexts/tour-context";
+import { TourPath, TourStep } from "@/contexts/tour/types";
 import { 
   createTourPathFromGroups, 
   getStepGroup,
