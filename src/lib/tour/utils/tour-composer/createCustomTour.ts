@@ -1,74 +1,61 @@
 
 import { TourPath, TourStep } from "@/contexts/tour/types";
-import { createTourPathFromGroups } from "@/lib/tour/core/tourPathFactory";
+import { getAllStepGroups } from '../../core/tourStepGroups';
 
 /**
- * Utility to create a custom tour from selected step groups
+ * Creates a custom tour from step groups
  * 
- * @param id Unique identifier for the custom tour
- * @param name Display name for the custom tour
- * @param groupIds Array of step group IDs to include
- * @param options Additional configuration options
- * @returns A custom tour path composed from the selected groups
+ * @param id Unique ID for the tour
+ * @param name Display name for the tour
+ * @param stepGroupIds Array of step group IDs to include
+ * @param config Tour configuration options
+ * @returns A custom tour path
  */
 export function createCustomTour(
-  id: string,
+  id: string, 
   name: string,
-  groupIds: string[],
-  options?: {
+  stepGroupIds: string[],
+  config?: {
     allowSkip?: boolean;
     showProgress?: boolean;
     filterSteps?: (step: TourStep) => boolean;
     tags?: string[];
-    experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'all';
+    experienceLevel?: "beginner" | "intermediate" | "advanced" | "all";
   }
 ): TourPath {
-  const { tags, experienceLevel, ...otherOptions } = options || {};
+  // Get all step groups
+  const allGroups = getAllStepGroups();
   
-  // Tag-based filtering
-  const tagFilter = (step: TourStep) => {
-    if (!tags || tags.length === 0) return true;
-    
-    // Check if step has tags in its metadata
-    const stepTags = step.metadata?.tags as string[] | undefined;
-    if (!stepTags) return false;
-    
-    // Check if any of the required tags match
-    return tags.some(tag => stepTags.includes(tag));
-  };
+  // Filter steps based on groups and optionally filter function
+  let steps: TourStep[] = [];
+  stepGroupIds.forEach(groupId => {
+    const group = allGroups[groupId];
+    if (group && group.steps) {
+      let groupSteps = [...group.steps];
+      
+      // Apply additional filtering if provided
+      if (config?.filterSteps) {
+        groupSteps = groupSteps.filter(config.filterSteps);
+      }
+      
+      steps = [...steps, ...groupSteps];
+    }
+  });
   
-  // Experience level filtering
-  const experienceLevelFilter = (step: TourStep) => {
-    if (experienceLevel === 'all' || !experienceLevel) return true;
-    
-    const stepLevel = step.metadata?.experienceLevel as string | undefined;
-    if (!stepLevel) return true; // Show steps without level by default
-    
-    return stepLevel === experienceLevel;
-  };
-  
-  // Combine all filters
-  const combinedFilter = (step: TourStep) => {
-    const passesTagFilter = tagFilter(step);
-    const passesLevelFilter = experienceLevelFilter(step);
-    const passesCustomFilter = options?.filterSteps ? options.filterSteps(step) : true;
-    
-    return passesTagFilter && passesLevelFilter && passesCustomFilter;
-  };
-  
-  return createTourPathFromGroups(
+  // Create the tour path
+  return {
     id,
     name,
-    groupIds,
-    {
-      ...otherOptions,
-      filterSteps: combinedFilter,
+    steps,
+    allowSkip: config?.allowSkip,
+    showProgress: config?.showProgress,
+    config: {
+      allowSkip: config?.allowSkip,
+      showProgress: config?.showProgress,
       metadata: {
-        isCustomTour: true,
-        includedGroups: groupIds,
-        tags: tags || [],
-        experienceLevel: experienceLevel || 'all'
+        tags: config?.tags || [],
+        experienceLevel: config?.experienceLevel || 'all'
       }
     }
-  );
+  };
 }

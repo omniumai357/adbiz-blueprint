@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
 import { useAuthUser } from '@/hooks/queries/useAuthUser';
@@ -36,6 +36,11 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     userId = authData?.user?.id;
     userType = 'anonymous';
   }
+
+  // Add a custom config state for theme handling
+  const [customConfig, setCustomConfig] = useState({
+    theme: theme || "default"
+  });
   
   const tourController = useTourController([], pathname, userId, userType);
   
@@ -44,8 +49,8 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     if (theme !== "default") {
       document.documentElement.classList.add(`tour-theme-${theme}`);
       
-      // Update the theme in controller
-      tourController.setCustomConfig(prev => ({
+      // Update the theme in custom config
+      setCustomConfig(prev => ({
         ...prev,
         theme
       }));
@@ -62,8 +67,15 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     };
   }, [theme]);
   
+  // Combine the controller with our custom config
+  const contextValue = {
+    ...tourController,
+    customConfig,
+    setCustomConfig
+  };
+  
   return (
-    <TourContext.Provider value={tourController}>
+    <TourContext.Provider value={contextValue}>
       <TourAnnouncer 
         isActive={tourController.isActive}
         currentStepData={tourController.currentStepData}

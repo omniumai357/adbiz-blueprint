@@ -1,6 +1,6 @@
 
-import type { TourAnalyticsData } from './types';
-import { loadAnalyticsData, clearAnalyticsData } from './storage-service';
+import { TourAnalyticsData } from './types';
+import { loadAnalyticsData } from './storage-service';
 
 /**
  * Exports tour analytics data as a CSV file

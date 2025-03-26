@@ -20,7 +20,7 @@ export const TourEventManager: React.FC = () => {
   
   const { handleNext, handlePrev, handleClose } = useTourInteractions(
     currentStepData,
-    currentPath,
+    currentPath?.id || null,
     availablePaths,
     currentStep,
     userId,

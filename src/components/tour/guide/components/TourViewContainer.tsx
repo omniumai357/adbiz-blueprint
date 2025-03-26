@@ -36,7 +36,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   
   const { handleNext, handlePrev, handleClose } = useTourInteractions(
     currentStepData,
-    currentPath,
+    currentPath?.id || null,
     availablePaths,
     currentStep,
     userId,

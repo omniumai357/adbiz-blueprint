@@ -3,17 +3,36 @@ import { TourContextType } from './types';
 
 export const defaultContext: TourContextType = {
   isActive: false,
-  currentPath: null,
   currentStep: 0,
   totalSteps: 0,
-  startTour: () => {},
-  endTour: () => {},
+  currentStepData: null,
+  currentPath: null,
+  availablePaths: [],
+  
+  // Tour navigation
   nextStep: () => {},
   prevStep: () => {},
   goToStep: () => {},
-  currentStepData: null,
-  availablePaths: [],
+  startTour: () => {},
+  endTour: () => {},
+  pauseTour: () => {},
+  resumeTour: () => {},
+  resetTour: () => {},
+  goToPath: () => {},
+  
+  // Tour state management
+  registerPath: () => {},
+  unregisterPath: () => {},
+  setDynamicContent: () => {},
+  setAvailablePaths: () => {},
+  
+  // Custom configuration
+  customConfig: {
+    theme: "default"
+  },
+  setCustomConfig: () => {},
+  
+  // Additional properties
   handleKeyNavigation: () => {},
   visibleSteps: [],
-  setDynamicContent: () => {},
 };

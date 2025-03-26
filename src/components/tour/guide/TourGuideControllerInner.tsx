@@ -15,13 +15,29 @@ export const TourGuideControllerInner: React.FC = () => {
   const {
     isActive,
     currentStepData,
-    handleKeyNavigation
+    nextStep,
+    prevStep,
+    goToStep
   } = useTour();
   
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   const tooltipRef = useRef<HTMLDivElement>(null);
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
+  
+  // Define a handleKeyNavigation function
+  const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent) => {
+    // Simple implementation - can be enhanced
+    if (event.key === 'ArrowRight' || event.key === 'Enter') {
+      nextStep();
+    } else if (event.key === 'ArrowLeft') {
+      prevStep();
+    } else if (event.key === 'Escape') {
+      // This would need an endTour function
+    } else if (event.key === '?') {
+      showKeyboardShortcutsHelp();
+    }
+  };
   
   useTourKeyboardNavigation(
     isActive, 

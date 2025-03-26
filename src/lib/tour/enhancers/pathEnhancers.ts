@@ -35,12 +35,10 @@ export function connectedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        pathConnection: {
-          targetElementId,
-          style: pathStyle || "solid"
-        }
+      path: {
+        enabled: true,
+        targetElementId,
+        style: pathStyle || "solid"
       }
     };
   };

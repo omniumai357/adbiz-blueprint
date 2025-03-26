@@ -1,82 +1,80 @@
-
-import { TourStep } from "@/contexts/tour/types";
-import { BranchCondition } from './types';
+import { TourStep } from "@/contexts/tour-context";
 
 /**
- * Enhancer that adds dependencies to a step
+ * Creates a step that depends on another step being completed
+ * 
+ * @param dependencyStepId ID of the step that must be completed first
+ * @returns A function that enhances the step with a dependency
  */
 export function dependentStep(
-  dependencies: string | string[],
-  type: 'hard' | 'soft' = 'hard'
-) {
+  dependencyStepId: string
+): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
-    const deps = Array.isArray(dependencies) ? dependencies : [dependencies];
-    
+    return {
+      ...step,
+      dependencies: [...(step.dependencies || []), dependencyStepId]
+    };
+  };
+}
+
+/**
+ * Creates a re-entry point in a tour path
+ * 
+ * @param targetStepId ID of the step to return to
+ * @returns A function that enhances the step as a re-entry point
+ */
+export function reEntryPoint(
+  targetStepId: string
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
     return {
       ...step,
       metadata: {
         ...(step.metadata || {}),
-        dependencies: deps,
-        dependencyType: type
+        reEntry: targetStepId
       }
     };
   };
 }
 
 /**
- * Enhancer that adds branching logic to a step
+ * Marks a step as the start of a new section
+ * 
+ * @param sectionName Name of the section
+ * @returns A function that enhances the step as a section start
  */
-export function branchingStep(
-  branches: BranchCondition[]
-) {
+export function sectionStep(
+  sectionName: string
+): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
       metadata: {
         ...(step.metadata || {}),
-        branches
-      },
+        sectionStart: sectionName
+      }
+    };
+  };
+}
+
+export function branchingStep(
+  condition: () => boolean,
+  truePathId: string,
+  falsePathId: string
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
       actions: {
-        ...(step.actions || {}),
         next: {
-          ...(step.actions?.next || {}),
-          onClick: () => {
-            // This will be processed by the tour controller to determine the next step
-            return { type: 'BRANCH', branches };
+          label: "Continue",
+          callback: () => {
+            // The next path depends on the condition
+            const nextPathId = condition() ? truePathId : falsePathId;
+            // We'll handle the path change in the tour controller
+            console.log(`Branching to path: ${nextPathId}`);
           }
         }
-      }
-    };
-  };
-}
-
-/**
- * Enhancer for creating a re-entry point in a tour
- * This is useful for allowing users to return to a specific step
- */
-export function reEntryPoint() {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        isReEntryPoint: true
-      }
-    };
-  };
-}
-
-/**
- * Enhancer for marking a step as part of a logical section
- * Useful for grouping related steps in complex tours
- */
-export function sectionStep(sectionId: string) {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        sectionId
       }
     };
   };

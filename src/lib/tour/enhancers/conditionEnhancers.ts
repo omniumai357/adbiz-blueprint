@@ -1,20 +1,19 @@
-
 import { TourStep } from "@/contexts/tour-context";
 import { ConditionEvaluator } from "@/hooks/tour/analytics/types";
 
 /**
- * Creates a conditional step that only shows when the condition is true
+ * Creates a step that only shows when a condition is met
  * 
- * @param condition Function that returns true if step should be shown
+ * @param condition Function that determines if step should be shown
  * @returns A function that enhances the step with a condition
  */
 export function conditionalStep(
-  condition: ConditionEvaluator
+  evaluator: () => boolean
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      condition: condition as () => boolean
+      condition: evaluator
     };
   };
 }

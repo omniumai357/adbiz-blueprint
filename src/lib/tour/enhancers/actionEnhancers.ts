@@ -1,7 +1,7 @@
 
 import { TourStep } from "@/contexts/tour-context";
 
-// Define StepTrigger type
+// Define StepTrigger interface
 export interface StepTrigger {
   event: string;
   element?: string;

@@ -1,37 +1,44 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useRef } from "react";
 import { useTour } from "@/contexts/tour";
-import { TourPathManager } from "../../path/TourPathManager";
 import { TourPathVisualization } from "../TourPathVisualization";
 
 interface TourPathVisualizationManagerProps {
   targetElement: HTMLElement | null;
 }
 
-export const TourPathVisualizationManager: React.FC<TourPathVisualizationManagerProps> = ({
-  targetElement
+export const TourPathVisualizationManager: React.FC<TourPathVisualizationManagerProps> = ({ 
+  targetElement 
 }) => {
   const { isActive, currentStepData } = useTour();
-  const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
   
-  const handlePathTargetChange = useCallback((element: HTMLElement | null) => {
-    setPathTargetElement(element);
-  }, []);
+  // Skip rendering if no target element
+  if (!targetElement || !currentStepData) {
+    return null;
+  }
+  
+  // Skip if no path configuration
+  if (!currentStepData.path?.enabled) {
+    return null;
+  }
+  
+  // Find path target element (if any)
+  const pathTarget = currentStepData.path.targetElementId
+    ? document.getElementById(currentStepData.path.targetElementId)
+    : null;
   
   return (
-    <>
-      <TourPathManager 
-        isActive={isActive}
-        currentStepData={currentStepData}
-        onPathTargetChange={handlePathTargetChange}
-      />
-      
-      <TourPathVisualization 
-        isActive={!!currentStepData?.path?.enabled && !!targetElement && !!pathTargetElement}
-        sourceElement={targetElement}
-        targetElement={pathTargetElement}
-        pathOptions={currentStepData?.path}
-      />
-    </>
+    <TourPathVisualization
+      isActive={isActive}
+      sourceElement={tooltipRef.current}
+      targetElement={pathTarget}
+      pathOptions={{
+        style: currentStepData.path.style || 'solid',
+        color: '#0066cc',
+        width: 2,
+        animate: true
+      }}
+    />
   );
 };

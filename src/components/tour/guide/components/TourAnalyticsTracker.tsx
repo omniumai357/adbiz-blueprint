@@ -10,10 +10,9 @@ export const TourAnalyticsTracker: React.FC = () => {
   const isActiveSafe = isActive || false;
   const currentStepSafe = currentStep || 0;
   const totalStepsSafe = totalSteps || 0;
-  const currentPathSafe = currentPath || null;
   
   // Track tour completion and analytics
-  useTourCompletionTracker(isActiveSafe, currentStepSafe, totalStepsSafe, currentPathSafe);
+  useTourCompletionTracker(isActiveSafe, currentStepSafe, totalStepsSafe, currentPath?.id || null);
   
   return null;
 };

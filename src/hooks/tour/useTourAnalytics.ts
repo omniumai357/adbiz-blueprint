@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { 
   trackTourStarted, 
@@ -8,7 +7,7 @@ import {
   trackStepSkipped, 
   trackStepInteraction 
 } from './analytics/event-tracker';
-import type { TourAnalyticsEvent, TourAnalyticsData } from './analytics/types';
+import { TourAnalyticsEvent, TourAnalyticsData } from './analytics/types';
 import { 
   loadAnalyticsData as loadData, 
   clearAnalyticsData as clearData 
@@ -55,5 +54,5 @@ export function useTourAnalytics() {
   };
 }
 
-// Re-export types for convenience - using explicit type exports to fix the TS1205 error
+// Re-export types for convenience
 export type { TourAnalyticsEvent, TourAnalyticsData };

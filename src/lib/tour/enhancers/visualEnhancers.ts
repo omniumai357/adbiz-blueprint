@@ -2,13 +2,13 @@
 import { TourStep } from "@/contexts/tour-context";
 
 /**
- * Enhances a step with animation properties
+ * Adds animation effects to a tour step
  * 
- * @param animations Animation configuration
+ * @param animation Animation configuration
  * @returns A function that enhances the step with animations
  */
 export function animatedStep(
-  animations: {
+  animation: {
     entry?: string;
     highlight?: string;
     exit?: string;
@@ -17,16 +17,13 @@ export function animatedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      animation: {
-        ...(step.animation || {}),
-        ...animations
-      }
+      animation
     };
   };
 }
 
 /**
- * Marks a step as optional, meaning users can skip it
+ * Marks a tour step as optional
  * 
  * @returns A function that enhances the step as optional
  */
@@ -40,7 +37,7 @@ export function optionalStep(): (step: TourStep) => TourStep {
 }
 
 /**
- * Enhances a step with media content
+ * Adds media (image, video, gif) to a tour step
  * 
  * @param media Media configuration
  * @returns A function that enhances the step with media
@@ -62,10 +59,10 @@ export function mediaEnhancedStep(
 }
 
 /**
- * Enhances a step with spotlight effects
+ * Adds spotlight effect to a tour step
  * 
  * @param spotlight Spotlight configuration
- * @returns A function that enhances the step with spotlight effects
+ * @returns A function that enhances the step with spotlight
  */
 export function spotlightStep(
   spotlight: {
@@ -78,18 +75,15 @@ export function spotlightStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      spotlight: {
-        ...(step.spotlight || {}),
-        ...spotlight
-      }
+      spotlight
     };
   };
 }
 
 /**
- * Positions a step relative to its target element
+ * Sets the position of a tour step
  * 
- * @param position Position configuration
+ * @param position Position of the step tooltip
  * @returns A function that enhances the step with position
  */
 export function positionStep(
@@ -104,10 +98,31 @@ export function positionStep(
 }
 
 /**
- * Combines multiple visual enhancements for a step
+ * Adds transition effects to a tour step
  * 
- * @param options Visual configuration options
- * @returns A function that enhances the step with visual options
+ * @param transition Transition configuration
+ * @returns A function that enhances the step with transition
+ */
+export function transitionStep(
+  transition: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "right" | "left" | "up" | "down";
+    duration?: number;
+  }
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      transition
+    };
+  };
+}
+
+/**
+ * Combines multiple visual enhancements for a tour step
+ * 
+ * @param options Combined visual enhancements
+ * @returns A function that enhances the step with visual effects
  */
 export function visuallyEnhancedStep(
   options: {
@@ -125,63 +140,21 @@ export function visuallyEnhancedStep(
     };
     transition?: {
       type: "fade" | "slide" | "zoom" | "flip" | "none";
-      direction?: "up" | "down" | "left" | "right";
+      direction?: "right" | "left" | "up" | "down";
       duration?: number;
     };
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    const enhancedStep = { ...step };
-    
-    if (options.position) {
-      enhancedStep.position = options.position;
-    }
-    
-    if (options.animation) {
-      enhancedStep.animation = {
-        ...(enhancedStep.animation || {}),
-        ...options.animation
-      };
-    }
-    
-    if (options.spotlight) {
-      enhancedStep.spotlight = {
-        ...(enhancedStep.spotlight || {}),
-        ...options.spotlight
-      };
-    }
-    
-    if (options.transition) {
-      enhancedStep.transition = {
-        ...(enhancedStep.transition || {}),
-        ...options.transition
-      };
-    }
-    
-    return enhancedStep;
-  };
-}
-
-/**
- * Adds 3D effects to a tour step (placeholder for future implementation)
- * 
- * @param effectOptions 3D effect options
- * @returns A function that enhances the step with 3D effects
- */
-export function effects3DStep(
-  effectOptions: {
-    type: "rotate" | "flip" | "tilt";
-    intensity?: "low" | "medium" | "high";
-    duration?: number;
+    media?: {
+      type: "image" | "video" | "gif";
+      url: string;
+      alt?: string;
+      animation?: string;
+    };
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        effects3D: effectOptions
-      }
+      ...options
     };
   };
 }

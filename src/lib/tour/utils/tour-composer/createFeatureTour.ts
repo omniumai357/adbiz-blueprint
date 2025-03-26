@@ -29,16 +29,23 @@ export function createFeatureTour(
     filteredGroups = filteredGroups.filter(groupId => levelGroups.includes(groupId));
   }
   
-  return createCustomTour(
+  const tourPath = createCustomTour(
     `${featureName}-tour`,
     `${featureName.charAt(0).toUpperCase() + featureName.slice(1)} Tour`,
     filteredGroups,
     {
       allowSkip: true,
       showProgress: true,
-      userRoles,
-      experienceLevel: options?.experienceLevel || 'all',
-      tags: [featureName]
+      tags: [featureName],
+      experienceLevel: options?.experienceLevel || 'all'
     }
   );
+  
+  // Apply user roles manually since they're not in the config options
+  if (userRoles && userRoles.length > 0) {
+    // @ts-ignore - we handle this property
+    tourPath.userRoles = userRoles;
+  }
+  
+  return tourPath;
 }

@@ -57,7 +57,7 @@ export interface TourStep {
     maxRetries?: number;
   };
   metadata?: Record<string, any>;
-  // Adding missing properties
+  // Adding properties that were missing but used in the code
   path?: {
     enabled?: boolean;
     targetElementId?: string;
@@ -89,10 +89,11 @@ export interface TourPath {
     autoStart?: boolean;
     metadata?: Record<string, any>;
   };
-  // Adding missing properties that are accessed in the code
+  // Adding properties accessed in the code
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
+  userRoles?: string[];
 }
 
 export interface TourContextType {
@@ -133,41 +134,5 @@ export interface TourContextType {
   // Additional properties needed by components
   handleKeyNavigation: (event: React.KeyboardEvent | KeyboardEvent) => void;
   content?: string;
-  visibleSteps?: TourStep[];
-}
-
-export const defaultContext: TourContextType = {
-  isActive: false,
-  currentStep: 0,
-  totalSteps: 0,
-  currentStepData: null,
-  currentPath: null,
-  availablePaths: [],
-  
-  // Tour navigation
-  nextStep: () => {},
-  prevStep: () => {},
-  goToStep: () => {},
-  startTour: () => {},
-  endTour: () => {},
-  pauseTour: () => {},
-  resumeTour: () => {},
-  resetTour: () => {},
-  goToPath: () => {},
-  
-  // Tour state management
-  registerPath: () => {},
-  unregisterPath: () => {},
-  setDynamicContent: () => {},
-  setAvailablePaths: () => {},
-  
-  // Custom configuration
-  customConfig: {
-    theme: "default"
-  },
-  setCustomConfig: () => {},
-  
-  // Additional properties
-  handleKeyNavigation: () => {},
-  visibleSteps: [],
+  visibleSteps: TourStep[];
 }

@@ -15,7 +15,7 @@ import {
   Pie,
   Cell
 } from "recharts";
-import type { TourAnalyticsData } from "@/hooks/tour/analytics/types";
+import { TourAnalyticsData } from "@/hooks/tour/analytics/types";
 
 export const TourAnalyticsDashboard: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState<TourAnalyticsData[]>([]);
