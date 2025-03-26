@@ -8,7 +8,7 @@ import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
 import { PathOptions } from '@/lib/utils/path-utils';
 import { TourThemeName } from '@/lib/tour/types/theme';
-import { defaultContext } from './types';
+import { defaultContext } from './defaults';
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -70,6 +70,7 @@ export const TourProvider: React.FC<TourProviderProps> = ({
   // Combine the controller with our custom config
   const contextValue = {
     ...tourController,
+    ...defaultContext, // Add default values for any properties not provided by tourController
     customConfig,
     setCustomConfig
   };

@@ -1,34 +1,29 @@
 
-import { TourThemeConfig } from "@/lib/tour/types/theme";
+import { TourThemeName } from '@/lib/tour/types/theme';
 
 export interface TourStep {
   id: string;
-  elementId: string;
   title: string;
   content: string;
-  position: string | "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  target: string;
+  position?: 'top' | 'right' | 'bottom' | 'left' | 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
   animation?: {
     entry?: string;
     highlight?: string;
     exit?: string;
   };
   spotlight?: {
-    intensity?: "low" | "medium" | "high";
+    intensity?: 'low' | 'medium' | 'high';
     color?: string;
     pulseEffect?: boolean;
     fadeBackground?: boolean;
   };
   transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "up" | "down" | "left" | "right";
+    type: 'fade' | 'slide' | 'zoom' | 'flip' | 'none';
+    direction?: 'up' | 'down' | 'left' | 'right';
     duration?: number;
   };
-  media?: {
-    type: "image" | "video" | "gif";
-    url: string;
-    alt?: string;
-    animation?: string;
-  };
+  optional?: boolean;
   actions?: {
     next?: {
       label?: string;
@@ -43,57 +38,23 @@ export interface TourStep {
       callback?: () => void;
     };
   };
+  media?: {
+    type: 'image' | 'video' | 'gif';
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
   condition?: () => boolean;
-  onBeforeShow?: () => Promise<void> | void;
-  onAfterShow?: () => Promise<void> | void;
-  onBeforeHide?: () => Promise<void> | void;
-  onAfterHide?: () => Promise<void> | void;
-  dynamicContent?: boolean;
-  dependencies?: string[];
-  optional?: boolean;
-  targeting?: {
-    observe?: boolean;
-    retryTimeout?: number;
-    maxRetries?: number;
-  };
-  metadata?: Record<string, any>;
-  // Adding properties that were missing but used in the code
-  path?: {
-    enabled?: boolean;
-    targetElementId?: string;
-    style?: string;
-    waypoints?: any[];
-  };
-  userRoles?: string[];
-  priority?: number;
-  triggers?: Array<{
-    event: string;
-    element?: string;
-    condition?: () => boolean;
-    action: () => void;
-  }>;
-  keyboardShortcuts?: Record<string, string>;
+  onBefore?: () => Promise<void> | void;
+  onAfter?: () => Promise<void> | void;
 }
 
 export interface TourPath {
   id: string;
-  name: string;
   steps: TourStep[];
-  config?: {
-    allowSkip?: boolean;
-    showProgress?: boolean;
-    showKeyboardShortcuts?: boolean;
-    completionCallback?: () => void;
-    useDynamicTargeting?: boolean;
-    saveProgress?: boolean;
-    autoStart?: boolean;
-    metadata?: Record<string, any>;
-  };
-  // Adding properties accessed in the code
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
-  userRoles?: string[];
 }
 
 export interface TourContextType {
@@ -103,36 +64,37 @@ export interface TourContextType {
   currentStepData: TourStep | null;
   currentPath: TourPath | null;
   availablePaths: TourPath[];
-  
-  // Tour navigation
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (stepIndex: number) => void;
-  startTour: (pathId: string) => void;
+  startTour: (pathId?: string, stepIndex?: number) => void;
   endTour: () => void;
   pauseTour: () => void;
   resumeTour: () => void;
   resetTour: () => void;
   goToPath: (pathId: string, stepIndex?: number) => void;
-  
-  // Tour state management
   registerPath: (path: TourPath) => void;
   unregisterPath: (pathId: string) => void;
   setDynamicContent: (content: string) => void;
   setAvailablePaths: (paths: TourPath[]) => void;
-  
-  // Custom configuration
-  customConfig?: {
-    theme?: string;
+  customConfig: {
+    theme: TourThemeName;
+    transitions?: {
+      duration: number;
+      easing: string;
+    };
     customColors?: Record<string, string>;
-    language?: string;
-    translations?: Record<string, Record<string, string>>;
-    [key: string]: any;
   };
-  setCustomConfig: React.Dispatch<React.SetStateAction<any>>;
-  
-  // Additional properties needed by components
+  setCustomConfig: React.Dispatch<React.SetStateAction<{
+    theme: TourThemeName;
+    transitions?: {
+      duration: number;
+      easing: string;
+    };
+    customColors?: Record<string, string>;
+  }>>;
   handleKeyNavigation: (event: React.KeyboardEvent | KeyboardEvent) => void;
-  content?: string;
   visibleSteps: TourStep[];
 }
+
+export { defaultContext } from './defaults';

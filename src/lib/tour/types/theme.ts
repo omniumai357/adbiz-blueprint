@@ -10,6 +10,25 @@ export interface TourThemeConfig {
   theme: TourThemeName;
   /** Custom colors for custom theme */
   customColors?: Record<string, string>;
+  /** Animation properties for theme transitions */
+  transitions?: {
+    /** Duration of theme transition animation in ms */
+    duration: number;
+    /** Easing function for transition animation */
+    easing: string;
+  };
+  /** 
+   * Responsiveness options for different viewports 
+   * These settings override main theme settings on specific viewports
+   */
+  responsive?: {
+    /** Mobile viewport specific settings */
+    mobile?: Partial<TourThemeColors>;
+    /** Tablet viewport specific settings */
+    tablet?: Partial<TourThemeColors>;
+    /** Desktop viewport specific settings */
+    desktop?: Partial<TourThemeColors>;
+  };
 }
 
 /**
@@ -38,4 +57,43 @@ export interface TourThemeColors {
   accentRed?: string;
   /** Warning or attention color */
   accentAmber?: string;
+  /** Border radius for components */
+  borderRadius?: string;
+  /** Shadow style for tooltips */
+  shadow?: string;
+}
+
+/**
+ * Predefined theme preset configurations
+ */
+export interface ThemePreset {
+  /** Unique identifier for the theme preset */
+  id: string;
+  /** Display name of the theme preset */
+  name: string;
+  /** Theme colors configuration */
+  colors: TourThemeColors;
+  /** Optional description of the theme */
+  description?: string;
+  /** Optional preview image URL */
+  previewUrl?: string;
+  /** Optional transition effects */
+  transitions?: {
+    duration: number;
+    easing: string;
+  };
+}
+
+/**
+ * Theme registry interface for theme management
+ */
+export interface ThemeRegistry {
+  /** Get all available theme presets */
+  getThemes: () => ThemePreset[];
+  /** Get a specific theme preset by id */
+  getTheme: (id: string) => ThemePreset | undefined;
+  /** Add a new theme preset to the registry */
+  addTheme: (theme: ThemePreset) => void;
+  /** Remove a theme preset from the registry */
+  removeTheme: (id: string) => boolean;
 }

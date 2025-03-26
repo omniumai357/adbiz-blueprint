@@ -58,6 +58,10 @@
   --tour-animation-medium: 300ms;
   --tour-animation-slow: 500ms;
   
+  /* Theme transition properties */
+  --tour-transition-duration: 300ms;
+  --tour-transition-easing: ease;
+  
   /* Tour Component Spacing */
   --tour-spacing-xs: 0.25rem;
   --tour-spacing-sm: 0.5rem;
@@ -74,6 +78,40 @@
   /* Tour Focus Styles */
   --tour-focus-ring: 0 0 0 3px rgba(14, 165, 233, 0.4);
   --tour-focus-ring-offset: 2px;
+}
+
+/* Theme Transition Styles */
+.tour-theme-transitioning {
+  --tour-property-selectors: 
+    background-color, 
+    color, 
+    border-color, 
+    box-shadow,
+    border-radius,
+    background,
+    border;
+    
+  --tour-transition-properties:
+    var(--tour-transition-duration) 
+    var(--tour-transition-easing);
+  
+  /* Apply transitions to all themed elements */
+  & :is(
+    .tour-tooltip, 
+    .tour-button, 
+    .tour-progress, 
+    .tour-step-indicator,
+    .tour-overlay,
+    .tour-spotlight,
+    [class*='tour-']
+  ) {
+    transition: 
+      background-color var(--tour-transition-properties),
+      color var(--tour-transition-properties),
+      border-color var(--tour-transition-properties),
+      box-shadow var(--tour-transition-properties),
+      border-radius var(--tour-transition-properties);
+  }
 }
 
 /* Dark Mode Theme Variables */
@@ -153,4 +191,108 @@
   --tour-progress-fill: var(--tour-accent-blue);
   --tour-border-highlight: var(--tour-accent-blue);
   --tour-spotlight-glow: rgba(245, 158, 11, 0.6);
+}
+
+/* Corporate Theme */
+.tour-theme-corporate {
+  --tour-bg-primary: #ffffff;
+  --tour-bg-secondary: #f8fafc;
+  --tour-bg-tertiary: #f1f5f9;
+  
+  --tour-text-primary: #1e293b;
+  --tour-text-secondary: #64748b;
+  --tour-text-tertiary: #94a3b8;
+  
+  --tour-border-primary: #e2e8f0;
+  --tour-border-secondary: #cbd5e1;
+  --tour-border-highlight: #3b82f6;
+  
+  --tour-accent-blue: #3b82f6;
+  --tour-accent-purple: #6366f1;
+  --tour-accent-green: #10b981;
+  --tour-accent-red: #ef4444;
+  --tour-accent-amber: #f59e0b;
+  
+  --tour-tooltip-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --tour-radius-sm: 0.125rem;
+  --tour-radius-md: 0.25rem;
+  --tour-radius-lg: 0.375rem;
+  --tour-radius-xl: 0.5rem;
+  
+  --tour-button-primary-hover-bg: #2563eb;
+  --tour-spotlight-glow: rgba(59, 130, 246, 0.5);
+}
+
+/* Minimal Theme */
+.tour-theme-minimal {
+  --tour-bg-primary: #ffffff;
+  --tour-bg-secondary: #fafafa;
+  --tour-bg-tertiary: #f5f5f5;
+  
+  --tour-text-primary: #171717;
+  --tour-text-secondary: #525252;
+  --tour-text-tertiary: #737373;
+  
+  --tour-border-primary: #e5e5e5;
+  --tour-border-secondary: #d4d4d4;
+  --tour-border-highlight: #525252;
+  
+  --tour-accent-blue: #525252;
+  --tour-accent-purple: #737373;
+  --tour-accent-green: #16a34a;
+  --tour-accent-red: #dc2626;
+  --tour-accent-amber: #d97706;
+  
+  --tour-tooltip-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --tour-radius-sm: 0px;
+  --tour-radius-md: 0.125rem;
+  --tour-radius-lg: 0.125rem;
+  --tour-radius-xl: 0.25rem;
+  
+  --tour-button-primary-hover-bg: #404040;
+  --tour-spotlight-glow: rgba(82, 82, 82, 0.4);
+}
+
+/* Playful Theme */
+.tour-theme-playful {
+  --tour-bg-primary: #ffffff;
+  --tour-bg-secondary: #faf5ff;
+  --tour-bg-tertiary: #f3e8ff;
+  
+  --tour-text-primary: #581c87;
+  --tour-text-secondary: #6b21a8;
+  --tour-text-tertiary: #7e22ce;
+  
+  --tour-border-primary: #e9d5ff;
+  --tour-border-secondary: #d8b4fe;
+  --tour-border-highlight: #8b5cf6;
+  
+  --tour-accent-blue: #8b5cf6;
+  --tour-accent-purple: #d946ef;
+  --tour-accent-green: #34d399;
+  --tour-accent-red: #f87171;
+  --tour-accent-amber: #fbbf24;
+  
+  --tour-tooltip-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.1), 0 4px 6px -2px rgba(139, 92, 246, 0.05);
+  --tour-radius-sm: 0.75rem;
+  --tour-radius-md: 1rem;
+  --tour-radius-lg: 1.25rem;
+  --tour-radius-xl: 1.5rem;
+  
+  --tour-button-primary-hover-bg: #7c3aed;
+  --tour-spotlight-glow: rgba(139, 92, 246, 0.6);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  :root {
+    /* Adjust spacing for mobile */
+    --tour-spacing-md: 0.75rem;
+    --tour-spacing-lg: 1.25rem;
+    --tour-spacing-xl: 1.5rem;
+    
+    /* Slightly smaller border radius on mobile */
+    --tour-radius-lg: 0.5rem;
+    --tour-radius-xl: 0.75rem;
+  }
 }
