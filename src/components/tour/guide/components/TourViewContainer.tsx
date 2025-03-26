@@ -1,3 +1,4 @@
+
 import React, { useRef } from "react";
 import { useTour } from "@/contexts/tour";
 import { useDevice } from "@/hooks/use-mobile";
@@ -7,6 +8,7 @@ import { useUserContext } from "@/hooks/tour/useUserContext";
 import { TourMobileView } from "../../TourMobileView";
 import { TourDesktopView, TourDesktopViewHandle } from "../../TourDesktopView";
 import { useKeyboardShortcuts } from "@/contexts/tour/KeyboardShortcutsContext";
+import { TourPath } from "@/contexts/tour/types";
 
 interface TourViewContainerProps {
   targetElement: HTMLElement | null;
@@ -31,7 +33,10 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   const desktopViewRef = useRef<TourDesktopViewHandle>(null);
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   
-  const currentPathId = currentPath ? currentPath.id : null;
+  // Extract the currentPathId safely
+  const currentPathId = typeof currentPath === 'string' ? 
+    currentPath : 
+    currentPath ? currentPath.id : null;
   
   const { content } = useTourDynamicContent(currentStepData, setDynamicContent);
   
@@ -49,8 +54,13 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
     return null;
   }
   
-  const highlightAnimation = currentStepData.animation?.highlight || "pulse";
-  const entryAnimation = currentStepData.animation?.entry || "fade-in";
+  // Handle the animation property which can be string or object
+  const animationObj = typeof currentStepData.animation === 'string' ?
+    { highlight: "pulse", entry: currentStepData.animation } :
+    currentStepData.animation || { highlight: "pulse", entry: "fade-in" };
+    
+  const highlightAnimation = animationObj.highlight || "pulse";
+  const entryAnimation = animationObj.entry || "fade-in";
   
   const transition = currentStepData.transition || {
     type: "fade" as const,

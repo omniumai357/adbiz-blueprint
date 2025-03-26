@@ -1,131 +1,153 @@
 
+import { useEffect, useState } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 
+// Middleware function for transforming steps during loading
+type StepTransformer = (step: TourStep) => TourStep;
+
 /**
- * Loads tour paths based on current route
- * @param currentPathname The current route pathname
- * @returns Promise resolving to the appropriate tour paths
+ * Loads tour data and paths based on the current pathname
+ * 
+ * @param pathname Current route path
+ * @param stepTransformers Optional transformers to modify steps during loading
+ * @returns Loaded tour paths
  */
-export const loadTourPathsForRoute = async (currentPathname: string): Promise<TourPath[]> => {
-  if (currentPathname.includes("/services")) {
-    return [{
-      id: "services-tour",
-      name: "Services Tour",
-      steps: [
-        {
-          id: "service-welcome",
-          elementId: "service-header",
-          title: "Our Services",
-          content: "Welcome to our services page. Here you'll find all the services we offer.",
-          position: "bottom",
-          target: "service-header" // Add target property
-        },
-        {
-          id: "service-pricing",
-          elementId: "pricing-section",
-          title: "Service Pricing",
-          content: "Our pricing is transparent and competitive.",
-          position: "top",
-          target: "pricing-section" // Add target property
-        },
-        {
-          id: "service-details",
-          elementId: "details-section",
-          title: "Service Details",
-          content: "Click on any service to see more details.",
-          position: "right",
-          target: "details-section" // Add target property
-        }
-      ]
-    }];
-  } else if (currentPathname === "/") {
-    return [{
-      id: "home-tour",
-      name: "Home Tour",
-      steps: [
-        {
-          id: "home-welcome",
-          elementId: "welcome-section",
-          title: "Welcome",
-          content: "Welcome to our site! This tour will guide you through key features.",
-          position: "bottom",
-          target: "welcome-section", // Add target property
-          path: {
-            style: "dashed",
-            targetElementId: "welcome-section"
-          }
-        },
-        {
-          id: "home-features",
-          elementId: "features-section",
-          title: "Features",
-          content: "Check out our key features here.",
-          position: "bottom",
-          target: "features-section" // Add target property
-        }
-      ]
-    }];
-  } else if (currentPathname.includes("/contact")) {
-    return [{
-      id: "contact-tour",
-      name: "Contact Tour",
-      steps: [
-        {
-          id: "contact-intro",
-          elementId: "contact-header",
-          title: "Contact Us",
-          content: "Here you can find our contact information.",
-          position: "bottom",
-          target: "contact-header" // Add target property
-        },
-        {
-          id: "contact-form",
-          elementId: "contact-form",
-          title: "Contact Form",
-          content: "Fill out this form to send us a message.",
-          position: "left",
-          target: "contact-form" // Add target property
-        },
-        {
-          id: "contact-info",
-          elementId: "contact-info",
-          title: "Contact Information",
-          content: "Here's our address and phone number.",
-          position: "top",
-          target: "contact-info" // Add target property
-        }
-      ]
-    }];
-  } else if (currentPathname.includes("/checkout")) {
-    return [{
-      id: "checkout-tour",
-      name: "Checkout Tour",
-      steps: [
-        {
-          id: "checkout-welcome",
-          elementId: "checkout-header",
-          title: "Checkout",
-          content: "Welcome to the checkout page. Follow the steps to complete your purchase.",
-          position: "bottom",
-          target: "checkout-header" // Add target property
-        }
-      ]
-    }];
-  } else {
-    // Default tour for any other page
-    return [{
-      id: "default-tour",
-      name: "Site Tour",
-      steps: [
-        {
-          id: "default-welcome",
-          elementId: "page-header",
-          title: "Welcome",
-          content: "Welcome to our site! Feel free to explore and let us know if you have any questions.",
-          position: "bottom",
-          target: "page-header" // Add target property
-        }
-      ]
-    }];
+export function loadTourPaths(
+  pathname: string,
+  stepTransformers: StepTransformer[] = []
+): TourPath[] {
+  const paths: TourPath[] = [];
+  
+  try {
+    // Match pathname to possible tour paths
+    if (pathname === '/') {
+      // Load home tour paths
+      // In a real implementation, this would load from a registry or config
+      paths.push({
+        id: 'home-tour',
+        name: 'Home Tour',
+        steps: sampleHomeSteps,
+        allowSkip: true,
+        showProgress: true
+      });
+    } else if (pathname.includes('/checkout')) {
+      paths.push({
+        id: 'checkout-tour',
+        name: 'Checkout Tour',
+        steps: sampleCheckoutSteps,
+        allowSkip: true,
+        showProgress: true
+      });
+    }
+    
+    // Apply transformers to each step
+    if (stepTransformers.length > 0) {
+      paths.forEach(path => {
+        path.steps = path.steps.map(step => {
+          let transformedStep = { ...step };
+          stepTransformers.forEach(transformer => {
+            transformedStep = transformer(transformedStep);
+          });
+          return transformedStep;
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Error loading tour paths:', error);
   }
+  
+  return paths;
+}
+
+// Fix the path property to include the 'enabled' property
+const enhancePathPropertyWithEnabled = (step: TourStep): TourStep => {
+  if (step.path && typeof step.path === 'object' && !('enabled' in step.path)) {
+    return {
+      ...step,
+      path: {
+        enabled: true, // Add the missing property
+        ...step.path
+      }
+    };
+  }
+  return step;
 };
+
+// Sample steps for testing
+const sampleHomeSteps: TourStep[] = [
+  {
+    id: 'welcome',
+    title: 'Welcome to Our App',
+    content: 'This tour will guide you through the main features.',
+    target: '#header-welcome',
+    position: 'bottom',
+  },
+  {
+    id: 'features',
+    title: 'Explore Features',
+    content: 'Check out our amazing features.',
+    target: '#features-section',
+    position: 'right',
+    path: { 
+      enabled: true,
+      targetElementId: '#features-section',
+      style: 'dashed'
+    }
+  },
+  {
+    id: 'get-started',
+    title: 'Get Started',
+    content: 'Click here to get started with your first project.',
+    target: '#get-started-button',
+    position: 'top',
+  }
+];
+
+const sampleCheckoutSteps: TourStep[] = [
+  {
+    id: 'checkout-welcome',
+    title: 'Checkout Process',
+    content: 'Let\'s walk through the checkout process.',
+    target: '#checkout-header',
+    position: 'bottom',
+  },
+  {
+    id: 'payment-info',
+    title: 'Payment Information',
+    content: 'Enter your payment details securely.',
+    target: '#payment-form',
+    position: 'right',
+    path: { 
+      enabled: true,
+      targetElementId: '#payment-form',
+      style: 'solid'
+    }
+  },
+  {
+    id: 'complete-order',
+    title: 'Complete Your Order',
+    content: 'Review and submit your order.',
+    target: '#submit-order-button',
+    position: 'top',
+  }
+];
+
+/**
+ * Custom hook for loading tour paths based on the current route
+ */
+export function useTourPathsLoader(
+  pathname: string,
+  stepTransformers: StepTransformer[] = []
+): TourPath[] {
+  const [paths, setPaths] = useState<TourPath[]>([]);
+  
+  useEffect(() => {
+    // Add the enhance function to ensure all path objects have 'enabled' property
+    const allTransformers = [...stepTransformers, enhancePathPropertyWithEnabled];
+    
+    const loadedPaths = loadTourPaths(pathname, allTransformers);
+    setPaths(loadedPaths);
+  }, [pathname]);
+  
+  return paths;
+}

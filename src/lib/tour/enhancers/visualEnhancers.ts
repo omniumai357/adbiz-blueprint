@@ -97,6 +97,18 @@ export const with3DEffects = (
 };
 
 /**
+ * Sets position for a tour step
+ */
+export const withPosition = (
+  position: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left"
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    position
+  };
+};
+
+/**
  * Combines multiple visual enhancers into one
  */
 export const withVisualEnhancements = (options: {
@@ -166,3 +178,12 @@ export const withVisualEnhancements = (options: {
 
   return enhancedStep;
 };
+
+// Alias exports for backward compatibility
+export const animatedStep = withAnimation;
+export const optionalStep = withOptional;
+export const mediaEnhancedStep = withMedia;
+export const spotlightStep = withSpotlight;
+export const transitionStep = withTransition;
+export const positionStep = withPosition;
+export const visuallyEnhancedStep = withVisualEnhancements;

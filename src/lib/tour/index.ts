@@ -1,95 +1,48 @@
 
-// Re-export core tour path and step creation functions
-export { 
-  createTourPath,
-  createTourPathFromGroups,
-  createStep,
-  enhanceStep
-} from './core/tourPathFactory';
+// Export core functionality
+export * from './core/paths/createTourPath';
+export * from './core/paths/createTourPathFromGroups';
+export * from './core/tourPathFactory';
+export * from './core/tourStepGroups';
+export * from './core/registry';
 
-// Re-export step group functions
+// Export enhancers
+export * from './enhancers/visualEnhancers';
+export * from './enhancers/actionEnhancers';
+export * from './enhancers/contentEnhancers';
+export * from './enhancers/dependencyEnhancers';
+export * from './enhancers/interactivityEnhancers';
+export * from './enhancers/pathEnhancers';
+export * from './enhancers/roleEnhancers';
+
+// Export utilities and helpers
+export * from './utils/tour-composer/createCustomTour';
+export * from './utils/tour-composer/createFeatureTour';
+export * from './utils/tour-composer/createOnboardingTour';
+
+// Core building blocks
+export { createStep, enhanceStep, conditionalStep, stepInGroup } from './core/tourPathFactory';
+
+// Common enhancers (directly exported for convenience)
+import { 
+  animatedStep, 
+  optionalStep, 
+  mediaEnhancedStep,
+  spotlightStep,
+  positionStep,
+  visuallyEnhancedStep,
+  transitionStep
+} from './enhancers/visualEnhancers';
+
 export {
-  createStepGroup,
-  getStepGroup,
-  getAllStepGroups,
-  composeStepGroups,
-  stepInGroup,
-  filterStepGroups,
-  taggedStep,
-  experienceLevelStep,
-  featureAreaStep
-} from './core/tourStepGroups';
-
-// Re-export tour composition utilities
-export {
-  createCustomTour,
-  createOnboardingTour,
-  createFeatureTour,
-  getStepGroupsByTag,
-  getStepGroupsByExperienceLevel
-} from './utils/tour-composer';
-
-// Re-export condition enhancers
-export { 
-  conditionalStep,
-  featureFlagStep,
-  progressBasedStep
-} from './enhancers/conditionEnhancers';
-
-// Re-export role enhancers
-export { 
-  roleRestrictedStep 
-} from './enhancers/roleEnhancers';
-
-// Re-export visual enhancers
-export { 
   animatedStep,
   optionalStep,
   mediaEnhancedStep,
   spotlightStep,
   positionStep,
-  visuallyEnhancedStep
-} from './enhancers/visualEnhancers';
+  visuallyEnhancedStep,
+  transitionStep
+};
 
-// Re-export path enhancers
-export {
-  pathAnimatedStep,
-  connectedStep
-} from './enhancers/pathEnhancers';
-
-// Re-export action enhancers
-export { 
-  actionEnhancedStep,
-  triggerEnhancedStep,
-  prioritizedStep
-} from './enhancers/actionEnhancers';
-
-// Re-export content enhancers
-export { 
-  metadataEnhancedStep,
-  dynamicContentStep
-} from './enhancers/contentEnhancers';
-
-// Re-export dependency enhancers
-export {
-  dependentStep,
-  branchingStep,
-  reEntryPoint,
-  sectionStep
-} from './core/dependency/enhancers';
-
-// Re-export dependency management tools
-export {
-  TourDependencyManager,
-  createStepDependency
-} from './core/dependency';
-
-// Re-export existing tour paths for backward compatibility
-export { defaultTourPath } from './default-tour';
-export { homeTourPath } from './home-tour';
-export { contactTourPath } from './contact-tour';
-export { servicesTourPath } from './services-tour';
-export { checkoutTourPath } from './checkout-tour';
-
-// Re-export analytics exports for backward compatibility
-export * from './exportAnalytics';
+// Utility types
+export * from './types';

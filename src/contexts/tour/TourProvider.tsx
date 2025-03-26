@@ -90,6 +90,13 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     }
   }, [tourController]);
   
+  // Create a wrapper for handleKeyNavigation that converts React.KeyboardEvent to KeyboardEvent
+  const handleKeyNavigationWrapper = useCallback((event: KeyboardEvent) => {
+    if (typeof tourController.handleKeyNavigation === 'function') {
+      tourController.handleKeyNavigation(event);
+    }
+  }, [tourController.handleKeyNavigation]);
+  
   // Adapt the tour controller to match the TourContextType
   const adaptedController: TourContextType = {
     ...defaultContext,
@@ -103,7 +110,9 @@ export const TourProvider: React.FC<TourProviderProps> = ({
         tourController.currentPath) : 
       null,
     // Make sure setDynamicContent has the correct signature
-    setDynamicContent: handleSetDynamicContent
+    setDynamicContent: handleSetDynamicContent,
+    // Use the wrapper for handleKeyNavigation to fix the type issue
+    handleKeyNavigation: handleKeyNavigationWrapper
   };
   
   return (

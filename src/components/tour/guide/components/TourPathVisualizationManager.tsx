@@ -16,13 +16,24 @@ export const TourPathVisualizationManager: React.FC<TourPathVisualizationManager
   
   // If the current step has a path property, find the target element for the path
   useEffect(() => {
-    if (!isActive || !currentStepData || !currentStepData.path || !currentStepData.path.enabled) {
+    if (!isActive || !currentStepData || !currentStepData.path) {
+      setPathTargetElement(null);
+      return;
+    }
+    
+    // Handle path property which could be a string or an object
+    const pathObj = typeof currentStepData.path === 'string' ? 
+      { enabled: true, targetElementId: currentStepData.path, style: 'solid' } : 
+      currentStepData.path;
+    
+    // Check if path is enabled
+    if (!pathObj.enabled) {
       setPathTargetElement(null);
       return;
     }
     
     // Find the target element for the path
-    const pathTargetSelector = currentStepData.path.targetElementId;
+    const pathTargetSelector = pathObj.targetElementId;
     if (!pathTargetSelector) {
       setPathTargetElement(null);
       return;
@@ -37,17 +48,22 @@ export const TourPathVisualizationManager: React.FC<TourPathVisualizationManager
     }
   }, [isActive, currentStepData]);
   
-  if (!isActive || !currentStepData?.path?.enabled || !targetElement || !pathTargetElement) {
+  if (!isActive || !currentStepData?.path || !targetElement || !pathTargetElement) {
     return null;
   }
   
   // Convert the path options from the step data
+  const pathObj = typeof currentStepData.path === 'string' ? 
+    { enabled: true, targetElementId: currentStepData.path, style: 'solid' } : 
+    currentStepData.path;
+    
+  // Convert the path options from the step data
   const pathOptions = {
-    style: currentStepData.path.style || 'solid',
-    color: currentStepData.path.color || '#4f46e5',
-    animationDuration: currentStepData.path.animationDuration || 500,
-    showArrow: currentStepData.path.showArrow !== false,
-    waypoints: currentStepData.path.waypoints
+    style: pathObj.style || 'solid',
+    color: pathObj.color || '#4f46e5',
+    animationDuration: pathObj.animationDuration || 500,
+    showArrow: pathObj.showArrow !== false,
+    waypoints: pathObj.waypoints
   };
   
   return (

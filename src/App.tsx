@@ -18,7 +18,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
 import Auth from './pages/Auth';
-import { Toaster } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
