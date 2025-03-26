@@ -14,7 +14,7 @@ export function conditionalStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      condition
+      condition: condition as () => boolean
     };
   };
 }

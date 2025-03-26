@@ -1,5 +1,13 @@
 
-import { TourStep, StepTrigger } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour-context";
+
+// Define StepTrigger type
+export interface StepTrigger {
+  event: string;
+  element?: string;
+  condition?: () => boolean;
+  action: () => void;
+}
 
 /**
  * Adds custom button actions to a tour step
@@ -11,15 +19,15 @@ export function actionEnhancedStep(
   actions: {
     next?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
     prev?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
     skip?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
   }
 ): (step: TourStep) => TourStep {

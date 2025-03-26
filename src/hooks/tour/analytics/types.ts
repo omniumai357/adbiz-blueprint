@@ -1,37 +1,21 @@
 
 /**
- * Event types that can be tracked during a tour
+ * Type for condition evaluator functions
  */
-export type TourAnalyticsEvent = 
-  | 'tour_started'
-  | 'tour_completed' 
-  | 'tour_abandoned'
-  | 'step_viewed'
-  | 'step_skipped'
-  | 'step_interaction';
+export type ConditionEvaluator = () => boolean;
 
 /**
- * Analytics data for tour events
+ * Type for tour analytics event data
  */
-export type TourAnalyticsData = {
-  event: TourAnalyticsEvent;
+export interface TourAnalyticsEvent {
   pathId: string;
   pathName: string;
-  stepId?: string;
-  stepIndex?: number;
-  totalSteps?: number;
+  stepId: string;
+  stepIndex: number;
+  totalSteps: number;
   userId?: string;
   userType?: string;
+  event: string;
   timestamp: number;
   metadata?: Record<string, any>;
-};
-
-/**
- * Content provider type for dynamic step content
- */
-export type DynamicContentProvider = () => string | Promise<string>;
-
-/**
- * Condition evaluator type
- */
-export type ConditionEvaluator = () => boolean | Promise<boolean>;
+}

@@ -63,8 +63,8 @@ export const TourScreenReaderAnnouncer: React.FC<TourScreenReaderAnnouncerProps>
         const direction = currentStep > previousStepRef.current ? 'forward' : 'backward';
         let announcement = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}. ${currentStepData.content || ''}`;
         
-        // Add path connection announcements
-        if (currentStepData.path?.enabled && currentStepData.path?.targetElementId) {
+        // Add path connection announcements if path property exists
+        if (currentStepData.path && currentStepData.path.enabled && currentStepData.path.targetElementId) {
           announcement += ` This step is connected to the ${currentStepData.path.targetElementId} element.`;
           
           if (currentStepData.path.style) {

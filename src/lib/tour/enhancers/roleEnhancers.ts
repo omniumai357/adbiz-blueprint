@@ -1,5 +1,8 @@
 
-import { TourStep, StepUserRole } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour-context";
+
+// Define StepUserRole type
+export type StepUserRole = string;
 
 /**
  * Creates a role-restricted step that only shows for specific user roles

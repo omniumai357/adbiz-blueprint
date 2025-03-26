@@ -18,7 +18,7 @@ export const TourStepFocusManager: React.FC<TourStepFocusManagerProps> = ({
   setLastStepIndex,
   focusElement
 }) => {
-  const { currentStep, totalSteps, content } = useTour();
+  const { currentStep, totalSteps } = useTour();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -41,13 +41,13 @@ export const TourStepFocusManager: React.FC<TourStepFocusManagerProps> = ({
         const liveRegion = document.getElementById('tour-announcer');
         if (liveRegion) {
           const stepNumber = currentStep + 1;
-          // Use currentStepData.content if content is undefined
-          const stepContent = content || currentStepData.content || '';
+          // Use currentStepData.content directly
+          const stepContent = currentStepData.content || '';
           liveRegion.textContent = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${stepContent}`;
         }
       }, 150);
     }
-  }, [isActive, currentStep, currentStepData, lastStepIndex, totalSteps, content, isMobile, focusElement, setLastStepIndex]);
+  }, [isActive, currentStep, currentStepData, lastStepIndex, totalSteps, isMobile, focusElement, setLastStepIndex]);
 
   return null;
 };

@@ -57,6 +57,22 @@ export interface TourStep {
     maxRetries?: number;
   };
   metadata?: Record<string, any>;
+  // Adding missing properties
+  path?: {
+    enabled?: boolean;
+    targetElementId?: string;
+    style?: string;
+    waypoints?: any[];
+  };
+  userRoles?: string[];
+  priority?: number;
+  triggers?: Array<{
+    event: string;
+    element?: string;
+    condition?: () => boolean;
+    action: () => void;
+  }>;
+  keyboardShortcuts?: Record<string, string>;
 }
 
 export interface TourPath {
@@ -73,6 +89,10 @@ export interface TourPath {
     autoStart?: boolean;
     metadata?: Record<string, any>;
   };
+  // Adding missing properties that are accessed in the code
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
 }
 
 export interface TourContextType {
@@ -109,6 +129,11 @@ export interface TourContextType {
     [key: string]: any;
   };
   setCustomConfig: React.Dispatch<React.SetStateAction<any>>;
+  
+  // Additional properties needed by components
+  handleKeyNavigation: (event: React.KeyboardEvent | KeyboardEvent) => void;
+  content?: string;
+  visibleSteps?: TourStep[];
 }
 
 export const defaultContext: TourContextType = {
@@ -140,5 +165,9 @@ export const defaultContext: TourContextType = {
   customConfig: {
     theme: "default"
   },
-  setCustomConfig: () => {}
-};
+  setCustomConfig: () => {},
+  
+  // Additional properties
+  handleKeyNavigation: () => {},
+  visibleSteps: [],
+}

@@ -12,7 +12,7 @@ export const TourLiveAnnouncer: React.FC<TourLiveAnnouncerProps> = ({
   isActive, 
   currentStepData 
 }) => {
-  const { currentStep, totalSteps, content } = useTour();
+  const { currentStep, totalSteps } = useTour();
   const isMobile = useIsMobile();
   
   useEffect(() => {
@@ -28,8 +28,8 @@ export const TourLiveAnnouncer: React.FC<TourLiveAnnouncerProps> = ({
       }
       
       const stepNumber = currentStep + 1;
-      // Use currentStepData.content if content is undefined
-      const stepContent = content || currentStepData.content || '';
+      // Use currentStepData.content directly
+      const stepContent = currentStepData.content || '';
       let announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${stepContent}`;
       
       if (isMobile) {
@@ -47,7 +47,7 @@ export const TourLiveAnnouncer: React.FC<TourLiveAnnouncerProps> = ({
         liveRegion.textContent = "Tour ended";
       }
     };
-  }, [isActive, currentStepData, currentStep, totalSteps, content, isMobile]);
+  }, [isActive, currentStepData, currentStep, totalSteps, isMobile]);
   
   return null;
 };

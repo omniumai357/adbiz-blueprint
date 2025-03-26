@@ -18,24 +18,12 @@ export function createCustomTour(
   options?: {
     allowSkip?: boolean;
     showProgress?: boolean;
-    userRoles?: string[];
     filterSteps?: (step: TourStep) => boolean;
     tags?: string[];
     experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'all';
   }
 ): TourPath {
-  const { userRoles, tags, experienceLevel, ...otherOptions } = options || {};
-  
-  // Default filter that respects user roles
-  const roleFilter = (step: TourStep) => {
-    // If step has role restrictions and user roles are provided
-    if (step.userRoles && userRoles) {
-      // Check if any of the user's roles match the step's allowed roles
-      return step.userRoles.some(role => userRoles.includes(role));
-    }
-    // If step has no role restrictions or no user roles provided, show the step
-    return true;
-  };
+  const { tags, experienceLevel, ...otherOptions } = options || {};
   
   // Tag-based filtering
   const tagFilter = (step: TourStep) => {
@@ -61,12 +49,11 @@ export function createCustomTour(
   
   // Combine all filters
   const combinedFilter = (step: TourStep) => {
-    const passesRoleFilter = roleFilter(step);
     const passesTagFilter = tagFilter(step);
     const passesLevelFilter = experienceLevelFilter(step);
     const passesCustomFilter = options?.filterSteps ? options.filterSteps(step) : true;
     
-    return passesRoleFilter && passesTagFilter && passesLevelFilter && passesCustomFilter;
+    return passesTagFilter && passesLevelFilter && passesCustomFilter;
   };
   
   return createTourPathFromGroups(

@@ -1,6 +1,5 @@
 
 export * from './types';
-export * from './defaults';
-export * from './TourContext';
-export * from './TourProvider';
-export * from './TourAnnouncer';
+export { TourContext, useTour } from './TourContext';
+export { TourProvider } from './TourProvider';
+export { TourAnnouncer } from './TourAnnouncer';

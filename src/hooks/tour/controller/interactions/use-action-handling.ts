@@ -8,10 +8,10 @@ import { TourStep } from "@/contexts/tour-context";
 export function useActionHandling(currentStepData: TourStep | null) {
   // Execute custom action if defined in the step
   const executeStepAction = useCallback((actionType: 'next' | 'prev' | 'skip') => {
-    if (!currentStepData?.actions?.[actionType]?.onClick) return;
+    if (!currentStepData?.actions?.[actionType]?.callback) return;
     
     // Execute the custom action
-    currentStepData.actions[actionType].onClick();
+    currentStepData.actions[actionType].callback();
   }, [currentStepData]);
 
   return { executeStepAction };

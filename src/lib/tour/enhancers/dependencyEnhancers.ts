@@ -74,19 +74,37 @@ export function branchingStep(
       metadata: {
         ...(step.metadata || {}),
         branches
+      },
+      actions: {
+        ...(step.actions || {}),
+        next: {
+          ...((step.actions?.next as any) || {}),
+          callback: () => {
+            // Find the first branch whose condition evaluates to true
+            const activeBranch = branches.find(branch => branch.condition());
+            
+            if (activeBranch) {
+              // In a real implementation, this would need to communicate with the tour controller
+              console.log(`Branching to step: ${activeBranch.targetStepId}`);
+              
+              // The actual branching logic would go here
+              // For now we're just logging the intent
+            }
+          }
+        }
       }
     };
   };
 }
 
 /**
- * Creates a step that becomes a re-entry point after skipping sections
+ * Creates a step that serves as a re-entry point after a detour
  * 
- * @param skippedSectionIds Optional array of section IDs that can be skipped
+ * @param sourceStepIds Array of step IDs that can return to this step
  * @returns A function that enhances the step as a re-entry point
  */
 export function reEntryPoint(
-  skippedSectionIds?: string[]
+  sourceStepIds: string[]
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
@@ -94,37 +112,33 @@ export function reEntryPoint(
       metadata: {
         ...(step.metadata || {}),
         isReEntryPoint: true,
-        skippedSectionIds
+        sourceStepIds
       }
     };
   };
 }
 
 /**
- * Creates a step that belongs to a specific section of the tour
- * Sections can be skipped or made optional
+ * Creates a section step that can be collapsed or expanded
  * 
- * @param sectionId Unique identifier for the section
- * @param options Configuration options for the section
- * @returns A function that enhances the step with section information
+ * @param sectionName Name of the section for identification
+ * @param expanded Whether the section is expanded by default
+ * @returns A function that enhances the step as a section
  */
 export function sectionStep(
-  sectionId: string,
-  options?: {
-    isOptional?: boolean;
-    title?: string;
-    description?: string;
-  }
+  sectionName: string,
+  expanded: boolean = true
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
       metadata: {
         ...(step.metadata || {}),
-        sectionId,
-        sectionOptions: options
+        isSection: true,
+        sectionName,
+        expanded
       },
-      isOptional: options?.isOptional || step.isOptional
+      optional: expanded ? step.optional : true
     };
   };
 }

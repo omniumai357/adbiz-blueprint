@@ -8,6 +8,7 @@ import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
 import { PathOptions } from '@/lib/utils/path-utils';
 import { TourThemeName } from '@/lib/tour/types/theme';
+import { defaultContext } from './types';
 
 interface TourProviderProps {
   children: React.ReactNode;
