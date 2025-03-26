@@ -1,0 +1,13 @@
+
+{
+  "welcome": "Bienvenido al recorrido guiado",
+  "skip": "Saltar recorrido",
+  "next": "Siguiente",
+  "previous": "Anterior",
+  "finish": "Finalizar",
+  "tooltipInfo": "Paso {{current}} de {{total}}",
+  "pauseTour": "Pausar recorrido",
+  "resumeTour": "Reanudar recorrido",
+  "keyboardShortcuts": "Atajos de teclado",
+  "earnPoints": "¡Complete el recorrido para ganar puntos!"
+}

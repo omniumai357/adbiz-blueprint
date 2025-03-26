@@ -1,0 +1,15 @@
+
+{
+  "title": "Rewards",
+  "description": "Earn points and unlock special discounts",
+  "yourProgress": "Your Progress",
+  "pointsEarned": "You've earned {{points}} total points",
+  "availableRewards": "Available Rewards",
+  "completedMilestones": "Completed Milestones",
+  "claimReward": "Claim Reward",
+  "claimed": "Claimed",
+  "pointsToGo": "{{points}} points to go",
+  "rewardClaimed": "Reward Claimed",
+  "noMilestones": "No Milestones Available",
+  "startEarning": "Start using our services to earn points and unlock rewards!"
+}

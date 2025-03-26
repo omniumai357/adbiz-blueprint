@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { LogOut } from "lucide-react";
 
 const Header: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   
   const { user, signOut } = useAuth();
 
@@ -44,17 +44,17 @@ const Header: React.FC = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-2" />
-                  <span>{t('auth.signOut')}</span>
+                  <span>{t('signOut')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
               <Link to="/sign-in">
-                <Button variant="outline">{t('auth.signIn')}</Button>
+                <Button variant="outline">{t('signIn')}</Button>
               </Link>
               <Link to="/sign-up">
-                <Button>{t('auth.signUp')}</Button>
+                <Button>{t('signUp')}</Button>
               </Link>
             </>
           )}

@@ -1,0 +1,13 @@
+
+{
+  "welcome": "Bienvenue dans la visite guidée",
+  "skip": "Passer la visite",
+  "next": "Suivant",
+  "previous": "Précédent",
+  "finish": "Terminer",
+  "tooltipInfo": "Étape {{current}} sur {{total}}",
+  "pauseTour": "Mettre en pause la visite",
+  "resumeTour": "Reprendre la visite",
+  "keyboardShortcuts": "Raccourcis clavier",
+  "earnPoints": "Terminez la visite pour gagner des points!"
+}

@@ -1,0 +1,13 @@
+
+{
+  "welcome": "Welcome to the guided tour",
+  "skip": "Skip tour",
+  "next": "Next",
+  "previous": "Previous",
+  "finish": "Finish",
+  "tooltipInfo": "Step {{current}} of {{total}}",
+  "pauseTour": "Pause tour",
+  "resumeTour": "Resume tour",
+  "keyboardShortcuts": "Keyboard shortcuts",
+  "earnPoints": "Complete the tour to earn points!"
+}

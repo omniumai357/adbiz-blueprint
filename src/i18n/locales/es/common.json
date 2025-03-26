@@ -1,0 +1,12 @@
+
+{
+  "loading": "Cargando...",
+  "error": "Se produjo un error",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "edit": "Editar",
+  "submit": "Enviar",
+  "back": "Atrás",
+  "next": "Siguiente"
+}

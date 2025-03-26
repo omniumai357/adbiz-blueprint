@@ -1,0 +1,15 @@
+
+{
+  "title": "Récompenses",
+  "description": "Gagnez des points et débloquez des réductions spéciales",
+  "yourProgress": "Votre Progression",
+  "pointsEarned": "Vous avez gagné {{points}} points au total",
+  "availableRewards": "Récompenses Disponibles",
+  "completedMilestones": "Étapes Terminées",
+  "claimReward": "Réclamer Récompense",
+  "claimed": "Réclamée",
+  "pointsToGo": "{{points}} points à gagner",
+  "rewardClaimed": "Récompense Réclamée",
+  "noMilestones": "Aucune Étape Disponible",
+  "startEarning": "Commencez à utiliser nos services pour gagner des points et débloquer des récompenses!"
+}

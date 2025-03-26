@@ -9,7 +9,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const Rewards: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('rewards');
   const { user, isLoading, error } = useRewardsPage();
 
   // Loading state
@@ -38,7 +38,7 @@ const Rewards: React.FC = () => {
       <>
         <Header />
         <Container className="py-12">
-          <h1 className="text-3xl font-bold mb-2">{t('rewards.title')}</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
           <div className="bg-red-50 text-red-500 p-4 rounded-lg mt-8">
             <p>Error loading rewards: {errorMessage}</p>
           </div>
@@ -52,8 +52,8 @@ const Rewards: React.FC = () => {
     <>
       <Header />
       <Container className="py-8 md:py-12">
-        <h1 className="text-3xl font-bold mb-2">{t('rewards.title')}</h1>
-        <p className="text-muted-foreground mb-8">{t('rewards.description')}</p>
+        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
+        <p className="text-muted-foreground mb-8">{t('description')}</p>
 
         <MilestonesDashboard userId={user?.id} />
       </Container>
