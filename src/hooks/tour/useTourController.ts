@@ -1,14 +1,15 @@
 
-import { useState, useCallback, useEffect, KeyboardEvent } from 'react';
-import { TourPath, TourStep } from '@/contexts/tour-context';
-import { 
-  useTourState,
-  useTourNavigation,
-  useTourPersistence,
-  useTourAnalyticsIntegration,
-  useTourPathLoading,
-  useDynamicContent
-} from './controller/tour-controller';
+import { useState, useCallback, useEffect } from 'react';
+import { TourPath, TourStep } from '@/contexts/tour/types';
+import { useTourState } from './controller/tour-controller/use-tour-state';
+import { useTourPathLoading } from './controller/tour-controller/use-tour-path-loading';
+import { useTourPersistence } from './controller/tour-controller/use-tour-persistence';
+import { useTourAnalyticsIntegration } from './controller/tour-controller/use-tour-analytics-integration';
+import { useTourNavigation } from './controller/tour-controller/use-tour-navigation';
+import { useTourContent } from './controller/use-tour-content';
+import { useTourHandlers } from './controller/use-tour-handlers';
+import { useTourKeyboard } from './controller/use-tour-keyboard';
+import { getCurrentStepData } from './controller/step-processor';
 
 /**
  * Custom hook for managing tour state and navigation
@@ -23,7 +24,7 @@ export function useTourController(
   userId?: string,
   userType?: string
 ) {
-  // Use the modular hooks to compose functionality
+  // Use modular hooks to compose functionality
   const {
     isActive,
     currentPath,
@@ -39,18 +40,19 @@ export function useTourController(
     getCurrentPathData
   } = useTourState(initialPaths);
 
+  // Setup tour persistence
   const {
-    endAndCleanupTour,
     markCurrentTourCompleted
   } = useTourPersistence(
     isActive,
     currentPath,
-    currentStep,
-    tourPaths,
-    setCurrentPath,
-    setCurrentStep,
-    toggleActive
+    currentStep
   );
+
+  // Setup analytics integration
+  const {
+    trackEvent
+  } = useTourAnalyticsIntegration(userId, userType);
 
   // Load tour paths based on the current route
   useTourPathLoading(
@@ -61,83 +63,101 @@ export function useTourController(
     getCurrentPathData
   );
 
-  // We need to get analytics before navigation since navigation depends on analytics
+  // Tour content management
   const {
-    startTour: analyticsStartTour,
-    endTour,
-    keyboardNavigationHandler,
-    trackStepSkipped,
-    trackStepInteraction
-  } = useTourAnalyticsIntegration(
-    isActive,
-    currentPath,
-    tourPaths,
-    currentStep,
-    visibleSteps,
-    getCurrentPathData,
-    () => {}, // Will be replaced with actual nextStep
-    () => {}, // Will be replaced with actual prevStep
-    endAndCleanupTour,
-    markCurrentTourCompleted,
-    userId,
-    userType
-  );
+    setDynamicContent,
+    getContentForStep
+  } = useTourContent(visibleSteps, setVisibleSteps);
 
+  // Tour navigation handlers
   const {
+    startTour,
+    endTour,
     nextStep,
     prevStep,
-    goToStep,
-    getStepData,
-    getTotalSteps
-  } = useTourNavigation(
+    goToStep
+  } = useTourHandlers(
+    isActive,
     currentStep,
+    currentPath,
     visibleSteps,
-    setCurrentStep,
-    getCurrentPathData,
-    trackStepSkipped,
-    trackStepInteraction,
-    endTour,
+    currentPathname,
     userId,
-    userType
-  );
-
-  const {
-    setDynamicContent
-  } = useDynamicContent(
-    visibleSteps,
-    setVisibleSteps,
-    setTourPaths
-  );
-
-  // Start a tour with proper state initialization
-  const startTour = useCallback((pathId: string) => {
-    const pathData = tourPaths.find((path) => path.id === pathId);
-    const pathExists = !!pathData;
-    
-    if (pathExists && pathData) {
-      setCurrentPath(pathId);
-      setCurrentStep(0);
-      toggleActive(true);
-      
-      // Track tour start via analytics
-      analyticsStartTour(pathId);
+    userType,
+    {
+      setCurrentStep,
+      toggleActive,
+      setCurrentPath,
+      markTourCompleted: markCurrentTourCompleted,
+      trackEvent
     }
-  }, [tourPaths, toggleActive, setCurrentPath, setCurrentStep, analyticsStartTour]);
+  );
+
+  // Handle keyboard navigation
+  const handleNavigationAction = useCallback((
+    event: React.KeyboardEvent | KeyboardEvent, 
+    action: 'next' | 'previous' | 'first' | 'last' | 'close' | 'jump_forward' | 'jump_backward' | 'show_shortcuts_help'
+  ) => {
+    event.preventDefault();
+    
+    switch (action) {
+      case 'next':
+        nextStep();
+        break;
+      case 'previous':
+        prevStep();
+        break;
+      case 'first':
+        goToStep(0);
+        break;
+      case 'last':
+        goToStep(visibleSteps.length - 1);
+        break;
+      case 'jump_forward':
+        goToStep(Math.min(currentStep + 3, visibleSteps.length - 1));
+        break;
+      case 'jump_backward':
+        goToStep(Math.max(currentStep - 3, 0));
+        break;
+      case 'close':
+        endTour();
+        break;
+      // 'show_shortcuts_help' is handled by the component using this hook
+    }
+  }, [nextStep, prevStep, goToStep, endTour, currentStep, visibleSteps.length]);
+
+  const { handleKeyNavigation } = useTourKeyboard(
+    isActive,
+    handleNavigationAction,
+    {
+      enableHomeEndKeys: true,
+      enablePageKeys: true,
+      pageKeyJumpSize: 3,
+      enableShortcutsHelp: true
+    }
+  );
+
+  // Get current step data
+  const currentStepData = getCurrentStepData(visibleSteps, currentStep);
+  
+  // Get dynamic content for current step
+  const content = currentStepData ? getContentForStep(currentStepData) : '';
 
   return {
     isActive,
     currentPath,
     currentStep,
-    totalSteps: getTotalSteps(),
+    totalSteps: visibleSteps.length,
     startTour,
     endTour,
     nextStep,
     prevStep,
     goToStep,
-    currentStepData: getStepData(),
+    currentStepData,
     availablePaths: tourPaths,
-    handleKeyNavigation: keyboardNavigationHandler,
+    handleKeyNavigation,
     visibleSteps,
     setDynamicContent,
+    content,
   };
 }
