@@ -3,6 +3,8 @@ import { useCallback } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 import { useTourAnalytics } from '../../useTourAnalytics';
 import { useTourDependencies } from '../dependency/use-tour-dependencies';
+import { useTourDependencyNavigation } from './use-tour-dependency-navigation';
+import { useTourAnalyticsTracking } from './use-tour-analytics-tracking';
 
 /**
  * Enhanced hook for tour navigation with dependency support
@@ -32,84 +34,78 @@ export function useEnhancedTourNavigation(
   // Get the current step data
   const currentStepData = visibleSteps[currentStep] || null;
   
+  // Use the dependency navigation hook
+  const {
+    findNextAccessibleStep,
+    findPrevAccessibleStep,
+    tryNavigateToBranch
+  } = useTourDependencyNavigation(
+    visibleSteps, 
+    currentStep, 
+    canAccessStep, 
+    resolveNextStep, 
+    setCurrentStep
+  );
+  
+  // Use the analytics tracking hook
+  const {
+    trackStepCompletion,
+    trackStepGoBack,
+    trackStepJump
+  } = useTourAnalyticsTracking(analytics.trackStepInteraction);
+  
   // Navigate to the next step with dependency awareness
   const nextStep = useCallback(() => {
     if (!currentStepData || !currentPathData) return;
     
     // Track the current step interaction as "completed"
-    analytics.trackStepInteraction(
+    trackStepCompletion(
       currentPathData,
       currentStepData,
       currentStep,
-      'completed',
       userId,
       userType
     );
     
     // Check if this step has branching logic
-    const branchTargetId = resolveNextStep(currentStepData.id);
-    
-    if (branchTargetId) {
-      // If branch target is found, find its index and navigate to it
-      const branchTargetIndex = visibleSteps.findIndex(step => step.id === branchTargetId);
-      if (branchTargetIndex >= 0) {
-        setCurrentStep(branchTargetIndex);
-        return;
-      }
+    if (tryNavigateToBranch(currentStepData.id)) {
+      return; // Navigation handled by tryNavigateToBranch
     }
     
-    // Standard next step navigation with dependency check
-    if (currentStep < visibleSteps.length - 1) {
-      // Find the next accessible step
-      let nextStepIndex = currentStep + 1;
-      
-      // If the immediate next step isn't accessible, look for the next one that is
-      while (
-        nextStepIndex < visibleSteps.length && 
-        !canAccessStep(visibleSteps[nextStepIndex].id)
-      ) {
-        nextStepIndex++;
-      }
-      
-      // If we found an accessible step, go to it
-      if (nextStepIndex < visibleSteps.length) {
-        setCurrentStep(nextStepIndex);
-      }
+    // Find the next accessible step
+    const nextStepIndex = findNextAccessibleStep();
+    
+    // If we found an accessible step, go to it
+    if (nextStepIndex >= 0) {
+      setCurrentStep(nextStepIndex);
     }
   }, [
     currentStepData,
     currentPathData,
     currentStep,
-    visibleSteps,
-    resolveNextStep,
-    canAccessStep,
+    trackStepCompletion,
+    tryNavigateToBranch,
+    findNextAccessibleStep,
     setCurrentStep,
-    analytics,
     userId,
     userType
   ]);
   
   // Navigate to the previous step with dependency awareness
   const prevStep = useCallback(() => {
-    if (!currentStepData || !currentPathData || currentStep <= 0) return;
+    if (!currentStepData || !currentPathData) return;
     
     // Track going back
-    analytics.trackStepInteraction(
+    trackStepGoBack(
       currentPathData,
       currentStepData,
       currentStep,
-      'go_back',
       userId,
       userType
     );
     
     // Find the previous accessible step
-    let prevStepIndex = currentStep - 1;
-    
-    // If the immediate previous step isn't accessible, look for the previous one that is
-    while (prevStepIndex >= 0 && !canAccessStep(visibleSteps[prevStepIndex].id)) {
-      prevStepIndex--;
-    }
+    const prevStepIndex = findPrevAccessibleStep();
     
     // If we found an accessible step, go to it
     if (prevStepIndex >= 0) {
@@ -119,10 +115,9 @@ export function useEnhancedTourNavigation(
     currentStepData,
     currentPathData,
     currentStep,
-    visibleSteps,
-    canAccessStep,
+    trackStepGoBack,
+    findPrevAccessibleStep,
     setCurrentStep,
-    analytics,
     userId,
     userType
   ]);
@@ -131,6 +126,7 @@ export function useEnhancedTourNavigation(
   const goToStep = useCallback((stepIndex: number) => {
     if (
       !currentPathData || 
+      !currentStepData ||
       stepIndex < 0 || 
       stepIndex >= visibleSteps.length || 
       !canAccessStep(visibleSteps[stepIndex].id)
@@ -139,16 +135,14 @@ export function useEnhancedTourNavigation(
     }
     
     // Track jumping to a specific step
-    if (currentStepData) {
-      analytics.trackStepInteraction(
-        currentPathData,
-        currentStepData,
-        currentStep,
-        `jump_to_step_${stepIndex}`,
-        userId,
-        userType
-      );
-    }
+    trackStepJump(
+      currentPathData,
+      currentStepData,
+      currentStep,
+      stepIndex,
+      userId,
+      userType
+    );
     
     setCurrentStep(stepIndex);
   }, [
@@ -157,8 +151,8 @@ export function useEnhancedTourNavigation(
     currentStep,
     visibleSteps,
     canAccessStep,
+    trackStepJump,
     setCurrentStep,
-    analytics,
     userId,
     userType
   ]);
