@@ -1,5 +1,6 @@
 
 import { useFormSteps } from "@/patterns/state-management";
+import { useState } from 'react';
 
 /**
  * Constants for questionnaire steps
@@ -79,6 +80,3 @@ export function useQuestionnaireStepsRefactored() {
     isReviewStep: steps.currentStep === QUESTIONNAIRE_STEPS.REVIEW
   };
 }
-
-// Need to import useState
-import { useState } from 'react';

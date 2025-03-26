@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { FileState } from './useFileUpload';
+import { FileState } from '../useFileUploadState';
 import { validateFiles } from '@/utils/file-validation';
 
 export interface UseFileUploadHandlersProps {
@@ -56,10 +57,13 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     }
     
     if (validFiles.length > 0) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: [...prev[fileType], ...validFiles]
-      }));
+      setFiles(prev => {
+        const updatedFiles = {
+          ...prev,
+          [fileType]: [...prev[fileType as keyof FileState], ...validFiles]
+        };
+        return updatedFiles;
+      });
     }
   };
 
@@ -73,10 +77,13 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     }
     
     if (index !== undefined) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
-      }));
+      setFiles(prev => {
+        const updatedFiles = {
+          ...prev,
+          [fileType]: prev[fileType as keyof FileState].filter((_, i) => i !== index)
+        };
+        return updatedFiles;
+      });
     }
   };
 
