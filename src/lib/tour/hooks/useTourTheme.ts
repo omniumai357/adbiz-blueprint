@@ -1,13 +1,14 @@
 
-import { useContext, useCallback, useEffect, useState } from "react";
+import { useContext, useCallback, useEffect, useState, useMemo } from "react";
 import { useTour } from "@/contexts/tour";
 import { themeRegistry, createCustomTheme } from "../services/theme-registry";
 import { ThemePreset, TourThemeColors, TourThemeName } from "../types/theme";
+import { useDevice } from "@/hooks/use-mobile";
 
 export type TourTheme = "default" | "blue" | "purple" | "green" | "amber" | "corporate" | "minimal" | "playful" | "custom";
 
 /**
- * Hook to manage tour theme
+ * Hook to manage tour theme with responsive capabilities
  * @returns Theme management functions and current theme
  */
 export function useTourTheme() {
@@ -15,6 +16,7 @@ export function useTourTheme() {
   const [availableThemes, setAvailableThemes] = useState<ThemePreset[]>([]);
   const currentTheme = customConfig?.theme || "default";
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const { isMobile, isTablet, isDesktop } = useDevice();
 
   // Update available themes when the component mounts
   useEffect(() => {
@@ -41,17 +43,31 @@ export function useTourTheme() {
   /**
    * Apply CSS variables to the document root
    * @param colors Theme colors to apply
+   * @param viewport Optional viewport specific overrides
    */
-  const applyThemeColors = useCallback((colors: TourThemeColors) => {
-    Object.entries(colors).forEach(([key, value]) => {
+  const applyThemeColors = useCallback((
+    colors: TourThemeColors, 
+    viewport?: 'mobile' | 'tablet' | 'desktop'
+  ) => {
+    // Get the theme preset for the given viewport if available
+    const themePreset = themeRegistry.getTheme(currentTheme);
+    const viewportColors = viewport && themePreset?.responsive?.[viewport];
+    
+    // Merge viewport specific colors with base colors
+    const mergedColors = viewportColors ? { ...colors, ...viewportColors } : colors;
+    
+    Object.entries(mergedColors).forEach(([key, value]) => {
+      // Skip undefined values
+      if (value === undefined) return;
+      
       // Convert camelCase to kebab-case for CSS variables
       const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
       document.documentElement.style.setProperty(`--tour-${cssKey}`, value);
     });
-  }, []);
+  }, [currentTheme]);
 
   /**
-   * Set the tour theme
+   * Set the tour theme with responsive awareness
    * @param theme Theme name to set
    * @param transitionOptions Optional transition options
    */
@@ -108,9 +124,12 @@ export function useTourTheme() {
       document.documentElement.classList.add(`tour-theme-${theme}`);
     }
     
-    // Apply theme colors if available
+    // Detect viewport and apply the appropriate theme colors
+    const viewport = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop';
+    
+    // Apply theme colors if available with viewport awareness
     if (themePreset?.colors) {
-      applyThemeColors(themePreset.colors);
+      applyThemeColors(themePreset.colors, viewport);
     }
 
     // Update the theme in tour context
@@ -129,13 +148,14 @@ export function useTourTheme() {
       document.documentElement.classList.remove('tour-theme-transitioning');
       setIsTransitioning(false);
     }, duration);
-  }, [currentTheme, isTransitioning, setCustomConfig, applyThemeColors]);
+  }, [currentTheme, isTransitioning, setCustomConfig, applyThemeColors, isMobile, isTablet]);
 
   /**
-   * Set custom theme colors
+   * Set custom theme colors with responsive options
    * @param colors Object containing CSS variable overrides
    * @param name Optional name for the custom theme
    * @param transitionOptions Optional transition options
+   * @param responsiveOptions Optional responsive overrides
    */
   const setCustomThemeColors = useCallback((
     colors: TourThemeColors,
@@ -143,6 +163,11 @@ export function useTourTheme() {
     transitionOptions?: { 
       duration?: number; 
       easing?: string;
+    },
+    responsiveOptions?: {
+      mobile?: Partial<TourThemeColors>;
+      tablet?: Partial<TourThemeColors>;
+      desktop?: Partial<TourThemeColors>;
     }
   ) => {
     // Create a custom theme ID
@@ -159,7 +184,8 @@ export function useTourTheme() {
         transitions: {
           duration: transitionOptions?.duration || 300,
           easing: transitionOptions?.easing || 'ease'
-        }
+        },
+        responsive: responsiveOptions
       }
     );
     
@@ -226,7 +252,20 @@ export function useTourTheme() {
     return themeRegistry.removeTheme(themeId);
   }, []);
 
-  return {
+  // Automatic responsive theme adaptation
+  useEffect(() => {
+    const themePreset = themeRegistry.getTheme(currentTheme);
+    if (!themePreset) return;
+    
+    // Detect current viewport
+    const viewport = isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop';
+    
+    // Apply theme colors with viewport specific overrides
+    applyThemeColors(themePreset.colors, viewport);
+  }, [isMobile, isTablet, currentTheme, applyThemeColors]);
+
+  // Memoize the return value to prevent unnecessary re-renders
+  return useMemo(() => ({
     currentTheme,
     isTransitioning,
     availableThemes,
@@ -234,6 +273,22 @@ export function useTourTheme() {
     setCustomThemeColors,
     resetTheme,
     registerTheme,
-    unregisterTheme
-  };
+    unregisterTheme,
+    // Add device context to the return value
+    isMobile,
+    isTablet,
+    isDesktop
+  }), [
+    currentTheme, 
+    isTransitioning, 
+    availableThemes, 
+    setTheme, 
+    setCustomThemeColors, 
+    resetTheme, 
+    registerTheme, 
+    unregisterTheme,
+    isMobile,
+    isTablet,
+    isDesktop
+  ]);
 }

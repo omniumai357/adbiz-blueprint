@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
 import { useAuthUser } from '@/hooks/queries/useAuthUser';
@@ -9,6 +9,7 @@ import { TourAnnouncer } from './TourAnnouncer';
 import { TourThemeName } from '@/lib/tour/types/theme';
 import { defaultContext } from './defaults';
 import { TourContextType, TourPath } from './types';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export const TourProvider: React.FC<TourProviderProps> = ({
 }) => {
   const location = useLocation();
   const pathname = currentPathname || location.pathname;
+  const isMobile = useMediaQuery('(max-width: 640px)');
   
   let userId: string | undefined;
   let userType: string | undefined;
@@ -39,8 +41,17 @@ export const TourProvider: React.FC<TourProviderProps> = ({
 
   // Add a custom config state for theme handling
   const [customConfig, setCustomConfig] = useState({
-    theme: theme || "default"
+    theme: theme || "default",
+    isMobile
   });
+  
+  // Update custom config when mobile status changes
+  useEffect(() => {
+    setCustomConfig(prev => ({
+      ...prev,
+      isMobile
+    }));
+  }, [isMobile]);
   
   const tourController = useTourController([], pathname, userId, userType);
   
@@ -67,6 +78,18 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     };
   }, [theme]);
   
+  // Memoized handler for setting dynamic content
+  const handleSetDynamicContent = useCallback((content: string) => {
+    if (typeof tourController.setDynamicContent === 'function') {
+      if (tourController.currentStepData) {
+        tourController.setDynamicContent(tourController.currentStepData.id, content);
+      } else {
+        // If no current step, use a default empty string for the stepId
+        tourController.setDynamicContent("", content);
+      }
+    }
+  }, [tourController]);
+  
   // Adapt the tour controller to match the TourContextType
   const adaptedController: TourContextType = {
     ...defaultContext,
@@ -80,17 +103,7 @@ export const TourProvider: React.FC<TourProviderProps> = ({
         tourController.currentPath) : 
       null,
     // Make sure setDynamicContent has the correct signature
-    setDynamicContent: (content: string) => {
-      if (typeof tourController.setDynamicContent === 'function') {
-        // If the original function takes two args, we'll pass the current step id as first arg
-        if (tourController.currentStepData) {
-          tourController.setDynamicContent(tourController.currentStepData.id, content);
-        } else {
-          // If no current step, use a default empty string for the stepId
-          tourController.setDynamicContent("", content);
-        }
-      }
-    }
+    setDynamicContent: handleSetDynamicContent
   };
   
   return (

@@ -1,108 +1,84 @@
 
-import { TourPath, TourStep } from "@/contexts/tour/types";
+/**
+ * Tour analytics event types
+ */
+export type TourAnalyticsEvent = 
+  | 'tour:started'
+  | 'tour:completed'
+  | 'tour:exited'
+  | 'step:viewed'
+  | 'interaction'
+  | 'theme:changed';
+
+/**
+ * Types of user interactions with the tour
+ */
+export type TourInteractionType = 
+  | 'next'
+  | 'prev'
+  | 'close'
+  | 'skip'
+  | 'restart'
+  | 'keyboard'
+  | 'click'
+  | 'swipe'
+  | 'theme'
+  | 'custom';
 
 /**
  * Tour analytics data structure
  */
 export interface TourAnalyticsData {
-  userId?: string;
-  userType?: string;
-  tourId: string;
-  tourName: string;
-  eventType: TourAnalyticsEventType;
-  stepId?: string;
-  stepIndex?: number;
-  totalSteps?: number;
-  interactionType?: TourInteractionType;
-  timestamp: number;
-  metadata?: Record<string, any>;
-  // Added properties for backward compatibility
-  event?: TourAnalyticsEventType;
+  /** Event type */
+  eventType: TourAnalyticsEvent;
+  /** ISO timestamp when the event occurred */
+  timestamp: string;
+  /** Tour path identifier */
   pathId?: string;
+  /** Tour identifier */
+  tourId?: string;
+  /** Tour display name */
+  tourName?: string;
+  /** Tour step identifier */
+  stepId?: string;
+  /** Current step index */
+  stepIndex?: number;
+  /** Total steps in tour */
+  totalSteps?: number;
+  /** User identifier */
+  userId?: string;
+  /** User type or role */
+  userType?: string;
+  /** Type of interaction if event is 'interaction' */
+  interactionType?: TourInteractionType;
+  /** Previous theme (for theme:changed events) */
+  previousTheme?: string;
+  /** New theme (for theme:changed events) */
+  newTheme?: string;
+  /** Additional metadata */
+  metadata?: Record<string, any>;
 }
 
-export type TourAnalyticsEventType = 
-  | 'tour_start'
-  | 'tour_end'
-  | 'tour_skip'
-  | 'step_view'
-  | 'step_interaction'
-  | 'step_timeout'
-  | 'tour_started'
-  | 'tour_completed'
-  | 'tour_abandoned'
-  | 'step_viewed'
-  | 'step_skipped'
-  | 'step_interaction';
+/**
+ * Storage options for tour analytics
+ */
+export interface TourAnalyticsStorageOptions {
+  /** Max events to store */
+  maxEvents?: number;
+  /** Storage key */
+  storageKey?: string;
+  /** Use session storage instead of local storage */
+  useSessionStorage?: boolean;
+}
 
-export type TourInteractionType = 
-  | 'next'
-  | 'previous'
-  | 'skip'
-  | 'close'
-  | 'click_element'
-  | 'key_navigation'
-  | 'jump_to_step'
-  | 'jump_to_first'
-  | 'jump_to_last'
-  | 'jump_forward'
-  | 'jump_backward'
-  | 'zoom'
-  | 'pan'
-  | 'show_shortcut_help'
-  | 'completed'
-  | 'go_back'
-  | 'jump_to_step_0' // Supporting dynamic step jump interactions
-  | 'jump_to_step_1'
-  | 'jump_to_step_2'
-  | 'jump_to_step_3'
-  | 'jump_to_step_4'
-  | 'jump_to_step_5'
-  | string; // Allow string for dynamic step interactions
-
-export type TourAnalyticsEvent = {
-  type: TourAnalyticsEventType;
-  data: TourAnalyticsData;
-};
-
-export type TourAnalyticsHandler = (event: TourAnalyticsEvent) => void;
-
-export type DynamicContentProvider = () => string | Promise<string>;
-
-export type ConditionEvaluator = () => boolean | Promise<boolean>;
-
-export interface TourAnalyticsService {
-  trackTourStart: (
-    tour: TourPath | string,
-    userId?: string,
-    userType?: string,
-    metadata?: Record<string, any>
-  ) => void;
-  
-  trackTourEnd: (
-    tour: TourPath | string,
-    completed: boolean,
-    userId?: string,
-    userType?: string,
-    metadata?: Record<string, any>
-  ) => void;
-  
-  trackStepView: (
-    tour: TourPath | string,
-    step: TourStep | null,
-    stepIndex: number,
-    userId?: string,
-    userType?: string,
-    metadata?: Record<string, any>
-  ) => void;
-  
-  trackStepInteraction: (
-    tour: TourPath | string,
-    step: TourStep | null,
-    stepIndex: number,
-    interactionType: TourInteractionType,
-    userId?: string,
-    userType?: string,
-    metadata?: Record<string, any>
-  ) => void;
+/**
+ * Tour analytics export options
+ */
+export interface TourAnalyticsExportOptions {
+  /** Format to export (json, csv) */
+  format?: 'json' | 'csv';
+  /** Download filename */
+  filename?: string;
+  /** Whether to clear analytics after export */
+  clearAfterExport?: boolean;
 }

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTourTheme } from '@/lib/tour/hooks/useTourTheme';
 import { cn } from '@/lib/utils';
 import { TourThemeColors } from '@/lib/tour/types/theme';
+import { useDevice } from '@/hooks/use-mobile';
 
 interface ThemeDemoProps {
   className?: string;
@@ -20,25 +21,49 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
     setTheme, 
     resetTheme, 
     setCustomThemeColors,
-    isTransitioning
+    isTransitioning,
+    isMobile,
+    isTablet
   } = useTourTheme();
+  
+  const { isPortrait } = useDevice();
   
   const [customColors, setCustomColors] = useState<TourThemeColors>({
     accentBlue: '#FF5733',
     borderHighlight: '#FF5733',
-    // Use updated property names that match TourThemeColors interface
     buttonPrimaryBg: '#FF5733',
     buttonPrimaryHoverBg: '#E04020',
     progressFill: '#FF5733',
     spotlightGlow: 'rgba(255, 87, 51, 0.6)'
   });
   
+  const [responsiveColors, setResponsiveColors] = useState<{
+    mobile?: Partial<TourThemeColors>;
+    tablet?: Partial<TourThemeColors>;
+  }>({
+    mobile: {
+      borderRadius: '0.375rem',
+      shadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+    }
+  });
+  
   const [transitionDuration, setTransitionDuration] = useState<number>(300);
+  const [activeDevice, setActiveDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  
+  // Update active device based on actual device
+  useEffect(() => {
+    if (isMobile) setActiveDevice('mobile');
+    else if (isTablet) setActiveDevice('tablet');
+    else setActiveDevice('desktop');
+  }, [isMobile, isTablet]);
   
   const handleCustomTheme = () => {
-    setCustomThemeColors(customColors, 'Custom Theme', {
-      duration: transitionDuration
-    });
+    setCustomThemeColors(
+      customColors, 
+      'Custom Theme', 
+      { duration: transitionDuration },
+      responsiveColors
+    );
   };
   
   const handleColorChange = (key: keyof TourThemeColors, value: string) => {
@@ -48,12 +73,53 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
     }));
   };
   
+  const handleResponsiveColorChange = (
+    device: 'mobile' | 'tablet',
+    key: keyof TourThemeColors, 
+    value: string
+  ) => {
+    setResponsiveColors(prev => ({
+      ...prev,
+      [device]: {
+        ...prev[device],
+        [key]: value
+      }
+    }));
+  };
+  
   const handleThemeChange = (themeId: string) => {
     setTheme(themeId as any, { duration: transitionDuration });
   };
   
+  // Render a more compact UI on mobile
+  const renderColorPicker = (
+    label: string,
+    colorKey: keyof TourThemeColors,
+    currentValue: string,
+    onChange: (key: keyof TourThemeColors, value: string) => void
+  ) => (
+    <div className="space-y-2">
+      <Label htmlFor={`${colorKey}`}>{label}</Label>
+      <div className="flex gap-2">
+        <Input
+          id={`${colorKey}-color`}
+          type="color"
+          value={currentValue}
+          onChange={(e) => onChange(colorKey, e.target.value)}
+          className="w-12 h-10 p-1"
+        />
+        <Input
+          type="text"
+          value={currentValue}
+          onChange={(e) => onChange(colorKey, e.target.value)}
+          className="flex-1"
+        />
+      </div>
+    </div>
+  );
+  
   return (
-    <div className={cn("p-6 space-y-6", className)}>
+    <div className={cn("p-4 sm:p-6 space-y-4 sm:space-y-6", className)}>
       <div className="space-y-2">
         <h2 className="text-lg font-medium">Tour Theme Configuration</h2>
         <p className="text-sm text-muted-foreground">
@@ -62,22 +128,31 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
       </div>
       
       <Tabs defaultValue="themes">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="themes">Preset Themes</TabsTrigger>
-          <TabsTrigger value="custom">Custom Theme</TabsTrigger>
-          <TabsTrigger value="transitions">Transitions</TabsTrigger>
+        <TabsList className={cn(
+          "grid w-full",
+          isMobile ? "grid-cols-2" : "grid-cols-3"
+        )}>
+          <TabsTrigger value="themes">Themes</TabsTrigger>
+          <TabsTrigger value="custom">Custom</TabsTrigger>
+          {!isMobile && <TabsTrigger value="responsive">Responsive</TabsTrigger>}
         </TabsList>
         
         <TabsContent value="themes" className="space-y-4 mt-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className={cn(
+            "grid gap-2",
+            isMobile ? "grid-cols-2" : 
+            isTablet ? "grid-cols-3" : 
+            "grid-cols-4"
+          )}>
             {availableThemes.map(theme => (
               <Button
                 key={theme.id}
                 variant={currentTheme === theme.id ? "default" : "outline"}
-                size="sm"
+                size={isMobile ? "sm" : "default"}
                 onClick={() => handleThemeChange(theme.id)}
                 className={cn(
                   "min-w-24 justify-start px-3",
+                  isMobile && "text-xs",
                   isTransitioning && "opacity-50 pointer-events-none"
                 )}
                 disabled={isTransitioning}
@@ -114,26 +189,16 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
         </TabsContent>
         
         <TabsContent value="custom" className="space-y-4 mt-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className={cn(
+            isMobile ? "space-y-4" : "grid grid-cols-2 gap-4"
+          )}>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="accentColor">Accent Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="accentColor"
-                    type="color"
-                    value={customColors.accentBlue || '#FF5733'}
-                    onChange={(e) => handleColorChange('accentBlue', e.target.value)}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={customColors.accentBlue || '#FF5733'}
-                    onChange={(e) => handleColorChange('accentBlue', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
+              {renderColorPicker(
+                "Accent Color", 
+                "accentBlue", 
+                customColors.accentBlue || '#FF5733',
+                handleColorChange
+              )}
               
               <div className="space-y-2">
                 <Label htmlFor="borderRadius">Border Radius</Label>
@@ -145,76 +210,22 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
                   placeholder="0.5rem"
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="shadowStyle">Shadow Style</Label>
-                <Input
-                  id="shadowStyle"
-                  type="text"
-                  value={customColors.shadow || '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}
-                  onChange={(e) => handleColorChange('shadow', e.target.value)}
-                  placeholder="0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                />
-              </div>
             </div>
             
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="textColor">Text Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="textColor"
-                    type="color"
-                    value={customColors.textPrimary || '#1a1f2c'}
-                    onChange={(e) => handleColorChange('textPrimary', e.target.value)}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={customColors.textPrimary || '#1a1f2c'}
-                    onChange={(e) => handleColorChange('textPrimary', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
+              {renderColorPicker(
+                "Text Color", 
+                "textPrimary", 
+                customColors.textPrimary || '#1a1f2c',
+                handleColorChange
+              )}
               
-              <div className="space-y-2">
-                <Label htmlFor="bgColor">Background Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="bgColor"
-                    type="color"
-                    value={customColors.bgPrimary || '#ffffff'}
-                    onChange={(e) => handleColorChange('bgPrimary', e.target.value)}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={customColors.bgPrimary || '#ffffff'}
-                    onChange={(e) => handleColorChange('bgPrimary', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="borderColor">Border Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="borderColor"
-                    type="color"
-                    value={customColors.borderPrimary || '#e5e7eb'}
-                    onChange={(e) => handleColorChange('borderPrimary', e.target.value)}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={customColors.borderPrimary || '#e5e7eb'}
-                    onChange={(e) => handleColorChange('borderPrimary', e.target.value)}
-                    className="flex-1"
-                  />
-                </div>
-              </div>
+              {renderColorPicker(
+                "Background Color", 
+                "bgPrimary", 
+                customColors.bgPrimary || '#ffffff',
+                handleColorChange
+              )}
             </div>
           </div>
           
@@ -225,72 +236,119 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
           >
             Apply Custom Theme
           </Button>
+          
+          {isMobile && (
+            <div className="mt-6 space-y-4">
+              <h3 className="text-sm font-medium border-t pt-4">Responsive Settings</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="mobile-border-radius">Mobile Border Radius</Label>
+                <Input
+                  id="mobile-border-radius"
+                  type="text"
+                  value={responsiveColors.mobile?.borderRadius || '0.375rem'}
+                  onChange={(e) => handleResponsiveColorChange('mobile', 'borderRadius', e.target.value)}
+                  placeholder="0.375rem"
+                  className="text-sm"
+                />
+              </div>
+              
+              <p className="text-xs text-muted-foreground">
+                These settings will only apply on mobile devices
+              </p>
+            </div>
+          )}
         </TabsContent>
         
-        <TabsContent value="transitions" className="space-y-4 mt-4">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="transition-duration" className="block mb-2">
-                Transition Duration: {transitionDuration}ms
-              </Label>
-              <Slider
-                id="transition-duration"
-                defaultValue={[300]}
-                min={0}
-                max={1000}
-                step={50}
-                onValueChange={(values) => setTransitionDuration(values[0])}
-                className="w-full"
-              />
+        {!isMobile && (
+          <TabsContent value="responsive" className="space-y-4 mt-4">
+            <div className="flex space-x-2 mb-4">
+              <Button
+                variant={activeDevice === 'mobile' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveDevice('mobile')}
+              >
+                Mobile
+              </Button>
+              <Button
+                variant={activeDevice === 'tablet' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveDevice('tablet')}
+              >
+                Tablet
+              </Button>
+              <Button
+                variant={activeDevice === 'desktop' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveDevice('desktop')}
+              >
+                Desktop
+              </Button>
             </div>
             
-            <div className="space-y-2">
-              <Label>Transition Preview</Label>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleThemeChange('default')}
-                  disabled={isTransitioning || currentTheme === 'default'}
-                >
-                  Default
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleThemeChange('blue')}
-                  disabled={isTransitioning || currentTheme === 'blue'}
-                >
-                  Blue
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleThemeChange('purple')}
-                  disabled={isTransitioning || currentTheme === 'purple'}
-                >
-                  Purple
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleThemeChange('green')}
-                  disabled={isTransitioning || currentTheme === 'green'}
-                >
-                  Playful
-                </Button>
+            {activeDevice !== 'desktop' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor={`${activeDevice}-border-radius`}>Border Radius</Label>
+                  <Input
+                    id={`${activeDevice}-border-radius`}
+                    type="text"
+                    value={responsiveColors[activeDevice]?.borderRadius || (activeDevice === 'mobile' ? '0.375rem' : '0.5rem')}
+                    onChange={(e) => handleResponsiveColorChange(
+                      activeDevice as 'mobile' | 'tablet', 
+                      'borderRadius', 
+                      e.target.value
+                    )}
+                    placeholder={activeDevice === 'mobile' ? '0.375rem' : '0.5rem'}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor={`${activeDevice}-shadow`}>Shadow</Label>
+                  <Input
+                    id={`${activeDevice}-shadow`}
+                    type="text"
+                    value={responsiveColors[activeDevice]?.shadow || (activeDevice === 'mobile' ? 
+                      '0 2px 4px rgba(0, 0, 0, 0.1)' : '0 4px 6px rgba(0, 0, 0, 0.1)')}
+                    onChange={(e) => handleResponsiveColorChange(
+                      activeDevice as 'mobile' | 'tablet', 
+                      'shadow', 
+                      e.target.value
+                    )}
+                    placeholder="Shadow value"
+                  />
+                </div>
+                
+                {renderColorPicker(
+                  `${activeDevice === 'mobile' ? 'Mobile' : 'Tablet'} Button Color`, 
+                  "buttonPrimaryBg", 
+                  responsiveColors[activeDevice]?.buttonPrimaryBg || customColors.buttonPrimaryBg || '#FF5733',
+                  (key, value) => handleResponsiveColorChange(activeDevice as 'mobile' | 'tablet', key, value)
+                )}
               </div>
-              {isTransitioning && (
-                <p className="text-sm text-muted-foreground animate-pulse">
-                  Transitioning...
-                </p>
-              )}
-            </div>
-          </div>
-        </TabsContent>
+            )}
+            
+            {activeDevice === 'desktop' && (
+              <p className="text-sm text-muted-foreground">
+                Desktop uses the base theme settings. Customize them in the "Custom" tab.
+              </p>
+            )}
+            
+            <Button 
+              onClick={handleCustomTheme} 
+              className="mt-4"
+              disabled={isTransitioning}
+            >
+              Apply with Responsive Settings
+            </Button>
+          </TabsContent>
+        )}
       </Tabs>
       
-      <div className="space-y-4 border rounded-md p-4 bg-[color:var(--tour-tooltip-bg)] text-[color:var(--tour-tooltip-text)] border-[color:var(--tour-border-primary)]">
+      <div className={cn(
+        "space-y-4 border rounded-md p-4 mt-4",
+        "bg-[color:var(--tour-tooltip-bg)] text-[color:var(--tour-tooltip-text)] border-[color:var(--tour-border-primary)]"
+      )}>
         <h3 className="font-medium">Theme Preview</h3>
         
         <div className="flex flex-col space-y-2">
@@ -336,25 +394,31 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
         </div>
       </div>
       
-      <div className="mt-6">
-        <h3 className="text-sm font-medium mb-2">Implementation Example</h3>
-        <pre className="bg-slate-950 text-slate-50 p-4 rounded-md text-xs overflow-auto">
+      {!isMobile && (
+        <div className="mt-6">
+          <h3 className="text-sm font-medium mb-2">Implementation Example</h3>
+          <pre className="bg-slate-950 text-slate-50 p-4 rounded-md text-xs overflow-auto">
 {`// Import the theme hook
 import { useTourTheme } from '@/lib/tour/hooks/useTourTheme';
 
 // Inside your component
-const { setTheme, currentTheme } = useTourTheme();
+const { setTheme, currentTheme, isMobile } = useTourTheme();
 
 // Change theme
 setTheme('blue');
 
-// Set custom theme
-setCustomThemeColors({
-  accentBlue: '#FF5733',
-  borderRadius: '0.75rem'
-});`}
-        </pre>
-      </div>
+// Set custom theme with responsive options
+setCustomThemeColors(
+  { accentBlue: '#FF5733' },
+  'Custom Theme',
+  { duration: 300 },
+  { 
+    mobile: { borderRadius: '0.375rem' } 
+  }
+);`}
+          </pre>
+        </div>
+      )}
     </div>
   );
 };

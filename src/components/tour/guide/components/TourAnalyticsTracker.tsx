@@ -12,7 +12,9 @@ export const TourAnalyticsTracker: React.FC = () => {
   const totalStepsSafe = totalSteps || 0;
   
   // Get the path ID safely
-  const currentPathId = currentPath ? currentPath.id : null;
+  const currentPathId = currentPath ? 
+    (typeof currentPath === 'string' ? currentPath : currentPath.id) : 
+    null;
   
   // Track tour completion and analytics
   useTourCompletionTracker(isActiveSafe, currentStepSafe, totalStepsSafe, currentPathId);
