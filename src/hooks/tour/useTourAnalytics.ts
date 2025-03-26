@@ -1,21 +1,28 @@
+
 import { useCallback } from 'react';
 import { 
   trackTourStarted, 
   trackTourCompleted, 
-  trackTourAbandoned, 
+  trackTourExited,
   trackStepViewed, 
-  trackStepSkipped, 
-  trackStepInteraction 
+  trackInteraction,
+  trackStepSkipped,
+  trackStepInteraction
 } from './analytics/event-tracker';
 import { TourAnalyticsEvent, TourAnalyticsData } from './analytics/types';
 import { 
   loadAnalyticsData as loadData, 
   clearAnalyticsData as clearData 
 } from './analytics/storage-service';
-import { 
-  exportAnalyticsAsCsv, 
-  exportAnalyticsAsJson 
-} from './analytics/export-utils';
+
+// Import these later when implemented
+const exportAnalyticsAsCsv = () => {
+  console.warn('exportAnalyticsAsCsv not implemented yet');
+};
+
+const exportAnalyticsAsJson = () => {
+  console.warn('exportAnalyticsAsJson not implemented yet');
+};
 
 /**
  * Hook for tracking tour analytics
@@ -39,9 +46,10 @@ export function useTourAnalytics() {
     // Event tracking functions
     trackTourStarted,
     trackTourCompleted,
-    trackTourAbandoned,
+    trackTourExited,
     trackStepViewed,
     trackStepSkipped,
+    trackInteraction,
     trackStepInteraction,
     
     // Data management functions

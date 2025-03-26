@@ -4,10 +4,10 @@ import { TourAnalyticsData } from './types';
 const STORAGE_KEY = 'tourAnalytics';
 
 /**
- * Store analytics data in localStorage
- * @param data The analytics data to store
+ * Store a tour analytics event in localStorage
+ * @param data The analytics event data to store
  */
-export const storeAnalyticsData = (data: TourAnalyticsData): void => {
+export const storeTourEvent = (data: TourAnalyticsData): void => {
   try {
     // Load existing data
     const existingData = loadAnalyticsData();
@@ -18,8 +18,16 @@ export const storeAnalyticsData = (data: TourAnalyticsData): void => {
     // Store in localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
   } catch (error) {
-    console.error('Failed to store analytics data:', error);
+    console.error('Failed to store analytics event:', error);
   }
+};
+
+/**
+ * Store analytics data in localStorage (legacy alias for storeTourEvent)
+ * @param data The analytics data to store
+ */
+export const storeAnalyticsData = (data: TourAnalyticsData): void => {
+  storeTourEvent(data);
 };
 
 /**

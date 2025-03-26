@@ -1,81 +1,103 @@
 
-import { TourAnalyticsData } from './types';
-import { loadAnalyticsData } from './storage-service';
+import { TourAnalyticsData, TourAnalyticsExportOptions } from './types';
+import { loadAnalyticsData, clearAnalyticsData } from './storage-service';
 
 /**
- * Exports tour analytics data as a CSV file
+ * Export analytics data as CSV
+ * @param options Export options
  */
-export function exportAnalyticsAsCsv(): void {
-  const data = loadAnalyticsData();
-  
-  if (data.length === 0) {
-    alert('No analytics data to export');
-    return;
-  }
-  
-  // Get all possible keys from all objects
-  const allKeys = new Set<string>();
-  data.forEach(item => {
-    Object.keys(item).forEach(key => allKeys.add(key));
-    if (item.metadata) {
-      Object.keys(item.metadata).forEach(key => allKeys.add(`metadata_${key}`));
-    }
-  });
-  
-  // Convert to array and sort for consistent output
-  const headers = Array.from(allKeys).sort();
-  
-  // Create CSV header row
-  let csv = headers.join(',') + '\n';
-  
-  // Add data rows
-  data.forEach(item => {
-    const row = headers.map(header => {
-      if (header.startsWith('metadata_') && item.metadata) {
-        const metadataKey = header.replace('metadata_', '');
-        return JSON.stringify(item.metadata[metadataKey] || '');
-      } else if (header === 'metadata') {
-        return JSON.stringify(item.metadata || {});
-      } else {
-        const value = (item as any)[header];
-        return JSON.stringify(value !== undefined ? value : '');
-      }
-    });
+export const exportAnalyticsAsCsv = (options: TourAnalyticsExportOptions = {}): void => {
+  const {
+    filename = `tour-analytics-${new Date().toISOString().split('T')[0]}.csv`,
+    clearAfterExport = false
+  } = options;
+
+  try {
+    const data = loadAnalyticsData();
     
-    csv += row.join(',') + '\n';
-  });
-  
-  // Create and download the file
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.setAttribute('hidden', '');
-  a.setAttribute('href', url);
-  a.setAttribute('download', `tour-analytics-${new Date().toISOString().split('T')[0]}.csv`);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
+    if (data.length === 0) {
+      console.warn('No analytics data to export');
+      return;
+    }
+
+    // Get all possible headers
+    const allKeys = new Set<string>();
+    data.forEach(item => {
+      Object.keys(item).forEach(key => allKeys.add(key));
+    });
+    const headers = Array.from(allKeys);
+
+    // Create CSV rows
+    const csvRows = [
+      headers.join(','),
+      ...data.map(item => 
+        headers.map(header => {
+          const value = item[header as keyof TourAnalyticsData];
+          if (value === undefined || value === null) return '';
+          if (typeof value === 'object') return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          return `"${String(value).replace(/"/g, '""')}"`;
+        }).join(',')
+      )
+    ];
+
+    // Create blob and download
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up
+    if (clearAfterExport) {
+      clearAnalyticsData();
+    }
+  } catch (error) {
+    console.error('Failed to export analytics as CSV:', error);
+  }
+};
 
 /**
- * Exports tour analytics data as a JSON file
+ * Export analytics data as JSON
+ * @param options Export options
  */
-export function exportAnalyticsAsJson(): void {
-  const data = loadAnalyticsData();
-  
-  if (data.length === 0) {
-    alert('No analytics data to export');
-    return;
+export const exportAnalyticsAsJson = (options: TourAnalyticsExportOptions = {}): void => {
+  const {
+    filename = `tour-analytics-${new Date().toISOString().split('T')[0]}.json`,
+    clearAfterExport = false
+  } = options;
+
+  try {
+    const data = loadAnalyticsData();
+    
+    if (data.length === 0) {
+      console.warn('No analytics data to export');
+      return;
+    }
+
+    // Create blob and download
+    const jsonContent = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up
+    if (clearAfterExport) {
+      clearAnalyticsData();
+    }
+  } catch (error) {
+    console.error('Failed to export analytics as JSON:', error);
   }
-  
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.setAttribute('hidden', '');
-  a.setAttribute('href', url);
-  a.setAttribute('download', `tour-analytics-${new Date().toISOString().split('T')[0]}.json`);
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
+};

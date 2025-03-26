@@ -47,9 +47,9 @@ export const TourAnalyticsDashboard: React.FC = () => {
   }, [toast]);
 
   const getCompletionRateData = () => {
-    const tourStarts = analyticsData.filter(item => item.eventType === 'tour_started' || item.event === 'tour_started').length;
-    const tourCompletions = analyticsData.filter(item => item.eventType === 'tour_completed' || item.event === 'tour_completed').length;
-    const tourAbandons = analyticsData.filter(item => item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned').length;
+    const tourStarts = analyticsData.filter(item => item.eventType === 'tour:started').length;
+    const tourCompletions = analyticsData.filter(item => item.eventType === 'tour:completed').length;
+    const tourAbandons = analyticsData.filter(item => item.eventType === 'tour:exited').length;
     
     return [
       { name: 'Completed', value: tourCompletions },
@@ -59,7 +59,7 @@ export const TourAnalyticsDashboard: React.FC = () => {
   };
 
   const getStepViewData = () => {
-    const stepViews = analyticsData.filter(item => item.eventType === 'step_viewed' || item.event === 'step_viewed');
+    const stepViews = analyticsData.filter(item => item.eventType === 'step:viewed');
     const stepCounts: Record<string, number> = {};
 
     stepViews.forEach(item => {
@@ -76,7 +76,7 @@ export const TourAnalyticsDashboard: React.FC = () => {
 
   const getDropOffData = () => {
     const tourPaths = [...new Set(analyticsData
-      .filter(item => (item.eventType === 'tour_started' || item.event === 'tour_started'))
+      .filter(item => item.eventType === 'tour:started')
       .map(item => item.pathId || item.tourId))];
     
     const dropOffByStep: Record<string, Record<number, number>> = {};
@@ -87,7 +87,7 @@ export const TourAnalyticsDashboard: React.FC = () => {
         
         const abandonEvents = analyticsData
           .filter(item => 
-            (item.eventType === 'tour_abandoned' || item.event === 'tour_abandoned') && 
+            item.eventType === 'tour:exited' && 
             (item.pathId === pathId || item.tourId === pathId) && 
             typeof item.stepIndex === 'number'
           );
@@ -230,7 +230,7 @@ export const TourAnalyticsDashboard: React.FC = () => {
                 <Tooltip />
                 <Legend />
                 {[...new Set(analyticsData
-                  .filter(item => (item.eventType === 'tour_started' || item.event === 'tour_started'))
+                  .filter(item => item.eventType === 'tour:started')
                   .map(item => item.pathId || item.tourId))]
                   .filter(Boolean)
                   .map((pathId, index) => (

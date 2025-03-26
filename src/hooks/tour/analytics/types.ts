@@ -23,7 +23,20 @@ export type TourInteractionType =
   | 'click'
   | 'swipe'
   | 'theme'
-  | 'custom';
+  | 'custom'
+  | 'completed'
+  | 'go_back'
+  | string; // Allow string for flexible interaction types
+
+/**
+ * Function type for dynamic content providers
+ */
+export type DynamicContentProvider = () => string | Promise<string>;
+
+/**
+ * Function type for condition evaluators
+ */
+export type ConditionEvaluator = () => boolean | Promise<boolean>;
 
 /**
  * Tour analytics data structure

@@ -10,7 +10,7 @@ import { storeTourEvent } from './storage-service';
  */
 export function trackTourEvent(
   event: TourAnalyticsEvent,
-  data: Omit<TourAnalyticsData, 'timestamp' | 'event' | 'eventType'>
+  data: Omit<TourAnalyticsData, 'timestamp' | 'eventType'>
 ) {
   try {
     const analyticsData: TourAnalyticsData = {
@@ -35,10 +35,7 @@ export function trackTourStarted(data: {
   tourId: string;
   tourName: string;
 }) {
-  return trackTourEvent('tour:started', {
-    ...data,
-    eventType: 'tour:started'
-  });
+  return trackTourEvent('tour:started', data);
 }
 
 /**
@@ -53,10 +50,22 @@ export function trackTourCompleted(data: {
   userType: string;
   metadata: Record<string, any>;
 }) {
-  return trackTourEvent('tour:completed', {
-    ...data,
-    eventType: 'tour:completed'
-  });
+  return trackTourEvent('tour:completed', data);
+}
+
+/**
+ * Track when a tour is exited early (alias for backward compatibility)
+ */
+export function trackTourAbandoned(data: {
+  pathId: string;
+  tourId: string;
+  tourName: string;
+  stepIndex: number;
+  totalSteps: number;
+  userId: string;
+  userType: string;
+}) {
+  return trackTourExited(data);
 }
 
 /**
@@ -71,10 +80,7 @@ export function trackTourExited(data: {
   userId: string;
   userType: string;
 }) {
-  return trackTourEvent('tour:exited', {
-    ...data,
-    eventType: 'tour:exited'
-  });
+  return trackTourEvent('tour:exited', data);
 }
 
 /**
@@ -90,10 +96,23 @@ export function trackStepViewed(data: {
   userId: string;
   userType: string;
 }) {
-  return trackTourEvent('step:viewed', {
-    ...data,
-    eventType: 'step:viewed'
-  });
+  return trackTourEvent('step:viewed', data);
+}
+
+/**
+ * Track when a step is skipped (alias for trackInteraction with skip type)
+ */
+export function trackStepSkipped(data: {
+  pathId: string;
+  tourId: string;
+  tourName: string;
+  stepId: string;
+  stepIndex: number;
+  totalSteps: number;
+  userId: string;
+  userType: string;
+}) {
+  return trackInteraction('skip', data);
 }
 
 /**
@@ -115,7 +134,29 @@ export function trackInteraction(
   return trackTourEvent('interaction', {
     ...data,
     interactionType,
-    eventType: 'interaction'
+  });
+}
+
+/**
+ * Alias for trackInteraction to maintain compatibility with legacy code
+ */
+export function trackStepInteraction(
+  pathData: any,
+  stepData: any,
+  stepIndex: number,
+  interactionType: string,
+  userId?: string,
+  userType?: string
+) {
+  return trackInteraction(interactionType, {
+    pathId: typeof pathData === 'string' ? pathData : pathData.id,
+    tourId: typeof pathData === 'string' ? pathData : pathData.id,
+    tourName: typeof pathData === 'string' ? pathData : (pathData.name || ''),
+    stepId: typeof stepData === 'string' ? stepData : stepData.id,
+    stepIndex,
+    totalSteps: 0, // This will need to be provided by the caller
+    userId: userId || '',
+    userType: userType || '',
   });
 }
 
@@ -129,8 +170,5 @@ export function trackThemeChanged(data: {
   userType: string;
   metadata?: Record<string, any>;
 }) {
-  return trackTourEvent('theme:changed', {
-    ...data,
-    eventType: 'theme:changed'
-  });
+  return trackTourEvent('theme:changed', data);
 }

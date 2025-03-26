@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { TourStep } from "@/contexts/tour/types";
 import { DynamicContentProvider } from "@/hooks/tour/analytics/types";
-import { processDynamicContent } from "@/hooks/tour/controller/step-processor";
 
 /**
  * Hook to handle dynamic content processing for tour steps

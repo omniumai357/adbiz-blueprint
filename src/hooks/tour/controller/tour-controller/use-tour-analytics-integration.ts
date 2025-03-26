@@ -30,7 +30,17 @@ export function useTourAnalyticsIntegration(
       const currentStepData = visibleSteps[currentStep];
       
       if (pathData && currentStepData) {
-        analytics.trackStepViewed(pathData, currentStepData, currentStep, userId, userType);
+        // Adapt to new API signature by building required data object
+        analytics.trackStepViewed({
+          pathId: pathData.id,
+          tourId: pathData.id,
+          tourName: pathData.name || '',
+          stepId: currentStepData.id,
+          stepIndex: currentStep,
+          totalSteps: visibleSteps.length,
+          userId: userId || '',
+          userType: userType || ''
+        });
       }
     }
   }, [isActive, currentPath, currentStep, visibleSteps, getCurrentPathData, analytics, userId, userType]);
@@ -45,10 +55,28 @@ export function useTourAnalyticsIntegration(
       const wasCompleted = currentStep === totalSteps - 1;
       
       if (wasCompleted) {
-        analytics.trackTourCompleted(pathData, userId, userType);
+        // Adapt to new API signature
+        analytics.trackTourCompleted({
+          pathId: pathData.id,
+          tourId: pathData.id,
+          tourName: pathData.name || '',
+          totalSteps,
+          userId: userId || '',
+          userType: userType || '',
+          metadata: {}
+        });
         markCurrentTourCompleted();
       } else {
-        analytics.trackTourAbandoned(pathData, currentStep, userId, userType);
+        // Adapt to new API signature
+        analytics.trackTourExited({
+          pathId: pathData.id,
+          tourId: pathData.id,
+          tourName: pathData.name || '',
+          stepIndex: currentStep,
+          totalSteps,
+          userId: userId || '',
+          userType: userType || ''
+        });
       }
     }
     
@@ -61,10 +89,14 @@ export function useTourAnalyticsIntegration(
     const pathExists = !!pathData;
     
     if (pathExists && pathData) {
-      // Track tour start
-      analytics.trackTourStarted(pathData, userId, userType);
+      // Track tour start with new API signature
+      analytics.trackTourStarted({
+        pathId: pathData.id,
+        tourId: pathData.id,
+        tourName: pathData.name || ''
+      });
     }
-  }, [tourPaths, analytics, userId, userType]);
+  }, [tourPaths, analytics]);
 
   // Add a goToStep function to fix the NavigationHandler compatibility
   const goToStep = useCallback((stepIndex: number) => {
@@ -84,7 +116,26 @@ export function useTourAnalyticsIntegration(
       prevStep,
       endTour,
       goToStep,
-      trackInteraction: analytics.trackStepInteraction,
+      trackInteraction: (pathId, stepId, stepIndex, interactionType) => {
+        // Adapt to new API signature
+        if (!pathId || !stepId) return;
+        
+        const pathData = typeof pathId === 'string' ? 
+          tourPaths.find(p => p.id === pathId) : pathId;
+        
+        if (!pathData) return;
+        
+        analytics.trackInteraction(interactionType, {
+          pathId: pathData.id,
+          tourId: pathData.id,
+          tourName: pathData.name || '',
+          stepId,
+          stepIndex,
+          totalSteps: visibleSteps.length,
+          userId: userId || '',
+          userType: userType || ''
+        });
+      },
       showKeyboardShortcutsHelp
     };
 
@@ -100,13 +151,31 @@ export function useTourAnalyticsIntegration(
       userType,
       handlers
     });
-  }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction, goToStep, showKeyboardShortcutsHelp]);
+  }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics, goToStep, showKeyboardShortcutsHelp]);
+
+  // Simplified trackStepSkipped function that adapts to new API
+  const adaptedTrackStepSkipped = useCallback((stepId: string, stepIndex: number) => {
+    const pathData = getCurrentPathData();
+    
+    if (pathData) {
+      analytics.trackStepSkipped({
+        pathId: pathData.id,
+        tourId: pathData.id,
+        tourName: pathData.name || '',
+        stepId,
+        stepIndex,
+        totalSteps: visibleSteps.length,
+        userId: userId || '',
+        userType: userType || ''
+      });
+    }
+  }, [getCurrentPathData, analytics, visibleSteps, userId, userType]);
 
   return {
     startTour,
     endTour,
     keyboardNavigationHandler,
-    trackStepSkipped: analytics.trackStepSkipped,
+    trackStepSkipped: adaptedTrackStepSkipped,
     trackStepInteraction: analytics.trackStepInteraction
   };
 }
