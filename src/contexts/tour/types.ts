@@ -1,32 +1,28 @@
 
-export type StepConditionFn = () => boolean | Promise<boolean>;
+import { TourThemeConfig } from "@/lib/tour/types/theme";
 
-export type StepAnimation = {
-  entry?: string;
-  exit?: string;
-  highlight?: string;
-  transition?: string;
-  duration?: number;
-};
-
-export type StepTrigger = {
-  event?: string;
-  elementId?: string;
-  action?: string;
-  delay?: number;
-};
-
-export type StepUserRole = "anonymous" | "user" | "admin" | string;
-
-export type TourStep = {
+export interface TourStep {
   id: string;
   elementId: string;
   title: string;
   content: string;
-  position?: "top" | "right" | "bottom" | "left" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
-  condition?: StepConditionFn;
-  animation?: StepAnimation;
-  isOptional?: boolean;
+  position: string | "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  animation?: {
+    entry?: string;
+    highlight?: string;
+    exit?: string;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
   media?: {
     type: "image" | "video" | "gif";
     url: string;
@@ -36,101 +32,113 @@ export type TourStep = {
   actions?: {
     next?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
     prev?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
     skip?: {
       label?: string;
-      onClick?: () => void;
+      callback?: () => void;
     };
   };
-  userRoles?: StepUserRole[];
-  triggers?: StepTrigger[];
-  priority?: number;
+  condition?: () => boolean;
+  onBeforeShow?: () => Promise<void> | void;
+  onAfterShow?: () => Promise<void> | void;
+  onBeforeHide?: () => Promise<void> | void;
+  onAfterHide?: () => Promise<void> | void;
+  dynamicContent?: boolean;
+  dependencies?: string[];
+  optional?: boolean;
+  targeting?: {
+    observe?: boolean;
+    retryTimeout?: number;
+    maxRetries?: number;
+  };
   metadata?: Record<string, any>;
-  spotlight?: {
-    intensity?: "low" | "medium" | "high";
-    color?: string;
-    pulseEffect?: boolean;
-    fadeBackground?: boolean;
-    focus?: "element" | "content" | "both";
-    blurBackground?: boolean;
-    zoomEffect?: boolean;
-  };
-  transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none" | "rotate" | "blur" | "reveal";
-    direction?: "up" | "down" | "left" | "right";
-    duration?: number;
-    easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
-    delay?: number;
-  };
-  path?: {
-    enabled?: boolean;
-    targetElementId?: string;
-    waypoints?: string[];
-    style?: "direct" | "curved" | "angled" | "obstacle-avoiding";
-    color?: string;
-    width?: number;
-    dashArray?: string;
-    animationDuration?: number;
-    showArrow?: boolean;
-    arrowSize?: number;
-    avoidObstacles?: boolean;
-    tensionFactor?: number;
-    animationEasing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
-  } & Partial<any>; // PathOptions will be imported from path-utils
-  effects3D?: {
-    perspective?: number;
-    rotateX?: number;
-    rotateY?: number;
-    rotateZ?: number;
-    scale?: number;
-    duration?: number;
-  };
-  ariaLive?: "off" | "polite" | "assertive";
-  focusOnOpen?: boolean;
-  keyboardShortcuts?: {
-    next?: string;
-    previous?: string;
-    close?: string;
-  };
-};
+}
 
-export type TourPath = {
+export interface TourPath {
   id: string;
   name: string;
   steps: TourStep[];
-  allowSkip?: boolean;
-  showProgress?: boolean;
-  autoStart?: boolean;
-  requiredUserRoles?: StepUserRole[];
-  completionCallback?: () => void;
-  metadata?: Record<string, any>;
-  accessibility?: {
-    announceSteps?: boolean;
-    keyboardNavigation?: boolean;
-    restoreFocus?: boolean;
-    focusTrap?: boolean;
+  config?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    showKeyboardShortcuts?: boolean;
+    completionCallback?: () => void;
+    useDynamicTargeting?: boolean;
+    saveProgress?: boolean;
+    autoStart?: boolean;
+    metadata?: Record<string, any>;
   };
-};
+}
 
-export type TourContextType = {
+export interface TourContextType {
   isActive: boolean;
-  currentPath: string | null;
   currentStep: number;
   totalSteps: number;
-  startTour: (pathId: string) => void;
-  endTour: () => void;
+  currentStepData: TourStep | null;
+  currentPath: TourPath | null;
+  availablePaths: TourPath[];
+  
+  // Tour navigation
   nextStep: () => void;
   prevStep: () => void;
   goToStep: (stepIndex: number) => void;
-  currentStepData: TourStep | null;
-  availablePaths: TourPath[];
-  handleKeyNavigation: (event: React.KeyboardEvent) => void;
-  visibleSteps: TourStep[];
-  setDynamicContent: (stepId: string, content: string) => void;
-  content?: string; // Add this property to resolve the error
+  startTour: (pathId: string) => void;
+  endTour: () => void;
+  pauseTour: () => void;
+  resumeTour: () => void;
+  resetTour: () => void;
+  goToPath: (pathId: string, stepIndex?: number) => void;
+  
+  // Tour state management
+  registerPath: (path: TourPath) => void;
+  unregisterPath: (pathId: string) => void;
+  setDynamicContent: (content: string) => void;
+  setAvailablePaths: (paths: TourPath[]) => void;
+  
+  // Custom configuration
+  customConfig?: {
+    theme?: string;
+    customColors?: Record<string, string>;
+    language?: string;
+    translations?: Record<string, Record<string, string>>;
+    [key: string]: any;
+  };
+  setCustomConfig: React.Dispatch<React.SetStateAction<any>>;
+}
+
+export const defaultContext: TourContextType = {
+  isActive: false,
+  currentStep: 0,
+  totalSteps: 0,
+  currentStepData: null,
+  currentPath: null,
+  availablePaths: [],
+  
+  // Tour navigation
+  nextStep: () => {},
+  prevStep: () => {},
+  goToStep: () => {},
+  startTour: () => {},
+  endTour: () => {},
+  pauseTour: () => {},
+  resumeTour: () => {},
+  resetTour: () => {},
+  goToPath: () => {},
+  
+  // Tour state management
+  registerPath: () => {},
+  unregisterPath: () => {},
+  setDynamicContent: () => {},
+  setAvailablePaths: () => {},
+  
+  // Custom configuration
+  customConfig: {
+    theme: "default"
+  },
+  setCustomConfig: () => {}
 };

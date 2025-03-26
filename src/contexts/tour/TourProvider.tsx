@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
 import { useAuthUser } from '@/hooks/queries/useAuthUser';
@@ -7,15 +7,18 @@ import { useAuth } from '@/contexts/auth-context';
 import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
 import { PathOptions } from '@/lib/utils/path-utils';
+import { TourThemeName } from '@/lib/tour/types/theme';
 
 interface TourProviderProps {
   children: React.ReactNode;
   currentPathname?: string;
+  theme?: TourThemeName;
 }
 
 export const TourProvider: React.FC<TourProviderProps> = ({ 
   children,
-  currentPathname
+  currentPathname,
+  theme = "default"
 }) => {
   const location = useLocation();
   const pathname = currentPathname || location.pathname;
@@ -34,6 +37,29 @@ export const TourProvider: React.FC<TourProviderProps> = ({
   }
   
   const tourController = useTourController([], pathname, userId, userType);
+  
+  // Set initial theme if provided
+  useEffect(() => {
+    if (theme !== "default") {
+      document.documentElement.classList.add(`tour-theme-${theme}`);
+      
+      // Update the theme in controller
+      tourController.setCustomConfig(prev => ({
+        ...prev,
+        theme
+      }));
+    }
+    
+    // Cleanup theme classes on unmount
+    return () => {
+      document.documentElement.classList.remove(
+        "tour-theme-blue",
+        "tour-theme-purple", 
+        "tour-theme-green",
+        "tour-theme-amber"
+      );
+    };
+  }, [theme]);
   
   return (
     <TourContext.Provider value={tourController}>

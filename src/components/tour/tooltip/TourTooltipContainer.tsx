@@ -43,8 +43,10 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
       <div 
         ref={ref}
         className={cn(
-          "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50",
-          "focus-within:outline-none focus-within:ring-2 focus-within:ring-[#0ea5e9] focus-within:ring-offset-2",
+          "absolute tour-tooltip pointer-events-auto z-50",
+          "bg-[color:var(--tour-tooltip-bg)] text-[color:var(--tour-tooltip-text)] rounded-lg p-4 w-80 border border-[color:var(--tour-tooltip-border)]",
+          "focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--tour-accent-blue)] focus-within:ring-offset-2",
+          "shadow-[var(--tour-tooltip-shadow)]",
           className
         )}
         style={style}
@@ -80,7 +82,7 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         {/* Arrow */}
         <div 
           className={cn(
-            "absolute w-3 h-3 bg-popover border-popover",
+            "absolute w-3 h-3 bg-[color:var(--tour-tooltip-bg)] border-[color:var(--tour-tooltip-border)]",
             arrowClassNames
           )}
           style={arrowStyles as React.CSSProperties}
@@ -91,7 +93,7 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-2 right-2 h-6 w-6 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2" 
+          className="absolute top-2 right-2 h-6 w-6 hover:bg-[color:var(--tour-bg-tertiary)] focus-visible:ring-2 focus-visible:ring-[color:var(--tour-accent-blue)] focus-visible:ring-offset-2" 
           onClick={onClose}
           aria-label="Close tour"
           data-tour-action="close"

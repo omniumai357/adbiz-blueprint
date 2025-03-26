@@ -1,0 +1,156 @@
+
+/* Tour Theme - CSS Variables
+ * This file contains all the CSS variables used by tour components.
+ * It supports both light and dark modes, and provides a consistent theming system.
+ */
+
+:root {
+  /* Tour Core Colors - Light Mode */
+  --tour-bg-primary: #ffffff;
+  --tour-bg-secondary: #f8f9fa;
+  --tour-bg-tertiary: #f1f3f5;
+  --tour-bg-highlight: #0ea5e9;
+  
+  --tour-text-primary: #1a1f2c;
+  --tour-text-secondary: #4b5563;
+  --tour-text-tertiary: #6b7280;
+  --tour-text-inverted: #ffffff;
+  
+  --tour-border-primary: #e5e7eb;
+  --tour-border-secondary: #d1d5db;
+  --tour-border-highlight: #0ea5e9;
+  
+  /* Tour Accent Colors */
+  --tour-accent-blue: #0ea5e9;
+  --tour-accent-purple: #8b5cf6;
+  --tour-accent-green: #10b981;
+  --tour-accent-red: #ef4444;
+  --tour-accent-amber: #f59e0b;
+  
+  /* Tour Component Specific */
+  --tour-tooltip-bg: var(--tour-bg-primary);
+  --tour-tooltip-text: var(--tour-text-primary);
+  --tour-tooltip-border: var(--tour-border-primary);
+  --tour-tooltip-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  
+  --tour-overlay-bg: rgba(0, 0, 0, 0.5);
+  --tour-overlay-highlight: rgba(14, 165, 233, 0.2);
+  
+  --tour-spotlight-glow: rgba(14, 165, 233, 0.6);
+  --tour-spotlight-pulse: rgba(14, 165, 233, 0.3);
+  
+  --tour-button-primary-bg: var(--tour-accent-blue);
+  --tour-button-primary-text: white;
+  --tour-button-primary-hover-bg: #0284c7;
+  
+  --tour-button-secondary-bg: transparent;
+  --tour-button-secondary-text: var(--tour-text-secondary);
+  --tour-button-secondary-hover-bg: var(--tour-bg-tertiary);
+  
+  --tour-progress-bg: #e5e7eb;
+  --tour-progress-fill: var(--tour-accent-blue);
+  
+  --tour-mobile-drawer-bg: var(--tour-bg-primary);
+  --tour-mobile-drawer-text: var(--tour-text-primary);
+  
+  /* Tour Animation Durations */
+  --tour-animation-fast: 150ms;
+  --tour-animation-medium: 300ms;
+  --tour-animation-slow: 500ms;
+  
+  /* Tour Component Spacing */
+  --tour-spacing-xs: 0.25rem;
+  --tour-spacing-sm: 0.5rem;
+  --tour-spacing-md: 1rem;
+  --tour-spacing-lg: 1.5rem;
+  --tour-spacing-xl: 2rem;
+  
+  /* Tour Border Radius */
+  --tour-radius-sm: 0.25rem;
+  --tour-radius-md: 0.5rem;
+  --tour-radius-lg: 0.75rem;
+  --tour-radius-xl: 1rem;
+  
+  /* Tour Focus Styles */
+  --tour-focus-ring: 0 0 0 3px rgba(14, 165, 233, 0.4);
+  --tour-focus-ring-offset: 2px;
+}
+
+/* Dark Mode Theme Variables */
+.dark {
+  --tour-bg-primary: #1f2937;
+  --tour-bg-secondary: #111827;
+  --tour-bg-tertiary: #374151;
+  --tour-bg-highlight: #0ea5e9;
+  
+  --tour-text-primary: #f9fafb;
+  --tour-text-secondary: #e5e7eb;
+  --tour-text-tertiary: #d1d5db;
+  --tour-text-inverted: #1a1f2c;
+  
+  --tour-border-primary: #374151;
+  --tour-border-secondary: #4b5563;
+  --tour-border-highlight: #0ea5e9;
+  
+  --tour-overlay-bg: rgba(0, 0, 0, 0.7);
+  --tour-tooltip-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  
+  --tour-button-primary-hover-bg: #38bdf8;
+  --tour-button-secondary-hover-bg: #374151;
+  
+  --tour-progress-bg: #374151;
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+  :root {
+    --tour-border-primary: CanvasText;
+    --tour-border-highlight: Highlight;
+    --tour-accent-blue: Highlight;
+    --tour-progress-fill: Highlight;
+    --tour-button-primary-bg: Highlight;
+    --tour-button-primary-text: Canvas;
+    --tour-focus-ring: 0 0 0 3px Highlight;
+  }
+}
+
+/* Custom themes can be added by applying classes to the root element */
+.tour-theme-blue {
+  --tour-accent-blue: #0ea5e9;
+  --tour-accent-purple: #8b5cf6;
+  --tour-button-primary-bg: var(--tour-accent-blue);
+  --tour-button-primary-hover-bg: #0284c7;
+  --tour-progress-fill: var(--tour-accent-blue);
+  --tour-border-highlight: var(--tour-accent-blue);
+  --tour-spotlight-glow: rgba(14, 165, 233, 0.6);
+}
+
+.tour-theme-purple {
+  --tour-accent-blue: #8b5cf6;
+  --tour-accent-purple: #9333ea;
+  --tour-button-primary-bg: var(--tour-accent-blue);
+  --tour-button-primary-hover-bg: #7c3aed;
+  --tour-progress-fill: var(--tour-accent-blue);
+  --tour-border-highlight: var(--tour-accent-blue);
+  --tour-spotlight-glow: rgba(139, 92, 246, 0.6);
+}
+
+.tour-theme-green {
+  --tour-accent-blue: #10b981;
+  --tour-accent-green: #059669;
+  --tour-button-primary-bg: var(--tour-accent-blue);
+  --tour-button-primary-hover-bg: #059669;
+  --tour-progress-fill: var(--tour-accent-blue);
+  --tour-border-highlight: var(--tour-accent-blue);
+  --tour-spotlight-glow: rgba(16, 185, 129, 0.6);
+}
+
+.tour-theme-amber {
+  --tour-accent-blue: #f59e0b;
+  --tour-accent-amber: #d97706;
+  --tour-button-primary-bg: var(--tour-accent-blue);
+  --tour-button-primary-hover-bg: #d97706;
+  --tour-progress-fill: var(--tour-accent-blue);
+  --tour-border-highlight: var(--tour-accent-blue);
+  --tour-spotlight-glow: rgba(245, 158, 11, 0.6);
+}
