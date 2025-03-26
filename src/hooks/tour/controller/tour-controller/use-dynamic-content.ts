@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { TourStep } from '@/contexts/tour-context';
+import { TourStep, TourPath } from '@/contexts/tour-context';
 import { processDynamicContent, updateStepContent } from '../step-processor';
 
 /**
@@ -22,10 +22,10 @@ export function useDynamicContent(
 
   // Set dynamic content for a specific step
   const setDynamicContent = useCallback((stepId: string, content: string) => {
-    setVisibleSteps(prev => updateStepContent(prev, stepId, content));
+    setVisibleSteps((prev: TourStep[]) => updateStepContent(prev, stepId, content));
     
     // Also update the original tour path to persist changes
-    setTourPaths(prev => prev.map(path => {
+    setTourPaths((prev: TourPath[]) => prev.map(path => {
       return {
         ...path,
         steps: path.steps.map(step => {
