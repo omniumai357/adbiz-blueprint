@@ -28,6 +28,6 @@ export const authClient = {
    */
   async signOut(): Promise<{ error: Error | null }> {
     const { error } = await supabase.auth.signOut();
-    return { error };
+    return { error: error || null };
   }
 };
