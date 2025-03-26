@@ -70,11 +70,10 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
   const contentId = `${tooltipId}-content`;
   const descriptionId = `${tooltipId}-description`;
   
-  // Calculate arrow styles - we need to extract these from the positioner
-  // to pass them to the container
-  const { calculateArrowStyles, calculateArrowClasses } = useCallback(() => {
+  // Calculate arrow styles and classes based on position
+  const calculateArrowStylesAndClasses = useCallback(() => {
     // Default arrow styles point to the top
-    const arrowStyles = { 
+    const defaultArrowStyles = { 
       top: '-6px',
       left: '50%',
       transform: 'translateX(-50%) rotate(45deg)',
@@ -83,7 +82,7 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
     };
     
     // Default arrow classes
-    const arrowClassNames = "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l";
+    const defaultArrowClassNames = "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l";
     
     // Adjust arrow position based on tooltip position
     switch (position) {
@@ -132,11 +131,14 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
           classes: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 rotate-135 border-b border-l"
         };
       default:
-        return { styles: arrowStyles, classes: arrowClassNames };
+        return { 
+          styles: defaultArrowStyles, 
+          classes: defaultArrowClassNames 
+        };
     }
   }, [position]);
   
-  const { styles: arrowStyles, classes: arrowClassNames } = calculateArrowStyles();
+  const { styles: arrowStyles, classes: arrowClassNames } = calculateArrowStylesAndClasses();
 
   return (
     <TourTooltipContainer
