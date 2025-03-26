@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import { ErrorProvider } from './contexts/error-context';
 import { TourGuide } from './components/tour/TourGuide';
 import { ErrorBoundary } from './components/error/ErrorBoundary';
+import { TourHeaderButton } from './components/tour/TourHeaderButton';
+import { WelcomeTourModal } from './components/tour/WelcomeTourModal';
 import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import Receipts from './pages/Receipts';
@@ -44,6 +46,9 @@ const App = () => {
           </Routes>
           <Toaster />
           <Sonner />
+          <TourGuide />
+          <TourHeaderButton />
+          <WelcomeTourModal />
         </ErrorBoundary>
       </AuthContextProvider>
     </ErrorProvider>

@@ -44,6 +44,18 @@ export const TourGuide: React.FC = () => {
     userType = 'anonymous'; // Default user type when profile isn't available
   }
 
+  // Track when a tour is completed
+  useEffect(() => {
+    if (isActive && currentStep === totalSteps - 1 && currentPath) {
+      // Store the completed tour in localStorage
+      const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
+      if (!completedTours.includes(currentPath)) {
+        completedTours.push(currentPath);
+        localStorage.setItem('completedTours', JSON.stringify(completedTours));
+      }
+    }
+  }, [isActive, currentStep, totalSteps, currentPath]);
+
   // Handle custom interactions with tour elements
   const handleInteraction = (interactionType: string) => {
     if (!currentStepData || !currentPath) return;

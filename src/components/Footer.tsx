@@ -2,7 +2,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { companyInfo } from "@/lib/data";
-import { Twitter, Facebook, Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Twitter, Facebook, Linkedin, Instagram, Mail, Phone, MapPin, HelpCircle } from "lucide-react";
+import { TourDiscoveryButton } from "./tour/TourDiscoveryButton";
 
 export const Footer = () => {
   const year = new Date().getFullYear();
@@ -108,6 +109,10 @@ export const Footer = () => {
                   {companyInfo.address}
                 </span>
               </li>
+              <li className="flex items-start gap-3 mt-4">
+                <HelpCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                <TourDiscoveryButton variant="text" className="p-0 h-auto text-muted-foreground hover:text-primary transition-colors" />
+              </li>
             </ul>
           </div>
         </div>
@@ -124,6 +129,7 @@ export const Footer = () => {
             <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
               Terms of Service
             </Link>
+            <TourDiscoveryButton variant="text" className="p-0 h-auto text-muted-foreground hover:text-primary transition-colors" />
           </div>
         </div>
       </div>
