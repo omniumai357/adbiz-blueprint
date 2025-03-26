@@ -13,7 +13,11 @@ export {
   getStepGroup,
   getAllStepGroups,
   composeStepGroups,
-  stepInGroup
+  stepInGroup,
+  filterStepGroups,
+  taggedStep,
+  experienceLevelStep,
+  featureAreaStep
 } from './core/tourStepGroups';
 
 // Re-export tour composition utilities
@@ -21,7 +25,8 @@ export {
   createCustomTour,
   createOnboardingTour,
   createFeatureTour,
-  getStepGroupsByTag
+  getStepGroupsByTag,
+  getStepGroupsByExperienceLevel
 } from './utils/tour-composer';
 
 // Re-export condition enhancers

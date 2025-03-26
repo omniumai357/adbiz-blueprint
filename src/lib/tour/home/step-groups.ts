@@ -94,7 +94,10 @@ export const advancedFeaturesStepGroup = createStepGroup(
         'Ready to boost your business? Click here to explore our service packages.',
         'top'
       ),
-      step => roleRestrictedStep(['user', 'admin'])(stepInGroup('home-advanced')(step))
+      step => {
+        const withGroup = stepInGroup('home-advanced')(step);
+        return roleRestrictedStep(['user', 'admin'])(withGroup);
+      }
     ),
     
     enhanceStep(
@@ -105,7 +108,10 @@ export const advancedFeaturesStepGroup = createStepGroup(
         'Once you sign up, you'll have access to your personalized dashboard with analytics and controls.',
         'bottom'
       ),
-      step => roleRestrictedStep(['user', 'admin'])(stepInGroup('home-advanced')(step))
+      step => {
+        const withGroup = stepInGroup('home-advanced')(step);
+        return roleRestrictedStep(['user', 'admin'])(withGroup);
+      }
     ),
   ],
   'Advanced features for registered users'
@@ -126,7 +132,10 @@ export const adminFeaturesStepGroup = createStepGroup(
         'As an admin, you have access to advanced controls and analytics.',
         'left'
       ),
-      step => roleRestrictedStep(['admin'])(stepInGroup('home-admin')(step))
+      step => {
+        const withGroup = stepInGroup('home-admin')(step);
+        return roleRestrictedStep(['admin'])(withGroup);
+      }
     ),
   ],
   'Admin-specific features and controls'
