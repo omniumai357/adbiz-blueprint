@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useTour } from "@/contexts/tour";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
@@ -10,7 +10,7 @@ import { useTourCompletionTracker } from "@/hooks/tour/useTourCompletionTracker"
 import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigation";
 import { useTourFocusTrap } from "@/hooks/tour/useTourFocusTrap";
 import { TourMobileView } from "../TourMobileView";
-import { TourDesktopView } from "../TourDesktopView";
+import { TourDesktopView, TourDesktopViewHandle } from "../TourDesktopView";
 import { TourPathVisualization } from "./TourPathVisualization";
 import { TourKeyboardShortcutsHelp } from "./TourKeyboardShortcutsHelp";
 
@@ -38,6 +38,10 @@ export const TourGuideController: React.FC = () => {
   
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const desktopViewRef = useRef<TourDesktopViewHandle>(null);
+  
+  // For tracking focus management
+  const [lastStepIndex, setLastStepIndex] = useState<number>(-1);
 
   const isMobile = useIsMobile();
   
@@ -63,7 +67,7 @@ export const TourGuideController: React.FC = () => {
     }
   );
   
-  useTourFocusTrap(isActive, tooltipRef, true);
+  const { focusElement, focusElementByIndex } = useTourFocusTrap(isActive, tooltipRef, true);
   
   const { content } = useTourDynamicContent(currentStepData, setDynamicContent);
   
@@ -94,6 +98,41 @@ export const TourGuideController: React.FC = () => {
       }
     }
   };
+
+  // Focus management between steps
+  useEffect(() => {
+    if (isActive && currentStepData && lastStepIndex !== currentStep) {
+      setLastStepIndex(currentStep);
+      
+      // Small delay to ensure the DOM is updated
+      setTimeout(() => {
+        // Determine which element should receive focus
+        if (!isMobile) {
+          // On desktop: Try to focus next/prev button based on step position
+          if (currentStep === 0) {
+            // On first step, focus the next button
+            focusElement('[data-tour-action="next"]');
+          } else if (currentStep === totalSteps - 1) {
+            // On last step, focus the finish button
+            focusElement('[data-tour-action="finish"]');
+          } else if (currentStep > lastStepIndex && lastStepIndex !== -1) {
+            // Moving forward, focus the next button
+            focusElement('[data-tour-action="next"]');
+          } else if (currentStep < lastStepIndex) {
+            // Moving backward, focus the previous button
+            focusElement('[data-tour-action="previous"]');
+          }
+        }
+
+        // Announce the step change to screen readers
+        const liveRegion = document.getElementById('tour-announcer');
+        if (liveRegion) {
+          const stepNumber = currentStep + 1;
+          liveRegion.textContent = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+        }
+      }, 150);
+    }
+  }, [isActive, currentStep, currentStepData, lastStepIndex, totalSteps, content, isMobile, focusElement]);
 
   useEffect(() => {
     if (
@@ -129,6 +168,22 @@ export const TourGuideController: React.FC = () => {
       previousFocusRef.current = document.activeElement as HTMLElement;
       
       document.body.classList.add('tour-active-focus-mode');
+      
+      // Create screen reader live region if it doesn't exist
+      let liveRegion = document.getElementById('tour-announcer');
+      if (!liveRegion) {
+        liveRegion = document.createElement('div');
+        liveRegion.id = 'tour-announcer';
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        document.body.appendChild(liveRegion);
+      }
+      
+      // Announce tour start
+      if (currentStepData) {
+        liveRegion.textContent = `Tour started. Step 1 of ${totalSteps}: ${currentStepData.title}`;
+      }
     } else {
       if (previousFocusRef.current) {
         previousFocusRef.current.focus();
@@ -138,8 +193,14 @@ export const TourGuideController: React.FC = () => {
       document.body.classList.remove('tour-active-focus-mode');
       
       setShowKeyboardHelp(false);
+      
+      // Announce tour end
+      const liveRegion = document.getElementById('tour-announcer');
+      if (liveRegion) {
+        liveRegion.textContent = "Tour ended";
+      }
     }
-  }, [isActive]);
+  }, [isActive, currentStepData, totalSteps]);
 
   useEffect(() => {
     if (isActive && currentStepData) {
@@ -197,6 +258,18 @@ export const TourGuideController: React.FC = () => {
             outline: 3px solid CanvasText !important;
             outline-offset: 2px !important;
           }
+        }
+        
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border-width: 0;
         }
       `;
       document.head.appendChild(style);
@@ -259,12 +332,11 @@ export const TourGuideController: React.FC = () => {
           highlightAnimation={highlightAnimation}
           transition={supportedTransition}
           spotlight={spotlight}
-          // Remove the showKeyboardShortcuts property that doesn't exist in the interface
           onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
         />
       ) : (
         <TourDesktopView
-          // Remove the ref prop that's not in the interface and use forwardRef properly in component
+          ref={desktopViewRef}
           targetElement={targetElement!}
           position={currentStepData.position?.includes('-') 
             ? currentStepData.position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left' 
@@ -286,7 +358,6 @@ export const TourGuideController: React.FC = () => {
           currentStep={currentStep}
           totalSteps={totalSteps}
           showKeyboardShortcuts={showKeyboardShortcutsHelp}
-          // Remove the onShowKeyboardShortcuts property that doesn't exist in the interface
           tooltipRef={tooltipRef}
         />
       )}

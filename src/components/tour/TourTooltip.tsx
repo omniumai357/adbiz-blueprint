@@ -100,10 +100,18 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
     ...getSpotlightStyles(spotlight)
   };
 
+  // Generate a unique ID for each tooltip
+  const tooltipId = `tour-tooltip-${currentStep}`;
+  const titleId = `${tooltipId}-title`;
+  const contentId = `${tooltipId}-content`;
+  const descriptionId = `${tooltipId}-description`;
+
   return (
     <div 
       className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" 
       style={{ zIndex: 9999 }}
+      role="region"
+      aria-label={`Tour step ${currentStep + 1} of ${totalSteps}`}
     >
       <div 
         ref={divRef}
@@ -117,8 +125,9 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="tour-title"
-        aria-describedby="tour-content"
+        aria-labelledby={titleId}
+        aria-describedby={`${contentId} ${descriptionId}`}
+        id={tooltipId}
       >
         {/* Arrow */}
         <div 
@@ -127,6 +136,7 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
             arrowClassNames
           )}
           style={arrowStyles as React.CSSProperties}
+          aria-hidden="true"
         />
         
         {/* Close button */}
@@ -136,22 +146,45 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
           className="absolute top-2 right-2 h-6 w-6 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2" 
           onClick={onClose}
           aria-label="Close tour"
+          data-tour-action="close"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" aria-hidden="true" />
         </Button>
         
         {/* Content section */}
         <div className="mb-4 mt-1">
-          <h3 id="tour-title" className="font-medium text-lg">{title}</h3>
+          <h3 id={titleId} className="font-medium text-lg">{title}</h3>
           
           {/* Media content */}
           {media && <TourMedia media={media} title={title} />}
           
-          <p id="tour-content" className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
+          <p 
+            id={contentId} 
+            className="text-sm text-muted-foreground mt-2 leading-relaxed"
+          >
+            {content}
+          </p>
+          
+          {/* Description for screen readers */}
+          <span 
+            id={descriptionId} 
+            className="sr-only"
+          >
+            This is step {currentStep + 1} of {totalSteps}. 
+            {onPrev ? 'You can navigate back to the previous step.' : ''}
+            {isLastStep 
+              ? 'This is the last step of the tour. You can finish the tour by clicking Done.' 
+              : 'You can navigate to the next step by clicking Next.'
+            }
+          </span>
         </div>
         
         {/* Progress bar */}
-        <Progress value={progressValue} className="h-1 mb-2" />
+        <Progress 
+          value={progressValue} 
+          className="h-1 mb-2" 
+          aria-label={`Tour progress: ${currentStep + 1} of ${totalSteps} steps completed`}
+        />
         
         {/* Step indicators (dots) */}
         {totalSteps <= 8 && (
@@ -172,6 +205,8 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
           skipLabel={skipLabel}
           stepInfo={stepInfo}
           showKeyboardShortcuts={showKeyboardShortcuts}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
         />
       </div>
     </div>

@@ -8,13 +8,18 @@ import { useEffect, useRef } from 'react';
  * @param isActive Whether the tour is active
  * @param containerRef Reference to the tour container element
  * @param enabled Whether focus trap is enabled
+ * @param autoFocusFirstElement Whether to automatically focus the first focusable element
+ * @param returnFocusOnDisable Whether to return focus to the previous element when disabled
  */
 export function useTourFocusTrap(
   isActive: boolean,
   containerRef: React.RefObject<HTMLElement>,
-  enabled: boolean = true
+  enabled: boolean = true,
+  autoFocusFirstElement: boolean = true,
+  returnFocusOnDisable: boolean = true
 ) {
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const currentFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!isActive || !enabled || !containerRef.current) return;
@@ -39,9 +44,20 @@ export function useTourFocusTrap(
     
     // Set initial focus to the first focusable element
     const focusableElements = getFocusableElements();
-    if (focusableElements.length) {
+    if (focusableElements.length && autoFocusFirstElement) {
       setTimeout(() => {
-        focusableElements[0].focus();
+        try {
+          focusableElements[0].focus();
+          currentFocusedElementRef.current = focusableElements[0];
+          
+          // Announce to screen readers that focus has moved
+          const liveRegion = document.getElementById('tour-announcer');
+          if (liveRegion) {
+            liveRegion.textContent = `Focus is now on: ${focusableElements[0].textContent || 'tour element'}`;
+          }
+        } catch (e) {
+          console.warn('Could not focus first element:', e);
+        }
       }, 100);
     }
 
@@ -62,11 +78,13 @@ export function useTourFocusTrap(
       if (e.shiftKey && document.activeElement === firstFocusable) {
         e.preventDefault();
         lastFocusable.focus();
+        currentFocusedElementRef.current = lastFocusable;
       }
       // Tab from last element should loop to the first
       else if (!e.shiftKey && document.activeElement === lastFocusable) {
         e.preventDefault();
         firstFocusable.focus();
+        currentFocusedElementRef.current = firstFocusable;
       }
     };
 
@@ -79,7 +97,7 @@ export function useTourFocusTrap(
       document.body.classList.remove('tour-focus-active');
 
       // Restore focus when the trap is deactivated
-      if (previousFocusRef.current && document.body.contains(previousFocusRef.current)) {
+      if (returnFocusOnDisable && previousFocusRef.current && document.body.contains(previousFocusRef.current)) {
         try {
           previousFocusRef.current.focus();
         } catch (e) {
@@ -87,7 +105,56 @@ export function useTourFocusTrap(
         }
       }
     };
-  }, [isActive, containerRef, enabled]);
+  }, [isActive, containerRef, enabled, autoFocusFirstElement, returnFocusOnDisable]);
+
+  // Function to focus a specific element in the container
+  const focusElement = (selector: string) => {
+    if (!containerRef.current) return false;
+    
+    try {
+      const element = containerRef.current.querySelector(selector) as HTMLElement;
+      if (element) {
+        element.focus();
+        currentFocusedElementRef.current = element;
+        return true;
+      }
+    } catch (e) {
+      console.warn(`Could not focus element with selector ${selector}:`, e);
+    }
+    return false;
+  };
+
+  // Function to focus a specific element by index
+  const focusElementByIndex = (index: number) => {
+    if (!containerRef.current) return false;
+    
+    const focusableElements = Array.from(
+      containerRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter(
+      (el) => !el.hasAttribute('disabled') && 
+              !el.getAttribute('aria-hidden') && 
+              el.getBoundingClientRect().width > 0
+    ) as HTMLElement[];
+    
+    if (focusableElements.length > index && index >= 0) {
+      try {
+        focusableElements[index].focus();
+        currentFocusedElementRef.current = focusableElements[index];
+        return true;
+      } catch (e) {
+        console.warn(`Could not focus element at index ${index}:`, e);
+      }
+    }
+    return false;
+  };
+
+  return {
+    focusElement,
+    focusElementByIndex,
+    currentFocusedElement: currentFocusedElementRef.current
+  };
 }
 
 export default useTourFocusTrap;
