@@ -62,41 +62,33 @@ export function useTourInteractions(
         break;
       case 'first':
         // Logic to go to first step
-        analytics.trackStepInteraction('jump_to_first', { 
+        analytics.trackStepInteraction('jump_to_first', currentPath, currentStep, { 
           userId, 
-          userType,
-          currentPath,
-          currentStep
+          userType
         });
         // Implementation would go here
         break;
       case 'last':
         // Logic to go to last step
-        analytics.trackStepInteraction('jump_to_last', { 
+        analytics.trackStepInteraction('jump_to_last', currentPath, currentStep, { 
           userId, 
-          userType,
-          currentPath,
-          currentStep
+          userType
         });
         // Implementation would go here
         break;
       case 'jump_forward':
         // Logic to jump forward multiple steps
-        analytics.trackStepInteraction('jump_forward', { 
+        analytics.trackStepInteraction('jump_forward', currentPath, currentStep, { 
           userId, 
-          userType,
-          currentPath,
-          currentStep
+          userType
         });
         // Implementation would go here
         break;
       case 'jump_backward':
         // Logic to jump backward multiple steps
-        analytics.trackStepInteraction('jump_backward', { 
+        analytics.trackStepInteraction('jump_backward', currentPath, currentStep, { 
           userId, 
-          userType,
-          currentPath,
-          currentStep
+          userType
         });
         // Implementation would go here
         break;

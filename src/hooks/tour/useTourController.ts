@@ -42,6 +42,9 @@ export function useTourController(
     getCurrentPathData
   } = useTourState(initialPaths);
 
+  // Calculate total steps first
+  const totalSteps = visibleSteps?.length || 0;
+
   // Setup tour persistence
   const {
     endAndCleanupTour,
@@ -157,9 +160,6 @@ export function useTourController(
   
   // Get dynamic content for current step
   const content = currentStepData ? getContentForStep(currentStepData) : '';
-  
-  // Calculate total steps
-  const totalSteps = visibleSteps?.length || 0;
 
   return {
     isActive,

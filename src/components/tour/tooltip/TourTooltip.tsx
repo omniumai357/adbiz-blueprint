@@ -69,6 +69,74 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
   const titleId = `${tooltipId}-title`;
   const contentId = `${tooltipId}-content`;
   const descriptionId = `${tooltipId}-description`;
+  
+  // Calculate arrow styles - we need to extract these from the positioner
+  // to pass them to the container
+  const { calculateArrowStyles, calculateArrowClasses } = useCallback(() => {
+    // Default arrow styles point to the top
+    const arrowStyles = { 
+      top: '-6px',
+      left: '50%',
+      transform: 'translateX(-50%) rotate(45deg)',
+      borderTop: '1px solid',
+      borderLeft: '1px solid'
+    };
+    
+    // Default arrow classes
+    const arrowClassNames = "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l";
+    
+    // Adjust arrow position based on tooltip position
+    switch (position) {
+      case "top":
+        return {
+          styles: {
+            bottom: '-6px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(225deg)',
+            borderBottom: '1px solid',
+            borderRight: '1px solid'
+          },
+          classes: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-225 border-b border-r"
+        };
+      case "right":
+        return {
+          styles: {
+            left: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%) rotate(-45deg)',
+            borderTop: '1px solid',
+            borderLeft: '1px solid'
+          },
+          classes: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-45 border-t border-l"
+        };
+      case "bottom":
+        return {
+          styles: {
+            top: '-6px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(45deg)',
+            borderTop: '1px solid',
+            borderLeft: '1px solid'
+          },
+          classes: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l"
+        };
+      case "left":
+        return {
+          styles: {
+            right: '-6px',
+            top: '50%',
+            transform: 'translateY(-50%) rotate(135deg)',
+            borderBottom: '1px solid',
+            borderLeft: '1px solid'
+          },
+          classes: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 rotate-135 border-b border-l"
+        };
+      default:
+        return { styles: arrowStyles, classes: arrowClassNames };
+    }
+  }, [position]);
+  
+  const { styles: arrowStyles, classes: arrowClassNames } = calculateArrowStyles();
 
   return (
     <TourTooltipContainer
@@ -79,6 +147,10 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
       onClose={onClose}
       currentStep={currentStep}
       totalSteps={totalSteps}
+      arrowStyles={arrowStyles}
+      arrowClassNames={arrowClassNames}
+      className=""
+      style={{}}
     >
       <TourTooltipPositioner
         ref={ref}
@@ -89,15 +161,7 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
         spotlight={spotlight}
         tooltipRef={tooltipRef}
       >
-        <div 
-          className="relative bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50"
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          aria-describedby={`${contentId} ${descriptionId}`}
-          id={tooltipId}
-        >
+        <div className="relative bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50">
           <TourTooltipContent
             title={title}
             content={content}
