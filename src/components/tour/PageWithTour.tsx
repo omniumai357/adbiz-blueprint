@@ -58,7 +58,7 @@ export const PageWithTour: React.FC<PageWithTourProps> = ({
     <TourProvider currentPathname={location.pathname}>
       <ModalProvider>
         {children}
-        {showModal && <WelcomeTourModal onClose={() => setShowModal(false)} />}
+        {showModal && <WelcomeTourModal forceShow={true} />}
       </ModalProvider>
     </TourProvider>
   );

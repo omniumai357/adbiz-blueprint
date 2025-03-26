@@ -41,14 +41,14 @@ const getPaymentStep = () => {
     elementId: "payment-method-section",
     title: "Payment Methods",
     content: "Choose your preferred payment method to complete your purchase.",
-    position: "left"
+    position: "left" as "left" // Type assertion to fix position type
   };
   
   // Mobile users get a simpler step with different position
   if (isMobileDevice()) {
     return {
       ...baseStep,
-      position: "bottom",
+      position: "bottom" as "bottom", // Type assertion to fix position type
       content: "Select your payment method from the options below.",
     };
   }
