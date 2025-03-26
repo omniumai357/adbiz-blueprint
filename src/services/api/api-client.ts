@@ -15,6 +15,7 @@ import { apiResponseHandler } from "./response-handler";
  * following the repository pattern for better code organization and testability.
  * 
  * Each domain area (auth, profiles, etc.) has its own client with specific API methods.
+ * All API requests should go through this client rather than directly calling Supabase.
  */
 export const apiClient = {
   /**
