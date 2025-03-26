@@ -33,6 +33,25 @@ export const TourTooltipContent: React.FC<TourTooltipContentProps> = ({
   // Calculate progress percentage for the progress bar
   const progressValue = ((currentStep + 1) / totalSteps) * 100;
   
+  // Create a more descriptive text for screen readers
+  const getNavigationDescription = () => {
+    let description = `This is step ${currentStep + 1} of ${totalSteps}. `;
+    
+    if (currentStep > 0) {
+      description += 'You can navigate back to the previous step. ';
+    }
+    
+    if (currentStep === totalSteps - 1) {
+      description += 'This is the last step of the tour. You can finish the tour by clicking Done. ';
+    } else {
+      description += 'You can navigate to the next step by clicking Next. ';
+    }
+    
+    description += 'You can also use keyboard shortcuts: arrow keys to navigate, Enter or Space to activate buttons, and Escape to exit the tour.';
+    
+    return description;
+  };
+  
   return (
     <>
       {/* Content section */}
@@ -54,12 +73,7 @@ export const TourTooltipContent: React.FC<TourTooltipContentProps> = ({
           id={descriptionId} 
           className="sr-only"
         >
-          This is step {currentStep + 1} of {totalSteps}. 
-          {currentStep > 0 ? 'You can navigate back to the previous step.' : ''}
-          {currentStep === totalSteps - 1 
-            ? 'This is the last step of the tour. You can finish the tour by clicking Done.' 
-            : 'You can navigate to the next step by clicking Next.'
-          }
+          {getNavigationDescription()}
         </span>
       </div>
       
@@ -68,6 +82,9 @@ export const TourTooltipContent: React.FC<TourTooltipContentProps> = ({
         value={progressValue} 
         className="h-1 mb-2" 
         aria-label={`Tour progress: ${currentStep + 1} of ${totalSteps} steps completed`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progressValue}
       />
       
       {/* Step indicators (dots) */}

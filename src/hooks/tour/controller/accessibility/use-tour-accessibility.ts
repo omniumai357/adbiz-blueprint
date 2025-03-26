@@ -25,11 +25,14 @@ export function useTourAccessibility(
     if (isActive) {
       announcementsMadeRef.current = new Set();
       
-      // Announce tour started
-      announceToScreenReader(`Tour started. ${totalSteps} steps in total.`);
+      // Announce tour started with detailed instructions
+      announceToScreenReader(
+        `Tour started. ${totalSteps} steps in total. Use arrow keys to navigate, Space to select, and Escape to exit the tour.`,
+        'assertive'
+      );
     } else if (previousStepRef.current !== -1) {
-      // Announce tour ended
-      announceToScreenReader('Tour ended.');
+      // Announce tour ended with more context
+      announceToScreenReader('Tour ended. Focus is now returned to the page.', 'assertive');
       previousStepRef.current = -1;
     }
   }, [isActive, totalSteps]);
@@ -40,7 +43,18 @@ export function useTourAccessibility(
       // Only announce if this is a step change (not initial load)
       if (previousStepRef.current !== -1 && previousStepRef.current !== currentStep) {
         const direction = currentStep > previousStepRef.current ? 'next' : 'previous';
-        const message = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}`;
+        
+        // Create a more descriptive and helpful announcement
+        let message = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}. ${currentStepData.content || ''}`;
+        
+        // Add navigation hints based on current position
+        if (currentStep > 0 && currentStep < totalSteps - 1) {
+          message += " You can go to the previous step or continue to the next step.";
+        } else if (currentStep === 0) {
+          message += " You are at the first step. You can continue to the next step.";
+        } else if (currentStep === totalSteps - 1) {
+          message += " You are at the last step. You can complete the tour or go back to the previous step.";
+        }
         
         // Create a unique key for this announcement
         const announcementKey = `step-${currentStep}-${direction}`;
@@ -58,26 +72,33 @@ export function useTourAccessibility(
   }, [isActive, currentStep, totalSteps, currentStepData]);
   
   // Helper function to announce messages to screen reader
-  const announceToScreenReader = (message: string) => {
-    // Find or create the live region
-    let liveRegion = document.getElementById('tour-announcer');
+  const announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    // Find or create the appropriate live region based on priority
+    const regionId = priority === 'assertive' ? 'tour-assertive-announcer' : 'tour-polite-announcer';
+    let liveRegion = document.getElementById(regionId);
     
     if (!liveRegion) {
       liveRegion = document.createElement('div');
-      liveRegion.id = 'tour-announcer';
+      liveRegion.id = regionId;
       liveRegion.className = 'sr-only';
-      liveRegion.setAttribute('aria-live', 'polite');
+      liveRegion.setAttribute('aria-live', priority);
       liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.setAttribute('role', priority === 'assertive' ? 'alert' : 'status');
       document.body.appendChild(liveRegion);
     }
     
-    // Update the content to trigger the announcement
-    liveRegion.textContent = message;
+    // Clear the content first to ensure it will be announced even if the text hasn't changed
+    liveRegion.textContent = '';
     
-    // Clear the live region after a delay to prevent duplicate announcements
+    // Small delay to ensure screen readers recognize the change
     setTimeout(() => {
-      if (liveRegion) liveRegion.textContent = '';
-    }, 3000);
+      if (liveRegion) liveRegion.textContent = message;
+      
+      // Clear the live region after a delay to prevent duplicate announcements
+      setTimeout(() => {
+        if (liveRegion) liveRegion.textContent = '';
+      }, priority === 'assertive' ? 3000 : 5000);
+    }, 50);
   };
   
   return {

@@ -1,3 +1,4 @@
+
 import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -53,6 +54,7 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         aria-labelledby={titleId}
         aria-describedby={`${contentId} ${descriptionId}`}
         id={tooltipId}
+        aria-live="polite"
       >
         {/* Arrow */}
         <div 

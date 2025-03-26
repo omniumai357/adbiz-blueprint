@@ -6,6 +6,7 @@ import { TourFocusManager } from "../../accessibility/TourFocusManager";
 import { TourLiveAnnouncer } from "../../accessibility/TourLiveAnnouncer";
 import { TourStepFocusManager } from "../../accessibility/TourStepFocusManager";
 import { TourFocusStyles } from "../../accessibility/TourFocusStyles";
+import { TourScreenReaderAnnouncer } from "../../accessibility/TourScreenReaderAnnouncer";
 
 interface TourAccessibilityManagerProps {
   tooltipRef: React.RefObject<HTMLDivElement>;
@@ -31,6 +32,13 @@ export const TourAccessibilityManager: React.FC<TourAccessibilityManagerProps> =
         currentStepData={currentStepData} 
       />
       
+      {/* Enhanced screen reader announcements */}
+      <TourScreenReaderAnnouncer 
+        politeAnnouncements={true}
+        assertiveForStatus={true}
+      />
+      
+      {/* Legacy announcer for backward compatibility */}
       <TourLiveAnnouncer 
         isActive={isActive} 
         currentStepData={currentStepData} 
