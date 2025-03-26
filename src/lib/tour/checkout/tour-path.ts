@@ -14,6 +14,7 @@ export const checkoutTourPath: TourPath = {
     {
       id: 'checkout-welcome',
       elementId: 'checkout-header',
+      target: 'checkout-header', // Add target property
       title: 'Welcome to Checkout',
       content: 'This tour will guide you through the checkout process.',
       placement: 'bottom',

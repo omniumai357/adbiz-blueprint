@@ -1,10 +1,7 @@
 
-import { 
-  createStep, 
-  enhanceStep
-} from '@/lib/tour/core/tourPathFactory';
-
-import { 
+import { createStepGroup } from '../core/tourStepGroups';
+import { createStep } from '../core/tourPathFactory';
+import {
   animatedStep,
   mediaEnhancedStep,
   optionalStep,
@@ -12,141 +9,54 @@ import {
   transitionStep,
   spotlightStep,
   positionStep
-} from '@/lib/tour/enhancers/visualEnhancers';
-
-// Helper for step in group
-function stepInGroup(groupId: string) {
-  return (step: any) => {
-    return {
-      ...step,
-      group: groupId
-    };
-  };
-}
-
-// Helper for creating step groups
-function createStepGroup(
-  id: string,
-  name: string,
-  steps: any[],
-  description?: string
-) {
-  return {
-    id,
-    name,
-    steps,
-    description
-  };
-}
+} from '../enhancers/visualEnhancers';
 
 /**
- * Welcome step group for home page tour
+ * Welcome step group for the home page
  */
 export const homeWelcomeStepGroup = createStepGroup(
   'home-welcome',
   'Home Welcome',
   [
-    // Welcome step
-    enhanceStep(
-      createStep(
-        "welcome",
-        "header-welcome",
-        "Welcome to Our Application",
-        "This tour will guide you through the main features of our application.",
-        "bottom"
-      ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
-        return stepInGroup('home-welcome')(withAnimation);
-      }
+    createStep(
+      'welcome',
+      'hero-section',
+      'Welcome to Our Site',
+      'This tour will guide you through the main features of our homepage.',
+      'bottom'
     ),
-    
-    // Overview step
-    enhanceStep(
-      createStep(
-        "app-overview",
-        "overview-section",
-        "Application Overview",
-        "Here's a high-level overview of what our application can do for you.",
-        "right"
-      ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "pulse", entry: "slide-in" })(step);
-        const withMedia = mediaEnhancedStep(
-          "/images/overview.png",
-          "image",
-          "Application overview diagram"
-        )(withAnimation);
-        return stepInGroup('home-welcome')(withMedia);
-      }
-    ),
+    createStep(
+      'get-started',
+      'cta-section',
+      'Get Started',
+      'Ready to begin? Click here to start your journey.',
+      'top'
+    )
   ],
-  'Welcome steps for the home page tour'
+  'Introduction to the homepage'
 );
 
 /**
- * Features step group for home page tour
+ * Features step group for the home page
  */
 export const homeFeaturesStepGroup = createStepGroup(
   'home-features',
-  'Feature Highlights',
+  'Home Features',
   [
-    // Feature 1
-    enhanceStep(
-      createStep(
-        "feature-1",
-        "feature-section-1",
-        "Key Feature 1",
-        "Our first key feature helps you accomplish important tasks quickly.",
-        "left"
-      ),
-      step => {
-        const withVisualEnhancements = visuallyEnhancedStep({
-          animation: { highlight: "bounce", entry: "scale-in" },
-          spotlight: { intensity: "medium", pulseEffect: true },
-          transition: { type: "slide", direction: "right" }
-        })(step);
-        return stepInGroup('home-features')(withVisualEnhancements);
-      }
+    createStep(
+      'features',
+      'features-section',
+      'Our Features',
+      'Explore the key features that make our product unique.',
+      'bottom'
     ),
-    
-    // Feature 2
-    enhanceStep(
-      createStep(
-        "feature-2",
-        "feature-section-2",
-        "Key Feature 2",
-        "Our second key feature provides in-depth analytics and insights.",
-        "top"
-      ),
-      step => {
-        const withSpotlight = spotlightStep({
-          intensity: "high",
-          color: "#8b5cf6",
-          fadeBackground: true
-        })(step);
-        const withTransition = transitionStep("zoom", { 
-          duration: 500 
-        })(withSpotlight);
-        return stepInGroup('home-features')(withTransition);
-      }
-    ),
-    
-    // Optional feature
-    enhanceStep(
-      createStep(
-        "optional-feature",
-        "premium-feature-section",
-        "Premium Features",
-        "Explore our premium features available with paid plans.",
-        "bottom"
-      ),
-      step => {
-        const withPosition = positionStep("bottom")(step);
-        const asOptional = optionalStep()(withPosition);
-        return stepInGroup('home-features')(asOptional);
-      }
-    ),
+    createStep(
+      'testimonials',
+      'testimonials-section',
+      'Customer Testimonials',
+      'Read what our customers have to say about us.',
+      'top'
+    )
   ],
-  'Feature highlight steps for the home page tour'
+  'Key features and testimonials on the homepage'
 );

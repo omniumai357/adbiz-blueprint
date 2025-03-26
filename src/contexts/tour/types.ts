@@ -110,11 +110,12 @@ export interface TourPath {
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
+  route?: string; // Add route property that was missing
   config?: {
     allowSkip?: boolean;
     showProgress?: boolean;
     autoStart?: boolean;
-    completionCallback?: () => void;
+    completionCallback?: () => void; // Add completionCallback
     metadata?: Record<string, any>;
     userRoles?: string[];
     accessibility?: {

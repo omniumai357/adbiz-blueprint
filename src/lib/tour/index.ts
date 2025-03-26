@@ -1,7 +1,8 @@
 
 // Export core functionality
 export * from './core/paths/createTourPath';
-export * from './core/paths/createTourPathFromGroups';
+// Rename the import to avoid duplicate export
+export { createTourPath as createCoreTourPath } from './core/paths/createTourPathFromGroups';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';
 
@@ -21,6 +22,7 @@ export * from './utils/tour-composer/createOnboardingTour';
 
 // Core building blocks
 export { createStep, enhanceStep } from './core/tourPathFactory';
+export { conditionalStep, stepInGroup } from './core/tourStepGroups';
 
 // Common enhancers (directly exported for convenience)
 import { 

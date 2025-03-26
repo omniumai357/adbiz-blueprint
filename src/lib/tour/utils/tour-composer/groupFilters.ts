@@ -1,37 +1,39 @@
 
-import { getAllStepGroups } from '@/lib/tour/core/tourStepGroups';
+import { StepGroup, getAllStepGroups } from '../../core/tourStepGroups';
 
 /**
- * Filters step groups by their category or tag
+ * Get all step group IDs that have a specific tag
  * 
- * @param tag The tag or category to filter by
- * @returns Array of group IDs matching the tag
+ * @param tag Tag to filter by
+ * @returns Array of step group IDs with the tag
  */
 export function getStepGroupsByTag(tag: string): string[] {
   const allGroups = getAllStepGroups();
   
-  return Object.values(allGroups)
-    .filter(group => {
-      // Match tag either in the group ID or in its metadata
-      return group.id.includes(tag) || 
-             (group.metadata && group.metadata.tags && 
-              (group.metadata.tags as string[]).includes(tag));
-    })
-    .map(group => group.id);
+  return Object.keys(allGroups).filter(groupId => {
+    const group = allGroups[groupId];
+    if (!group.metadata || !group.metadata.tags) return false;
+    
+    return group.metadata.tags.includes(tag);
+  });
 }
 
 /**
- * Groups step groups by experience level
+ * Get all step group IDs that match a specific experience level
  * 
- * @param level The experience level to filter by
- * @returns Array of group IDs matching the experience level
+ * @param level Experience level to filter by
+ * @returns Array of step group IDs for the experience level
  */
-export function getStepGroupsByExperienceLevel(level: 'beginner' | 'intermediate' | 'advanced'): string[] {
+export function getStepGroupsByExperienceLevel(
+  level: 'beginner' | 'intermediate' | 'advanced' | 'all'
+): string[] {
   const allGroups = getAllStepGroups();
   
-  return Object.values(allGroups)
-    .filter(group => {
-      return group.metadata?.experienceLevel === level;
-    })
-    .map(group => group.id);
+  return Object.keys(allGroups).filter(groupId => {
+    const group = allGroups[groupId];
+    if (!group.metadata || !group.metadata.experienceLevel) return level === 'all';
+    
+    if (level === 'all') return true;
+    return group.metadata.experienceLevel === level || group.metadata.experienceLevel === 'all';
+  });
 }

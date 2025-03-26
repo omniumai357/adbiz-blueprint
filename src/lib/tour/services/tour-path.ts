@@ -13,6 +13,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'services-welcome',
       elementId: 'services-header',
+      target: 'services-header', // Add target property
       title: 'Welcome to Our Services',
       content: 'This tour will show you the various services we offer.',
       placement: 'bottom',
@@ -23,6 +24,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'service-categories',
       elementId: 'service-categories-section',
+      target: 'service-categories-section', // Add target property
       title: 'Service Categories',
       content: 'Browse through our different service categories.',
       placement: 'right',
@@ -33,6 +35,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'service-pricing',
       elementId: 'pricing-section',
+      target: 'pricing-section', // Add target property
       title: 'Pricing Plans',
       content: 'Compare our different pricing plans to find what suits you best.',
       placement: 'left',

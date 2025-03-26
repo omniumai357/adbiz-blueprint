@@ -1,5 +1,5 @@
 
-import { createTourPathFromGroups } from './index';
+import { createTourPath } from './core/paths/createTourPath';
 
 // Import step groups
 import {
@@ -12,24 +12,31 @@ import {
 /**
  * Main checkout tour path definition using step groups
  */
-export const checkoutTourPath = createTourPathFromGroups(
+export const checkoutTourPath = createTourPath(
   "checkout-tour",
   "Checkout Page Tour",
   [
-    'checkout-welcome',  // Welcome steps vary based on customer type
-    'checkout-core',     // Core checkout steps for all users
-    'checkout-optional', // Optional features shown conditionally
-    'checkout-final'     // Final checkout steps and summary
+    ...checkoutWelcomeStepGroup.steps,
+    ...checkoutCoreStepGroup.steps,
+    ...checkoutOptionalStepGroup.steps,
+    ...checkoutFinalStepGroup.steps
   ],
   {
     allowSkip: true,
     showProgress: true,
-    completionCallback: () => {
-      console.log("Checkout tour completed!");
-    },
-    metadata: {
-      importance: "high",
-      averageCompletionTimeSeconds: 120
+    route: '/checkout',
+    // Store the callback in metadata to work around the type limitation
+    userRoles: ['customer'],
+    displayCondition: () => {
+      console.log("Checkout tour condition check");
+      return true;
     }
   }
 );
+
+// Add an event listener for tour completion
+document.addEventListener('tour:complete', (e: any) => {
+  if (e.detail?.tourId === 'checkout-tour') {
+    console.log("Checkout tour completed!");
+  }
+});

@@ -1,116 +1,105 @@
 
-import { TourStep } from '@/contexts/tour/types';
-import { registerStepGroup, getAllStepGroups as getRegisteredGroups } from './registry';
+import { TourStep } from "@/contexts/tour/types";
 
-// Interface for a step group
-interface StepGroup {
+// Define StepGroup interface
+export interface StepGroup {
   id: string;
   name: string;
   steps: TourStep[];
   description?: string;
+  metadata?: {
+    tags?: string[];
+    experienceLevel?: "beginner" | "intermediate" | "advanced" | "all";
+    [key: string]: any;
+  };
 }
 
-// Private registry of step groups
+// Store for all step groups
 const stepGroups: Record<string, StepGroup> = {};
 
 /**
- * Create a new step group
+ * Create a step group
  * 
- * @param id Unique identifier for the group
- * @param name Display name for the group
- * @param steps Array of tour steps in this group
+ * @param id Unique identifier for the step group
+ * @param name Display name for the step group
+ * @param steps Array of steps in the group
  * @param description Optional description of the group
+ * @param metadata Optional metadata for filtering and categorization
  * @returns A step group object
  */
 export function createStepGroup(
   id: string,
   name: string,
   steps: TourStep[],
-  description?: string
+  description?: string,
+  metadata?: StepGroup['metadata']
 ): StepGroup {
-  const group = { id, name, steps, description };
+  const group: StepGroup = {
+    id,
+    name,
+    steps,
+    description,
+    metadata
+  };
   
-  // Register the group in the registry
-  registerStepGroup(id, name, steps, description);
-  
-  // Also store in the local registry
+  // Register the group
   stepGroups[id] = group;
   
   return group;
 }
 
 /**
- * Get a step group by ID
+ * Get all registered step groups
  * 
- * @param id ID of the step group to retrieve
- * @returns The step group or undefined if not found
+ * @returns Record of all step groups
+ */
+export function getAllStepGroups(): Record<string, StepGroup> {
+  return {...stepGroups};
+}
+
+/**
+ * Get a specific step group by ID
+ * 
+ * @param id Group ID to retrieve
+ * @returns Step group or undefined if not found
  */
 export function getStepGroup(id: string): StepGroup | undefined {
   return stepGroups[id];
 }
 
 /**
- * Get all registered step groups
+ * Mark a step as conditional based on a function
  * 
- * @returns Record of all step groups keyed by ID
+ * @param condition Function that returns boolean to determine if step should be shown
+ * @returns Function that enhances the step with a condition
  */
-export function getAllStepGroups(): Record<string, StepGroup> {
-  // Combine local registry with global registry
-  return { ...stepGroups, ...getRegisteredGroups() };
-}
-
-/**
- * Add a step to a group
- * 
- * @param groupId ID of the group to add the step to
- * @param step The tour step to add
- */
-export function addStepToGroup(groupId: string, step: TourStep): void {
-  if (!stepGroups[groupId]) {
-    stepGroups[groupId] = {
-      id: groupId,
-      name: groupId, // Default name to ID
-      steps: []
+export function conditionalStep(
+  condition: () => boolean
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      condition
     };
-  }
-  
-  stepGroups[groupId].steps.push(step);
+  };
 }
 
 /**
- * Remove a step from a group
+ * Mark a step as belonging to a specific step group
  * 
- * @param groupId ID of the group
- * @param stepId ID of the step to remove
- * @returns True if the step was found and removed, false otherwise
+ * @param groupId ID of the group this step belongs to
+ * @returns Function that enhances the step with group metadata
  */
-export function removeStepFromGroup(groupId: string, stepId: string): boolean {
-  if (!stepGroups[groupId]) return false;
-  
-  const initialLength = stepGroups[groupId].steps.length;
-  stepGroups[groupId].steps = stepGroups[groupId].steps.filter(step => step.id !== stepId);
-  
-  return stepGroups[groupId].steps.length !== initialLength;
-}
-
-/**
- * Clear all step groups (useful for testing)
- */
-export function clearStepGroups(): void {
-  Object.keys(stepGroups).forEach(key => delete stepGroups[key]);
-}
-
-/**
- * Sort steps within a group by priority
- * 
- * @param groupId ID of the group to sort
- */
-export function sortGroupStepsByPriority(groupId: string): void {
-  if (!stepGroups[groupId]) return;
-  
-  stepGroups[groupId].steps.sort((a, b) => {
-    const priorityA = a.metadata?.priority || 0;
-    const priorityB = b.metadata?.priority || 0;
-    return priorityA - priorityB;
-  });
+export function stepInGroup(
+  groupId: string
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      metadata: {
+        ...(step.metadata || {}),
+        groupId
+      }
+    };
+  };
 }
