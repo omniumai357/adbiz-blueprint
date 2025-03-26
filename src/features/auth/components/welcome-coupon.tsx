@@ -82,7 +82,7 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
             user_id: userId,
             code: couponCode,
             discount_percentage: discountAmount,
-            valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            valid_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days - converted to ISO string
             description: 'Welcome discount for new users',
             max_uses: 1,
             active: true
