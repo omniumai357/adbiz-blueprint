@@ -32,7 +32,7 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
       // Handle direct array of files
       selectedFiles = [...event];
     } else {
-      // Handle input change event
+      // Handle input change event - we know it's a ChangeEvent now
       if (event.target.files) {
         selectedFiles = Array.from(event.target.files);
       }
