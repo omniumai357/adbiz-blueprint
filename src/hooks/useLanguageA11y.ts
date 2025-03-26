@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 
 /**
@@ -12,10 +12,53 @@ import { useLanguage } from '@/contexts/language-context';
  * - Managing language-specific CSS classes
  */
 export function useLanguageA11y() {
-  const { currentLanguage, direction } = useLanguage();
+  const { currentLanguage, direction, isChangingLanguage } = useLanguage();
+  
+  // Create an announcer element for screen readers
+  const createOrGetAnnouncer = useCallback(() => {
+    const id = 'language-change-announcer';
+    let announcer = document.getElementById(id);
+    
+    if (!announcer) {
+      announcer = document.createElement('div');
+      announcer.id = id;
+      announcer.setAttribute('role', 'status');
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.className = 'sr-only';
+      document.body.appendChild(announcer);
+    }
+    
+    return announcer;
+  }, []);
+  
+  // Announce a message to screen readers
+  const announceToScreenReader = useCallback((message: string) => {
+    const announcer = createOrGetAnnouncer();
+    
+    // Clear previous announcement
+    announcer.textContent = '';
+    
+    // Use setTimeout to ensure screen readers recognize the change
+    setTimeout(() => {
+      announcer.textContent = message;
+      
+      // Clear after it's been read
+      setTimeout(() => {
+        announcer.textContent = '';
+      }, 3000);
+    }, 100);
+  }, [createOrGetAnnouncer]);
   
   // Update accessibility attributes when language changes
   useEffect(() => {
+    if (isChangingLanguage) {
+      document.documentElement.classList.add('changing-language');
+      return;
+    }
+    
+    // Remove loading class
+    document.documentElement.classList.remove('changing-language');
+    
     // Update lang attribute on the document element
     document.documentElement.setAttribute('lang', currentLanguage);
     
@@ -30,38 +73,29 @@ export function useLanguageA11y() {
     }
     
     // Announce language change to screen readers
-    const announcer = document.getElementById('language-change-announcer') || 
-      (() => {
-        const div = document.createElement('div');
-        div.id = 'language-change-announcer';
-        div.setAttribute('role', 'status');
-        div.setAttribute('aria-live', 'polite');
-        div.className = 'sr-only';
-        document.body.appendChild(div);
-        return div;
-      })();
-      
-    // Announce language change with culturally appropriate names
-    const languageNames = {
+    const languageNames: Record<string, string> = {
       en: 'English',
       es: 'Spanish (Español)',
-      fr: 'French (Français)'
-    } as const;
+      fr: 'French (Français)',
+      ar: 'Arabic (العربية)',
+      he: 'Hebrew (עִברִית)'
+    };
     
-    const languageName = languageNames[currentLanguage as keyof typeof languageNames] || currentLanguage;
-    announcer.textContent = `Language changed to ${languageName}`;
-    
-    // Clear announcement after it's been read
-    setTimeout(() => {
-      announcer.textContent = '';
-    }, 1000);
+    const languageName = languageNames[currentLanguage] || currentLanguage;
+    announceToScreenReader(`Language changed to ${languageName}. Page direction is ${direction === 'rtl' ? 'right to left' : 'left to right'}.`);
     
     // Add language-specific attributes to key content areas
     document.querySelectorAll('[data-i18n-section]').forEach(element => {
       element.setAttribute('lang', currentLanguage);
+      
+      if (direction === 'rtl') {
+        element.setAttribute('dir', 'rtl');
+      } else {
+        element.removeAttribute('dir');
+      }
     });
     
-  }, [currentLanguage, direction]);
+  }, [currentLanguage, direction, isChangingLanguage, announceToScreenReader]);
   
   // Return utility functions for component-level usage
   return {
@@ -72,6 +106,10 @@ export function useLanguageA11y() {
       } else {
         element.removeAttribute('dir');
       }
+    },
+    
+    announceLanguageChange: (message: string) => {
+      announceToScreenReader(message);
     }
   };
 }

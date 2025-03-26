@@ -2,143 +2,123 @@
 import { TourStep } from "@/contexts/tour/types";
 
 /**
- * Creates a step that depends on other steps
- * 
- * @param dependencies Array of step IDs that must be completed before this step
- * @param type Type of dependency - hard (required) or soft (recommended)
- * @returns A function that enhances the step with dependencies
+ * Adds dependencies to a tour step
  */
-export function dependentOnSteps(
-  dependencies: string[],
-  type: 'hard' | 'soft' = 'hard'
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        dependencies,
-        dependencyType: type
-      }
-    };
+export const withDependencies = (
+  dependencies: string[]
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    dependencies: [...(step.dependencies || []), ...dependencies]
   };
-}
+};
 
 /**
- * Creates a step that depends on completion of specific tour paths
- * 
- * @param pathIds Array of tour path IDs that must be completed
- * @returns A function that enhances the step with path dependencies
+ * Adds metadata to a tour step
  */
-export function dependentOnPaths(
-  pathIds: string[]
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    // Create a condition function that checks if all required paths are completed
-    const condition = () => {
-      try {
-        const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
-        return pathIds.every(pathId => completedTours.includes(pathId));
-      } catch (e) {
-        return false;
-      }
-    };
-    
-    return {
-      ...step,
-      condition,
-      metadata: {
-        ...(step.metadata || {}),
-        dependentPaths: pathIds
-      }
-    };
+export const withMetadata = (
+  key: string,
+  value: any
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    metadata: {
+      ...(step.metadata || {}),
+      [key]: value
+    }
   };
-}
+};
 
 /**
- * Creates a branching step that can lead to different next steps
- * 
- * @param branches Array of branch options with conditions and target steps
- * @returns A function that enhances the step with branching capabilities
+ * Sets a condition to a step based on a dependency
  */
-export function branchingStep(
-  branches: {
-    condition: () => boolean;
-    targetStepId: string;
-    label?: string;
-  }[]
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        branches
-      },
-      actions: {
-        ...(step.actions || {}),
-        next: {
-          ...((step.actions?.next as any) || {}),
-          callback: () => {
-            // Find the first branch whose condition evaluates to true
-            const activeBranch = branches.find(branch => branch.condition());
-            
-            if (activeBranch) {
-              // In a real implementation, this would need to communicate with the tour controller
-              console.log(`Branching to step: ${activeBranch.targetStepId}`);
-              
-              // The actual branching logic would go here
-              // For now we're just logging the intent
-            }
-          }
-        }
+export const withDependencyCondition = (
+  dependencyId: string,
+  condition: (dependency: any) => boolean
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    metadata: {
+      ...(step.metadata || {}),
+      dependencyConditions: {
+        ...(step.metadata?.dependencyConditions || {}),
+        [dependencyId]: condition
       }
-    };
+    }
   };
-}
+};
 
 /**
- * Creates a step that serves as a re-entry point after a detour
- * 
- * @param sourceStepIds Array of step IDs that can return to this step
- * @returns A function that enhances the step as a re-entry point
+ * Adds a callback to execute when a dependency resolves
  */
-export function reEntryPoint(
-  sourceStepIds: string[]
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        isReEntryPoint: true,
-        sourceStepIds
+export const withDependencyCallback = (
+  dependencyId: string,
+  callback: (dependency: any) => void
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    metadata: {
+      ...(step.metadata || {}),
+      dependencyCallbacks: {
+        ...(step.metadata?.dependencyCallbacks || {}),
+        [dependencyId]: callback
       }
-    };
+    }
   };
-}
+};
 
 /**
- * Creates a section step that can be collapsed or expanded
- * 
- * @param sectionName Name of the section for identification
- * @param expanded Whether the section is expanded by default
- * @returns A function that enhances the step as a section
+ * Makes a step await a dependency to resolve before showing
  */
-export function sectionStep(
-  sectionName: string,
-  expanded: boolean = true
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      metadata: {
-        ...(step.metadata || {}),
-        isSection: true,
-        sectionName,
-        expanded
-      },
-      optional: expanded ? step.optional : true
-    };
+export const withAwaitDependency = (
+  dependencyId: string,
+  timeout?: number
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    metadata: {
+      ...(step.metadata || {}),
+      awaitDependency: dependencyId,
+      dependencyTimeout: timeout
+    }
   };
-}
+};
+
+/**
+ * Makes a step provide a value for other steps to depend on
+ */
+export const withDependencyProvider = (
+  providerId: string,
+  valueFactory: () => any
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    metadata: {
+      ...(step.metadata || {}),
+      dependencyProviders: {
+        ...(step.metadata?.dependencyProviders || {}),
+        [providerId]: valueFactory
+      }
+    }
+  };
+};
+
+/**
+ * Makes a step optional based on a dependency
+ */
+export const withOptionalDependency = (
+  dependencyId: string,
+  condition: (dependency: any) => boolean = () => true
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    isOptional: true,
+    metadata: {
+      ...(step.metadata || {}),
+      optionalDependency: {
+        id: dependencyId,
+        condition
+      }
+    }
+  };
+};

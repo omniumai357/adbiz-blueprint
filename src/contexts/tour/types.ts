@@ -73,7 +73,15 @@ export interface TourStep {
   }[];
   priority?: number;
   userRoles?: string[];
-  path?: string;
+  path?: string | {
+    enabled: boolean;
+    targetElementId: string;
+    style: string;
+    color?: string;
+    animationDuration?: number;
+    showArrow?: boolean;
+    waypoints?: Array<{x: number, y: number}>;
+  };
   spotlight?: {
     intensity?: "low" | "medium" | "high"; 
     color?: string;
@@ -86,6 +94,13 @@ export interface TourStep {
     duration?: number;
   };
   keyboardShortcuts?: Record<string, string>;
+  waypoints?: Array<{x: number, y: number}>;
+  enabled?: boolean;
+  targetElementId?: string;
+  style?: string;
+  color?: string;
+  animationDuration?: number;
+  showArrow?: boolean;
 }
 
 export interface TourPath {

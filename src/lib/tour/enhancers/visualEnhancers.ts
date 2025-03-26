@@ -1,160 +1,168 @@
 
-import { TourStep } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour/types";
 
 /**
- * Adds animation effects to a tour step
- * 
- * @param animation Animation configuration
- * @returns A function that enhances the step with animations
+ * Applies animation effects to a tour step
  */
-export function animatedStep(
-  animation: {
+export const withAnimation = (animation: string | {
+  entry?: string;
+  highlight?: string;
+  exit?: string;
+}) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    animation
+  };
+};
+
+/**
+ * Marks a step as optional
+ */
+export const withOptional = (isOptional = true) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    isOptional
+  };
+};
+
+/**
+ * Adds media to a tour step
+ */
+export const withMedia = (
+  url: string,
+  type: "image" | "video" | "gif" = "image",
+  alt?: string,
+  animation?: string
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    media: {
+      type,
+      url,
+      alt: alt || step.title,
+      animation,
+    },
+  };
+};
+
+/**
+ * Adds spotlight customization to a tour step
+ */
+export const withSpotlight = (options: {
+  intensity?: "low" | "medium" | "high";
+  color?: string;
+  pulseEffect?: boolean;
+  fadeBackground?: boolean;
+}) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    spotlight: options
+  };
+};
+
+/**
+ * Adds transition animation to a tour step
+ */
+export const withTransition = (
+  type: "fade" | "slide" | "zoom" | "flip" | "none",
+  options?: {
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  }
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    transition: {
+      type,
+      direction: options?.direction,
+      duration: options?.duration,
+    },
+  };
+};
+
+/**
+ * Adds 3D effects to a tour step
+ */
+export const with3DEffects = (
+  intensity: number = 5,
+  enable: boolean = true
+) => (step: TourStep): TourStep => {
+  return {
+    ...step,
+    effects3D: {
+      enable,
+      intensity,
+    },
+  };
+};
+
+/**
+ * Combines multiple visual enhancers into one
+ */
+export const withVisualEnhancements = (options: {
+  position?: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  animation?: string | {
     entry?: string;
     highlight?: string;
     exit?: string;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      animation
-    };
   };
-}
-
-/**
- * Marks a tour step as optional
- * 
- * @returns A function that enhances the step as optional
- */
-export function optionalStep(): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      optional: true
-    };
-  };
-}
-
-/**
- * Adds media (image, video, gif) to a tour step
- * 
- * @param media Media configuration
- * @returns A function that enhances the step with media
- */
-export function mediaEnhancedStep(
-  media: {
-    type: "image" | "video" | "gif";
+  media?: {
     url: string;
+    type?: "image" | "video" | "gif";
     alt?: string;
     animation?: string;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      media
-    };
   };
-}
-
-/**
- * Adds spotlight effect to a tour step
- * 
- * @param spotlight Spotlight configuration
- * @returns A function that enhances the step with spotlight
- */
-export function spotlightStep(
-  spotlight: {
+  spotlight?: {
     intensity?: "low" | "medium" | "high";
     color?: string;
     pulseEffect?: boolean;
     fadeBackground?: boolean;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      spotlight
-    };
   };
-}
-
-/**
- * Sets the position of a tour step
- * 
- * @param position Position of the step tooltip
- * @returns A function that enhances the step with position
- */
-export function positionStep(
-  position: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left"
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      position
-    };
-  };
-}
-
-/**
- * Adds transition effects to a tour step
- * 
- * @param transition Transition configuration
- * @returns A function that enhances the step with transition
- */
-export function transitionStep(
-  transition: {
+  transition?: {
     type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "right" | "left" | "up" | "down";
+    direction?: "up" | "down" | "left" | "right";
     duration?: number;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      transition
-    };
   };
-}
+  effects3D?: {
+    enable?: boolean;
+    intensity?: number;
+  };
+  isOptional?: boolean;
+}) => (step: TourStep): TourStep => {
+  let enhancedStep = { ...step };
 
-/**
- * Combines multiple visual enhancements for a tour step
- * 
- * @param options Combined visual enhancements
- * @returns A function that enhances the step with visual effects
- */
-export function visuallyEnhancedStep(
-  options: {
-    position?: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
-    animation?: {
-      entry?: string;
-      highlight?: string;
-      exit?: string;
-    };
-    spotlight?: {
-      intensity?: "low" | "medium" | "high";
-      color?: string;
-      pulseEffect?: boolean;
-      fadeBackground?: boolean;
-    };
-    transition?: {
-      type: "fade" | "slide" | "zoom" | "flip" | "none";
-      direction?: "right" | "left" | "up" | "down";
-      duration?: number;
-    };
-    media?: {
-      type: "image" | "video" | "gif";
-      url: string;
-      alt?: string;
-      animation?: string;
+  if (options.position) {
+    enhancedStep.position = options.position;
+  }
+
+  if (options.animation) {
+    enhancedStep.animation = options.animation;
+  }
+
+  if (options.media) {
+    enhancedStep.media = {
+      type: options.media.type || "image",
+      url: options.media.url,
+      alt: options.media.alt || step.title,
+      animation: options.media.animation,
     };
   }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      ...options
-    };
-  };
-}
+
+  if (options.spotlight) {
+    enhancedStep.spotlight = options.spotlight;
+  }
+
+  if (options.transition) {
+    enhancedStep.transition = options.transition;
+  }
+
+  if (options.effects3D) {
+    enhancedStep.effects3D = options.effects3D;
+  }
+
+  if (options.isOptional !== undefined) {
+    enhancedStep.isOptional = options.isOptional;
+  }
+
+  return enhancedStep;
+};

@@ -18,6 +18,7 @@ interface LanguageSelectorProps {
   variant?: 'default' | 'minimal' | 'expanded' | 'footer';
   className?: string;
   showNativeNames?: boolean;
+  showFlags?: boolean;
   align?: 'start' | 'center' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
 }
@@ -26,15 +27,22 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   variant = 'default',
   className = '',
   showNativeNames = false,
+  showFlags = true,
   align = 'end',
   side = 'bottom'
 }) => {
   const { t } = useTranslation('language');
-  const { currentLanguage, changeLanguage, languages, isChangingLanguage, direction } = useLanguage();
+  const { 
+    currentLanguage, 
+    changeLanguage, 
+    languages, 
+    isChangingLanguage, 
+    direction 
+  } = useLanguage();
 
-  const handleLanguageChange = (langCode: string) => {
-    if (isChangingLanguage) return;
-    changeLanguage(langCode);
+  const handleLanguageChange = async (langCode: string) => {
+    if (isChangingLanguage || langCode === currentLanguage) return;
+    await changeLanguage(langCode);
   };
 
   // Get current language display name
@@ -55,7 +63,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className={cn(className, isChangingLanguage && "opacity-70")} 
+            className={cn(
+              className, 
+              isChangingLanguage && "opacity-70",
+              "relative overflow-hidden"
+            )} 
             aria-label={ariaLabels.button}
             disabled={isChangingLanguage}
           >
@@ -64,23 +76,38 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             ) : (
               <Globe className="h-4 w-4" />
             )}
+            <span className="sr-only">{t('selectLanguage')}</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align={align} side={side} aria-label={ariaLabels.dropdown}>
+        <DropdownMenuContent 
+          align={align} 
+          side={side} 
+          aria-label={ariaLabels.dropdown}
+          className="language-switch-enter"
+        >
           {languages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleLanguageChange(lang.code)}
               className={cn(
+                "flex items-center gap-2",
                 currentLanguage === lang.code && "bg-muted",
-                "flex items-center justify-between",
-                direction === 'rtl' && "flex-row-reverse"
+                direction === 'rtl' && "flex-row-reverse",
+                "language-option"
               )}
               disabled={isChangingLanguage}
               aria-current={currentLanguage === lang.code ? 'true' : 'false'}
             >
-              <span>{showNativeNames ? lang.nativeName : lang.name}</span>
-              {currentLanguage === lang.code && <Check className="h-4 w-4 ml-2 rtl:mr-2 rtl:ml-0" />}
+              {showFlags && <span className="locale-flag">{lang.flag}</span>}
+              <span className={cn(
+                currentLanguage === lang.code && "language-selected",
+                "relative"
+              )}>
+                {showNativeNames ? lang.nativeName : lang.name}
+              </span>
+              {currentLanguage === lang.code && 
+                <Check className="h-4 w-4 ml-auto text-primary" />
+              }
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -90,7 +117,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   if (variant === 'expanded') {
     return (
-      <div className={cn("flex flex-col space-y-2", className)} role="region" aria-label={ariaLabels.button}>
+      <div 
+        className={cn("flex flex-col space-y-2", className)} 
+        role="region" 
+        aria-label={ariaLabels.button}
+      >
         <label className="text-sm font-medium text-muted-foreground">{t('selectLanguage')}</label>
         <div className="flex flex-wrap gap-2">
           {languages.map((lang) => (
@@ -100,17 +131,18 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               size="sm"
               className={cn(
                 "min-w-[80px]",
-                isChangingLanguage && "opacity-70"
+                isChangingLanguage && currentLanguage === lang.code && "language-loading",
+                "language-option"
               )}
               onClick={() => handleLanguageChange(lang.code)}
               disabled={isChangingLanguage || currentLanguage === lang.code}
               aria-pressed={currentLanguage === lang.code}
               lang={lang.code}
             >
-              {isChangingLanguage && currentLanguage === lang.code ? (
-                <Loader2 className="h-3 w-3 mr-1 rtl:ml-1 rtl:mr-0 animate-spin" />
-              ) : null}
-              {showNativeNames ? lang.nativeName : lang.name}
+              {showFlags && <span className="locale-flag mr-1">{lang.flag}</span>}
+              <span className={currentLanguage === lang.code ? "language-selected" : ""}>
+                {showNativeNames ? lang.nativeName : lang.name}
+              </span>
             </Button>
           ))}
         </div>
@@ -126,20 +158,25 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         aria-label={ariaLabels.button}
       >
         <p className="text-sm font-medium text-muted-foreground mb-1">{t('selectLanguage')}</p>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-2">
           {languages.map((lang) => (
             <button
               key={lang.code}
               className={cn(
-                "text-sm px-2 py-1 rounded hover:underline",
-                currentLanguage === lang.code ? "font-medium" : "text-muted-foreground"
+                "text-sm px-3 py-1 rounded hover:underline flex items-center gap-1",
+                currentLanguage === lang.code ? "font-medium" : "text-muted-foreground",
+                isChangingLanguage && currentLanguage === lang.code && "language-loading",
+                "language-option"
               )}
               onClick={() => handleLanguageChange(lang.code)}
               disabled={isChangingLanguage}
               aria-pressed={currentLanguage === lang.code}
               lang={lang.code}
             >
-              {showNativeNames ? lang.nativeName : lang.name}
+              {showFlags && <span className="locale-flag">{lang.flag}</span>}
+              <span className={currentLanguage === lang.code ? "language-selected" : ""}>
+                {showNativeNames ? lang.nativeName : lang.name}
+              </span>
             </button>
           ))}
         </div>
@@ -155,7 +192,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           className={cn(
             "flex items-center gap-2", 
             className, 
-            isChangingLanguage && "opacity-80",
+            isChangingLanguage && "language-loading",
             direction === 'rtl' && "flex-row-reverse"
           )}
           disabled={isChangingLanguage}
@@ -166,10 +203,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           ) : (
             <Globe className="h-4 w-4" />
           )}
+          {showFlags && <span className="locale-flag">{currentLangInfo.flag}</span>}
           <span>{currentLangName}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} side={side} aria-label={ariaLabels.dropdown}>
+      <DropdownMenuContent 
+        align={align} 
+        side={side} 
+        aria-label={ariaLabels.dropdown}
+        className="language-switch-enter"
+      >
         <DropdownMenuLabel>{t('selectLanguage')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {languages.map((lang) => (
@@ -177,22 +220,29 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
             className={cn(
+              "flex items-center gap-2",
               currentLanguage === lang.code && "bg-muted",
-              "flex items-center justify-between gap-4",
-              direction === 'rtl' && "flex-row-reverse"
+              direction === 'rtl' && "flex-row-reverse",
+              "language-option"
             )}
             disabled={isChangingLanguage}
             lang={lang.code}
             aria-current={currentLanguage === lang.code ? 'true' : 'false'}
           >
-            <span>
+            {showFlags && <span className="locale-flag">{lang.flag}</span>}
+            <span className={cn(
+              "relative",
+              currentLanguage === lang.code && "language-selected"
+            )}>
               {showNativeNames ? (
                 <>{lang.nativeName} <span className="text-xs text-muted-foreground">({lang.name})</span></>
               ) : (
                 lang.name
               )}
             </span>
-            {currentLanguage === lang.code && <Check className="h-4 w-4" />}
+            {currentLanguage === lang.code && 
+              <Check className="h-4 w-4 ml-auto text-primary" />
+            }
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

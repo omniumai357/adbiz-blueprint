@@ -18,13 +18,20 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Rewards from './pages/Rewards';
 import Auth from './pages/Auth';
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/hooks/use-toast";
 import { PageWithTour } from './components/tour/PageWithTour';
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 import { AuthContextProvider } from '@/features/auth';
 import { initializeServices } from './services/registry/init';
 import { ReactQueryProvider } from './providers/ReactQueryProvider';
+import { useLanguageA11y } from './hooks/useLanguageA11y';
+
+// Language observer component for accessibility
+const LanguageObserver = () => {
+  useLanguageA11y();
+  return null;
+};
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -35,6 +42,7 @@ const App: React.FC = () => {
     <BrowserRouter>
       <ReactQueryProvider>
         <LanguageProvider>
+          <LanguageObserver />
           <ErrorProvider>
             <AuthContextProvider>
               <ErrorBoundary>
