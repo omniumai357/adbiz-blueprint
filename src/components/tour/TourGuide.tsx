@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import { useTour } from "@/contexts/tour-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -127,10 +128,20 @@ export const TourGuide: React.FC = () => {
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
   const exitAnimation = currentStepData.animation?.exit;
   
+  // Convert extended transition types to supported types
   const transition = currentStepData.transition || {
     type: "fade" as const,
     direction: "right" as const,
     duration: 300
+  };
+  
+  // Map extended transition types to supported ones
+  const supportedTransition = {
+    type: (['fade', 'slide', 'zoom', 'flip', 'none'].includes(transition.type) 
+      ? transition.type 
+      : 'fade') as 'fade' | 'slide' | 'zoom' | 'flip' | 'none',
+    direction: transition.direction,
+    duration: transition.duration
   };
   
   const spotlight = currentStepData.spotlight;
@@ -157,12 +168,16 @@ export const TourGuide: React.FC = () => {
           onPrev={handlePrev}
           onClose={handleClose}
           highlightAnimation={highlightAnimation}
-          transition={transition}
+          transition={supportedTransition}
           spotlight={spotlight}
         />
       </>
     );
   }
+
+  // Map extended position types to supported ones
+  const position = currentStepData.position || "bottom";
+  const supportedPosition = position.includes('-') ? position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left' : position as 'top' | 'right' | 'bottom' | 'left';
 
   return (
     <>
@@ -178,7 +193,7 @@ export const TourGuide: React.FC = () => {
 
       <TourTooltip
         targetElement={targetElement!}
-        position={currentStepData.position || "bottom"}
+        position={supportedPosition}
         title={currentStepData.title}
         content={content}
         stepInfo={`${currentStep + 1} of ${totalSteps}`}
@@ -191,7 +206,7 @@ export const TourGuide: React.FC = () => {
         nextLabel={currentStepData.actions?.next?.label}
         prevLabel={currentStepData.actions?.prev?.label}
         skipLabel={currentStepData.actions?.skip?.label}
-        transition={transition}
+        transition={supportedTransition}
         spotlight={spotlight}
         currentStep={currentStep}
         totalSteps={totalSteps}

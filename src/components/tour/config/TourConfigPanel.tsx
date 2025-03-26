@@ -1,24 +1,13 @@
 
 import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { TourPath, TourStep } from "@/contexts/tour-context";
-import { 
-  PanelLeft, 
-  PlayCircle, 
-  Save, 
-  Plus, 
-  Trash2, 
-  Eye, 
-  Download, 
-  Upload,
-  Wand2
-} from "lucide-react";
+import { TourPath } from "@/contexts/tour-context";
+import { Check, ChevronRight, Play, Plus, Settings, Trash, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface TourConfigPanelProps {
   isOpen: boolean;
@@ -35,487 +24,289 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
   onSave,
   onTest
 }) => {
-  const [paths, setPaths] = useState<TourPath[]>(availablePaths);
-  const [selectedPathIndex, setSelectedPathIndex] = useState<number>(0);
-  const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
-  const [activeTab, setActiveTab] = useState<string>("paths");
-  
-  // Clone paths to prevent direct mutation
-  const currentPaths = [...paths];
-  const currentPath = currentPaths[selectedPathIndex];
-  const currentStep = currentPath?.steps[selectedStepIndex];
-  
+  const [editedPaths, setEditedPaths] = useState<TourPath[]>(availablePaths);
+  const [activeTab, setActiveTab] = useState("paths");
+  const [expandedPath, setExpandedPath] = useState<string | null>(null);
+
+  // Handle saving changes
   const handleSave = () => {
-    onSave(paths);
+    onSave(editedPaths);
   };
-  
-  const handleTestPath = () => {
-    if (currentPath) {
-      onTest(currentPath.id);
+
+  // Toggle path expansion
+  const togglePathExpansion = (pathId: string) => {
+    if (expandedPath === pathId) {
+      setExpandedPath(null);
+    } else {
+      setExpandedPath(pathId);
     }
   };
-  
-  const handlePathUpdate = (field: keyof TourPath, value: any) => {
-    if (!currentPath) return;
-    
-    const updatedPaths = [...paths];
-    updatedPaths[selectedPathIndex] = {
-      ...updatedPaths[selectedPathIndex],
-      [field]: value
-    };
-    
-    setPaths(updatedPaths);
-  };
-  
-  const handleStepUpdate = (field: keyof TourStep, value: any) => {
-    if (!currentPath || !currentStep) return;
-    
-    const updatedPaths = [...paths];
-    const updatedSteps = [...updatedPaths[selectedPathIndex].steps];
-    
-    updatedSteps[selectedStepIndex] = {
-      ...updatedSteps[selectedStepIndex],
-      [field]: value
-    };
-    
-    updatedPaths[selectedPathIndex].steps = updatedSteps;
-    setPaths(updatedPaths);
-  };
-  
-  const handleAddPath = () => {
-    const newId = `tour-path-${Date.now()}`;
-    const newPath: TourPath = {
-      id: newId,
-      name: `New Tour Path ${paths.length + 1}`,
-      steps: [],
-      allowSkip: true,
-      showProgress: true
-    };
-    
-    setPaths([...paths, newPath]);
-    setSelectedPathIndex(paths.length);
-  };
-  
-  const handleDeletePath = () => {
-    if (paths.length <= 1) return;
-    
-    const updatedPaths = paths.filter((_, index) => index !== selectedPathIndex);
-    setPaths(updatedPaths);
-    setSelectedPathIndex(Math.max(0, selectedPathIndex - 1));
-  };
-  
-  const handleAddStep = () => {
-    if (!currentPath) return;
-    
-    const newStep: TourStep = {
-      id: `step-${Date.now()}`,
-      elementId: "placeholder-element",
-      title: "New Step",
-      content: "Enter step content here",
-      position: "bottom"
-    };
-    
-    const updatedPaths = [...paths];
-    updatedPaths[selectedPathIndex].steps = [
-      ...updatedPaths[selectedPathIndex].steps,
-      newStep
-    ];
-    
-    setPaths(updatedPaths);
-    setSelectedStepIndex(currentPath.steps.length);
-  };
-  
-  const handleDeleteStep = () => {
-    if (!currentPath || currentPath.steps.length <= 0) return;
-    
-    const updatedPaths = [...paths];
-    updatedPaths[selectedPathIndex].steps = updatedPaths[selectedPathIndex].steps.filter(
-      (_, index) => index !== selectedStepIndex
+
+  // Update path name
+  const updatePathName = (pathId: string, newName: string) => {
+    setEditedPaths(paths => 
+      paths.map(path => 
+        path.id === pathId ? { ...path, name: newName } : path
+      )
     );
-    
-    setPaths(updatedPaths);
-    setSelectedStepIndex(Math.max(0, selectedStepIndex - 1));
+  };
+
+  // Toggle path options
+  const togglePathOption = (pathId: string, option: keyof Pick<TourPath, 'allowSkip' | 'showProgress' | 'autoStart'>) => {
+    setEditedPaths(paths => 
+      paths.map(path => 
+        path.id === pathId ? { ...path, [option]: !path[option] } : path
+      )
+    );
+  };
+
+  // Test a tour path
+  const handleTestPath = (pathId: string) => {
+    onTest(pathId);
+  };
+
+  // Get step count for a path
+  const getStepCount = (pathId: string) => {
+    const path = editedPaths.find(p => p.id === pathId);
+    return path?.steps.length || 0;
   };
   
-  const exportConfig = () => {
-    const dataStr = JSON.stringify(paths, null, 2);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
-    const downloadLink = document.createElement('a');
-    downloadLink.setAttribute('href', dataUri);
-    downloadLink.setAttribute('download', 'tour-config.json');
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+  // Handle path deletion (this would be a real delete in a production app)
+  const handleDeletePath = (pathId: string) => {
+    // For demo purposes, we'll just show a toast and not actually delete
+    toast.info("In a real app, this would delete the tour path", {
+      description: "This action is disabled in the demo"
+    });
   };
-  
-  const importConfig = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const json = JSON.parse(e.target?.result as string);
-        setPaths(json);
-      } catch (error) {
-        console.error('Failed to parse tour configuration:', error);
-        alert('Invalid configuration file');
-      }
-    };
-    reader.readAsText(file);
-  };
-  
-  // Position options for step configuration
-  const positionOptions = [
-    { value: "top", label: "Top" },
-    { value: "right", label: "Right" },
-    { value: "bottom", label: "Bottom" },
-    { value: "left", label: "Left" },
-    { value: "top-left", label: "Top Left" },
-    { value: "top-right", label: "Top Right" },
-    { value: "bottom-left", label: "Bottom Left" },
-    { value: "bottom-right", label: "Bottom Right" }
-  ];
-  
-  // Animation options
-  const animationOptions = [
-    { value: "fade-in", label: "Fade In" },
-    { value: "scale-in", label: "Scale In" },
-    { value: "slide-in", label: "Slide In" },
-    { value: "float", label: "Float" },
-    { value: "fade-up", label: "Fade Up" },
-    { value: "zoom-in", label: "Zoom In" },
-    { value: "bounce", label: "Bounce" },
-    { value: "pulse", label: "Pulse" },
-    { value: "reveal", label: "Reveal" },
-    { value: "blur-in", label: "Blur In" },
-    { value: "flip", label: "Flip" },
-    { value: "rotate-in", label: "Rotate In" },
-    { value: "swing", label: "Swing" }
-  ];
-  
-  if (!isOpen) return null;
-  
+
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Overlay */}
-      <div 
-        className="fixed inset-0 bg-black/50" 
-        onClick={onClose}
-      />
-      
-      {/* Panel */}
-      <div className="fixed right-0 h-full w-96 bg-background p-6 shadow-lg overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Tour Configuration</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <PanelLeft className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="flex justify-between gap-2 mb-6">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={handleSave}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={handleTestPath}
-            disabled={!currentPath}
-          >
-            <PlayCircle className="h-4 w-4 mr-2" />
-            Test
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="icon"
-            onClick={exportConfig}
-          >
-            <Download className="h-4 w-4" />
-          </Button>
-          
-          <div className="relative">
-            <Button 
-              variant="outline" 
-              size="icon"
-              as="label"
-              htmlFor="import-config"
-            >
-              <Upload className="h-4 w-4" />
-            </Button>
-            <input 
-              id="import-config" 
-              type="file" 
-              accept=".json" 
-              className="sr-only" 
-              onChange={importConfig}
-            />
-          </div>
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            Tour Configuration
+          </DialogTitle>
+        </DialogHeader>
         
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="paths" className="flex-1">Paths</TabsTrigger>
-            <TabsTrigger value="steps" className="flex-1">Steps</TabsTrigger>
-            <TabsTrigger value="preview" className="flex-1">Preview</TabsTrigger>
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="paths">Tour Paths</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="paths">
-            <div className="flex justify-between mb-4">
-              <h3 className="font-medium">Tour Paths</h3>
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleAddPath}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleDeletePath}
-                  disabled={paths.length <= 1}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+          <TabsContent value="paths" className="space-y-4">
+            <div className="bg-secondary/20 rounded-md p-4 text-sm text-muted-foreground">
+              Configure your application tours. Each tour path consists of a sequence of steps that guide users through a specific workflow.
+            </div>
+
+            <div className="space-y-3">
+              {editedPaths.map(path => (
+                <div key={path.id} className="bg-secondary/10 rounded-lg overflow-hidden">
+                  <div 
+                    className="flex items-center justify-between p-3 cursor-pointer"
+                    onClick={() => togglePathExpansion(path.id)}
+                  >
+                    <div className="flex items-center">
+                      <ChevronRight 
+                        className={`mr-2 h-4 w-4 transition-transform ${expandedPath === path.id ? 'rotate-90' : ''}`} 
+                      />
+                      <span className="font-medium">{path.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        ({getStepCount(path.id)} steps)
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTestPath(path.id);
+                        }}
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePath(path.id);
+                        }}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {expandedPath === path.id && (
+                    <div className="p-3 pt-0 border-t border-border/50">
+                      <div className="space-y-3">
+                        <div className="grid gap-2">
+                          <Label htmlFor={`path-name-${path.id}`}>Path Name</Label>
+                          <Input 
+                            id={`path-name-${path.id}`}
+                            value={path.name}
+                            onChange={(e) => updatePathName(path.id, e.target.value)}
+                          />
+                        </div>
+                        
+                        <div className="flex items-center space-x-4">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={path.allowSkip} 
+                              onChange={() => togglePathOption(path.id, 'allowSkip')}
+                              className="rounded"
+                            />
+                            <span className="text-sm">Allow Skip</span>
+                          </label>
+                          
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={path.showProgress} 
+                              onChange={() => togglePathOption(path.id, 'showProgress')}
+                              className="rounded"
+                            />
+                            <span className="text-sm">Show Progress</span>
+                          </label>
+                          
+                          <label className="flex items-center space-x-2 cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              checked={path.autoStart} 
+                              onChange={() => togglePathOption(path.id, 'autoStart')}
+                              className="rounded"
+                            />
+                            <span className="text-sm">Auto Start</span>
+                          </label>
+                        </div>
+                        
+                        <div className="pt-2">
+                          <Label htmlFor={`steps-${path.id}`} className="mb-2 block">Steps</Label>
+                          <div className="bg-background border border-border rounded-md p-2 max-h-[200px] overflow-y-auto">
+                            {path.steps.length === 0 ? (
+                              <div className="text-center py-4 text-muted-foreground text-sm">
+                                No steps defined yet
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {path.steps.map((step, index) => (
+                                  <div 
+                                    key={step.id} 
+                                    className="flex items-center justify-between p-2 bg-secondary/10 rounded"
+                                  >
+                                    <div className="flex items-center">
+                                      <span className="text-xs font-medium bg-secondary/30 px-1.5 py-0.5 rounded mr-2">
+                                        {index + 1}
+                                      </span>
+                                      <span className="font-medium">{step.title}</span>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {step.elementId}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button variant="outline" size="sm" className="mt-2 text-xs">
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Step
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
             
-            <div className="space-y-4">
-              <div className="flex gap-2">
-                <Select 
-                  value={selectedPathIndex.toString()}
-                  onValueChange={(value) => setSelectedPathIndex(parseInt(value))}
-                >
-                  {paths.map((path, index) => (
-                    <option key={path.id} value={index.toString()}>
-                      {path.name}
-                    </option>
-                  ))}
-                </Select>
+            <Button variant="outline" size="sm" className="w-full text-xs">
+              <Plus className="h-3 w-3 mr-1" />
+              Add New Tour Path
+            </Button>
+          </TabsContent>
+          
+          <TabsContent value="settings" className="space-y-4">
+            <div className="bg-secondary/20 rounded-md p-4 text-sm text-muted-foreground">
+              Configure global tour settings and customize the appearance and behavior of all tours.
+            </div>
+            
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="tour-highlight-color">Highlight Color</Label>
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded overflow-hidden border">
+                    <input
+                      type="color"
+                      id="tour-highlight-color"
+                      defaultValue="#4f46e5"
+                      className="h-10 w-10 -m-1"
+                    />
+                  </div>
+                  <Input 
+                    id="tour-highlight-color-hex"
+                    defaultValue="#4f46e5"
+                    className="font-mono"
+                  />
+                </div>
               </div>
               
-              {currentPath && (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="path-name">Path Name</Label>
-                    <Input 
-                      id="path-name" 
-                      value={currentPath.name} 
-                      onChange={(e) => handlePathUpdate('name', e.target.value)}
+              <div className="grid gap-2">
+                <Label htmlFor="tooltip-theme">Tooltip Theme</Label>
+                <select
+                  id="tooltip-theme"
+                  className="w-full p-2 rounded-md border"
+                  defaultValue="auto"
+                >
+                  <option value="auto">Auto (Follow System)</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label>Accessibility</Label>
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      defaultChecked
+                      className="rounded"
                     />
-                  </div>
+                    <span className="text-sm">Screen Reader Support</span>
+                  </label>
                   
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="allow-skip">Allow Skip</Label>
-                    <Switch 
-                      id="allow-skip" 
-                      checked={currentPath.allowSkip || false}
-                      onCheckedChange={(checked) => handlePathUpdate('allowSkip', checked)}
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      defaultChecked
+                      className="rounded"
                     />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="show-progress">Show Progress</Label>
-                    <Switch 
-                      id="show-progress" 
-                      checked={currentPath.showProgress || false}
-                      onCheckedChange={(checked) => handlePathUpdate('showProgress', checked)}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="auto-start">Auto Start</Label>
-                    <Switch 
-                      id="auto-start" 
-                      checked={currentPath.autoStart || false}
-                      onCheckedChange={(checked) => handlePathUpdate('autoStart', checked)}
-                    />
-                  </div>
+                    <span className="text-sm">Keyboard Navigation</span>
+                  </label>
                 </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="steps">
-            <div className="flex justify-between mb-4">
-              <h3 className="font-medium">Steps</h3>
-              <div className="flex gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleAddStep}
-                  disabled={!currentPath}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleDeleteStep}
-                  disabled={!currentPath || currentPath.steps.length <= 0}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
               </div>
             </div>
-            
-            {currentPath && (
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Select 
-                    value={selectedStepIndex.toString()}
-                    onValueChange={(value) => setSelectedStepIndex(parseInt(value))}
-                    disabled={currentPath.steps.length === 0}
-                  >
-                    {currentPath.steps.map((step, index) => (
-                      <option key={step.id} value={index.toString()}>
-                        {step.title || `Step ${index + 1}`}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                
-                {currentStep && (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="step-title">Title</Label>
-                      <Input 
-                        id="step-title" 
-                        value={currentStep.title} 
-                        onChange={(e) => handleStepUpdate('title', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="element-id">Element ID</Label>
-                      <Input 
-                        id="element-id" 
-                        value={currentStep.elementId} 
-                        onChange={(e) => handleStepUpdate('elementId', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="step-content">Content</Label>
-                      <textarea 
-                        id="step-content" 
-                        className="min-h-32 w-full border rounded p-2"
-                        value={currentStep.content} 
-                        onChange={(e) => handleStepUpdate('content', e.target.value)}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="step-position">Position</Label>
-                      <Select 
-                        value={currentStep.position || "bottom"}
-                        onValueChange={(value) => handleStepUpdate('position', value)}
-                      >
-                        {positionOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="step-animation">Animation</Label>
-                      <Select 
-                        value={(currentStep.animation?.entry || "fade-in")}
-                        onValueChange={(value) => handleStepUpdate('animation', { 
-                          ...currentStep.animation,
-                          entry: value 
-                        })}
-                      >
-                        {animationOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="is-optional">Optional Step</Label>
-                      <Switch 
-                        id="is-optional" 
-                        checked={currentStep.isOptional || false}
-                        onCheckedChange={(checked) => handleStepUpdate('isOptional', checked)}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="preview">
-            {currentPath && currentStep ? (
-              <div className="space-y-6">
-                <div className="border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-semibold mb-1">{currentStep.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{currentStep.content}</p>
-                  
-                  <div className="flex gap-2">
-                    {selectedStepIndex > 0 && (
-                      <Button size="sm" variant="outline">Previous</Button>
-                    )}
-                    
-                    <Button size="sm">
-                      {selectedStepIndex < currentPath.steps.length - 1 ? "Next" : "Finish"}
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Preview Settings</p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Theme</span>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Light</Button>
-                      <Button size="sm" variant="outline">Dark</Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Device</span>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Desktop</Button>
-                      <Button size="sm" variant="outline">Mobile</Button>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleTestPath}
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  Live Preview
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No tour step selected to preview</p>
-              </div>
-            )}
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+        
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button variant="outline" onClick={onClose}>
+            <X className="h-4 w-4 mr-2" />
+            Cancel
+          </Button>
+          <Button onClick={handleSave}>
+            <Check className="h-4 w-4 mr-2" />
+            Save Changes
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

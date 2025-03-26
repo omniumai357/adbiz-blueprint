@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { TourStep } from "@/contexts/tour-context";
 import { getBestTooltipPosition } from "@/lib/utils/dom-utils";
@@ -45,7 +46,13 @@ export function useTourElementFinder(
           
           // Determine optimal position based on viewport
           const preferredPosition = currentStepData.position || 'bottom';
-          const bestPosition = getBestTooltipPosition(element, preferredPosition);
+          
+          // Handle extended position types by converting to supported ones
+          const basePosition = preferredPosition.includes('-') 
+            ? preferredPosition.split('-')[0] as 'top' | 'right' | 'bottom' | 'left'
+            : preferredPosition as 'top' | 'right' | 'bottom' | 'left';
+            
+          const bestPosition = getBestTooltipPosition(element, basePosition);
           setOptimizedPosition(bestPosition);
           
           // Clear interval since element was found
@@ -90,7 +97,9 @@ export function useTourElementFinder(
 
   return { 
     targetElement,
-    optimizedPosition: optimizedPosition || (currentStepData?.position || 'bottom'),
+    optimizedPosition: optimizedPosition || (currentStepData?.position?.includes('-') 
+      ? currentStepData.position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left'
+      : (currentStepData?.position || 'bottom') as 'top' | 'right' | 'bottom' | 'left'),
     elementFound: targetElement !== null,
     isSearching: retryCount > 0 && retryCount < MAX_RETRIES && targetElement === null
   };
