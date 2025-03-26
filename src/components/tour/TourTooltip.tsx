@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, ChevronLeft, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 type Position = "top" | "right" | "bottom" | "left";
 
@@ -37,6 +38,8 @@ interface TourTooltipProps {
     pulseEffect?: boolean;
     fadeBackground?: boolean;
   };
+  currentStep: number;
+  totalSteps: number;
 }
 
 export const TourTooltip: React.FC<TourTooltipProps> = ({
@@ -55,11 +58,14 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   prevLabel,
   skipLabel,
   transition,
-  spotlight
+  spotlight,
+  currentStep,
+  totalSteps
 }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
   const [visible, setVisible] = useState(false);
+  const [progressValue, setProgressValue] = useState(0);
 
   useEffect(() => {
     // Delay showing the tooltip to allow for animation
@@ -121,6 +127,9 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
 
     calculatePosition();
     
+    // Calculate progress percentage
+    setProgressValue(((currentStep + 1) / totalSteps) * 100);
+    
     // Recalculate on window resize and scroll
     window.addEventListener('resize', calculatePosition);
     window.addEventListener('scroll', calculatePosition);
@@ -130,7 +139,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
       window.removeEventListener('scroll', calculatePosition);
       clearTimeout(timer);
     };
-  }, [targetElement, position]);
+  }, [targetElement, position, currentStep, totalSteps]);
 
   const tooltipStyles = {
     position: 'absolute',
@@ -193,6 +202,27 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     };
     
     return transitionMappings[type] || "";
+  };
+  
+  // Render step dots to show progress
+  const renderStepDots = () => {
+    return (
+      <div className="flex justify-center space-x-1 mt-2">
+        {Array.from({ length: totalSteps }).map((_, index) => (
+          <div 
+            key={index}
+            className={cn(
+              "h-2 w-2 rounded-full transition-all duration-300",
+              index === currentStep 
+                ? "bg-primary scale-125" 
+                : index < currentStep 
+                  ? "bg-primary/60" 
+                  : "bg-gray-300"
+            )}
+          />
+        ))}
+      </div>
+    );
   };
   
   // Render media content if provided with enhanced animations
@@ -296,6 +326,12 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
         </div>
         
+        {/* Progress bar */}
+        <Progress value={progressValue} className="h-1 mb-2" />
+        
+        {/* Step dots */}
+        {totalSteps <= 8 && renderStepDots()}
+        
         <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-muted-foreground">{stepInfo}</span>
           <div className="flex gap-2">
@@ -315,7 +351,11 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
                 {prevLabel || "Prev"}
               </Button>
             )}
-            <Button size="sm" onClick={onNext} className="h-8">
+            <Button 
+              size="sm" 
+              onClick={onNext} 
+              className={cn("h-8", isLastStep ? "" : "animate-pulse-subtle")}
+            >
               {isLastStep ? 
                 (nextLabel || "Finish") : 
                 (nextLabel || "Next")}

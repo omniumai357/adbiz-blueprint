@@ -6,6 +6,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerFooter } from "@/components/
 import { TourOverlay } from "./TourOverlay";
 import { TourStep } from "@/contexts/tour-context";
 import { cn } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
 
 interface TourMobileViewProps {
   currentStepData: TourStep;
@@ -46,6 +47,12 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   // Handle swipe gestures for mobile
   const handleTouchStart = React.useRef<number | null>(null);
   const handleTouchMove = React.useRef<number | null>(null);
+  const [progressValue, setProgressValue] = React.useState(0);
+  
+  React.useEffect(() => {
+    // Calculate progress percentage
+    setProgressValue(((currentStep + 1) / totalSteps) * 100);
+  }, [currentStep, totalSteps]);
   
   const onTouchStart = (e: React.TouchEvent) => {
     handleTouchStart.current = e.targetTouches[0].clientX;
@@ -105,6 +112,27 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
     return mappings[type] || "animate-fade-in";
   };
 
+  // Render step dots to show progress
+  const renderStepDots = () => {
+    return (
+      <div className="flex justify-center space-x-1 mt-2">
+        {Array.from({ length: totalSteps }).map((_, index) => (
+          <div 
+            key={index}
+            className={cn(
+              "h-2 w-2 rounded-full transition-all duration-300",
+              index === currentStep 
+                ? "bg-primary scale-125" 
+                : index < currentStep 
+                  ? "bg-primary/60" 
+                  : "bg-gray-300"
+            )}
+          />
+        ))}
+      </div>
+    );
+  };
+
   // Render media content if provided
   const renderMedia = () => {
     const media = currentStepData.media;
@@ -157,6 +185,18 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   const prevLabel = currentStepData.actions?.prev?.label;
   const skipLabel = currentStepData.actions?.skip?.label;
 
+  // Ensure target element is scrolled into view with a smooth animation when available
+  React.useEffect(() => {
+    if (targetElement && targetElement.scrollIntoView) {
+      setTimeout(() => {
+        targetElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center'
+        });
+      }, 100);
+    }
+  }, [targetElement, currentStep]);
+
   return (
     <>
       <TourOverlay 
@@ -183,9 +223,15 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
+            {/* Progress bar */}
+            <Progress value={progressValue} className="h-1 mb-4" />
+            
+            {/* Step dots for smaller tours */}
+            {totalSteps <= 8 && renderStepDots()}
+            
             {renderMedia()}
             
-            <p className="leading-relaxed">{content}</p>
+            <p className="leading-relaxed mt-3">{content}</p>
             
             <div className="flex justify-center mt-4 text-sm text-muted-foreground font-medium">
               <span className="inline-flex items-center">
@@ -233,7 +279,11 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
                   {skipLabel || "Skip"}
                 </Button>
               )}
-              <Button size="sm" onClick={onNext} className="animate-pulse-subtle">
+              <Button 
+                size="sm" 
+                onClick={onNext} 
+                className={cn("animate-pulse-subtle", isLastStep ? "bg-green-500 hover:bg-green-600" : "")}
+              >
                 {isLastStep ? 
                   (nextLabel || "Finish") : 
                   (nextLabel || "Next")}

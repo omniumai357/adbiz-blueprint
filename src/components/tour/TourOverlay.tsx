@@ -12,6 +12,8 @@ interface TourOverlayProps {
     fadeBackground?: boolean;
   };
   transition?: {
+    type?: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
     duration?: number;
   };
 }
@@ -29,11 +31,17 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
     height: 0,
   });
   const [visible, setVisible] = useState(false);
+  const [animationState, setAnimationState] = useState("entering");
 
   useEffect(() => {
     if (targetElement) {
+      // Set animation state when target changes
+      setAnimationState("entering");
       // Delay showing the overlay to allow for animation
-      const timer = setTimeout(() => setVisible(true), 50);
+      const timer = setTimeout(() => {
+        setVisible(true);
+        setAnimationState("visible");
+      }, 50);
       
       const updateDimensions = () => {
         const rect = targetElement.getBoundingClientRect();
@@ -62,6 +70,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
         window.removeEventListener('resize', updateDimensions);
         window.removeEventListener('scroll', updateDimensions);
         clearTimeout(timer);
+        setAnimationState("exiting");
       };
     }
   }, [targetElement]);
@@ -88,6 +97,14 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
     };
   };
 
+  // Get the appropriate transition style
+  const getTransitionStyle = () => {
+    const duration = transition?.duration || 300;
+    return {
+      transition: `opacity ${duration}ms ease-in-out, box-shadow ${duration}ms ease-in-out, transform ${duration}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+    };
+  };
+
   // Get the appropriate animation for the cutout area
   const getCutoutAnimation = () => {
     switch (animation) {
@@ -108,21 +125,37 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
       case "highlight-pulse":
         return "border-primary shadow-[0_0_12px_3px_rgba(139,92,246,0.6)] animate-pulse";
       case "focus-ring":
-        return "border-primary shadow-[0_0_0_4px_rgba(139,92,246,0.3)]";
+        return "border-primary shadow-[0_0_0_4px_rgba(139,92,246,0.3)] scale-105";
+      case "zoom-pulse":
+        return "border-primary shadow-[0_0_12px_3px_rgba(139,92,246,0.6)] animate-[scale-pulse_1.5s_ease-in-out_infinite]";
       default:
         return "animate-pulse border-primary";
+    }
+  };
+  
+  // Get animation class based on current animation state
+  const getAnimationClass = () => {
+    switch (animationState) {
+      case "entering":
+        return "animate-fade-in";
+      case "visible":
+        return "";
+      case "exiting":
+        return "animate-fade-out";
+      default:
+        return "";
     }
   };
 
   // Enhanced overlay with improved animations and transitions
   return (
     <div 
-      className="fixed inset-0 z-50 pointer-events-none animate-fade-in"
+      className={cn("fixed inset-0 z-50 pointer-events-none", getAnimationClass())}
       style={{ 
         backdropFilter: 'brightness(60%)', 
         zIndex: 9998,
         opacity: visible ? 1 : 0,
-        transition: `opacity ${transition?.duration || 300}ms ease-in-out`,
+        ...getTransitionStyle(),
         ...getSpotlightStyles()
       }}
     >
@@ -139,7 +172,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
           height: dimensions.height,
           borderRadius: '4px',
           boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)',
-          transition: `all ${transition?.duration || 300}ms ease-in-out`,
+          ...getTransitionStyle(),
         }}
       />
     </div>

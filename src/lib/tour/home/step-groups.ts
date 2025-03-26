@@ -6,7 +6,8 @@ import {
   animatedStep,
   dynamicContentStep,
   roleRestrictedStep,
-  stepInGroup
+  stepInGroup,
+  transitionStep
 } from '@/lib/tour/index';
 
 /**
@@ -29,7 +30,11 @@ export const introductionStepGroup = createStepGroup(
         // Apply stepInGroup first
         const withGroup = stepInGroup('home-introduction')(step);
         // Then apply animation and return the result
-        return animatedStep()(withGroup);
+        return animatedStep({
+          entry: "fade-in",
+          highlight: "pulse",
+          transition: "slide"
+        })(withGroup);
       }
     ),
     
@@ -41,7 +46,14 @@ export const introductionStepGroup = createStepGroup(
         'Browse through our service categories to find the perfect fit for your business needs.',
         'bottom'
       ),
-      step => stepInGroup('home-introduction')(step)
+      step => {
+        const withGroup = stepInGroup('home-introduction')(step);
+        return transitionStep({
+          type: "slide",
+          direction: "left",
+          duration: 400
+        })(withGroup);
+      }
     ),
   ],
   'Basic introduction steps for all users to learn about the platform',
@@ -67,7 +79,13 @@ export const featureHighlightsStepGroup = createStepGroup(
         'Read what our satisfied customers have to say about our services.',
         'top'
       ),
-      step => stepInGroup('home-features')(step)
+      step => {
+        const withGroup = stepInGroup('home-features')(step);
+        return transitionStep({
+          type: "fade",
+          duration: 300
+        })(withGroup);
+      }
     ),
     
     enhanceStep(
@@ -78,7 +96,13 @@ export const featureHighlightsStepGroup = createStepGroup(
         'Find answers to common questions about our services and platform.',
         'top'
       ),
-      step => stepInGroup('home-features')(step)
+      step => {
+        const withGroup = stepInGroup('home-features')(step);
+        return transitionStep({
+          type: "zoom",
+          duration: 350
+        })(withGroup);
+      }
     ),
   ],
   'Highlights of key platform features for all users',

@@ -3,6 +3,7 @@ import React from "react";
 import { TourOverlay } from "./TourOverlay";
 import { TourTooltip } from "./TourTooltip";
 import { TourStep } from "@/contexts/tour-context";
+import { scrollToElement } from "@/lib/utils/dom-utils";
 
 interface TourDesktopViewProps {
   currentStepData: TourStep;
@@ -48,6 +49,23 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
   const nextLabel = currentStepData.actions?.next?.label;
   const prevLabel = currentStepData.actions?.prev?.label;
   const skipLabel = currentStepData.actions?.skip?.label;
+  
+  // Ensure target element is scrolled into view with a smooth animation
+  React.useEffect(() => {
+    if (targetElement && targetElement.id) {
+      // Scroll element into view with smooth animation and offset
+      setTimeout(() => {
+        scrollToElement(targetElement.id, 'smooth');
+      }, 100);
+    }
+  }, [targetElement, currentStep]);
+
+  // Default transition if none is provided
+  const defaultTransition = {
+    type: transition?.type || "fade",
+    direction: transition?.direction || "right",
+    duration: transition?.duration || 300
+  };
 
   return (
     <>
@@ -55,7 +73,7 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
         targetElement={targetElement} 
         animation={highlightAnimation}
         spotlight={spotlight}
-        transition={transition}
+        transition={defaultTransition}
       />
       {targetElement && (
         <TourTooltip
@@ -73,8 +91,10 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
           skipLabel={skipLabel}
           isLastStep={isLastStep}
           animation={entryAnimation}
-          transition={transition}
+          transition={defaultTransition}
           spotlight={spotlight}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
         />
       )}
     </>
