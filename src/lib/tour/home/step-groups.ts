@@ -24,6 +24,7 @@ export const introductionStepGroup = createStepGroup(
         'This is our homepage where you can learn about our services and get started with our platform.',
         'bottom'
       ),
+      // Chain enhancers properly with composition
       step => animatedStep()(stepInGroup('home-introduction')(step))
     ),
     
