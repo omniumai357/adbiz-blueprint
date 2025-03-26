@@ -8,7 +8,7 @@ import {
   trackStepSkipped, 
   trackStepInteraction 
 } from './analytics/event-tracker';
-import { TourAnalyticsEvent, TourAnalyticsData } from './analytics/types';
+import type { TourAnalyticsEvent, TourAnalyticsData } from './analytics/types';
 import { 
   loadAnalyticsData as loadData, 
   clearAnalyticsData as clearData 
@@ -55,5 +55,5 @@ export function useTourAnalytics() {
   };
 }
 
-// Re-export types for convenience
-export { TourAnalyticsEvent, TourAnalyticsData };
+// Re-export types for convenience - using explicit type exports to fix the TS1205 error
+export type { TourAnalyticsEvent, TourAnalyticsData };

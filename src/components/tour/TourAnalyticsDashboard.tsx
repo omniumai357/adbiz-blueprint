@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,19 +15,16 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { TourAnalyticsData } from "@/hooks/tour/useTourAnalytics";
+import type { TourAnalyticsData } from "@/hooks/tour/analytics/types";
 
 export const TourAnalyticsDashboard: React.FC = () => {
   const [analyticsData, setAnalyticsData] = useState<TourAnalyticsData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Colors for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
   useEffect(() => {
-    // In a real implementation, this would fetch data from an API
-    // For now, we'll use localStorage for demo purposes
     try {
       const storedData = localStorage.getItem('tourAnalytics');
       if (storedData) {
@@ -49,7 +45,6 @@ export const TourAnalyticsDashboard: React.FC = () => {
     }
   }, [toast]);
 
-  // Prepare data for the completion rate chart
   const getCompletionRateData = () => {
     const tourStarts = analyticsData.filter(item => item.event === 'tour_started').length;
     const tourCompletions = analyticsData.filter(item => item.event === 'tour_completed').length;
@@ -62,7 +57,6 @@ export const TourAnalyticsDashboard: React.FC = () => {
     ];
   };
 
-  // Prepare data for the step view chart
   const getStepViewData = () => {
     const stepViews = analyticsData.filter(item => item.event === 'step_viewed');
     const stepCounts: Record<string, number> = {};
@@ -79,7 +73,6 @@ export const TourAnalyticsDashboard: React.FC = () => {
     }));
   };
 
-  // Prepare data for the drop-off rate chart
   const getDropOffData = () => {
     const tourPaths = [...new Set(analyticsData
       .filter(item => item.event === 'tour_started')
@@ -105,7 +98,6 @@ export const TourAnalyticsDashboard: React.FC = () => {
       });
     });
     
-    // Format for the chart
     const result: { step: number; [key: string]: number | string }[] = [];
     
     tourPaths.forEach(pathId => {

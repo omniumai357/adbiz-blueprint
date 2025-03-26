@@ -1,5 +1,5 @@
 
-import { TourAnalyticsData } from './types';
+import type { TourAnalyticsData } from './types';
 import { loadAnalyticsData, clearAnalyticsData } from './storage-service';
 
 /**

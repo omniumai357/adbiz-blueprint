@@ -7,7 +7,7 @@ import {
   exportAnalyticsAsCsv, 
   exportAnalyticsAsJson 
 } from '@/hooks/tour/analytics/export-utils';
-import { TourAnalyticsData } from '@/hooks/tour/analytics/types';
+import type { TourAnalyticsData } from '@/hooks/tour/analytics/types';
 
 // Re-export the functions for backward compatibility
 export { 

@@ -13,7 +13,7 @@ export type TourAnalyticsEvent =
 /**
  * Analytics data for tour events
  */
-export interface TourAnalyticsData {
+export type TourAnalyticsData = {
   event: TourAnalyticsEvent;
   pathId: string;
   pathName: string;
@@ -24,4 +24,4 @@ export interface TourAnalyticsData {
   userType?: string;
   timestamp: number;
   metadata?: Record<string, any>;
-}
+};
