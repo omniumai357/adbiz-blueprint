@@ -3,6 +3,19 @@ import { useState, useCallback, useEffect, KeyboardEvent } from 'react';
 import { useToggle } from '@/patterns/hooks/useToggle';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useTourAnalytics } from './useTourAnalytics';
+import { loadTourPathsForRoute } from './controller/tour-loader';
+import { 
+  saveTourProgress, 
+  loadTourProgress, 
+  clearTourProgress,
+  markTourCompleted
+} from './controller/tour-persistence';
+import { 
+  getVisibleSteps, 
+  getCurrentStepData, 
+  findTourPathById 
+} from './controller/step-processor';
+import { handleKeyNavigation } from './controller/key-navigation';
 
 /**
  * Custom hook for managing tour state and navigation
@@ -40,82 +53,48 @@ export function useTourController(
   
   // Load path-specific tours based on current route
   useEffect(() => {
-    const loadTourPaths = async () => {
-      const pathname = currentPathname;
-      
-      // Load path-specific tours
-      if (pathname.includes("/services")) {
-        const { servicesTourPath } = await import("@/lib/tour/services-tour");
-        setTourPaths([servicesTourPath]);
-      } else if (pathname === "/") {
-        const { homeTourPath } = await import("@/lib/tour/home-tour");
-        setTourPaths([homeTourPath]);
-      } else if (pathname.includes("/contact")) {
-        const { contactTourPath } = await import("@/lib/tour/contact-tour");
-        setTourPaths([contactTourPath]);
-      } else if (pathname.includes("/checkout")) {
-        const { checkoutTourPath } = await import("@/lib/tour/checkout-tour");
-        setTourPaths([checkoutTourPath]);
-      } else {
-        // Default tour for any other page
-        const { defaultTourPath } = await import("@/lib/tour/default-tour");
-        setTourPaths([defaultTourPath]);
-      }
+    const fetchTourPaths = async () => {
+      const paths = await loadTourPathsForRoute(currentPathname);
+      setTourPaths(paths);
     };
 
-    loadTourPaths();
+    fetchTourPaths();
   }, [currentPathname]);
 
   // Save and restore tour progress
   useEffect(() => {
-    const savedProgress = localStorage.getItem("tourProgress");
-    if (savedProgress) {
-      try {
-        const { pathId, step, active } = JSON.parse(savedProgress);
-        if (active && tourPaths.some(path => path.id === pathId)) {
-          setCurrentPath(pathId);
-          setCurrentStep(step);
-          toggleActive(true);
-        }
-      } catch (error) {
-        console.error("Error restoring tour progress:", error);
+    const progress = loadTourProgress();
+    if (progress && progress.active) {
+      const { pathId, step } = progress;
+      if (tourPaths.some(path => path.id === pathId)) {
+        setCurrentPath(pathId);
+        setCurrentStep(step);
+        toggleActive(true);
       }
     }
   }, [tourPaths, toggleActive]);
 
   useEffect(() => {
     if (isActive && currentPath) {
-      localStorage.setItem(
-        "tourProgress",
-        JSON.stringify({
-          pathId: currentPath,
-          step: currentStep,
-          active: isActive,
-        })
-      );
+      saveTourProgress(currentPath, currentStep, isActive);
     }
   }, [isActive, currentPath, currentStep]);
 
   // Filter steps based on conditional logic
   useEffect(() => {
-    const currentPathData = getCurrentPathData();
+    const currentPathData = findTourPathById(tourPaths, currentPath);
     if (currentPathData) {
-      const filteredSteps = currentPathData.steps.filter(step => {
-        // If the step has a condition function, evaluate it
-        if (step.condition && typeof step.condition === 'function') {
-          return step.condition();
-        }
-        // If no condition is specified, always show the step
-        return true;
-      });
-      setVisibleSteps(filteredSteps);
+      const filtered = getVisibleSteps(currentPathData);
+      setVisibleSteps(filtered);
     }
   }, [currentPath, tourPaths]);
 
+  // Get the current path data
   const getCurrentPathData = useCallback((): TourPath | undefined => {
-    return tourPaths.find((path) => path.id === currentPath);
+    return findTourPathById(tourPaths, currentPath);
   }, [tourPaths, currentPath]);
 
+  // Start a tour
   const startTour = useCallback((pathId: string) => {
     const pathData = tourPaths.find((path) => path.id === pathId);
     const pathExists = !!pathData;
@@ -130,6 +109,7 @@ export function useTourController(
     }
   }, [tourPaths, toggleActive, analytics, userId, userType]);
 
+  // End a tour
   const endTour = useCallback(() => {
     const pathData = getCurrentPathData();
     
@@ -139,15 +119,18 @@ export function useTourController(
       
       if (wasCompleted) {
         analytics.trackTourCompleted(pathData, userId, userType);
+        // Mark the tour as completed
+        markTourCompleted(pathData.id);
       } else {
         analytics.trackTourAbandoned(pathData, currentStep, userId, userType);
       }
     }
     
     toggleActive(false);
-    localStorage.removeItem("tourProgress");
+    clearTourProgress();
   }, [toggleActive, getCurrentPathData, currentStep, visibleSteps.length, analytics, userId, userType]);
 
+  // Go to next step
   const nextStep = useCallback(() => {
     const pathData = getCurrentPathData();
     
@@ -167,6 +150,7 @@ export function useTourController(
     }
   }, [visibleSteps, currentStep, endTour, getCurrentPathData, analytics, userId, userType]);
 
+  // Go to previous step
   const prevStep = useCallback(() => {
     const pathData = getCurrentPathData();
     
@@ -187,13 +171,13 @@ export function useTourController(
     }
   }, [currentStep, getCurrentPathData, visibleSteps, analytics, userId, userType]);
 
+  // Go to specific step
   const goToStep = useCallback((stepIndex: number) => {
     const pathData = getCurrentPathData();
     
     if (pathData && visibleSteps.length > 0 && stepIndex >= 0 && stepIndex < visibleSteps.length) {
       // Track jumping to a specific step
       const currentStepData = visibleSteps[currentStep];
-      const targetStepData = visibleSteps[stepIndex];
       
       analytics.trackStepInteraction(
         pathData, 
@@ -209,56 +193,26 @@ export function useTourController(
     }
   }, [visibleSteps, currentStep, getCurrentPathData, analytics, userId, userType]);
 
-  const handleKeyNavigation = useCallback((event: KeyboardEvent) => {
-    if (!isActive) return;
-    
-    const pathData = getCurrentPathData();
-    if (!pathData) return;
-    
-    const currentStepData = visibleSteps[currentStep];
-    if (!currentStepData) return;
-    
-    switch(event.key) {
-      case 'ArrowRight':
-      case 'Enter':
-        analytics.trackStepInteraction(
-          pathData,
-          currentStepData,
-          currentStep,
-          `key_navigation_${event.key}`,
-          userId,
-          userType
-        );
-        nextStep();
-        break;
-      case 'ArrowLeft':
-        analytics.trackStepInteraction(
-          pathData,
-          currentStepData,
-          currentStep,
-          `key_navigation_${event.key}`,
-          userId,
-          userType
-        );
-        prevStep();
-        break;
-      case 'Escape':
-        analytics.trackStepInteraction(
-          pathData,
-          currentStepData,
-          currentStep,
-          `key_navigation_${event.key}`,
-          userId,
-          userType
-        );
-        endTour();
-        break;
-      default:
-        break;
-    }
-  }, [isActive, nextStep, prevStep, endTour, getCurrentPathData, visibleSteps, currentStep, analytics, userId, userType]);
+  // Handle keyboard navigation
+  const keyboardNavigationHandler = useCallback((event: KeyboardEvent) => {
+    handleKeyNavigation(event, {
+      isActive,
+      currentPath,
+      tourPaths,
+      currentStep,
+      visibleSteps,
+      userId,
+      userType,
+      handlers: {
+        nextStep,
+        prevStep,
+        endTour,
+        trackInteraction: analytics.trackStepInteraction
+      }
+    });
+  }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction]);
 
-  // Track when a step is viewed
+  // Track step views
   useEffect(() => {
     if (isActive && currentPath) {
       const pathData = getCurrentPathData();
@@ -270,11 +224,13 @@ export function useTourController(
     }
   }, [isActive, currentPath, currentStep, visibleSteps, getCurrentPathData, analytics, userId, userType]);
 
-  const currentStepData = useCallback((): TourStep | null => {
-    return visibleSteps[currentStep] || null;
+  // Get current step data
+  const getStepData = useCallback((): TourStep | null => {
+    return getCurrentStepData(visibleSteps, currentStep);
   }, [visibleSteps, currentStep]);
 
-  const totalSteps = useCallback((): number => {
+  // Get total steps count
+  const getTotalSteps = useCallback((): number => {
     return visibleSteps.length || 0;
   }, [visibleSteps]);
 
@@ -282,15 +238,15 @@ export function useTourController(
     isActive,
     currentPath,
     currentStep,
-    totalSteps: totalSteps(),
+    totalSteps: getTotalSteps(),
     startTour,
     endTour,
     nextStep,
     prevStep,
     goToStep,
-    currentStepData: currentStepData(),
+    currentStepData: getStepData(),
     availablePaths: tourPaths,
-    handleKeyNavigation,
+    handleKeyNavigation: keyboardNavigationHandler,
     visibleSteps,
   };
 }
