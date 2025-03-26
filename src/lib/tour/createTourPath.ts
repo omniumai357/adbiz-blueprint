@@ -61,101 +61,100 @@ export function createStep(
 /**
  * Creates a conditional step that only shows when the condition is true
  * 
- * @param step The tour step to make conditional
  * @param condition Function that returns true if step should be shown
- * @returns A configured TourStep with condition
+ * @returns A function that enhances the step with a condition
  */
 export function conditionalStep(
-  step: TourStep,
   condition: ConditionEvaluator
-): TourStep {
-  return {
-    ...step,
-    condition
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      condition
+    };
   };
 }
 
 /**
  * Creates a role-restricted step that only shows for specific user roles
  * 
- * @param step The tour step to restrict by role
  * @param roles Array of user roles that can see this step
- * @returns A configured TourStep with role restrictions
+ * @returns A function that enhances the step with role restrictions
  */
 export function roleRestrictedStep(
-  step: TourStep,
   roles: StepUserRole[]
-): TourStep {
-  return {
-    ...step,
-    userRoles: roles
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      userRoles: roles
+    };
   };
 }
 
 /**
  * Adds animation effects to a tour step
  * 
- * @param step The tour step to enhance with animations
  * @param animation Animation configuration objects
- * @returns A configured TourStep with animations
+ * @returns A function that enhances the step with animations
  */
 export function animatedStep(
-  step: TourStep,
   animation: {
     entry?: string;
     exit?: string;
     highlight?: string;
-  }
-): TourStep {
-  return {
-    ...step,
-    animation
+  } = { entry: "fade-in", highlight: "pulse" }
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      animation
+    };
   };
 }
 
 /**
  * Creates an optional step that can be skipped
  * 
- * @param step The tour step to make optional
- * @returns A configured TourStep marked as optional
+ * @returns A function that enhances the step, marking it as optional
  */
-export function optionalStep(step: TourStep): TourStep {
-  return {
-    ...step,
-    isOptional: true
+export function optionalStep(): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      isOptional: true
+    };
   };
 }
 
 /**
  * Adds media content to a tour step
  * 
- * @param step The tour step to enhance with media
  * @param media Media configuration object
- * @returns A configured TourStep with media
+ * @returns A function that enhances the step with media
  */
 export function mediaEnhancedStep(
-  step: TourStep,
   media: {
     type: "image" | "video" | "gif";
     url: string;
     alt?: string;
   }
-): TourStep {
-  return {
-    ...step,
-    media
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      media
+    };
   };
 }
 
 /**
  * Adds custom button actions to a tour step
  * 
- * @param step The tour step to enhance with custom actions
  * @param actions Custom action configuration
- * @returns A configured TourStep with custom actions
+ * @returns A function that enhances the step with custom actions
  */
 export function actionEnhancedStep(
-  step: TourStep,
   actions: {
     next?: {
       label?: string;
@@ -170,143 +169,155 @@ export function actionEnhancedStep(
       onClick?: () => void;
     };
   }
-): TourStep {
-  return {
-    ...step,
-    actions
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      actions
+    };
   };
 }
 
 /**
  * Adds event triggers to a tour step
  * 
- * @param step The tour step to enhance with triggers
  * @param triggers Array of trigger configurations
- * @returns A configured TourStep with triggers
+ * @returns A function that enhances the step with triggers
  */
 export function triggerEnhancedStep(
-  step: TourStep,
   triggers: StepTrigger[]
-): TourStep {
-  return {
-    ...step,
-    triggers
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      triggers
+    };
   };
 }
 
 /**
  * Sets the priority of a tour step
  * 
- * @param step The tour step to set priority for
  * @param priority Priority level (higher numbers = higher priority)
- * @returns A configured TourStep with priority
+ * @returns A function that enhances the step with priority
  */
 export function prioritizedStep(
-  step: TourStep,
   priority: number
-): TourStep {
-  return {
-    ...step,
-    priority
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      priority
+    };
   };
 }
 
 /**
  * Adds metadata to a tour step
  * 
- * @param step The tour step to add metadata to
  * @param metadata Object containing arbitrary metadata
- * @returns A configured TourStep with metadata
+ * @returns A function that enhances the step with metadata
  */
 export function metadataEnhancedStep(
-  step: TourStep,
   metadata: Record<string, any>
-): TourStep {
-  return {
-    ...step,
-    metadata
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      metadata
+    };
   };
 }
 
 /**
  * Creates a step with dynamic content that can be loaded asynchronously
  * 
- * @param step Base tour step to enhance
  * @param contentProvider Function that returns content string or Promise<string>
- * @returns Enhanced step with dynamic content loading capability
+ * @returns A function that enhances the step with dynamic content loading capability
  */
 export function dynamicContentStep(
-  step: TourStep,
   contentProvider: DynamicContentProvider
-): TourStep {
-  const originalContent = step.content;
-  
-  return {
-    ...step,
-    // Store the original content as fallback
-    metadata: {
-      ...step.metadata,
-      originalContent,
-      dynamicContentProvider: contentProvider
-    },
-    // We'll replace this in the tour controller when the step is loaded
-    content: originalContent
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    const originalContent = step.content;
+    
+    return {
+      ...step,
+      // Store the original content as fallback
+      metadata: {
+        ...step.metadata,
+        originalContent,
+        dynamicContentProvider: contentProvider
+      },
+      // We'll replace this in the tour controller when the step is loaded
+      content: originalContent
+    };
   };
 }
 
 /**
  * Creates a step with feature flag condition
  * 
- * @param step Base tour step
  * @param featureFlag Feature flag name to check
- * @returns Step that only appears when feature flag is enabled
+ * @returns A function that enhances the step with a feature flag condition
  */
 export function featureFlagStep(
-  step: TourStep,
   featureFlag: string
-): TourStep {
-  return conditionalStep(step, () => {
-    // Simple feature flag check implementation
-    // In a real app, this would use your feature flag system
-    const enabledFlags = localStorage.getItem('enabledFeatureFlags');
-    if (!enabledFlags) return false;
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    const condition = () => {
+      // Simple feature flag check implementation
+      // In a real app, this would use your feature flag system
+      const enabledFlags = localStorage.getItem('enabledFeatureFlags');
+      if (!enabledFlags) return false;
+      
+      try {
+        const flags = JSON.parse(enabledFlags);
+        return !!flags[featureFlag];
+      } catch (e) {
+        return false;
+      }
+    };
     
-    try {
-      const flags = JSON.parse(enabledFlags);
-      return !!flags[featureFlag];
-    } catch (e) {
-      return false;
-    }
-  });
+    return {
+      ...step,
+      condition
+    };
+  };
 }
 
 /**
  * Creates a step that's shown based on user's tour completion history
  * 
- * @param step Base tour step
  * @param requiredCompletedTours Array of tour IDs that must be completed
- * @returns Step that only appears when user has completed specified tours
+ * @returns A function that enhances the step to check tour completion
  */
 export function progressBasedStep(
-  step: TourStep,
   requiredCompletedTours: string[]
-): TourStep {
-  return conditionalStep(step, () => {
-    const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
-    return requiredCompletedTours.every(tourId => completedTours.includes(tourId));
-  });
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    const condition = () => {
+      const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
+      return requiredCompletedTours.every(tourId => completedTours.includes(tourId));
+    };
+    
+    return {
+      ...step,
+      condition
+    };
+  };
 }
 
 /**
  * Utility function to combine multiple step enhancers
  * 
  * @param step Base tour step
- * @param enhancers Array of functions that enhance the step
+ * @param enhancers Function that enhances the step
  * @returns The fully enhanced tour step
  */
 export function enhanceStep(
   step: TourStep,
-  ...enhancers: ((step: TourStep) => TourStep)[]
+  enhancer: (step: TourStep) => TourStep
 ): TourStep {
-  return enhancers.reduce((enhancedStep, enhancer) => enhancer(enhancedStep), step);
+  return enhancer(step);
 }

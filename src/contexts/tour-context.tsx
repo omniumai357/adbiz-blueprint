@@ -6,7 +6,7 @@ import { useAuthUser } from "@/hooks/queries/useAuthUser";
 import { useAuth } from "@/contexts/auth-context";
 import { DynamicContentProvider } from "@/hooks/tour/analytics/types";
 
-export type StepConditionFn = () => boolean;
+export type StepConditionFn = () => boolean | Promise<boolean>;
 
 export type StepAnimation = {
   entry?: string;

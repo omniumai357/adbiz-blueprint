@@ -1,5 +1,6 @@
 
-import { createStep, enhanceStep, dynamicContentStep, conditionalStep, roleRestrictedStep, animatedStep } from './createTourPath';
+import { createStep, enhanceStep } from './createTourPath';
+import { animatedStep, dynamicContentStep, conditionalStep, roleRestrictedStep } from './createTourPath';
 
 export const homeTourPath = {
   id: "home-tour",
@@ -13,10 +14,7 @@ export const homeTourPath = {
         "This is our homepage where you can learn about our services and get started with our platform.",
         "bottom"
       ),
-      animatedStep({
-        entry: "fade-in",
-        highlight: "pulse"
-      })
+      animatedStep
     ),
     
     enhanceStep(
