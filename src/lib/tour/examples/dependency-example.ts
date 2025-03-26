@@ -3,7 +3,7 @@ import {
   createTourPath, 
   createStep,
   enhanceStep,
-  dependentOnSteps,
+  dependentStep,
   branchingStep,
   sectionStep,
   reEntryPoint
@@ -25,7 +25,7 @@ export const advancedTourPath = createTourPath(
         "This tour demonstrates advanced dependency and branching features.",
         "bottom"
       ),
-      sectionStep('introduction', { title: 'Introduction' })
+      sectionStep('introduction')
     ),
     
     // Basic features step
@@ -37,7 +37,7 @@ export const advancedTourPath = createTourPath(
         "Let's look at the basic features first.",
         "right"
       ),
-      sectionStep('basics', { title: 'Basic Features' })
+      sectionStep('basics')
     ),
     
     // Advanced features step - depends on basic features
@@ -51,8 +51,8 @@ export const advancedTourPath = createTourPath(
       ),
       step => {
         // Chain multiple enhancers
-        const withDependency = dependentOnSteps(['basic-features'])(step);
-        return sectionStep('advanced', { title: 'Advanced Features' })(withDependency);
+        const withDependency = dependentStep(['basic-features'])(step);
+        return sectionStep('advanced')(withDependency);
       }
     ),
     
@@ -88,7 +88,7 @@ export const advancedTourPath = createTourPath(
         "Here are the in-depth technical specifications and implementation details.",
         "right"
       ),
-      sectionStep('technical', { title: 'Technical Path' })
+      sectionStep('technical')
     ),
     
     // Overview path
@@ -100,7 +100,7 @@ export const advancedTourPath = createTourPath(
         "Here's a simplified overview of how everything works.",
         "left"
       ),
-      sectionStep('overview', { title: 'Overview Path' })
+      sectionStep('overview')
     ),
     
     // Re-entry point after branching paths
@@ -114,8 +114,8 @@ export const advancedTourPath = createTourPath(
       ),
       step => {
         // This step is a re-entry point after either technical or overview paths
-        const withReEntry = reEntryPoint(['technical', 'overview'])(step);
-        return sectionStep('conclusion', { title: 'Conclusion' })(withReEntry);
+        const withReEntry = reEntryPoint()(step);
+        return sectionStep('conclusion')(withReEntry);
       }
     )
   ],
