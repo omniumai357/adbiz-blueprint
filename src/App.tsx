@@ -24,6 +24,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import BusinessQuestionnairePage from './pages/BusinessQuestionnaire';
 import { AuthContextProvider } from '@/features/auth';
 import { initializeServices } from './services/registry/init';
+import { ReactQueryProvider } from './providers/ReactQueryProvider';
 
 const App: React.FC = () => {
   useEffect(() => {
@@ -32,32 +33,34 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      <LanguageProvider>
-        <ErrorProvider>
-          <AuthContextProvider>
-            <ErrorBoundary>
-              <Routes>
-                <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
-                <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
-                <Route path="/receipts" element={<Receipts />} />
-                <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
-                <Route path="/rewards" element={<Rewards />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/login" element={<Auth />} />
-                <Route path="/signup" element={<Auth />} />
-                <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
-              </Routes>
-              <Toaster />
-              <Sonner />
-              <TourGuide />
-              <TourHeaderButton />
-              <WelcomeTourModal />
-            </ErrorBoundary>
-          </AuthContextProvider>
-        </ErrorProvider>
-      </LanguageProvider>
+      <ReactQueryProvider>
+        <LanguageProvider>
+          <ErrorProvider>
+            <AuthContextProvider>
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
+                  <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
+                  <Route path="/receipts" element={<Receipts />} />
+                  <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
+                  <Route path="/rewards" element={<Rewards />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/login" element={<Auth />} />
+                  <Route path="/signup" element={<Auth />} />
+                  <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
+                </Routes>
+                <Toaster />
+                <Sonner />
+                <TourGuide />
+                <TourHeaderButton />
+                <WelcomeTourModal />
+              </ErrorBoundary>
+            </AuthContextProvider>
+          </ErrorProvider>
+        </LanguageProvider>
+      </ReactQueryProvider>
     </BrowserRouter>
   );
 };

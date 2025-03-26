@@ -32,7 +32,7 @@ const Rewards: React.FC = () => {
     // Handle different error types - error can be Error object or string
     const errorMessage = typeof error === 'object' && error !== null 
       ? error.message || 'Unknown error' 
-      : error;
+      : String(error);
       
     return (
       <>
