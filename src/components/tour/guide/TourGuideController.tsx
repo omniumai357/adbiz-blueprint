@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useTour } from "@/contexts/tour";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -40,7 +39,6 @@ export const TourGuideController: React.FC = () => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const desktopViewRef = useRef<TourDesktopViewHandle>(null);
   
-  // For tracking focus management
   const [lastStepIndex, setLastStepIndex] = useState<number>(-1);
 
   const isMobile = useIsMobile();
@@ -49,7 +47,6 @@ export const TourGuideController: React.FC = () => {
   
   useTourCompletionTracker(isActive, currentStep, totalSteps, currentPath);
   
-  // Fix the error by providing only one argument to handleKeyNavigation
   useTourKeyboardNavigation(
     isActive, 
     (event, navigationAction) => {
@@ -99,32 +96,23 @@ export const TourGuideController: React.FC = () => {
     }
   };
 
-  // Focus management between steps
   useEffect(() => {
     if (isActive && currentStepData && lastStepIndex !== currentStep) {
       setLastStepIndex(currentStep);
       
-      // Small delay to ensure the DOM is updated
       setTimeout(() => {
-        // Determine which element should receive focus
         if (!isMobile) {
-          // On desktop: Try to focus next/prev button based on step position
           if (currentStep === 0) {
-            // On first step, focus the next button
             focusElement('[data-tour-action="next"]');
           } else if (currentStep === totalSteps - 1) {
-            // On last step, focus the finish button
             focusElement('[data-tour-action="finish"]');
           } else if (currentStep > lastStepIndex && lastStepIndex !== -1) {
-            // Moving forward, focus the next button
             focusElement('[data-tour-action="next"]');
           } else if (currentStep < lastStepIndex) {
-            // Moving backward, focus the previous button
             focusElement('[data-tour-action="previous"]');
           }
         }
 
-        // Announce the step change to screen readers
         const liveRegion = document.getElementById('tour-announcer');
         if (liveRegion) {
           const stepNumber = currentStep + 1;
@@ -169,7 +157,6 @@ export const TourGuideController: React.FC = () => {
       
       document.body.classList.add('tour-active-focus-mode');
       
-      // Create screen reader live region if it doesn't exist
       let liveRegion = document.getElementById('tour-announcer');
       if (!liveRegion) {
         liveRegion = document.createElement('div');
@@ -180,7 +167,6 @@ export const TourGuideController: React.FC = () => {
         document.body.appendChild(liveRegion);
       }
       
-      // Announce tour start
       if (currentStepData) {
         liveRegion.textContent = `Tour started. Step 1 of ${totalSteps}: ${currentStepData.title}`;
       }
@@ -194,7 +180,6 @@ export const TourGuideController: React.FC = () => {
       
       setShowKeyboardHelp(false);
       
-      // Announce tour end
       const liveRegion = document.getElementById('tour-announcer');
       if (liveRegion) {
         liveRegion.textContent = "Tour ended";
@@ -239,6 +224,8 @@ export const TourGuideController: React.FC = () => {
           box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25) !important;
           border-radius: 2px !important;
           transition: outline-color 0.2s ease-in-out !important;
+          position: relative !important;
+          z-index: 10 !important;
         }
         
         .tour-active-focus-mode :focus:not(:focus-visible) {
@@ -250,6 +237,28 @@ export const TourGuideController: React.FC = () => {
           outline: 3px solid #0ea5e9 !important;
           outline-offset: 2px !important;
           box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25) !important;
+          position: relative !important;
+          z-index: 10 !important;
+        }
+        
+        .tour-active-focus-mode [data-tour-action]:focus-visible::after {
+          content: "";
+          position: absolute;
+          inset: -4px;
+          border-radius: 4px;
+          background: rgba(14, 165, 233, 0.1);
+          z-index: -1;
+          animation: pulse-focus 2s infinite;
+        }
+        
+        @keyframes pulse-focus {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.8; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .tour-tooltip:focus-within {
+          box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.4), 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
         }
         
         @media (forced-colors: active) {
@@ -318,6 +327,24 @@ export const TourGuideController: React.FC = () => {
       {showKeyboardHelp && (
         <TourKeyboardShortcutsHelp onClose={closeKeyboardShortcutsHelp} />
       )}
+
+      <div style={{ display: 'none' }} aria-hidden="true">
+        {useEffect(() => {
+          const handleNextEvent = () => handleNext();
+          const handlePrevEvent = () => onPrev && handlePrev();
+          const handleCloseEvent = () => handleClose();
+          
+          document.addEventListener('tour:next', handleNextEvent);
+          document.addEventListener('tour:previous', handlePrevEvent);
+          document.addEventListener('tour:escape', handleCloseEvent);
+          
+          return () => {
+            document.removeEventListener('tour:next', handleNextEvent);
+            document.removeEventListener('tour:previous', handlePrevEvent);
+            document.removeEventListener('tour:escape', handleCloseEvent);
+          };
+        }, [handleNext, handlePrev, handleClose])}
+      </div>
 
       {isMobile ? (
         <TourMobileView

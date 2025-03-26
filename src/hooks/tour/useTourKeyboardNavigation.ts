@@ -30,6 +30,12 @@ export interface KeyboardNavigationOptions {
    * @default true
    */
   enableShortcutsHelp?: boolean;
+  
+  /**
+   * Enable tab trap within tour component
+   * @default true
+   */
+  enableFocusTrap?: boolean;
 }
 
 /**
@@ -38,7 +44,7 @@ export interface KeyboardNavigationOptions {
  * @param isActive Whether the tour is active
  * @param handler Function to handle keyboard events
  * @param options Additional configuration options
- * @returns void
+ * @returns Object with keyboard navigation methods
  */
 export function useTourKeyboardNavigation(
   isActive: boolean,
@@ -52,7 +58,8 @@ export function useTourKeyboardNavigation(
     enableHomeEndKeys = true,
     enablePageKeys = true,
     pageKeyJumpSize = 3,
-    enableShortcutsHelp = true
+    enableShortcutsHelp = true,
+    enableFocusTrap = true
   } = options;
   
   useEffect(() => {
@@ -66,6 +73,11 @@ export function useTourKeyboardNavigation(
       // Don't interfere with typing in form elements
       if (isActive && !isFormElement) {
         let navigationAction: string | undefined;
+        
+        // Handle modifier keys for accessibility combinations
+        const hasShiftKey = event.shiftKey;
+        const hasCtrlKey = event.ctrlKey;
+        const hasAltKey = event.altKey;
         
         // Determine the navigation action based on the key pressed
         switch (event.key) {
@@ -94,13 +106,14 @@ export function useTourKeyboardNavigation(
             }
             break;
           case '?':
-            if (enableShortcutsHelp && event.shiftKey) {
+            if (enableShortcutsHelp && hasShiftKey) {
               event.preventDefault();
               navigationAction = 'show_shortcuts_help';
             }
             break;
           case 'Escape':
             // Adding specific keyboard behavior for escape key
+            event.preventDefault();
             document.dispatchEvent(new CustomEvent('tour:escape'));
             navigationAction = 'escape';
             break;
@@ -113,9 +126,51 @@ export function useTourKeyboardNavigation(
               navigationAction = 'next_from_element';
             }
             break;
+          case 'n':
+            // 'n' for next (when not in a form field)
+            if (!isFormElement) {
+              event.preventDefault();
+              document.dispatchEvent(new CustomEvent('tour:next'));
+              navigationAction = 'next_keyboard_shortcut';
+            }
+            break;
+          case 'p':
+            // 'p' for previous (when not in a form field)
+            if (!isFormElement) {
+              event.preventDefault();
+              document.dispatchEvent(new CustomEvent('tour:previous'));
+              navigationAction = 'previous_keyboard_shortcut';
+            }
+            break;
+          case 'Tab':
+            // Let the default tab behavior work, but we'll enhance it with
+            // focus trapping in the component itself
+            break;
           default:
             // Let other keys be handled without specific navigation action
             break;
+        }
+        
+        // For any key command with Alt+Shift for accessibility
+        if (hasAltKey && hasShiftKey) {
+          switch (event.key) {
+            case 'N': // Alt+Shift+N for Next
+              event.preventDefault();
+              navigationAction = 'next_keyboard_shortcut';
+              break;
+            case 'P': // Alt+Shift+P for Previous
+              event.preventDefault();
+              navigationAction = 'previous_keyboard_shortcut';
+              break;
+            case 'S': // Alt+Shift+S for Skip
+              event.preventDefault();
+              navigationAction = 'skip_keyboard_shortcut';
+              break;
+            case 'H': // Alt+Shift+H for Help
+              event.preventDefault();
+              navigationAction = 'show_shortcuts_help';
+              break;
+          }
         }
         
         // Pass the event and the navigation action to the handler
@@ -128,7 +183,11 @@ export function useTourKeyboardNavigation(
     return () => {
       document.removeEventListener('keydown', keyboardHandler);
     };
-  }, [isActive, handler, isMobile, enableHomeEndKeys, enablePageKeys, pageKeyJumpSize, enableShortcutsHelp]);
+  }, [isActive, handler, isMobile, enableHomeEndKeys, enablePageKeys, pageKeyJumpSize, enableShortcutsHelp, enableFocusTrap]);
+  
+  return {
+    isKeyboardNavigationEnabled: isActive
+  };
 }
 
 export default useTourKeyboardNavigation;

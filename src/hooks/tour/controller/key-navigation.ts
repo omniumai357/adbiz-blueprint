@@ -1,3 +1,4 @@
+
 import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -63,6 +64,7 @@ export const handleKeyNavigation = (
   
   const { nextStep, prevStep, endTour, goToStep, trackInteraction, showKeyboardShortcutsHelp } = handlers;
   
+  // Handle mobile-specific navigation
   if (isMobileDevice) {
     if (event.key === 'Escape' || navigationAction === 'escape') {
       trackInteraction(
@@ -91,12 +93,14 @@ export const handleKeyNavigation = (
     }
   }
   
+  // Get default keyboard shortcuts if defined in the step data
   const keyboardShortcuts = currentStepData.keyboardShortcuts || {
     next: 'ArrowRight',
     previous: 'ArrowLeft',
     close: 'Escape'
   };
   
+  // Handle predefined navigation actions
   if (navigationAction) {
     trackInteraction(
       pathData,
@@ -119,21 +123,24 @@ export const handleKeyNavigation = (
     return;
   }
   
+  // Handle regular keyboard shortcuts
   switch(event.key) {
     case keyboardShortcuts.next:
     case 'Enter':
-      trackInteraction(
-        pathData,
-        currentStepData,
-        currentStep,
-        `key_navigation_${event.key}`,
-        userId,
-        userType
-      );
-      nextStep();
-      break;
-    case keyboardShortcuts.previous:
-      if (currentStep > 0) {
+    case 'n':
+    case 'N':
+      if (event.altKey && event.shiftKey && (event.key === 'n' || event.key === 'N')) {
+        // Alt+Shift+N for accessibility shortcut
+        trackInteraction(
+          pathData,
+          currentStepData,
+          currentStep,
+          `key_navigation_alt_shift_n`,
+          userId,
+          userType
+        );
+        nextStep();
+      } else if (!event.altKey && !event.ctrlKey && (event.key === keyboardShortcuts.next || event.key === 'Enter')) {
         trackInteraction(
           pathData,
           currentStepData,
@@ -142,19 +149,77 @@ export const handleKeyNavigation = (
           userId,
           userType
         );
-        prevStep();
+        nextStep();
+      }
+      break;
+    case keyboardShortcuts.previous:
+    case 'p':
+    case 'P':
+      if (currentStep > 0) {
+        if (event.altKey && event.shiftKey && (event.key === 'p' || event.key === 'P')) {
+          // Alt+Shift+P for accessibility shortcut
+          trackInteraction(
+            pathData,
+            currentStepData,
+            currentStep,
+            `key_navigation_alt_shift_p`,
+            userId,
+            userType
+          );
+          prevStep();
+        } else if (!event.altKey && !event.ctrlKey && event.key === keyboardShortcuts.previous) {
+          trackInteraction(
+            pathData,
+            currentStepData,
+            currentStep,
+            `key_navigation_${event.key}`,
+            userId,
+            userType
+          );
+          prevStep();
+        }
       }
       break;
     case keyboardShortcuts.close:
-      trackInteraction(
-        pathData,
-        currentStepData,
-        currentStep,
-        `key_navigation_${event.key}`,
-        userId,
-        userType
-      );
-      endTour();
+    case 's':
+    case 'S':
+      if (event.altKey && event.shiftKey && (event.key === 's' || event.key === 'S')) {
+        // Alt+Shift+S for skip/close tour
+        trackInteraction(
+          pathData,
+          currentStepData,
+          currentStep,
+          `key_navigation_alt_shift_s`,
+          userId,
+          userType
+        );
+        endTour();
+      } else if (event.key === keyboardShortcuts.close) {
+        trackInteraction(
+          pathData,
+          currentStepData,
+          currentStep,
+          `key_navigation_${event.key}`,
+          userId,
+          userType
+        );
+        endTour();
+      }
+      break;
+    case 'h':
+    case 'H':
+      if (event.altKey && event.shiftKey && showKeyboardShortcutsHelp) {
+        // Alt+Shift+H for help
+        trackInteraction(
+          pathData,
+          currentStepData,
+          currentStep,
+          `key_navigation_alt_shift_h`,
+          userId,
+          userType
+        );
+        showKeyboardShortcutsHelp();
+      }
       break;
     default:
       break;
@@ -184,8 +249,13 @@ function handleNavigationAction(
     goToStep(targetStep);
   } else if (action === 'show_shortcuts_help' && showKeyboardShortcutsHelp) {
     showKeyboardShortcutsHelp();
-  } else if (action === 'next_from_element') {
+  } else if (action === 'next_from_element' || action === 'next_keyboard_shortcut') {
     nextStep();
+  } else if (action === 'previous_keyboard_shortcut') {
+    prevStep();
+  } else if (action === 'skip_keyboard_shortcut') {
+    // This should call endTour but we don't have it directly in this function
+    // The caller should handle this action
   }
 }
 
