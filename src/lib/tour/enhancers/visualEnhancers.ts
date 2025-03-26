@@ -77,10 +77,14 @@ export function spotlightStep(
     color?: string;
     pulseEffect?: boolean;
     fadeBackground?: boolean;
+    focus?: "element" | "content" | "both";
+    blurBackground?: boolean;
+    zoomEffect?: boolean;
   } = { 
     intensity: "medium", 
     pulseEffect: true,
-    fadeBackground: true
+    fadeBackground: true,
+    focus: "element"
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
@@ -99,10 +103,11 @@ export function spotlightStep(
  */
 export function transitionStep(
   transitionOptions: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    type: "fade" | "slide" | "zoom" | "flip" | "none" | "rotate" | "blur" | "reveal";
     direction?: "up" | "down" | "left" | "right";
     duration?: number;
-    easing?: string;
+    easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
+    delay?: number;
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
@@ -120,12 +125,41 @@ export function transitionStep(
  * @returns A function that enhances the step with position information
  */
 export function positionStep(
-  position: "top" | "right" | "bottom" | "left"
+  position: "top" | "right" | "bottom" | "left" | "top-left" | "top-right" | "bottom-left" | "bottom-right"
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
       position
+    };
+  };
+}
+
+/**
+ * Adds 3D effects to tour elements
+ * 
+ * @param effects 3D effect configuration
+ * @returns Function that enhances the step with 3D effects
+ */
+export function effect3DStep(
+  effects: {
+    perspective?: number;
+    rotateX?: number;
+    rotateY?: number;
+    rotateZ?: number;
+    scale?: number;
+    duration?: number;
+  } = {
+    perspective: 1000,
+    rotateY: 15,
+    scale: 1.05,
+    duration: 300
+  }
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      effects3D: effects
     };
   };
 }
@@ -147,18 +181,29 @@ export function visuallyEnhancedStep(
       intensity?: "low" | "medium" | "high";
       color?: string;
       pulseEffect?: boolean;
+      fadeBackground?: boolean;
+      focus?: "element" | "content" | "both";
+      blurBackground?: boolean;
     };
     transition?: {
-      type?: "fade" | "slide" | "zoom" | "flip";
+      type?: "fade" | "slide" | "zoom" | "flip" | "rotate" | "blur" | "reveal";
       direction?: "up" | "down" | "left" | "right";
       duration?: number;
+      easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
     };
-    position?: "top" | "right" | "bottom" | "left";
+    position?: "top" | "right" | "bottom" | "left" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
     media?: {
       type: "image" | "video" | "gif";
       url: string;
       alt?: string;
       animation?: string;
+    };
+    effects3D?: {
+      perspective?: number;
+      rotateX?: number;
+      rotateY?: number;
+      rotateZ?: number;
+      scale?: number;
     };
   }
 ): (step: TourStep) => TourStep {
@@ -183,6 +228,10 @@ export function visuallyEnhancedStep(
     
     if (options.media) {
       enhancedStep = mediaEnhancedStep(options.media)(enhancedStep);
+    }
+    
+    if (options.effects3D) {
+      enhancedStep = effect3DStep(options.effects3D)(enhancedStep);
     }
     
     return enhancedStep;

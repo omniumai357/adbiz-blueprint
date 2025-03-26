@@ -30,7 +30,7 @@ export type TourStep = {
   elementId: string;
   title: string;
   content: string;
-  position?: "top" | "right" | "bottom" | "left";
+  position?: "top" | "right" | "bottom" | "left" | "top-left" | "top-right" | "bottom-left" | "bottom-right";
   condition?: StepConditionFn;
   animation?: StepAnimation;
   isOptional?: boolean;
@@ -63,24 +63,40 @@ export type TourStep = {
     color?: string;
     pulseEffect?: boolean;
     fadeBackground?: boolean;
+    focus?: "element" | "content" | "both";
+    blurBackground?: boolean;
+    zoomEffect?: boolean;
   };
   transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    type: "fade" | "slide" | "zoom" | "flip" | "none" | "rotate" | "blur" | "reveal";
     direction?: "up" | "down" | "left" | "right";
     duration?: number;
+    easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
+    delay?: number;
   };
   path?: {
     enabled?: boolean;
     targetElementId?: string;
-    style?: "direct" | "curved" | "angled";
+    waypoints?: string[];
+    style?: "direct" | "curved" | "angled" | "obstacle-avoiding";
     color?: string;
     width?: number;
     dashArray?: string;
     animationDuration?: number;
     showArrow?: boolean;
     arrowSize?: number;
+    avoidObstacles?: boolean;
+    tensionFactor?: number;
+    animationEasing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
   } & Partial<PathOptions>;
-  // Accessibility properties
+  effects3D?: {
+    perspective?: number;
+    rotateX?: number;
+    rotateY?: number;
+    rotateZ?: number;
+    scale?: number;
+    duration?: number;
+  };
   ariaLive?: "off" | "polite" | "assertive";
   focusOnOpen?: boolean;
   keyboardShortcuts?: {

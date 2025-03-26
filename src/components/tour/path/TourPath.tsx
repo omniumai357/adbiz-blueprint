@@ -31,7 +31,10 @@ export const TourPath: React.FC<TourPathProps> = ({
     dashArray: options.dashArray || "5,5",
     animationDuration: options.animationDuration || 1000,
     showArrow: options.showArrow !== undefined ? options.showArrow : true,
-    arrowSize: options.arrowSize || 6
+    arrowSize: options.arrowSize || 6,
+    avoidObstacles: options.avoidObstacles || false,
+    tensionFactor: options.tensionFactor || 0.5,
+    animationEasing: options.animationEasing || 'ease-in-out'
   };
   
   // Calculate and update path when elements or options change
@@ -53,7 +56,7 @@ export const TourPath: React.FC<TourPathProps> = ({
       svgRef.current.style.zIndex = "9999";
     }
     
-    // Update the path when window is resized
+    // Update the path when window is resized or scrolled
     const handleResize = () => {
       const updatedPath = calculatePath(sourceElement, targetElement, pathOptions.style);
       setSvgPath(updatedPath);
@@ -116,6 +119,13 @@ export const TourPath: React.FC<TourPathProps> = ({
           from="1000"
           to="0"
           dur={`${pathOptions.animationDuration}ms`}
+          calcMode={pathOptions.animationEasing === 'linear' ? 'linear' : 'spline'}
+          keySplines={
+            pathOptions.animationEasing === 'ease-in' ? "0.42 0 1 1" :
+            pathOptions.animationEasing === 'ease-out' ? "0 0 0.58 1" :
+            pathOptions.animationEasing === 'ease-in-out' ? "0.42 0 0.58 1" :
+            "0.25 0.1 0.25 1"
+          }
           begin="0s"
           fill="freeze"
         />

@@ -1,4 +1,3 @@
-
 /**
  * Path utilities for creating animated guides between tour elements
  */
@@ -14,33 +13,23 @@ export function calculatePath(
   const sourceRect = sourceElement.getBoundingClientRect();
   const targetRect = targetElement.getBoundingClientRect();
 
-  // Calculate source and target center points
-  const sourceX = sourceRect.left + sourceRect.width / 2 + window.scrollX;
-  const sourceY = sourceRect.top + sourceRect.height / 2 + window.scrollY;
-  const targetX = targetRect.left + targetRect.width / 2 + window.scrollX;
-  const targetY = targetRect.top + targetRect.height / 2 + window.scrollY;
-
+  // Calculate optimal path points instead of just centers
+  const { start, end } = calculateOptimalPathPoints(sourceElement, targetElement);
+  
   // Generate different path types
   switch (style) {
     case "direct":
       // Straight line from source to target
-      return `M ${sourceX},${sourceY} L ${targetX},${targetY}`;
+      return `M ${start.x},${start.y} L ${end.x},${end.y}`;
     
     case "angled":
-      // Right-angle path (horizontal then vertical)
-      return `M ${sourceX},${sourceY} H ${targetX} V ${targetY}`;
+      // Right-angle path with intelligent routing
+      return createAngledPath(start, end);
     
     case "curved":
     default:
       // Bezier curve for a more natural path
-      const curveOffset = Math.min(
-        100,
-        Math.max(50, Math.abs(targetX - sourceX) / 3)
-      );
-      return `M ${sourceX},${sourceY} 
-              C ${sourceX + curveOffset},${sourceY} 
-                ${targetX - curveOffset},${targetY} 
-                ${targetX},${targetY}`;
+      return createCurvedPath(start, end);
   }
 }
 
@@ -84,6 +73,55 @@ export function calculateOptimalPathPoints(
       y: targetPoint.y + window.scrollY
     }
   };
+}
+
+/**
+ * Create an angled path with intelligent routing
+ */
+function createAngledPath(start: Point, end: Point): string {
+  // Determine if we should go horizontal first or vertical first
+  // based on the relative positions and distances
+  const deltaX = Math.abs(end.x - start.x);
+  const deltaY = Math.abs(end.y - start.y);
+  
+  // If elements are more separated horizontally, go horizontal first
+  if (deltaX > deltaY) {
+    return `M ${start.x},${start.y} H ${end.x} V ${end.y}`;
+  } else {
+    // Otherwise go vertical first
+    return `M ${start.x},${start.y} V ${end.y} H ${end.x}`;
+  }
+}
+
+/**
+ * Create a curved path with dynamic control points based on distance
+ */
+function createCurvedPath(start: Point, end: Point): string {
+  const distance = Math.sqrt(
+    Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2)
+  );
+  
+  // Adjust curve strength based on distance
+  const curveOffset = Math.min(
+    200,
+    Math.max(50, distance / 2.5)
+  );
+  
+  // Determine primary direction
+  const isHorizontal = Math.abs(end.x - start.x) > Math.abs(end.y - start.y);
+  
+  // Create control points based on direction
+  if (isHorizontal) {
+    return `M ${start.x},${start.y} 
+            C ${start.x + curveOffset},${start.y} 
+              ${end.x - curveOffset},${end.y} 
+              ${end.x},${end.y}`;
+  } else {
+    return `M ${start.x},${start.y} 
+            C ${start.x},${start.y + curveOffset} 
+              ${end.x},${end.y - curveOffset} 
+              ${end.x},${end.y}`;
+  }
 }
 
 /**
@@ -137,8 +175,20 @@ function findEdgePoint(
   };
 }
 
+/**
+ * Find path clearance to avoid obstacles
+ * @param start Starting point
+ * @param end Ending point
+ * @returns Modified path that avoids obstacles
+ */
+export function findClearPath(start: Point, end: Point): Point[] {
+  // In a real implementation, this would check for DOM elements in the way
+  // and calculate a path around them. For now, we'll return a simple path.
+  return [start, end];
+}
+
 // Types for path utilities
-export type PathStyle = "direct" | "curved" | "angled";
+export type PathStyle = "direct" | "curved" | "angled" | "obstacle-avoiding";
 
 export interface Point {
   x: number;
@@ -153,6 +203,9 @@ export interface PathOptions {
   animationDuration?: number;
   showArrow?: boolean;
   arrowSize?: number;
+  avoidObstacles?: boolean;
+  tensionFactor?: number;
+  animationEasing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
 }
 
 /**
@@ -165,5 +218,8 @@ export const defaultPathOptions: PathOptions = {
   dashArray: "5,5",
   animationDuration: 1000,
   showArrow: true,
-  arrowSize: 6
+  arrowSize: 6,
+  avoidObstacles: false,
+  tensionFactor: 0.5,
+  animationEasing: 'ease-in-out'
 };
