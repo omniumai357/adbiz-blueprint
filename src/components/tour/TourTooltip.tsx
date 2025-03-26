@@ -17,6 +17,14 @@ interface TourTooltipProps {
   onClose: () => void;
   isLastStep: boolean;
   animation?: string;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+  };
+  nextLabel?: string;
+  prevLabel?: string;
+  skipLabel?: string;
 }
 
 export const TourTooltip: React.FC<TourTooltipProps> = ({
@@ -30,6 +38,10 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   onClose,
   isLastStep,
   animation = "fade-in",
+  media,
+  nextLabel,
+  prevLabel,
+  skipLabel,
 }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
@@ -139,6 +151,49 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     "float": "animate-float",
     "fade-up": "animate-fade-up"
   };
+  
+  // Render media content if provided
+  const renderMedia = () => {
+    if (!media) return null;
+    
+    switch (media.type) {
+      case "image":
+        return (
+          <div className="mt-2 mb-3 flex justify-center">
+            <img 
+              src={media.url} 
+              alt={media.alt || title} 
+              className="rounded-md max-h-32 max-w-full object-contain"
+            />
+          </div>
+        );
+      case "video":
+        return (
+          <div className="mt-2 mb-3 flex justify-center">
+            <video 
+              src={media.url} 
+              className="rounded-md max-h-32 max-w-full object-contain" 
+              controls
+              muted
+              autoPlay
+              loop
+            />
+          </div>
+        );
+      case "gif":
+        return (
+          <div className="mt-2 mb-3 flex justify-center">
+            <img 
+              src={media.url} 
+              alt={media.alt || title} 
+              className="rounded-md max-h-32 max-w-full object-contain"
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div 
@@ -171,20 +226,33 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
         
         <div className="mb-4 mt-1">
           <h3 className="font-medium text-lg">{title}</h3>
+          {renderMedia()}
           <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
         </div>
         
         <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-muted-foreground">{stepInfo}</span>
           <div className="flex gap-2">
+            {!isLastStep && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onClose} 
+                className="h-8 text-xs"
+              >
+                {skipLabel || "Skip"}
+              </Button>
+            )}
             {onPrev && (
               <Button size="sm" variant="outline" onClick={onPrev} className="h-8">
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Prev
+                {prevLabel || "Prev"}
               </Button>
             )}
             <Button size="sm" onClick={onNext} className="h-8">
-              {isLastStep ? 'Finish' : 'Next'}
+              {isLastStep ? 
+                (nextLabel || "Finish") : 
+                (nextLabel || "Next")}
               {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
             </Button>
           </div>

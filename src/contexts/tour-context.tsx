@@ -13,6 +13,15 @@ export type StepAnimation = {
   highlight?: string;
 };
 
+export type StepTrigger = {
+  event?: string;
+  elementId?: string;
+  action?: string;
+  delay?: number;
+};
+
+export type StepUserRole = "anonymous" | "user" | "admin" | string;
+
 export type TourStep = {
   id: string;
   elementId: string;
@@ -22,12 +31,41 @@ export type TourStep = {
   condition?: StepConditionFn;
   animation?: StepAnimation;
   isOptional?: boolean;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+  };
+  actions?: {
+    next?: {
+      label?: string;
+      onClick?: () => void;
+    };
+    prev?: {
+      label?: string;
+      onClick?: () => void;
+    };
+    skip?: {
+      label?: string;
+      onClick?: () => void;
+    };
+  };
+  userRoles?: StepUserRole[];
+  triggers?: StepTrigger[];
+  priority?: number;
+  metadata?: Record<string, any>;
 };
 
 export type TourPath = {
   id: string;
   name: string;
   steps: TourStep[];
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  requiredUserRoles?: StepUserRole[];
+  completionCallback?: () => void;
+  metadata?: Record<string, any>;
 };
 
 type TourContextType = {

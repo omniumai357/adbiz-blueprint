@@ -96,18 +96,36 @@ export const TourGuide: React.FC = () => {
   // Handle tour closing with analytics
   const handleClose = () => {
     handleInteraction('close_button_clicked');
+    
+    // Check if the step has custom actions defined
+    if (currentStepData?.actions?.skip?.onClick) {
+      currentStepData.actions.skip.onClick();
+    }
+    
     endTour();
   };
   
   // Handle next step with analytics
   const handleNext = () => {
     handleInteraction('next_button_clicked');
+    
+    // Check if the step has custom actions defined
+    if (currentStepData?.actions?.next?.onClick) {
+      currentStepData.actions.next.onClick();
+    }
+    
     nextStep();
   };
   
   // Handle previous step with analytics
   const handlePrev = () => {
     handleInteraction('prev_button_clicked');
+    
+    // Check if the step has custom actions defined
+    if (currentStepData?.actions?.prev?.onClick) {
+      currentStepData.actions.prev.onClick();
+    }
+    
     prevStep();
   };
 
@@ -118,6 +136,11 @@ export const TourGuide: React.FC = () => {
   // Get the appropriate animation settings
   const highlightAnimation = currentStepData.animation?.highlight || "pulse";
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
+  
+  // Get custom button labels if provided
+  const nextLabel = currentStepData.actions?.next?.label;
+  const prevLabel = currentStepData.actions?.prev?.label;
+  const skipLabel = currentStepData.actions?.skip?.label;
 
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
@@ -130,11 +153,16 @@ export const TourGuide: React.FC = () => {
         <TourDrawer 
           title={currentStepData.title}
           content={currentStepData.content}
+          media={currentStepData.media}
           currentStep={currentStep}
           totalSteps={totalSteps}
           onNext={handleNext}
           onPrev={handlePrev}
           onClose={handleClose}
+          nextLabel={nextLabel}
+          prevLabel={prevLabel}
+          skipLabel={skipLabel}
+          isLastStep={currentStep === totalSteps - 1}
         />
       </>
     );
@@ -153,10 +181,14 @@ export const TourGuide: React.FC = () => {
           position={currentStepData.position || "bottom"}
           title={currentStepData.title}
           content={currentStepData.content}
+          media={currentStepData.media}
           stepInfo={`${currentStep + 1} of ${totalSteps}`}
           onPrev={currentStep > 0 ? handlePrev : undefined}
           onNext={handleNext}
           onClose={handleClose}
+          nextLabel={nextLabel}
+          prevLabel={prevLabel}
+          skipLabel={skipLabel}
           isLastStep={currentStep === totalSteps - 1}
           animation={entryAnimation}
         />

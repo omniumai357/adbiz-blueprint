@@ -12,6 +12,15 @@ interface TourDrawerProps {
   onNext: () => void;
   onPrev: () => void;
   onClose: () => void;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+  };
+  nextLabel?: string;
+  prevLabel?: string;
+  skipLabel?: string;
+  isLastStep?: boolean;
 }
 
 export const TourDrawer: React.FC<TourDrawerProps> = ({
@@ -21,7 +30,12 @@ export const TourDrawer: React.FC<TourDrawerProps> = ({
   totalSteps,
   onNext,
   onPrev,
-  onClose
+  onClose,
+  media,
+  nextLabel,
+  prevLabel,
+  skipLabel,
+  isLastStep = false
 }) => {
   // Handle swipe gestures for mobile
   const handleTouchStart = React.useRef<number | null>(null);
@@ -56,6 +70,49 @@ export const TourDrawer: React.FC<TourDrawerProps> = ({
     handleTouchMove.current = null;
   };
 
+  // Render media content if provided
+  const renderMedia = () => {
+    if (!media) return null;
+    
+    switch (media.type) {
+      case "image":
+        return (
+          <div className="mt-2 mb-4 flex justify-center">
+            <img 
+              src={media.url} 
+              alt={media.alt || title} 
+              className="rounded-md max-h-36 object-contain"
+            />
+          </div>
+        );
+      case "video":
+        return (
+          <div className="mt-2 mb-4 flex justify-center">
+            <video 
+              src={media.url} 
+              className="rounded-md max-h-36 object-contain" 
+              controls
+              muted
+              autoPlay
+              loop
+            />
+          </div>
+        );
+      case "gif":
+        return (
+          <div className="mt-2 mb-4 flex justify-center">
+            <img 
+              src={media.url} 
+              alt={media.alt || title} 
+              className="rounded-md max-h-36 object-contain"
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="max-h-[85vh] overflow-auto">
@@ -75,6 +132,8 @@ export const TourDrawer: React.FC<TourDrawerProps> = ({
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
+          {renderMedia()}
+          
           <p className="leading-relaxed">{content}</p>
           
           <div className="flex justify-center mt-4 text-sm text-muted-foreground font-medium">
@@ -113,14 +172,23 @@ export const TourDrawer: React.FC<TourDrawerProps> = ({
             {currentStep > 0 && (
               <Button variant="outline" size="sm" onClick={onPrev}>
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
+                {prevLabel || "Previous"}
               </Button>
             )}
           </div>
-          <Button size="sm" onClick={onNext}>
-            {currentStep === totalSteps - 1 ? "Finish" : "Next"}
-            {currentStep < totalSteps - 1 && <ChevronRight className="h-4 w-4 ml-1" />}
-          </Button>
+          <div className="flex gap-2">
+            {!isLastStep && (
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                {skipLabel || "Skip"}
+              </Button>
+            )}
+            <Button size="sm" onClick={onNext}>
+              {isLastStep ? 
+                (nextLabel || "Finish") : 
+                (nextLabel || "Next")}
+              {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
+            </Button>
+          </div>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
