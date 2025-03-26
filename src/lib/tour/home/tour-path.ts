@@ -28,6 +28,7 @@ export const homeWelcomeTourPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
+  route: '/',
   config: {
     metadata: {
       route: '/'
@@ -61,6 +62,7 @@ export const homeFeaturesPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
+  route: '/',
   config: {
     metadata: {
       route: '/'

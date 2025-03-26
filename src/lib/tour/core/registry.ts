@@ -48,13 +48,16 @@ export function getAllStepGroups(): Record<string, { id: string, name: string, s
 // Get tour paths by route
 export function getTourPathsByRoute(route: string): TourPath[] {
   return Object.values(pathRegistry).filter(path => {
+    // Consider both the direct route property and the config.metadata.route
+    const pathRoute = path.route || path.config?.metadata?.route;
+    
     // Simple path matching logic - can be enhanced as needed
-    if (path.route === route) return true;
-    if (path.route === '*') return true;
+    if (pathRoute === route) return true;
+    if (pathRoute === '*') return true;
     
     // Check for path patterns
-    if (path.route && path.route.includes('*')) {
-      const pattern = path.route.replace('*', '.*');
+    if (pathRoute && pathRoute.includes('*')) {
+      const pattern = pathRoute.replace('*', '.*');
       const regex = new RegExp(`^${pattern}$`);
       return regex.test(route);
     }

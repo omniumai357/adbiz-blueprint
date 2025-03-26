@@ -14,7 +14,7 @@ export const checkoutTourPath: TourPath = {
     {
       id: 'checkout-welcome',
       elementId: 'checkout-header',
-      target: 'checkout-header', // Add target property
+      target: 'checkout-header',
       title: 'Welcome to Checkout',
       content: 'This tour will guide you through the checkout process.',
       placement: 'bottom',
@@ -54,5 +54,10 @@ export const checkoutTourPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
-  route: '/checkout'
+  route: '/checkout',
+  config: {
+    metadata: {
+      route: '/checkout'
+    }
+  }
 };

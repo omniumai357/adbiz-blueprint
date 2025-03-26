@@ -109,6 +109,7 @@ export interface TourPath {
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
+  route?: string; // Add the route property to fix errors
   config?: {
     allowSkip?: boolean;
     showProgress?: boolean;

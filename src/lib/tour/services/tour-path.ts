@@ -45,5 +45,10 @@ export const servicesTourPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
-  route: '/services'
+  route: '/services',
+  config: {
+    metadata: {
+      route: '/services'
+    }
+  }
 };

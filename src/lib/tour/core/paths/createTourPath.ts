@@ -29,11 +29,12 @@ export function createTourPath(
     steps,
     allowSkip: options?.allowSkip ?? true,
     showProgress: options?.showProgress ?? true,
-    route: options?.route,
+    route: options?.route, // Now allowed by the interface
     config: {
       allowSkip: options?.allowSkip,
       showProgress: options?.showProgress,
       metadata: {
+        route: options?.route,
         tags: options?.tags || [],
         userRoles: options?.userRoles || []
       }
