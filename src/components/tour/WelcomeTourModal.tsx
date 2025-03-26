@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useTour } from "@/contexts/tour-context";
+import { useTour } from "@/contexts/tour";
 import {
   Dialog,
   DialogContent,

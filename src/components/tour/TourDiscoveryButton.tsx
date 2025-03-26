@@ -1,6 +1,5 @@
-
 import React from "react";
-import { useTour } from "@/contexts/tour-context";
+import { useTour } from "@/contexts/tour";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -28,7 +27,6 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
   const location = useLocation();
   const { startTour, availablePaths } = useTour();
   
-  // Determine available tours based on current location
   const currentPathTours = availablePaths.filter(path => {
     if (location.pathname.includes("checkout") && path.id.includes("checkout")) {
       return true;
@@ -42,15 +40,12 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
     return false;
   });
   
-  // Fallback to all available paths if no specific tours for current page
   const displayTours = currentPathTours.length > 0 ? currentPathTours : availablePaths;
   
-  // If there are no tours available, don't render anything
   if (displayTours.length === 0) {
     return null;
   }
 
-  // Simple icon button with tooltip for a single tour
   if (variant === "icon" || displayTours.length === 1) {
     const tourPathId = displayTours[0]?.id;
     const tourName = displayTours[0]?.name || "Guided Tour";
@@ -78,7 +73,6 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
     );
   }
   
-  // Dropdown menu for multiple tour options
   if (variant === "menu") {
     return (
       <DropdownMenu>
@@ -107,7 +101,6 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
     );
   }
   
-  // Text button (for footer/nav)
   return (
     <Button
       variant="ghost"

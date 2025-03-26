@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { TourProvider } from '@/contexts/tour-context';
+import { TourProvider } from '@/contexts/tour';
 import { ModalProvider } from '@/components/ui/modal-provider';
 import { WelcomeTourModal } from './WelcomeTourModal';
 import { useTourDiscovery } from '@/hooks/tour/useTourDiscovery';

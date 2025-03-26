@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState, useRef } from "react";
-import { useTour } from "@/contexts/tour-context";
+import { useTour } from "@/contexts/tour";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 import { useTourDynamicContent } from "@/hooks/tour/useTourDynamicContent";
@@ -128,14 +127,12 @@ export const TourGuide: React.FC = () => {
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
   const exitAnimation = currentStepData.animation?.exit;
   
-  // Convert extended transition types to supported types
   const transition = currentStepData.transition || {
     type: "fade" as const,
     direction: "right" as const,
     duration: 300
   };
   
-  // Map extended transition types to supported ones
   const supportedTransition = {
     type: (['fade', 'slide', 'zoom', 'flip', 'none'].includes(transition.type) 
       ? transition.type 
@@ -175,7 +172,6 @@ export const TourGuide: React.FC = () => {
     );
   }
 
-  // Map extended position types to supported ones
   const position = currentStepData.position || "bottom";
   const supportedPosition = position.includes('-') ? position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left' : position as 'top' | 'right' | 'bottom' | 'left';
 

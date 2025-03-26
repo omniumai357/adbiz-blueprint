@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { TourStep } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour/types";
 import { getBestTooltipPosition } from "@/lib/utils/dom-utils";
 
 /**

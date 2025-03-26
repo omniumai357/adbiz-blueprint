@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useTour } from "@/contexts/tour-context";
+import { useTour } from "@/contexts/tour";
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
