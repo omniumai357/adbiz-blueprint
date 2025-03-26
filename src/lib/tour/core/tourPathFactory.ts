@@ -22,6 +22,12 @@ export function createTourPath(
     requiredUserRoles?: string[];
     completionCallback?: () => void;
     metadata?: Record<string, any>;
+    accessibility?: {
+      announceSteps?: boolean;
+      keyboardNavigation?: boolean;
+      restoreFocus?: boolean;
+      focusTrap?: boolean;
+    };
   }
 ): TourPath {
   return {

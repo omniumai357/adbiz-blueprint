@@ -1,5 +1,5 @@
 
-import { KeyboardEvent } from 'react';
+import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 
 export type NavigationHandler = {
@@ -22,7 +22,7 @@ export type NavigationHandler = {
  * @param options Options including handler functions and tour state
  */
 export const handleKeyNavigation = (
-  event: KeyboardEvent,
+  event: KeyboardEvent | ReactKeyboardEvent,
   options: {
     isActive: boolean;
     currentPath: string | null;

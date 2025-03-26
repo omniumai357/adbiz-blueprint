@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useTour } from "@/contexts/tour-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -28,31 +27,24 @@ export const TourGuide: React.FC = () => {
     visibleSteps,
   } = useTour();
   
-  // Find target element for the current step
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   
-  // Find the path's target element if specified
   const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
   
-  // Track previous focused element to restore focus when tour ends
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
-  // Check if we're on a mobile device
   const isMobile = useMediaQuery("(max-width: 640px)");
   
-  // Get user context for analytics
   const { userId, userType } = useUserContext();
   
-  // Track tour completion
   useTourCompletionTracker(isActive, currentStep, totalSteps, currentPath);
   
-  // Handle keyboard navigation
-  useTourKeyboardNavigation(isActive, handleKeyNavigation);
+  useTourKeyboardNavigation(isActive, (event) => {
+    handleKeyNavigation(event as any);
+  });
   
-  // Process dynamic content
   const { content } = useTourDynamicContent(currentStepData, setDynamicContent);
   
-  // Handle tour interactions with analytics
   const { handleNext, handlePrev, handleClose } = useTourInteractions(
     currentStepData,
     currentPath,
@@ -63,7 +55,6 @@ export const TourGuide: React.FC = () => {
     { nextStep, prevStep, endTour }
   );
 
-  // Find path target element if specified
   useEffect(() => {
     if (
       isActive && 
@@ -76,7 +67,6 @@ export const TourGuide: React.FC = () => {
       if (element) {
         setPathTargetElement(element);
       } else {
-        // Try with query selector as fallback
         try {
           const potentialElement = document.querySelector(
             `#${targetId}, .${targetId}, [data-tour-id="${targetId}"]`
@@ -94,22 +84,17 @@ export const TourGuide: React.FC = () => {
     }
   }, [isActive, currentStepData]);
 
-  // Save and restore focus when tour starts/ends
   useEffect(() => {
     if (isActive) {
-      // Save the currently focused element
       previousFocusRef.current = document.activeElement as HTMLElement;
     } else if (previousFocusRef.current) {
-      // When tour ends, restore focus
       previousFocusRef.current.focus();
       previousFocusRef.current = null;
     }
   }, [isActive]);
 
-  // Announce tour step to screen readers
   useEffect(() => {
     if (isActive && currentStepData) {
-      // Create or get a live region for announcements
       let liveRegion = document.getElementById('tour-announcer');
       if (!liveRegion) {
         liveRegion = document.createElement('div');
@@ -120,38 +105,31 @@ export const TourGuide: React.FC = () => {
         document.body.appendChild(liveRegion);
       }
       
-      // Announce current step
       const stepNumber = currentStep + 1;
       const announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
       liveRegion.textContent = announcement;
     }
   }, [isActive, currentStepData, currentStep, totalSteps, content]);
 
-  // Don't render anything if tour is not active or no current step
   if (!isActive || !currentStepData) {
     return null;
   }
 
-  // Get the appropriate animation settings
   const highlightAnimation = currentStepData.animation?.highlight || "pulse";
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
   const exitAnimation = currentStepData.animation?.exit;
   
-  // Extract transition settings
   const transition = currentStepData.transition || {
     type: "fade" as const,
     direction: "right" as const,
     duration: 300
   };
   
-  // Extract spotlight settings if present
   const spotlight = currentStepData.spotlight;
 
-  // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
     return (
       <>
-        {/* Animated path if enabled */}
         {currentStepData.path?.enabled && targetElement && pathTargetElement && (
           <TourPath
             sourceElement={targetElement}
@@ -178,10 +156,8 @@ export const TourGuide: React.FC = () => {
     );
   }
 
-  // For desktop, use tooltips that point to elements
   return (
     <>
-      {/* Animated path if enabled */}
       {currentStepData.path?.enabled && targetElement && pathTargetElement && (
         <TourPath
           sourceElement={targetElement}

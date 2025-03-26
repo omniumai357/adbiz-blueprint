@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
@@ -155,7 +154,6 @@ export const TourProvider: React.FC<{
   const pathname = currentPathname || location.pathname;
   const announcerRef = useRef<HTMLDivElement | null>(null);
   
-  // Create screen reader announcer
   useEffect(() => {
     if (!announcerRef.current) {
       const announcer = document.createElement('div');
@@ -174,36 +172,29 @@ export const TourProvider: React.FC<{
     };
   }, []);
   
-  // Try to get user information from the auth context first
   let userId: string | undefined;
   let userType: string | undefined;
   
   try {
-    // Use the auth context if available
     const { user, profile } = useAuth();
     userId = user?.id;
     userType = profile?.role || 'anonymous';
   } catch (error) {
-    // Fallback to useAuthUser if auth context isn't available
     const { data: authData } = useAuthUser();
     userId = authData?.user?.id;
-    userType = 'anonymous'; // Default user type when profile isn't available
+    userType = 'anonymous';
   }
   
-  // Use our hook to manage tour state with user context for analytics
   const tourController = useTourController([], pathname, userId, userType);
   
-  // Announce tour changes to screen readers
   useEffect(() => {
     if (tourController.isActive && tourController.currentStepData && announcerRef.current) {
       const { title, content } = tourController.currentStepData;
       const stepNumber = tourController.currentStep + 1;
       const announcement = `Step ${stepNumber} of ${tourController.totalSteps}: ${title}`;
       
-      // Clear it first (hack to ensure it re-announces even if the text is the same)
       announcerRef.current.textContent = '';
       
-      // Schedule the announcement for the next tick
       setTimeout(() => {
         if (announcerRef.current) {
           announcerRef.current.textContent = announcement;

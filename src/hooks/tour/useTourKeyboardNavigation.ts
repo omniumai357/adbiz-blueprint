@@ -1,5 +1,6 @@
 
 import { useEffect } from 'react';
+import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 /**
  * Hook to handle keyboard navigation for tours
@@ -10,7 +11,7 @@ import { useEffect } from 'react';
  */
 export function useTourKeyboardNavigation(
   isActive: boolean,
-  handler: (event: KeyboardEvent) => void
+  handler: (event: KeyboardEvent | ReactKeyboardEvent) => void
 ) {
   useEffect(() => {
     if (!isActive) return;
