@@ -98,6 +98,12 @@ export interface ThemePreset {
     duration: number;
     easing: string;
   };
+  /** Responsive theme variations for different device types */
+  responsive?: {
+    mobile?: Partial<TourThemeColors>;
+    tablet?: Partial<TourThemeColors>;
+    desktop?: Partial<TourThemeColors>;
+  };
 }
 
 /**

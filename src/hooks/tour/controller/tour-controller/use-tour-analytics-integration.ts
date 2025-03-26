@@ -129,7 +129,7 @@ export function useTourAnalyticsIntegration(
           pathId: pathData.id,
           tourId: pathData.id,
           tourName: pathData.name || '',
-          stepId,
+          stepId: typeof stepId === 'string' ? stepId : stepId.id, // Fix here: Convert TourStep to string if needed
           stepIndex,
           totalSteps: visibleSteps.length,
           userId: userId || '',

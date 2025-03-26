@@ -243,7 +243,12 @@ export function createCustomTheme(
     transitions?: {
       duration: number;
       easing: string;
-    }
+    };
+    responsive?: {
+      mobile?: Partial<TourThemeColors>;
+      tablet?: Partial<TourThemeColors>;
+      desktop?: Partial<TourThemeColors>;
+    };
   }
 ): ThemePreset {
   return {

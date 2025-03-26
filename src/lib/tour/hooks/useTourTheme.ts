@@ -51,6 +51,7 @@ export function useTourTheme() {
   ) => {
     // Get the theme preset for the given viewport if available
     const themePreset = themeRegistry.getTheme(currentTheme);
+    // Only access responsive property if it exists
     const viewportColors = viewport && themePreset?.responsive?.[viewport];
     
     // Merge viewport specific colors with base colors
@@ -60,9 +61,12 @@ export function useTourTheme() {
       // Skip undefined values
       if (value === undefined) return;
       
+      // Ensure value is a string
+      const stringValue = String(value);
+      
       // Convert camelCase to kebab-case for CSS variables
       const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-      document.documentElement.style.setProperty(`--tour-${cssKey}`, value);
+      document.documentElement.style.setProperty(`--tour-${cssKey}`, stringValue);
     });
   }, [currentTheme]);
 
@@ -174,7 +178,7 @@ export function useTourTheme() {
     const customThemeId = 'custom';
     const customThemeName = name || 'Custom Theme';
     
-    // Create and register the custom theme
+    // Create and register the custom theme with responsive options
     const customTheme = createCustomTheme(
       customThemeId,
       customThemeName,
