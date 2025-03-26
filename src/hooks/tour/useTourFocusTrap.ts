@@ -45,6 +45,9 @@ export function useTourFocusTrap(
       }, 100);
     }
 
+    // Add a class to the body to improve focus visibility
+    document.body.classList.add('tour-focus-active');
+
     // Handle tabbing to maintain focus within the container
     const handleTabKey = (e: KeyboardEvent) => {
       if (e.key !== 'Tab' || !containerRef.current) return;
@@ -71,10 +74,17 @@ export function useTourFocusTrap(
 
     return () => {
       document.removeEventListener('keydown', handleTabKey);
+      
+      // Remove focus class from body
+      document.body.classList.remove('tour-focus-active');
 
       // Restore focus when the trap is deactivated
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
+      if (previousFocusRef.current && document.body.contains(previousFocusRef.current)) {
+        try {
+          previousFocusRef.current.focus();
+        } catch (e) {
+          console.warn('Could not restore focus to previous element:', e);
+        }
       }
     };
   }, [isActive, containerRef, enabled]);

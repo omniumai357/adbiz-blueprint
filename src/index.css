@@ -57,6 +57,23 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Enhanced focus styles for better visibility */
+  :focus-visible {
+    outline: 3px solid #0ea5e9 !important; 
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25) !important;
+    border-radius: 2px !important;
+    transition: outline-color 0.2s ease-in-out !important;
+  }
+  
+  /* Adjustments for high contrast mode */
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 3px solid CanvasText !important;
+      outline-offset: 2px !important;
+    }
+  }
 }
 
 @layer utilities {
@@ -110,6 +127,16 @@
   
   .animate-spotlight {
     animation: spotlight 2s ease-in-out infinite;
+  }
+  
+  /* High contrast focus animations */
+  .focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 focus-visible:outline-none;
+    transition: box-shadow 0.2s ease-in-out;
+  }
+  
+  .high-contrast-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6] focus-visible:ring-offset-2;
   }
 }
 

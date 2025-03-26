@@ -1,8 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
 
 interface TourTooltipActionsProps {
   onPrev?: () => void;
@@ -13,6 +12,7 @@ interface TourTooltipActionsProps {
   prevLabel?: string;
   skipLabel?: string;
   stepInfo: string;
+  showKeyboardShortcuts?: () => void;
 }
 
 export const TourTooltipActions: React.FC<TourTooltipActionsProps> = ({
@@ -23,37 +23,59 @@ export const TourTooltipActions: React.FC<TourTooltipActionsProps> = ({
   nextLabel,
   prevLabel,
   skipLabel,
-  stepInfo
+  stepInfo,
+  showKeyboardShortcuts
 }) => {
   return (
-    <div className="flex items-center justify-between mt-4">
-      <span className="text-xs text-muted-foreground">{stepInfo}</span>
-      <div className="flex gap-2">
-        {!isLastStep && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onClose} 
-            className="h-8 text-xs"
+    <div className="flex items-center justify-between mt-3">
+      <div className="flex items-center gap-2">
+        {/* Skip button or keyboard shortcut button */}
+        {onPrev ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onPrev}
+            className="text-xs px-2 h-8 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 transition-all"
+          >
+            <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+            {prevLabel || "Previous"}
+          </Button>
+        ) : showKeyboardShortcuts ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={showKeyboardShortcuts}
+            className="text-xs px-2 h-8 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 transition-all"
+            title="Show keyboard shortcuts (Shift+?)"
+          >
+            <KeyRound className="h-3.5 w-3.5 mr-1" />
+            Shortcuts
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-xs px-2 h-8 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 transition-all"
           >
             {skipLabel || "Skip"}
           </Button>
         )}
-        {onPrev && (
-          <Button size="sm" variant="outline" onClick={onPrev} className="h-8">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            {prevLabel || "Prev"}
-          </Button>
-        )}
-        <Button 
-          size="sm" 
-          onClick={onNext} 
-          className={cn("h-8", isLastStep ? "" : "animate-pulse-subtle")}
+      </div>
+
+      <div className="flex items-center gap-2">
+        {/* Step info */}
+        <span className="text-xs text-muted-foreground mr-2">{stepInfo}</span>
+
+        {/* Next or Done button */}
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onNext}
+          className="text-xs px-3 h-8 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2 transition-all"
         >
-          {isLastStep ? 
-            (nextLabel || "Finish") : 
-            (nextLabel || "Next")}
-          {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
+          {isLastStep ? "Done" : nextLabel || "Next"}
+          {!isLastStep && <ChevronRight className="h-3.5 w-3.5 ml-1" />}
         </Button>
       </div>
     </div>

@@ -109,10 +109,16 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
         ref={divRef}
         className={cn(
           "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50",
+          "focus-within:outline-none focus-within:ring-2 focus-within:ring-[#0ea5e9] focus-within:ring-offset-2",
           animationClass,
           transitionClass
         )}
         style={combinedStyles}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tour-title"
+        aria-describedby="tour-content"
       >
         {/* Arrow */}
         <div 
@@ -127,20 +133,21 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-2 right-2 h-6 w-6 hover:bg-muted/60" 
+          className="absolute top-2 right-2 h-6 w-6 hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-[#0ea5e9] focus-visible:ring-offset-2" 
           onClick={onClose}
+          aria-label="Close tour"
         >
           <X className="h-4 w-4" />
         </Button>
         
         {/* Content section */}
         <div className="mb-4 mt-1">
-          <h3 className="font-medium text-lg">{title}</h3>
+          <h3 id="tour-title" className="font-medium text-lg">{title}</h3>
           
           {/* Media content */}
           {media && <TourMedia media={media} title={title} />}
           
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
+          <p id="tour-content" className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
         </div>
         
         {/* Progress bar */}
@@ -164,6 +171,7 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
           prevLabel={prevLabel}
           skipLabel={skipLabel}
           stepInfo={stepInfo}
+          showKeyboardShortcuts={showKeyboardShortcuts}
         />
       </div>
     </div>
