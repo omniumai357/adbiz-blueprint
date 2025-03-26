@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useTour } from "@/contexts/tour";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -8,9 +7,11 @@ import { useTourInteractions } from "@/hooks/tour/useTourInteractions";
 import { useUserContext } from "@/hooks/tour/useUserContext";
 import { useTourCompletionTracker } from "@/hooks/tour/useTourCompletionTracker";
 import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigation";
+import { useTourFocusTrap } from "@/hooks/tour/useTourFocusTrap";
 import { TourMobileView } from "../TourMobileView";
 import { TourDesktopView } from "../TourDesktopView";
 import { TourPathVisualization } from "./TourPathVisualization";
+import { TourKeyboardShortcutsHelp } from "./TourKeyboardShortcutsHelp";
 
 export const TourGuideController: React.FC = () => {
   const {
@@ -18,6 +19,7 @@ export const TourGuideController: React.FC = () => {
     currentStepData,
     nextStep,
     prevStep,
+    goToStep,
     currentStep,
     totalSteps,
     endTour,
@@ -31,8 +33,10 @@ export const TourGuideController: React.FC = () => {
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   
   const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const isMobile = useIsMobile();
   
@@ -40,9 +44,24 @@ export const TourGuideController: React.FC = () => {
   
   useTourCompletionTracker(isActive, currentStep, totalSteps, currentPath);
   
-  useTourKeyboardNavigation(isActive, (event) => {
-    handleKeyNavigation(event as any);
-  });
+  useTourKeyboardNavigation(
+    isActive, 
+    (event, navigationAction) => {
+      if (navigationAction === 'show_shortcuts_help') {
+        setShowKeyboardHelp(true);
+      } else {
+        handleKeyNavigation(event as any, navigationAction);
+      }
+    },
+    {
+      enableHomeEndKeys: true,
+      enablePageKeys: true,
+      pageKeyJumpSize: 3,
+      enableShortcutsHelp: true
+    }
+  );
+  
+  useTourFocusTrap(isActive, tooltipRef, true);
   
   const { content } = useTourDynamicContent(currentStepData, setDynamicContent);
   
@@ -55,6 +74,24 @@ export const TourGuideController: React.FC = () => {
     userType,
     { nextStep, prevStep, endTour }
   );
+
+  const showKeyboardShortcutsHelp = () => {
+    setShowKeyboardHelp(true);
+  };
+
+  const closeKeyboardShortcutsHelp = () => {
+    setShowKeyboardHelp(false);
+    
+    if (tooltipRef.current) {
+      const focusableElement = tooltipRef.current.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      ) as HTMLElement;
+      
+      if (focusableElement) {
+        focusableElement.focus();
+      }
+    }
+  };
 
   useEffect(() => {
     if (
@@ -88,9 +125,17 @@ export const TourGuideController: React.FC = () => {
   useEffect(() => {
     if (isActive) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-    } else if (previousFocusRef.current) {
-      previousFocusRef.current.focus();
-      previousFocusRef.current = null;
+      
+      document.body.classList.add('tour-active-focus-mode');
+    } else {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+        previousFocusRef.current = null;
+      }
+      
+      document.body.classList.remove('tour-active-focus-mode');
+      
+      setShowKeyboardHelp(false);
     }
   }, [isActive]);
 
@@ -112,12 +157,56 @@ export const TourGuideController: React.FC = () => {
       if (isMobile) {
         announcement += '. You can swipe left to continue or swipe right to go back.';
       } else {
-        announcement += '. Use arrow keys to navigate.';
+        announcement += '. Use arrow keys to navigate, Home and End to jump to first or last step, and Shift+? for keyboard shortcuts.';
       }
       
       liveRegion.textContent = announcement;
     }
   }, [isActive, currentStepData, currentStep, totalSteps, content, isMobile]);
+
+  useEffect(() => {
+    const styleId = 'tour-focus-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        .tour-active-focus-mode :focus {
+          outline: 3px solid #0ea5e9 !important;
+          outline-offset: 2px !important;
+          box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25) !important;
+          border-radius: 2px !important;
+          transition: outline-color 0.2s ease-in-out !important;
+        }
+        
+        .tour-active-focus-mode :focus:not(:focus-visible) {
+          outline: none !important;
+          box-shadow: none !important;
+        }
+        
+        .tour-active-focus-mode :focus-visible {
+          outline: 3px solid #0ea5e9 !important;
+          outline-offset: 2px !important;
+          box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25) !important;
+        }
+        
+        @media (forced-colors: active) {
+          .tour-active-focus-mode :focus,
+          .tour-active-focus-mode :focus-visible {
+            outline: 3px solid CanvasText !important;
+            outline-offset: 2px !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    return () => {
+      const styleElement = document.getElementById(styleId);
+      if (styleElement) {
+        document.head.removeChild(styleElement);
+      }
+    };
+  }, []);
 
   if (!isActive || !currentStepData) {
     return null;
@@ -151,6 +240,10 @@ export const TourGuideController: React.FC = () => {
         pathOptions={currentStepData.path}
       />
 
+      {showKeyboardHelp && (
+        <TourKeyboardShortcutsHelp onClose={closeKeyboardShortcutsHelp} />
+      )}
+
       {isMobile ? (
         <TourMobileView
           currentStepData={currentStepData}
@@ -164,9 +257,12 @@ export const TourGuideController: React.FC = () => {
           highlightAnimation={highlightAnimation}
           transition={supportedTransition}
           spotlight={spotlight}
+          showKeyboardShortcuts={showKeyboardShortcutsHelp}
+          onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
         />
       ) : (
         <TourDesktopView
+          ref={tooltipRef}
           targetElement={targetElement!}
           position={currentStepData.position?.includes('-') 
             ? currentStepData.position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left' 
@@ -187,6 +283,8 @@ export const TourGuideController: React.FC = () => {
           spotlight={spotlight}
           currentStep={currentStep}
           totalSteps={totalSteps}
+          showKeyboardShortcuts={showKeyboardShortcutsHelp}
+          onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
         />
       )}
     </>

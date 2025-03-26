@@ -7,6 +7,7 @@ export type NavigationHandler = {
   nextStep: () => void;
   prevStep: () => void;
   endTour: () => void;
+  goToStep: (stepIndex: number) => void;
   trackInteraction: (
     pathData: TourPath,
     currentStepData: TourStep,
@@ -15,20 +16,24 @@ export type NavigationHandler = {
     userId?: string,
     userType?: string
   ) => void;
+  showKeyboardShortcutsHelp?: () => void;
 };
 
 /**
  * Handles keyboard navigation for tours
  * @param event The keyboard event
+ * @param navigationAction Optional pre-determined navigation action
  * @param options Options including handler functions and tour state
  */
 export const handleKeyNavigation = (
   event: KeyboardEvent | ReactKeyboardEvent,
+  navigationAction: string | undefined,
   options: {
     isActive: boolean;
     currentPath: string | null;
     tourPaths: TourPath[];
     currentStep: number;
+    totalSteps: number;
     visibleSteps: TourStep[];
     userId?: string;
     userType?: string;
@@ -40,7 +45,8 @@ export const handleKeyNavigation = (
     isActive, 
     currentPath, 
     tourPaths, 
-    currentStep, 
+    currentStep,
+    totalSteps,
     visibleSteps,
     userId,
     userType,
@@ -56,35 +62,70 @@ export const handleKeyNavigation = (
   const currentStepData = visibleSteps[currentStep];
   if (!currentStepData) return;
   
-  const { nextStep, prevStep, endTour, trackInteraction } = handlers;
+  const { nextStep, prevStep, endTour, goToStep, trackInteraction, showKeyboardShortcutsHelp } = handlers;
   
   // On mobile, we might want to handle keyboard events differently
-  // For example, virtual keyboards on mobile can behave differently
   if (isMobileDevice) {
-    // For mobile, only handle Escape key for now
-    // Let touch gestures handle the rest
-    if (event.key === 'Escape') {
+    // For mobile, only handle Escape key and the explicit navigation actions
+    if (event.key === 'Escape' || navigationAction === 'escape') {
       trackInteraction(
         pathData,
         currentStepData,
         currentStep,
-        `key_navigation_${event.key}`,
+        `key_navigation_escape`,
         userId,
         userType
       );
       endTour();
+      return;
     }
-    return;
+    
+    // Handle explicit navigation actions even on mobile
+    if (navigationAction) {
+      handleNavigationAction(
+        navigationAction,
+        currentStep,
+        totalSteps,
+        goToStep,
+        nextStep,
+        prevStep,
+        showKeyboardShortcutsHelp
+      );
+      return;
+    }
   }
   
-  // Only apply keyboard shortcuts if specified in the step or using defaults
+  // Get keyboard shortcuts from the step or use defaults
   const keyboardShortcuts = currentStepData.keyboardShortcuts || {
     next: 'ArrowRight',
     previous: 'ArrowLeft',
     close: 'Escape'
   };
   
-  // Standard desktop keyboard navigation
+  // If we have a pre-determined navigation action, use that
+  if (navigationAction) {
+    trackInteraction(
+      pathData,
+      currentStepData,
+      currentStep,
+      `key_navigation_${navigationAction}`,
+      userId,
+      userType
+    );
+    
+    handleNavigationAction(
+      navigationAction,
+      currentStep,
+      totalSteps,
+      goToStep,
+      nextStep,
+      prevStep,
+      showKeyboardShortcutsHelp
+    );
+    return;
+  }
+  
+  // Standard desktop keyboard navigation based on key
   switch(event.key) {
     case keyboardShortcuts.next:
     case 'Enter':
@@ -126,6 +167,37 @@ export const handleKeyNavigation = (
       break;
   }
 };
+
+/**
+ * Helper function to handle navigation actions
+ */
+function handleNavigationAction(
+  action: string,
+  currentStep: number,
+  totalSteps: number,
+  goToStep: (stepIndex: number) => void,
+  nextStep: () => void,
+  prevStep: () => void,
+  showKeyboardShortcutsHelp?: () => void
+): void {
+  if (action === 'first_step') {
+    goToStep(0);
+  } else if (action === 'last_step') {
+    goToStep(totalSteps - 1);
+  } else if (action.startsWith('jump_forward_')) {
+    const steps = parseInt(action.split('_')[2], 10);
+    const targetStep = Math.min(currentStep + steps, totalSteps - 1);
+    goToStep(targetStep);
+  } else if (action.startsWith('jump_back_')) {
+    const steps = parseInt(action.split('_')[2], 10);
+    const targetStep = Math.max(currentStep - steps, 0);
+    goToStep(targetStep);
+  } else if (action === 'show_shortcuts_help' && showKeyboardShortcutsHelp) {
+    showKeyboardShortcutsHelp();
+  } else if (action === 'next_from_element') {
+    nextStep();
+  }
+}
 
 /**
  * Hook to detect if the current browser is on a mobile device

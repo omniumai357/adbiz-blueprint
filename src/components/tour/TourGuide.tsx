@@ -8,5 +8,13 @@ import { TourGuideController } from "./guide/TourGuideController";
  * which handles the core tour logic and rendering
  */
 export const TourGuide: React.FC = () => {
-  return <TourGuideController />;
+  return (
+    <div 
+      role="region" 
+      aria-label="Application tour" 
+      className="tour-guide-root"
+    >
+      <TourGuideController />
+    </div>
+  );
 };
