@@ -49,44 +49,40 @@ export function useTourTranslation() {
     
     // Translate actions if specified
     if (keys?.actions) {
-      translatedStep.actions = { ...step.actions };
+      translatedStep.actions = translatedStep.actions || {};
       
-      if (keys.actions.next && translatedStep.actions) {
-        translatedStep.actions.next = {
-          ...translatedStep.actions.next,
-          label: t(keys.actions.next)
-        };
+      if (keys.actions.next) {
+        translatedStep.actions.next = translatedStep.actions.next || {};
+        translatedStep.actions.next.label = t(keys.actions.next);
       }
       
-      if (keys.actions.prev && translatedStep.actions) {
-        translatedStep.actions.prev = {
-          ...translatedStep.actions.prev,
-          label: t(keys.actions.prev)
-        };
+      if (keys.actions.prev) {
+        translatedStep.actions.prev = translatedStep.actions.prev || {};
+        translatedStep.actions.prev.label = t(keys.actions.prev);
       }
       
-      if (keys.actions.skip && translatedStep.actions) {
-        translatedStep.actions.skip = {
-          ...translatedStep.actions.skip,
-          label: t(keys.actions.skip)
-        };
+      if (keys.actions.skip) {
+        translatedStep.actions.skip = translatedStep.actions.skip || {};
+        translatedStep.actions.skip.label = t(keys.actions.skip);
       }
       
       if (keys.actions.finish && translatedStep.actions) {
-        translatedStep.actions.finish = {
-          ...translatedStep.actions.finish,
-          label: t(keys.actions.finish)
-        };
+        translatedStep.actions.finish = translatedStep.actions.finish || {};
+        translatedStep.actions.finish.label = t(keys.actions.finish);
       }
     }
     
     // Add ARIA translations if specified
     if (keys?.aria) {
-      translatedStep.a11y = {
-        ...step.a11y,
-        description: keys.aria.description ? t(keys.aria.description) : step.a11y?.description,
-        navigationDescription: keys.aria.navigation ? t(keys.aria.navigation) : step.a11y?.navigationDescription,
-      };
+      translatedStep.a11y = translatedStep.a11y || {};
+      
+      if (keys.aria.description) {
+        translatedStep.a11y.description = t(keys.aria.description);
+      }
+      
+      if (keys.aria.navigation) {
+        translatedStep.a11y.navigationDescription = t(keys.aria.navigation);
+      }
     }
     
     // Handle RTL-specific adjustments for tour elements
@@ -101,7 +97,9 @@ export function useTourTranslation() {
         'right-end': 'left-end'
       };
       
-      translatedStep.placement = (placementMap[translatedStep.placement] as any) || translatedStep.placement;
+      if (placementMap[translatedStep.placement]) {
+        translatedStep.placement = placementMap[translatedStep.placement];
+      }
     }
     
     return translatedStep;
