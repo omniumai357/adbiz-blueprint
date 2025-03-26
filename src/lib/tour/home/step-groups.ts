@@ -24,7 +24,7 @@ export const introductionStepGroup = createStepGroup(
         'This is our homepage where you can learn about our services and get started with our platform.',
         'bottom'
       ),
-      // Combine enhancers correctly by creating a function that applies both enhancers
+      // Compose enhancers by creating a function that applies both enhancers
       step => {
         // Apply stepInGroup first
         const withGroup = stepInGroup('home-introduction')(step);
@@ -44,7 +44,12 @@ export const introductionStepGroup = createStepGroup(
       step => stepInGroup('home-introduction')(step)
     ),
   ],
-  'Basic introduction steps for all users to learn about the platform'
+  'Basic introduction steps for all users to learn about the platform',
+  {
+    tags: ['introduction', 'welcome', 'onboarding'],
+    experienceLevel: 'beginner',
+    featureArea: 'homepage'
+  }
 );
 
 /**
@@ -76,7 +81,12 @@ export const featureHighlightsStepGroup = createStepGroup(
       step => stepInGroup('home-features')(step)
     ),
   ],
-  'Highlights of key platform features for all users'
+  'Highlights of key platform features for all users',
+  {
+    tags: ['features', 'testimonials', 'faq'],
+    experienceLevel: 'beginner',
+    featureArea: 'homepage'
+  }
 );
 
 /**
@@ -114,7 +124,12 @@ export const advancedFeaturesStepGroup = createStepGroup(
       }
     ),
   ],
-  'Advanced features for registered users'
+  'Advanced features for registered users',
+  {
+    tags: ['dashboard', 'advanced-features'],
+    experienceLevel: 'intermediate',
+    featureArea: 'user-tools'
+  }
 );
 
 /**
@@ -138,5 +153,12 @@ export const adminFeaturesStepGroup = createStepGroup(
       }
     ),
   ],
-  'Admin-specific features and controls'
+  'Admin-specific features and controls',
+  {
+    tags: ['admin', 'controls'],
+    experienceLevel: 'advanced',
+    featureArea: 'admin-dashboard',
+    requiredRoles: ['admin'],
+    priority: 10
+  }
 );
