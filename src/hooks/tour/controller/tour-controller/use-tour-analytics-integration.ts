@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useTourAnalytics } from '../../useTourAnalytics';
@@ -87,8 +86,12 @@ export function useTourAnalyticsIntegration(
       showKeyboardShortcutsHelp
     };
 
-    // Pass the navigation configuration
-    const navigationConfig = {
+    // The issue is here - we need to match the expected parameter types
+    // Looking at key-navigation.ts, we should pass a navigation action string (or undefined),
+    // not the entire config object as the second parameter
+
+    // Call handleKeyNavigation with the correct parameter types
+    handleKeyNavigation(event, undefined, {
       isActive,
       currentPath,
       tourPaths,
@@ -98,11 +101,7 @@ export function useTourAnalyticsIntegration(
       userId,
       userType,
       handlers
-    };
-
-    // Pass event and navigationConfig to the handleKeyNavigation function
-    // Fixing the error by passing the correct number of arguments (3)
-    handleKeyNavigation(event, navigationConfig, handlers);
+    });
   }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction, goToStep, showKeyboardShortcutsHelp]);
 
   return {
