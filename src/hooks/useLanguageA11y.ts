@@ -16,6 +16,13 @@ export function useLanguageA11y() {
     // Update direction attribute
     document.documentElement.setAttribute('dir', direction);
     
+    // Update RTL classes on body
+    if (direction === 'rtl') {
+      document.body.classList.add('rtl');
+    } else {
+      document.body.classList.remove('rtl');
+    }
+    
     // Announce language change to screen readers
     const announcer = document.getElementById('language-change-announcer') || 
       (() => {

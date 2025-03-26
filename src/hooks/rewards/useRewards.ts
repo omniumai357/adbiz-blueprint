@@ -1,7 +1,6 @@
 
 import { useAvailableRewards } from "@/hooks/queries/useAvailableRewards";
 import { useUserMilestones } from "@/hooks/queries/useUserMilestones";
-import { useRewardStatus } from "@/hooks/queries/useRewardStatus";
 import { AvailableReward, UserMilestone } from "@/types/api";
 
 /**
