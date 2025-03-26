@@ -23,11 +23,11 @@ export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> 
     if (route === '/' || route === '/home') {
       try {
         const homeModule = await import('@/lib/tour/home/tour-path');
-        if (homeModule.homeTourPath) {
-          paths.push(homeModule.homeTourPath);
+        if (homeModule.homeWelcomeTourPath) {
+          paths.push(homeModule.homeWelcomeTourPath);
         }
-        if (homeModule.homeOnboardingTourPath) {
-          paths.push(homeModule.homeOnboardingTourPath);
+        if (homeModule.homeFeaturesPath) {
+          paths.push(homeModule.homeFeaturesPath);
         }
       } catch (err) {
         console.warn('Failed to load home tour paths', err);

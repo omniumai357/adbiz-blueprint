@@ -33,7 +33,7 @@ export interface TourStep {
       onClick?: () => void;
     };
   };
-  condition?: () => boolean;
+  condition?: () => boolean | Promise<boolean>;
   onBeforeStep?: () => Promise<boolean> | boolean;
   onAfterStep?: () => void;
   delay?: number;
@@ -109,14 +109,17 @@ export interface TourPath {
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
-  route?: string;
   config?: {
     allowSkip?: boolean;
     showProgress?: boolean;
     autoStart?: boolean;
     completionCallback?: () => void;
-    metadata?: Record<string, any>;
-    userRoles?: string[];
+    metadata?: {
+      route?: string;
+      tags?: string[];
+      userRoles?: string[];
+      [key: string]: any;
+    };
     accessibility?: {
       announceSteps?: boolean;
       keyboardNavigation?: boolean;

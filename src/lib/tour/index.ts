@@ -1,7 +1,7 @@
 
 // Export core functionality
 export * from './core/paths/createTourPath';
-// Export renamed function to avoid name conflicts
+// Export custom path creators
 export { createTourPath as createTourPathFromGroups } from './core/paths/createTourPathFromGroups';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';

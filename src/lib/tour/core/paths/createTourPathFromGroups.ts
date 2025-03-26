@@ -11,7 +11,7 @@ import { getAllStepGroups } from '../tourStepGroups';
  * @param options Additional configuration options
  * @returns A tour path object with steps from the specified groups
  */
-export function createTourPathFromGroups(
+export function createTourPath(
   id: string,
   name: string,
   groupIds: string[],
@@ -44,14 +44,30 @@ export function createTourPathFromGroups(
     steps: allSteps,
     allowSkip: options?.allowSkip ?? true,
     showProgress: options?.showProgress ?? true,
-    route: options?.route,
     config: {
       allowSkip: options?.allowSkip,
       showProgress: options?.showProgress,
       metadata: {
+        route: options?.route,
         tags: options?.tags || [],
         userRoles: options?.userRoles || []
       }
     }
+  };
+}
+
+// Add these functions to ensure stepInGroup and conditionalStep are available
+export function stepInGroup(stepId: string, groupId: string) {
+  // Implementation for stepInGroup
+  return {
+    stepId,
+    groupId
+  };
+}
+
+export function conditionalStep(step: TourStep, condition: () => boolean): TourStep {
+  return {
+    ...step,
+    condition
   };
 }

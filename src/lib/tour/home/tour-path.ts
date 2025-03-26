@@ -28,7 +28,6 @@ export const homeWelcomeTourPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
-  // Make route safe by using config property
   config: {
     metadata: {
       route: '/'
@@ -62,7 +61,6 @@ export const homeFeaturesPath: TourPath = {
   ],
   allowSkip: true,
   showProgress: true,
-  // Make route safe by using config property
   config: {
     metadata: {
       route: '/'
