@@ -1,4 +1,3 @@
-
 // Re-export core tour path and step creation functions
 export { 
   createTourPath,
@@ -69,6 +68,22 @@ export {
   metadataEnhancedStep,
   dynamicContentStep
 } from './enhancers/contentEnhancers';
+
+// Re-export dependency enhancers
+export {
+  dependentOnSteps,
+  dependentOnPaths,
+  branchingStep,
+  reEntryPoint,
+  sectionStep
+} from './enhancers/dependencyEnhancers';
+
+// Re-export dependency management tools
+export {
+  TourDependencyManager,
+  createStepDependency,
+  dependentStep
+} from './core/tourDependencyManager';
 
 // Re-export existing tour paths for backward compatibility
 export { defaultTourPath } from './default-tour';
