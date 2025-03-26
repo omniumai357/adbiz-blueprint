@@ -10,9 +10,11 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Path } from "react-hook-form";
+import { QuestionnaireFormValues } from "@/hooks/useQuestionnaireForm";
 
 interface FormTextFieldProps {
-  name: string;
+  name: Path<QuestionnaireFormValues>;
   label: string;
   placeholder?: string;
   description?: string;

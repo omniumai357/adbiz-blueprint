@@ -13,6 +13,8 @@ import {
   RadioGroup,
   RadioGroupItem
 } from "@/components/ui/radio-group";
+import { Path } from "react-hook-form";
+import { QuestionnaireFormValues } from "@/hooks/useQuestionnaireForm";
 
 export interface RadioOption {
   value: string;
@@ -21,7 +23,7 @@ export interface RadioOption {
 }
 
 interface FormRadioGroupFieldProps {
-  name: string;
+  name: Path<QuestionnaireFormValues>;
   label: string;
   options: RadioOption[];
   description?: string;
@@ -59,8 +61,8 @@ export const FormRadioGroupField: React.FC<FormRadioGroupFieldProps> = ({
           <FormControl>
             <RadioGroup
               onValueChange={field.onChange}
-              defaultValue={field.value}
-              value={field.value}
+              defaultValue={field.value as string}
+              value={field.value as string}
               className={orientation === "horizontal" ? "flex flex-row space-x-4" : "space-y-3"}
             >
               {options.map((option) => (

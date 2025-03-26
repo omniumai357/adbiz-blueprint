@@ -10,9 +10,11 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Path } from "react-hook-form";
+import { QuestionnaireFormValues } from "@/hooks/useQuestionnaireForm";
 
 interface FormCheckboxFieldProps {
-  name: string;
+  name: Path<QuestionnaireFormValues>;
   label: string;
   description?: string;
   className?: string;
@@ -37,7 +39,7 @@ export const FormCheckboxField: React.FC<FormCheckboxFieldProps> = ({
         <FormItem className={`flex flex-row items-start space-x-3 space-y-0 ${className}`}>
           <FormControl>
             <Checkbox
-              checked={field.value}
+              checked={field.value as boolean}
               onCheckedChange={field.onChange}
             />
           </FormControl>

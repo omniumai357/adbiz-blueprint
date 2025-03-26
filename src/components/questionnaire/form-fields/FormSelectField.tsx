@@ -16,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { Path } from "react-hook-form";
+import { QuestionnaireFormValues } from "@/hooks/useQuestionnaireForm";
 
 export interface SelectOption {
   value: string;
@@ -23,7 +25,7 @@ export interface SelectOption {
 }
 
 interface FormSelectFieldProps {
-  name: string;
+  name: Path<QuestionnaireFormValues>;
   label: string;
   options: SelectOption[];
   placeholder?: string;
@@ -60,8 +62,8 @@ export const FormSelectField: React.FC<FormSelectFieldProps> = ({
           
           <Select 
             onValueChange={field.onChange} 
-            defaultValue={field.value}
-            value={field.value}
+            defaultValue={field.value as string}
+            value={field.value as string}
           >
             <FormControl>
               <SelectTrigger>
