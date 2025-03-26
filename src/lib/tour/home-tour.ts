@@ -1,11 +1,18 @@
 
-import { createStep, enhanceStep } from './createTourPath';
-import { animatedStep, dynamicContentStep, conditionalStep, roleRestrictedStep } from './createTourPath';
+import { 
+  createTourPath, 
+  createStep,
+  enhanceStep,
+  animatedStep, 
+  dynamicContentStep, 
+  conditionalStep, 
+  roleRestrictedStep 
+} from './index';
 
-export const homeTourPath = {
-  id: "home-tour",
-  name: "Home Page Tour",
-  steps: [
+export const homeTourPath = createTourPath(
+  "home-tour",
+  "Home Page Tour",
+  [
     enhanceStep(
       createStep(
         "welcome",
@@ -14,7 +21,7 @@ export const homeTourPath = {
         "This is our homepage where you can learn about our services and get started with our platform.",
         "bottom"
       ),
-      animatedStep
+      animatedStep()
     ),
     
     enhanceStep(
@@ -63,4 +70,4 @@ export const homeTourPath = {
       roleRestrictedStep(["user", "admin"])
     )
   ]
-};
+);

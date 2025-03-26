@@ -1,14 +1,15 @@
 
 import { 
   createTourPath, 
+  createStep,
+  enhanceStep,
   conditionalStep, 
   animatedStep, 
   optionalStep,
   roleRestrictedStep,
   mediaEnhancedStep,
-  actionEnhancedStep,
-  enhanceStep
-} from "./createTourPath";
+  actionEnhancedStep
+} from "./index";
 
 // Function to check if user has payment methods saved
 const hasSavedPaymentMethods = () => {
@@ -36,21 +37,23 @@ const isMobileDevice = () => {
 
 // Helper to show the appropriate payment step based on device
 const getPaymentStep = () => {
-  const baseStep = {
-    id: "payment-methods",
-    elementId: "payment-method-section",
-    title: "Payment Methods",
-    content: "Choose your preferred payment method to complete your purchase.",
-    position: "left" as "left" // Type assertion to fix position type
-  };
+  const baseStep = createStep(
+    "payment-methods",
+    "payment-method-section",
+    "Payment Methods",
+    "Choose your preferred payment method to complete your purchase.",
+    "left"
+  );
   
   // Mobile users get a simpler step with different position
   if (isMobileDevice()) {
-    return {
-      ...baseStep,
-      position: "bottom" as "bottom", // Type assertion to fix position type
-      content: "Select your payment method from the options below.",
-    };
+    return createStep(
+      "payment-methods",
+      "payment-method-section",
+      "Payment Methods",
+      "Select your payment method from the options below.",
+      "bottom"
+    );
   }
   
   return baseStep;
@@ -61,102 +64,113 @@ export const checkoutTourPath = createTourPath(
   "Checkout Page Tour",
   [
     enhanceStep(
-      {
-        id: "welcome",
-        elementId: "checkout-header",
-        title: "Welcome to Checkout",
-        content: "This is the checkout page where you can complete your purchase. Let's walk through the process.",
-        position: "bottom"
-      },
-      (step) => animatedStep(step, { highlight: "glow", entry: "fade-up" }),
-      (step) => conditionalStep(step, () => !isReturningCustomer())
+      createStep(
+        "welcome",
+        "checkout-header",
+        "Welcome to Checkout",
+        "This is the checkout page where you can complete your purchase. Let's walk through the process.",
+        "bottom"
+      ),
+      step => {
+        // Chain enhancers
+        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
+        return conditionalStep(() => !isReturningCustomer())(withAnimation);
+      }
     ),
     
     enhanceStep(
-      {
-        id: "welcome-returning",
-        elementId: "checkout-header",
-        title: "Welcome Back",
-        content: "Welcome back to checkout! We've customized this tour for returning customers.",
-        position: "bottom"
-      },
-      (step) => animatedStep(step, { highlight: "glow", entry: "fade-up" }),
-      (step) => conditionalStep(step, isReturningCustomer)
+      createStep(
+        "welcome-returning",
+        "checkout-header",
+        "Welcome Back",
+        "Welcome back to checkout! We've customized this tour for returning customers.",
+        "bottom"
+      ),
+      step => {
+        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
+        return conditionalStep(isReturningCustomer)(withAnimation);
+      }
     ),
     
     enhanceStep(
-      {
-        id: "customer-info",
-        elementId: "customer-info-section",
-        title: "Customer Information",
-        content: "Here you can enter your personal and business details. This information will be used for your invoice.",
-        position: "right"
-      },
-      (step) => animatedStep(step, { highlight: "pulse", entry: "scale-in" })
+      createStep(
+        "customer-info",
+        "customer-info-section",
+        "Customer Information",
+        "Here you can enter your personal and business details. This information will be used for your invoice.",
+        "right"
+      ),
+      animatedStep({ highlight: "pulse", entry: "scale-in" })
     ),
     
     enhanceStep(
-      {
-        id: "add-ons",
-        elementId: "add-ons-section",
-        title: "Service Add-ons",
-        content: "Enhance your package with these optional add-ons. Select any that might benefit your business.",
-        position: "left"
-      },
-      (step) => animatedStep(step, { highlight: "bounce", entry: "slide-in" }),
-      (step) => mediaEnhancedStep(step, {
-        type: "image",
-        url: "/placeholder.svg",
-        alt: "Example add-ons selection"
-      })
+      createStep(
+        "add-ons",
+        "add-ons-section",
+        "Service Add-ons",
+        "Enhance your package with these optional add-ons. Select any that might benefit your business.",
+        "left"
+      ),
+      step => {
+        const withAnimation = animatedStep({ highlight: "bounce", entry: "slide-in" })(step);
+        return mediaEnhancedStep({
+          type: "image",
+          url: "/placeholder.svg",
+          alt: "Example add-ons selection"
+        })(withAnimation);
+      }
     ),
     
-    conditionalStep(
-      animatedStep({
-        id: "discounts",
-        elementId: "discounts-section",
-        title: "Available Discounts",
-        content: "View applicable discounts and special offers. You can also enter coupon codes here.",
-        position: "top"
-      }, { highlight: "dashed", entry: "fade-in" }),
-      hasAvailableDiscounts
+    conditionalStep(hasAvailableDiscounts)(
+      animatedStep({ highlight: "dashed", entry: "fade-in" })(
+        createStep(
+          "discounts",
+          "discounts-section",
+          "Available Discounts",
+          "View applicable discounts and special offers. You can also enter coupon codes here.",
+          "top"
+        )
+      )
     ),
     
-    conditionalStep(
-      animatedStep({
-        id: "saved-payment-methods",
-        elementId: "saved-payment-methods",
-        title: "Your Saved Payment Methods",
-        content: "Choose from your previously saved payment methods for faster checkout.",
-        position: "left"
-      }, { highlight: "solid", entry: "scale-in" }),
-      hasSavedPaymentMethods
+    conditionalStep(hasSavedPaymentMethods)(
+      animatedStep({ highlight: "solid", entry: "scale-in" })(
+        createStep(
+          "saved-payment-methods",
+          "saved-payment-methods",
+          "Your Saved Payment Methods",
+          "Choose from your previously saved payment methods for faster checkout.",
+          "left"
+        )
+      )
     ),
     
     // The payment step will adapt based on device
     enhanceStep(
       getPaymentStep(),
-      (step) => animatedStep(step, { highlight: "pulse", entry: "fade-up" })
+      animatedStep({ highlight: "pulse", entry: "fade-up" })
     ),
     
     enhanceStep(
-      {
-        id: "order-summary",
-        elementId: "order-summary-section",
-        title: "Order Summary",
-        content: "Review your order details, including selected package, add-ons, and total cost before finalizing.",
-        position: "right"
-      },
-      (step) => animatedStep(step, { highlight: "glow", entry: "float" }),
-      (step) => optionalStep(step),
-      (step) => actionEnhancedStep(step, {
-        next: {
-          label: "Complete Tour",
-        },
-        skip: {
-          label: "Finish Shopping"
-        }
-      })
+      createStep(
+        "order-summary",
+        "order-summary-section",
+        "Order Summary",
+        "Review your order details, including selected package, add-ons, and total cost before finalizing.",
+        "right"
+      ),
+      step => {
+        const withAnimation = animatedStep({ highlight: "glow", entry: "float" })(step);
+        const withOptional = optionalStep()(withAnimation);
+        return actionEnhancedStep({
+          next: {
+            label: "Complete Tour",
+          },
+          skip: {
+            label: "Finish Shopping"
+          }
+        })(withOptional);
+      }
     )
   ],
   {
