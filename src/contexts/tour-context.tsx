@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
+import { useAuthUser } from "@/hooks/queries/useAuthUser";
 
 export type StepConditionFn = () => boolean;
 
@@ -70,9 +71,14 @@ export const TourProvider: React.FC<{
 }> = ({ children, currentPathname }) => {
   const location = useLocation();
   const pathname = currentPathname || location.pathname;
+  const { data: authData } = useAuthUser();
   
-  // Use our hook to manage tour state
-  const tourController = useTourController([], pathname);
+  // Get user information for analytics
+  const userId = authData?.user?.id;
+  const userType = authData?.profile?.role || 'anonymous';
+  
+  // Use our hook to manage tour state with user context for analytics
+  const tourController = useTourController([], pathname, userId, userType);
   
   return <TourContext.Provider value={tourController}>{children}</TourContext.Provider>;
 };

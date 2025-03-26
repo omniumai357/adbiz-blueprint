@@ -6,6 +6,8 @@ import { TourOverlay } from "./TourOverlay";
 import { TourDrawer } from "./TourDrawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
+import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
+import { useAuthUser } from "@/hooks/queries/useAuthUser";
 
 export const TourGuide: React.FC = () => {
   const {
@@ -17,10 +19,35 @@ export const TourGuide: React.FC = () => {
     totalSteps,
     endTour,
     handleKeyNavigation,
+    currentPath,
+    availablePaths,
   } = useTour();
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   const isMobile = useMediaQuery("(max-width: 640px)");
+  const { data: authData } = useAuthUser();
+  const analytics = useTourAnalytics();
+  
+  // Get user information for interaction tracking
+  const userId = authData?.user?.id;
+  const userType = authData?.profile?.role || 'anonymous';
+
+  // Handle custom interactions with tour elements
+  const handleInteraction = (interactionType: string) => {
+    if (!currentStepData || !currentPath) return;
+    
+    const pathData = availablePaths.find(path => path.id === currentPath);
+    if (!pathData) return;
+    
+    analytics.trackStepInteraction(
+      pathData,
+      currentStepData,
+      currentStep,
+      interactionType,
+      userId,
+      userType
+    );
+  };
 
   // Add keyboard navigation event listener
   useEffect(() => {
@@ -42,6 +69,24 @@ export const TourGuide: React.FC = () => {
     };
   }, [isActive, handleKeyNavigation]);
 
+  // Handle tour closing with analytics
+  const handleClose = () => {
+    handleInteraction('close_button_clicked');
+    endTour();
+  };
+  
+  // Handle next step with analytics
+  const handleNext = () => {
+    handleInteraction('next_button_clicked');
+    nextStep();
+  };
+  
+  // Handle previous step with analytics
+  const handlePrev = () => {
+    handleInteraction('prev_button_clicked');
+    prevStep();
+  };
+
   if (!isActive || !currentStepData) {
     return null;
   }
@@ -59,9 +104,9 @@ export const TourGuide: React.FC = () => {
           content={currentStepData.content}
           currentStep={currentStep}
           totalSteps={totalSteps}
-          onNext={nextStep}
-          onPrev={prevStep}
-          onClose={endTour}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          onClose={handleClose}
         />
       </>
     );
@@ -81,9 +126,9 @@ export const TourGuide: React.FC = () => {
           title={currentStepData.title}
           content={currentStepData.content}
           stepInfo={`${currentStep + 1} of ${totalSteps}`}
-          onPrev={currentStep > 0 ? prevStep : undefined}
-          onNext={nextStep}
-          onClose={endTour}
+          onPrev={currentStep > 0 ? handlePrev : undefined}
+          onNext={handleNext}
+          onClose={handleClose}
           isLastStep={currentStep === totalSteps - 1}
           animation={currentStepData.animation?.entry}
         />
