@@ -5,16 +5,15 @@ import { TourPath, TourStep } from "@/contexts/tour/types";
  * Helper function to create tour paths with conditional steps
  * 
  * @param id Unique identifier for the tour path
- * @param name Display name for the tour path
  * @param steps Array of tour steps
  * @param options Additional tour path configuration options
  * @returns A configured TourPath object
  */
 export function createTourPath(
   id: string,
-  name: string,
   steps: TourStep[],
   options?: {
+    name?: string;
     allowSkip?: boolean;
     showProgress?: boolean;
     autoStart?: boolean;
@@ -31,8 +30,21 @@ export function createTourPath(
 ): TourPath {
   return {
     id,
-    name,
+    name: options?.name || id,
     steps,
-    ...options
+    allowSkip: options?.allowSkip,
+    showProgress: options?.showProgress,
+    autoStart: options?.autoStart,
+    config: options 
+      ? {
+          allowSkip: options.allowSkip,
+          showProgress: options.showProgress,
+          autoStart: options.autoStart,
+          completionCallback: options.completionCallback,
+          metadata: options.metadata,
+          userRoles: options.requiredUserRoles,
+          accessibility: options.accessibility
+        }
+      : undefined
   };
 }

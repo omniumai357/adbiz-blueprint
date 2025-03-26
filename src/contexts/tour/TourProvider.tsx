@@ -6,9 +6,9 @@ import { useAuthUser } from '@/hooks/queries/useAuthUser';
 import { useAuth } from '@/contexts/auth-context';
 import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
-import { PathOptions } from '@/lib/utils/path-utils';
 import { TourThemeName } from '@/lib/tour/types/theme';
 import { defaultContext } from './defaults';
+import { TourContextType } from './types';
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -68,9 +68,9 @@ export const TourProvider: React.FC<TourProviderProps> = ({
   }, [theme]);
   
   // Combine the controller with our custom config
-  const contextValue = {
+  const contextValue: TourContextType = {
+    ...defaultContext,
     ...tourController,
-    ...defaultContext, // Add default values for any properties not provided by tourController
     customConfig,
     setCustomConfig
   };

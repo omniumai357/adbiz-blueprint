@@ -64,8 +64,8 @@ export const TourScreenReaderAnnouncer: React.FC<TourScreenReaderAnnouncerProps>
         let announcement = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}. ${currentStepData.content || ''}`;
         
         // Add path connection announcements if path property exists
-        if (currentStepData.path && currentStepData.path.enabled && currentStepData.path.targetElementId) {
-          announcement += ` This step is connected to the ${currentStepData.path.targetElementId} element.`;
+        if (currentStepData.path && currentStepData.path.enabled) {
+          announcement += ` This step is connected to the ${currentStepData.path.targetElementId || 'next'} element.`;
           
           if (currentStepData.path.style) {
             announcement += ` The connection is visualized with a ${currentStepData.path.style} path.`;

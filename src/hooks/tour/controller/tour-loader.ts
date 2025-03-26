@@ -1,5 +1,5 @@
 
-import { TourPath } from '@/contexts/tour-context';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
  * Loads tour paths based on current route

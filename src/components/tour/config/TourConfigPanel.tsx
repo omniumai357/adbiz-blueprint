@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TourPath } from "@/contexts/tour-context";
+import { TourPath } from "@/contexts/tour/types";
 import { Check, ChevronRight, Play, Plus, Settings, Trash, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,11 +52,18 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
   };
 
   // Toggle path options
-  const togglePathOption = (pathId: string, option: keyof Pick<TourPath, 'allowSkip' | 'showProgress' | 'autoStart'>) => {
+  const togglePathOption = (pathId: string, option: 'allowSkip' | 'showProgress' | 'autoStart') => {
     setEditedPaths(paths => 
-      paths.map(path => 
-        path.id === pathId ? { ...path, [option]: !path[option] } : path
-      )
+      paths.map(path => {
+        if (path.id === pathId) {
+          // Create a new path object with the toggled option
+          const newPath = { ...path };
+          // @ts-ignore - We're using dynamic property access
+          newPath[option] = !(newPath[option] as boolean);
+          return newPath;
+        }
+        return path;
+      })
     );
   };
 
@@ -111,7 +118,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                       <ChevronRight 
                         className={`mr-2 h-4 w-4 transition-transform ${expandedPath === path.id ? 'rotate-90' : ''}`} 
                       />
-                      <span className="font-medium">{path.name}</span>
+                      <span className="font-medium">{path.name || path.id}</span>
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({getStepCount(path.id)} steps)
                       </span>
@@ -148,7 +155,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                           <Label htmlFor={`path-name-${path.id}`}>Path Name</Label>
                           <Input 
                             id={`path-name-${path.id}`}
-                            value={path.name}
+                            value={path.name || ''}
                             onChange={(e) => updatePathName(path.id, e.target.value)}
                           />
                         </div>
@@ -157,7 +164,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                           <label className="flex items-center space-x-2 cursor-pointer">
                             <input 
                               type="checkbox" 
-                              checked={path.allowSkip} 
+                              checked={!!path.allowSkip} 
                               onChange={() => togglePathOption(path.id, 'allowSkip')}
                               className="rounded"
                             />
@@ -167,7 +174,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                           <label className="flex items-center space-x-2 cursor-pointer">
                             <input 
                               type="checkbox" 
-                              checked={path.showProgress} 
+                              checked={!!path.showProgress} 
                               onChange={() => togglePathOption(path.id, 'showProgress')}
                               className="rounded"
                             />
@@ -177,7 +184,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                           <label className="flex items-center space-x-2 cursor-pointer">
                             <input 
                               type="checkbox" 
-                              checked={path.autoStart} 
+                              checked={!!path.autoStart} 
                               onChange={() => togglePathOption(path.id, 'autoStart')}
                               className="rounded"
                             />
@@ -206,7 +213,7 @@ export const TourConfigPanel: React.FC<TourConfigPanelProps> = ({
                                       <span className="font-medium">{step.title}</span>
                                     </div>
                                     <div className="text-xs text-muted-foreground">
-                                      {step.elementId}
+                                      {step.target || step.elementId}
                                     </div>
                                   </div>
                                 ))}

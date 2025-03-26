@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { TourStep } from "@/contexts/tour-context";
+import { TourStep } from "@/contexts/tour/types";
+import { DynamicContentProvider } from "@/hooks/tour/analytics/types";
 import { processDynamicContent } from "@/hooks/tour/controller/step-processor";
 
 /**
@@ -23,12 +24,23 @@ export function useTourDynamicContent(
       
       setIsProcessingDynamicContent(true);
       try {
-        const processedStep = await processDynamicContent(currentStepData);
-        if (processedStep.content !== currentStepData.content) {
-          setDynamicContent(currentStepData.id, processedStep.content);
+        // Create a temporary helper to process the step content
+        const dynamicContentProvider = currentStepData.metadata.dynamicContentProvider as DynamicContentProvider;
+        let processedContent: string;
+        
+        try {
+          const content = await Promise.resolve(dynamicContentProvider());
+          processedContent = content || currentStepData.content;
+        } catch (error) {
+          console.error("Error processing dynamic content:", error);
+          processedContent = currentStepData.content;
+        }
+        
+        if (processedContent !== currentStepData.content) {
+          setDynamicContent(currentStepData.id, processedContent);
         }
       } catch (error) {
-        console.error("Error processing dynamic content:", error);
+        console.error("Error in dynamic content processing:", error);
       } finally {
         setIsProcessingDynamicContent(false);
       }

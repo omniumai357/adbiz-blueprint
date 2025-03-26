@@ -15,106 +15,51 @@ import { TourDependencyManager, createStepDependency } from '../core/dependency'
 
 // Example 1: Simple sequential dependency
 const simpleSequentialPath = createTourPath('simple-sequential', [
-  createStep('intro', {
-    title: 'Introduction',
-    content: 'This is the first step',
-    target: '#intro',
-    position: 'bottom'
-  }),
+  createStep('intro', 'intro', 'Introduction', 'This is the first step', 'bottom'),
   
   // Step that depends on the intro step
   dependentStep(
-    createStep('features', {
-      title: 'Features',
-      content: 'This shows all the features',
-      target: '#features',
-      position: 'top'
-    }),
+    createStep('features', 'features', 'Features', 'This shows all the features', 'top'),
     'intro' // Dependent on intro step
   ),
   
   // Step that depends on the features step
   dependentStep(
-    createStep('conclusion', {
-      title: 'Conclusion',
-      content: 'This is the final step',
-      target: '#conclusion',
-      position: 'right'
-    }),
+    createStep('conclusion', 'conclusion', 'Conclusion', 'This is the final step', 'right'),
     'features' // Dependent on features step
   )
 ]);
 
 // Example 2: Branching path with conditional step
 const branchingExamplePath = createTourPath('branching-example', [
-  createStep('start', {
-    title: 'Start',
-    content: 'This is the starting point',
-    target: '#start',
-    position: 'bottom'
-  }),
+  createStep('start', 'start', 'Start', 'This is the starting point', 'bottom'),
   
   // Branch based on a condition
   branchingStep(
-    createStep('branch-point', {
-      title: 'Branch Point',
-      content: 'The tour will branch from here',
-      target: '#branch-point',
-      position: 'top'
-    }),
+    createStep('branch-point', 'branch-point', 'Branch Point', 'The tour will branch from here', 'top'),
     () => Math.random() > 0.5, // Condition
     'path-a-1', // True path
     'path-b-1'  // False path
   ),
   
   // Path A steps
-  createStep('path-a-1', {
-    title: 'Path A - Step 1',
-    content: 'You are on path A, step 1',
-    target: '#path-a-1',
-    position: 'right'
-  }),
+  createStep('path-a-1', 'path-a-1', 'Path A - Step 1', 'You are on path A, step 1', 'right'),
   
-  createStep('path-a-2', {
-    title: 'Path A - Step 2',
-    content: 'You are on path A, step 2',
-    target: '#path-a-2',
-    position: 'right'
-  }),
+  createStep('path-a-2', 'path-a-2', 'Path A - Step 2', 'You are on path A, step 2', 'right'),
   
   // Path B steps
-  createStep('path-b-1', {
-    title: 'Path B - Step 1',
-    content: 'You are on path B, step 1',
-    target: '#path-b-1',
-    position: 'left'
-  }),
+  createStep('path-b-1', 'path-b-1', 'Path B - Step 1', 'You are on path B, step 1', 'left'),
   
-  createStep('path-b-2', {
-    title: 'Path B - Step 2',
-    content: 'You are on path B, step 2',
-    target: '#path-b-2',
-    position: 'left'
-  }),
+  createStep('path-b-2', 'path-b-2', 'Path B - Step 2', 'You are on path B, step 2', 'left'),
   
   // Re-entry point where both paths converge
   reEntryPoint(
-    createStep('convergence', {
-      title: 'Convergence',
-      content: 'Both paths converge here',
-      target: '#convergence',
-      position: 'bottom'
-    }),
+    createStep('convergence', 'convergence', 'Convergence', 'Both paths converge here', 'bottom'),
     ['path-a-2', 'path-b-2'] // Steps that lead to this one
   ),
   
   // Final step after convergence
-  createStep('final', {
-    title: 'Final Step',
-    content: 'This is the final step of the tour',
-    target: '#final',
-    position: 'bottom'
-  })
+  createStep('final', 'final', 'Final Step', 'This is the final step of the tour', 'bottom')
 ]);
 
 // Export examples

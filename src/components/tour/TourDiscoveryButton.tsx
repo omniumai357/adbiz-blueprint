@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useTour } from "@/contexts/tour";
 import { Button } from "@/components/ui/button";
@@ -59,7 +60,7 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
               size={size === "default" ? "icon" : size}
               className={`${className} animate-pulse-subtle`}
               onClick={() => tourPathId && startTour(tourPathId)}
-              aria-label={`Start ${tourName}`}
+              aria-label={`Start ${tourName || "Guided Tour"}`}
             >
               <HelpCircle className="h-4 w-4" aria-hidden="true" />
               {showLabel && <span className="ml-2">Tour Guide</span>}
@@ -93,7 +94,7 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
               key={tour.id}
               onClick={() => startTour(tour.id)}
             >
-              {tour.name}
+              {tour.name || tour.id}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>

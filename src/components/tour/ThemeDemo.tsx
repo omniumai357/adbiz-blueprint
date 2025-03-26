@@ -26,6 +26,7 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
   const [customColors, setCustomColors] = useState<TourThemeColors>({
     accentBlue: '#FF5733',
     borderHighlight: '#FF5733',
+    // Use updated property names that match TourThemeColors interface
     buttonPrimaryBg: '#FF5733',
     buttonPrimaryHoverBg: '#E04020',
     progressFill: '#FF5733',
@@ -273,8 +274,8 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleThemeChange('playful')}
-                  disabled={isTransitioning || currentTheme === 'playful'}
+                  onClick={() => handleThemeChange('green')}
+                  disabled={isTransitioning || currentTheme === 'green'}
                 >
                   Playful
                 </Button>

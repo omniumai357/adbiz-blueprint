@@ -35,4 +35,5 @@ export const defaultContext: TourContextType = {
   // Additional properties
   handleKeyNavigation: () => {},
   visibleSteps: [],
+  content: "",
 };

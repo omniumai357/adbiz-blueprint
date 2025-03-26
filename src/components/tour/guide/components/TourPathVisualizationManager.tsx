@@ -1,44 +1,61 @@
 
-import React, { useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useTour } from "@/contexts/tour";
 import { TourPathVisualization } from "../TourPathVisualization";
+import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 
 interface TourPathVisualizationManagerProps {
   targetElement: HTMLElement | null;
 }
 
-export const TourPathVisualizationManager: React.FC<TourPathVisualizationManagerProps> = ({ 
-  targetElement 
+export const TourPathVisualizationManager: React.FC<TourPathVisualizationManagerProps> = ({
+  targetElement
 }) => {
   const { isActive, currentStepData } = useTour();
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
   
-  // Skip rendering if no target element
-  if (!targetElement || !currentStepData) {
+  // If the current step has a path property, find the target element for the path
+  useEffect(() => {
+    if (!isActive || !currentStepData || !currentStepData.path || !currentStepData.path.enabled) {
+      setPathTargetElement(null);
+      return;
+    }
+    
+    // Find the target element for the path
+    const pathTargetSelector = currentStepData.path.targetElementId;
+    if (!pathTargetSelector) {
+      setPathTargetElement(null);
+      return;
+    }
+    
+    try {
+      const element = document.querySelector(pathTargetSelector) as HTMLElement;
+      setPathTargetElement(element);
+    } catch (error) {
+      console.error('Error finding path target element:', error);
+      setPathTargetElement(null);
+    }
+  }, [isActive, currentStepData]);
+  
+  if (!isActive || !currentStepData?.path?.enabled || !targetElement || !pathTargetElement) {
     return null;
   }
   
-  // Skip if no path configuration
-  if (!currentStepData.path?.enabled) {
-    return null;
-  }
-  
-  // Find path target element (if any)
-  const pathTarget = currentStepData.path.targetElementId
-    ? document.getElementById(currentStepData.path.targetElementId)
-    : null;
+  // Convert the path options from the step data
+  const pathOptions = {
+    style: currentStepData.path.style || 'solid',
+    color: currentStepData.path.color || '#4f46e5',
+    animationDuration: currentStepData.path.animationDuration || 500,
+    showArrow: currentStepData.path.showArrow !== false,
+    waypoints: currentStepData.path.waypoints
+  };
   
   return (
     <TourPathVisualization
-      isActive={isActive}
-      sourceElement={tooltipRef.current}
-      targetElement={pathTarget}
-      pathOptions={{
-        style: currentStepData.path.style || 'solid',
-        color: '#0066cc',
-        width: 2,
-        animate: true
-      }}
+      isActive={true}
+      sourceElement={targetElement}
+      targetElement={pathTargetElement}
+      pathOptions={pathOptions}
     />
   );
 };

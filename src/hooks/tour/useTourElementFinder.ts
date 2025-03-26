@@ -1,106 +1,118 @@
 
-import { useState, useEffect } from "react";
-import { TourStep } from "@/contexts/tour/types";
-import { getBestTooltipPosition } from "@/lib/utils/dom-utils";
+import { useState, useEffect, useCallback } from 'react';
+import { TourStep } from '@/contexts/tour/types';
+
+interface ElementFinderResult {
+  targetElement: HTMLElement | null;
+  findElement: (selector: string) => HTMLElement | null;
+  retryFindElement: (selector: string) => Promise<HTMLElement | null>;
+  isElementVisible: (el: HTMLElement) => boolean;
+}
 
 /**
- * Hook to find and track tour target elements in the DOM
+ * A hook that finds and tracks DOM elements for tour steps
  * 
  * @param isActive Whether the tour is active
- * @param currentStepData Current tour step data
- * @returns Object containing the target element and optimized position
+ * @param stepData Current step data
+ * @returns Object with target element and helper functions
  */
 export function useTourElementFinder(
   isActive: boolean,
-  currentStepData: TourStep | null
-) {
+  stepData: TourStep | null
+): ElementFinderResult {
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-  const [optimizedPosition, setOptimizedPosition] = useState<"top" | "right" | "bottom" | "left" | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 20; // Try for 2 seconds (100ms intervals)
 
-  // Track when elements become available in the DOM
-  useEffect(() => {
-    if (isActive && currentStepData) {
-      let checkInterval: number | null = null;
-      let currentRetries = 0;
-      
-      const findElement = () => {
-        // Try with ID first (preferred method)
-        let element = document.getElementById(currentStepData.elementId);
-        
-        // If not found, try with CSS selector as a fallback
-        if (!element) {
-          try {
-            const potentialElement = document.querySelector(`#${currentStepData.elementId}, .${currentStepData.elementId}, [data-tour-id="${currentStepData.elementId}"]`);
-            if (potentialElement instanceof HTMLElement) {
-              element = potentialElement;
-            }
-          } catch (e) {
-            // Silent fail for invalid selectors
-          }
-        }
-        
-        if (element) {
-          setTargetElement(element);
-          
-          // Determine optimal position based on viewport
-          const preferredPosition = currentStepData.position || 'bottom';
-          
-          // Handle extended position types by converting to supported ones
-          const basePosition = preferredPosition.includes('-') 
-            ? preferredPosition.split('-')[0] as 'top' | 'right' | 'bottom' | 'left'
-            : preferredPosition as 'top' | 'right' | 'bottom' | 'left';
-            
-          const bestPosition = getBestTooltipPosition(element, basePosition);
-          setOptimizedPosition(bestPosition);
-          
-          // Clear interval since element was found
-          if (checkInterval !== null) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-          }
-        } else {
-          // Track retries
-          currentRetries++;
-          setRetryCount(currentRetries);
-          
-          // Stop checking after max retries
-          if (currentRetries >= MAX_RETRIES && checkInterval !== null) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-            console.warn(`Tour element with ID "${currentStepData.elementId}" not found after ${MAX_RETRIES} attempts`);
-          }
-        }
-      };
-
-      // Try finding immediately
-      findElement();
-      
-      // Then keep checking until found (for lazy-loaded components)
-      checkInterval = window.setInterval(findElement, 100);
-
-      return () => {
-        if (checkInterval !== null) {
-          clearInterval(checkInterval);
-        }
-        setRetryCount(0);
-        setTargetElement(null);
-        setOptimizedPosition(null);
-      };
-    } else {
-      setTargetElement(null);
-      setOptimizedPosition(null);
-      setRetryCount(0);
+  // Function to find an element by selector
+  const findElement = useCallback((selector: string): HTMLElement | null => {
+    try {
+      return document.querySelector(selector);
+    } catch (error) {
+      console.error('Error finding element:', error);
+      return null;
     }
-  }, [isActive, currentStepData]);
+  }, []);
 
-  return { 
+  // Function to retry finding an element with delay
+  const retryFindElement = useCallback(
+    async (selector: string, maxRetries = 5, delayMs = 200): Promise<HTMLElement | null> => {
+      // Use target or elementId for the selector
+      const el = findElement(selector);
+      if (el) return el;
+
+      if (maxRetries <= 0) {
+        console.warn(`Element not found after retries: ${selector}`);
+        return null;
+      }
+
+      return new Promise((resolve) => {
+        setTimeout(async () => {
+          const result = await retryFindElement(selector, maxRetries - 1, delayMs);
+          resolve(result);
+        }, delayMs);
+      });
+    },
+    [findElement]
+  );
+
+  // Check if an element is visible
+  const isElementVisible = useCallback((el: HTMLElement): boolean => {
+    const rect = el.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+    // Check if element is within viewport
+    const isInViewport =
+      rect.top <= windowHeight &&
+      rect.left <= windowWidth &&
+      rect.bottom >= 0 &&
+      rect.right >= 0;
+
+    // Check if element has size and isn't hidden
+    const hasSize = rect.width > 0 && rect.height > 0;
+    const computedStyle = window.getComputedStyle(el);
+    const isVisible =
+      computedStyle.display !== 'none' &&
+      computedStyle.visibility !== 'hidden' &&
+      computedStyle.opacity !== '0';
+
+    return isInViewport && hasSize && isVisible;
+  }, []);
+
+  // Find and set the target element when step changes
+  useEffect(() => {
+    if (!isActive || !stepData) {
+      setTargetElement(null);
+      return;
+    }
+
+    // Use target or elementId - target is preferred
+    const selector = stepData.target || stepData.elementId || '';
+    if (!selector) {
+      console.error('No target selector provided for step:', stepData.id);
+      setTargetElement(null);
+      return;
+    }
+
+    // Try to find the element with retry
+    retryFindElement(selector).then((element) => {
+      if (element) {
+        setTargetElement(element);
+      } else {
+        console.error(`Could not find target element: ${selector}`);
+        setTargetElement(null);
+      }
+    });
+
+    // Clean up when component unmounts or step changes
+    return () => {
+      setTargetElement(null);
+    };
+  }, [isActive, stepData, retryFindElement]);
+
+  return {
     targetElement,
-    optimizedPosition: optimizedPosition || (currentStepData?.position?.includes('-') 
-      ? currentStepData.position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left'
-      : (currentStepData?.position || 'bottom') as 'top' | 'right' | 'bottom' | 'left'),
-    elementFound: targetElement !== null,
-    isSearching: retryCount > 0 && retryCount < MAX_RETRIES && targetElement === null
+    findElement,
+    retryFindElement,
+    isElementVisible,
   };
 }

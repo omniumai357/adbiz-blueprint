@@ -1,4 +1,5 @@
-import { TourStep, TourPath } from '@/contexts/tour-context';
+
+import { TourStep, TourPath } from '@/contexts/tour/types';
 import { DynamicContentProvider } from '@/hooks/tour/analytics/types';
 
 /**
@@ -26,9 +27,10 @@ export const getVisibleSteps = (tourPath: TourPath | undefined): TourStep[] => {
  * @returns The current step data or null
  */
 export const getCurrentStepData = (
-  visibleSteps: TourStep[],
+  visibleSteps: TourStep[] | undefined,
   currentStep: number
 ): TourStep | null => {
+  if (!visibleSteps || visibleSteps.length === 0) return null;
   return visibleSteps[currentStep] || null;
 };
 
@@ -53,7 +55,7 @@ export const findTourPathById = (
  */
 export const processDynamicContent = async (step: TourStep): Promise<TourStep> => {
   // Check if step has a dynamic content provider
-  if (step.metadata?.dynamicContentProvider) {
+  if (step.metadata && step.metadata.dynamicContentProvider) {
     try {
       const contentProvider = step.metadata.dynamicContentProvider as DynamicContentProvider;
       const dynamicContent = await Promise.resolve(contentProvider());
@@ -67,7 +69,7 @@ export const processDynamicContent = async (step: TourStep): Promise<TourStep> =
       // Fall back to original content
       return {
         ...step,
-        content: step.metadata.originalContent || step.content
+        content: step.metadata?.originalContent || step.content
       };
     }
   }

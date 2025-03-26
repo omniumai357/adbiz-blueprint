@@ -3,7 +3,7 @@
  * Tour theme configuration types
  */
 
-export type TourThemeName = "default" | "blue" | "purple" | "green" | "amber" | "custom";
+export type TourThemeName = "default" | "blue" | "purple" | "green" | "amber" | "playful" | "custom";
 
 export interface TourThemeConfig {
   /** Current theme name */
@@ -61,6 +61,22 @@ export interface TourThemeColors {
   borderRadius?: string;
   /** Shadow style for tooltips */
   shadow?: string;
+  /** Button primary background color */
+  buttonPrimaryBg?: string;
+  /** Button primary hover background color */
+  buttonPrimaryHoverBg?: string;
+  /** Button primary text color */
+  buttonPrimaryText?: string;
+  /** Button secondary background color */
+  buttonSecondaryBg?: string;
+  /** Button secondary hover background color */
+  buttonSecondaryHoverBg?: string;
+  /** Progress bar background color */
+  progressBg?: string;
+  /** Progress fill color */
+  progressFill?: string;
+  /** Spotlight glow color */
+  spotlightGlow?: string;
 }
 
 /**

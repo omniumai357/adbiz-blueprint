@@ -21,6 +21,7 @@ export function createStep(
   return {
     id,
     elementId,
+    target: elementId, // Set target to the same as elementId for backward compatibility
     title,
     content,
     position
