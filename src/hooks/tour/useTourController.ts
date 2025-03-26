@@ -42,8 +42,10 @@ export function useTourController(
     getCurrentPathData
   } = useTourState(initialPaths);
 
-  // Calculate total steps first
+  // First, define totalSteps before using it
   const totalSteps = visibleSteps?.length || 0;
+  // Get current step data
+  const currentStepData = getCurrentStepData(visibleSteps, currentStep);
 
   // Setup tour persistence
   const {
@@ -65,6 +67,10 @@ export function useTourController(
     getContentForStep
   } = useTourContent(visibleSteps, setVisibleSteps);
 
+  // Define handler stub functions to avoid circular dependencies
+  const nextStepStub = useCallback(() => {}, []);
+  const prevStepStub = useCallback(() => {}, []);
+
   // Setup analytics integration
   const {
     startTour: analyticsStartTour,
@@ -77,10 +83,10 @@ export function useTourController(
     currentPath,
     tourPaths,
     currentStep,
-    visibleSteps,
+    visibleSteps || [],
     getCurrentPathData,
-    () => {}, // placeholder for nextStep
-    () => {}, // placeholder for prevStep
+    nextStepStub,
+    prevStepStub,
     endAndCleanupTour,
     markCurrentTourCompleted,
     userId,
@@ -107,7 +113,7 @@ export function useTourController(
     isActive,
     currentStep,
     currentPath,
-    visibleSteps,
+    visibleSteps || [],
     currentPathname,
     userId,
     userType,
@@ -126,7 +132,7 @@ export function useTourController(
   
   // Tour interactions for handling user actions
   const interactions = useTourInteractions(
-    getCurrentStepData(visibleSteps, currentStep),
+    currentStepData,
     currentPath,
     tourPaths,
     currentStep,
@@ -140,7 +146,7 @@ export function useTourController(
     isActive,
     currentStep,
     totalSteps,
-    getCurrentStepData(visibleSteps, currentStep)
+    currentStepData
   );
 
   // Handle keyboard navigation
@@ -154,9 +160,6 @@ export function useTourController(
       enableShortcutsHelp: true
     }
   );
-
-  // Get current step data
-  const currentStepData = getCurrentStepData(visibleSteps, currentStep);
   
   // Get dynamic content for current step
   const content = currentStepData ? getContentForStep(currentStepData) : '';

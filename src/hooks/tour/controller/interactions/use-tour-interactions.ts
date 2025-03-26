@@ -62,34 +62,30 @@ export function useTourInteractions(
         break;
       case 'first':
         // Logic to go to first step
-        analytics.trackStepInteraction('jump_to_first', currentPath, currentStep, { 
-          userId, 
-          userType
-        });
+        if (pathData) {
+          analytics.trackStepInteraction(pathData, currentStepData, currentStep, 'jump_to_first', userId, userType);
+        }
         // Implementation would go here
         break;
       case 'last':
         // Logic to go to last step
-        analytics.trackStepInteraction('jump_to_last', currentPath, currentStep, { 
-          userId, 
-          userType
-        });
+        if (pathData) {
+          analytics.trackStepInteraction(pathData, currentStepData, currentStep, 'jump_to_last', userId, userType);
+        }
         // Implementation would go here
         break;
       case 'jump_forward':
         // Logic to jump forward multiple steps
-        analytics.trackStepInteraction('jump_forward', currentPath, currentStep, { 
-          userId, 
-          userType
-        });
+        if (pathData) {
+          analytics.trackStepInteraction(pathData, currentStepData, currentStep, 'jump_forward', userId, userType);
+        }
         // Implementation would go here
         break;
       case 'jump_backward':
         // Logic to jump backward multiple steps
-        analytics.trackStepInteraction('jump_backward', currentPath, currentStep, { 
-          userId, 
-          userType
-        });
+        if (pathData) {
+          analytics.trackStepInteraction(pathData, currentStepData, currentStep, 'jump_backward', userId, userType);
+        }
         // Implementation would go here
         break;
       case 'close':
@@ -97,7 +93,7 @@ export function useTourInteractions(
         break;
       // 'show_shortcuts_help' would be handled by the component using this hook
     }
-  }, [buttonInteractions, analytics, userId, userType, currentPath, currentStep]);
+  }, [buttonInteractions, analytics, userId, userType, currentPath, currentStep, pathData, currentStepData]);
 
   return {
     ...buttonInteractions,
