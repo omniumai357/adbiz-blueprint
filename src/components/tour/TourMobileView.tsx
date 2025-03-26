@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -35,6 +34,7 @@ interface TourMobileViewProps {
     pulseEffect?: boolean;
     fadeBackground?: boolean;
   };
+  onShowKeyboardShortcuts?: () => void;
 }
 
 export const TourMobileView: React.FC<TourMobileViewProps> = ({
@@ -48,27 +48,25 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   onClose,
   highlightAnimation,
   transition,
-  spotlight
+  spotlight,
+  onShowKeyboardShortcuts
 }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const isMobile = useIsMobile();
   const isSmallMobile = useMediaQuery("(max-width: 380px)");
   
-  // Initialize gesture handlers with improved swipe detection
   const { touchHandlers } = useTourGestures({
     onSwipeLeft: !isAnimating ? onNext : undefined,
     onSwipeRight: !isAnimating && currentStep > 0 ? onPrev : undefined,
-    preventDefaultOnSwipe: true, // Prevent scrolling during swipe
+    preventDefaultOnSwipe: true,
   });
   
-  // Get animation class
   const { animationClass } = useTooltipAnimation(
     currentStepData.animation?.entry || "fade-in",
     transition
   );
   
-  // Handle animation state
   useEffect(() => {
     setIsAnimating(true);
     const timeout = setTimeout(() => {
@@ -78,7 +76,6 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
     return () => clearTimeout(timeout);
   }, [currentStep, transition]);
   
-  // Ensure target element is scrolled into view with a smooth animation
   useEffect(() => {
     if (targetElement && targetElement.scrollIntoView) {
       setIsScrolling(true);
@@ -87,23 +84,19 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
           behavior: 'smooth', 
           block: 'center'
         });
-        // Reset scrolling state after animation completes
         setTimeout(() => setIsScrolling(false), 500);
       }, 100);
       return () => clearTimeout(timeout);
     }
   }, [targetElement, currentStep]);
 
-  // Extract action labels
   const nextLabel = currentStepData.actions?.next?.label;
   const prevLabel = currentStepData.actions?.prev?.label;
   const skipLabel = currentStepData.actions?.skip?.label;
 
-  // Fix for very small screens
   const titleSize = isSmallMobile ? "text-lg" : "text-xl";
   const drawerHeight = isSmallMobile ? "max-h-[90vh]" : "max-h-[85vh]";
 
-  // Determine if we should show the full drawer or a mini dialog
   const useCompactView = useMediaQuery("(max-height: 500px) and (orientation: landscape)");
 
   return (
@@ -162,19 +155,15 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
               className="px-4 pb-4 text-muted-foreground"
               {...touchHandlers}
             >
-              {/* Progress indicators */}
               <TourMobileProgress 
                 currentStep={currentStep} 
                 totalSteps={totalSteps} 
               />
               
-              {/* Media content */}
               <TourMobileMedia currentStepData={currentStepData} />
               
-              {/* Step content */}
               <p className="leading-relaxed mt-3">{content}</p>
               
-              {/* Swipe indicators */}
               <TourMobileSwipeHint 
                 currentStep={currentStep} 
                 totalSteps={totalSteps} 
@@ -202,7 +191,6 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   );
 };
 
-// Custom hook for media queries
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,9 +45,11 @@ interface TourTooltipProps {
   };
   currentStep: number;
   totalSteps: number;
+  showKeyboardShortcuts?: () => void;
+  tooltipRef?: React.RefObject<HTMLDivElement>;
 }
 
-export const TourTooltip: React.FC<TourTooltipProps> = ({
+export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
   targetElement,
   position = "bottom",
   title,
@@ -65,8 +67,13 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   transition,
   spotlight,
   currentStep,
-  totalSteps
-}) => {
+  totalSteps,
+  showKeyboardShortcuts,
+  tooltipRef
+}, ref) => {
+  // Use the provided ref or our own internal ref
+  const divRef = tooltipRef || ref;
+
   // Use our custom hooks for positioning and animations
   const { 
     tooltipStyles, 
@@ -99,6 +106,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
       style={{ zIndex: 9999 }}
     >
       <div 
+        ref={divRef}
         className={cn(
           "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50",
           animationClass,
@@ -160,4 +168,6 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
       </div>
     </div>
   );
-};
+});
+
+TourTooltip.displayName = "TourTooltip";

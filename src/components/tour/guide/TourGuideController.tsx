@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import { useTour } from "@/contexts/tour";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,13 +45,14 @@ export const TourGuideController: React.FC = () => {
   
   useTourCompletionTracker(isActive, currentStep, totalSteps, currentPath);
   
+  // Fix the error by providing only one argument to handleKeyNavigation
   useTourKeyboardNavigation(
     isActive, 
     (event, navigationAction) => {
       if (navigationAction === 'show_shortcuts_help') {
         setShowKeyboardHelp(true);
       } else {
-        handleKeyNavigation(event as any, navigationAction);
+        handleKeyNavigation(event as any);
       }
     },
     {
@@ -257,12 +259,12 @@ export const TourGuideController: React.FC = () => {
           highlightAnimation={highlightAnimation}
           transition={supportedTransition}
           spotlight={spotlight}
-          showKeyboardShortcuts={showKeyboardShortcutsHelp}
+          // Remove the showKeyboardShortcuts property that doesn't exist in the interface
           onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
         />
       ) : (
         <TourDesktopView
-          ref={tooltipRef}
+          // Remove the ref prop that's not in the interface and use forwardRef properly in component
           targetElement={targetElement!}
           position={currentStepData.position?.includes('-') 
             ? currentStepData.position.split('-')[0] as 'top' | 'right' | 'bottom' | 'left' 
@@ -284,7 +286,8 @@ export const TourGuideController: React.FC = () => {
           currentStep={currentStep}
           totalSteps={totalSteps}
           showKeyboardShortcuts={showKeyboardShortcutsHelp}
-          onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
+          // Remove the onShowKeyboardShortcuts property that doesn't exist in the interface
+          tooltipRef={tooltipRef}
         />
       )}
     </>

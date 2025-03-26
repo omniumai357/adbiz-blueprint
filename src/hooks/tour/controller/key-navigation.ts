@@ -1,4 +1,3 @@
-
 import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -64,9 +63,7 @@ export const handleKeyNavigation = (
   
   const { nextStep, prevStep, endTour, goToStep, trackInteraction, showKeyboardShortcutsHelp } = handlers;
   
-  // On mobile, we might want to handle keyboard events differently
   if (isMobileDevice) {
-    // For mobile, only handle Escape key and the explicit navigation actions
     if (event.key === 'Escape' || navigationAction === 'escape') {
       trackInteraction(
         pathData,
@@ -80,7 +77,6 @@ export const handleKeyNavigation = (
       return;
     }
     
-    // Handle explicit navigation actions even on mobile
     if (navigationAction) {
       handleNavigationAction(
         navigationAction,
@@ -95,14 +91,12 @@ export const handleKeyNavigation = (
     }
   }
   
-  // Get keyboard shortcuts from the step or use defaults
   const keyboardShortcuts = currentStepData.keyboardShortcuts || {
     next: 'ArrowRight',
     previous: 'ArrowLeft',
     close: 'Escape'
   };
   
-  // If we have a pre-determined navigation action, use that
   if (navigationAction) {
     trackInteraction(
       pathData,
@@ -125,7 +119,6 @@ export const handleKeyNavigation = (
     return;
   }
   
-  // Standard desktop keyboard navigation based on key
   switch(event.key) {
     case keyboardShortcuts.next:
     case 'Enter':
@@ -168,9 +161,6 @@ export const handleKeyNavigation = (
   }
 };
 
-/**
- * Helper function to handle navigation actions
- */
 function handleNavigationAction(
   action: string,
   currentStep: number,
@@ -199,10 +189,6 @@ function handleNavigationAction(
   }
 }
 
-/**
- * Hook to detect if the current browser is on a mobile device
- * for use with key navigation
- */
 export const useMobileKeyboardDetection = () => {
   const isMobile = useIsMobile();
   return isMobile;

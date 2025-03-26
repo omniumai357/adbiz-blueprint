@@ -65,26 +65,40 @@ export function useTourAnalyticsIntegration(
     }
   }, [tourPaths, analytics, userId, userType]);
 
+  // Add a dummy goToStep function to fix the NavigationHandler compatibility
+  const goToStepDummy = useCallback((stepIndex: number) => {
+    console.warn('goToStep called from analytics integration, but not implemented');
+  }, []);
+
+  // Add showKeyboardShortcutsHelp function
+  const showKeyboardShortcutsHelp = useCallback(() => {
+    console.warn('showKeyboardShortcutsHelp called from analytics integration, but not implemented');
+  }, []);
+
   // Handle keyboard navigation
   const keyboardNavigationHandler = useCallback((event: React.KeyboardEvent) => {
     const handlers: NavigationHandler = {
       nextStep,
       prevStep,
       endTour,
-      trackInteraction: analytics.trackStepInteraction
+      goToStep: goToStepDummy,
+      trackInteraction: analytics.trackStepInteraction,
+      showKeyboardShortcutsHelp
     };
 
-    handleKeyNavigation(event, {
+    // Pass the correct number of arguments
+    handleKeyNavigation(event, undefined, {
       isActive,
       currentPath,
       tourPaths,
       currentStep,
+      totalSteps: visibleSteps.length,
       visibleSteps,
       userId,
       userType,
       handlers
     });
-  }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction]);
+  }, [isActive, currentPath, tourPaths, currentStep, visibleSteps, userId, userType, nextStep, prevStep, endTour, analytics.trackStepInteraction, goToStepDummy, showKeyboardShortcutsHelp]);
 
   return {
     startTour,
