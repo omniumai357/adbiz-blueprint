@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
@@ -82,11 +83,11 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     setDynamicContent: (content: string) => {
       if (typeof tourController.setDynamicContent === 'function') {
         // If the original function takes two args, we'll pass the current step id as first arg
-        if (tourController.setDynamicContent.length > 1 && tourController.currentStepData) {
+        if (tourController.currentStepData) {
           tourController.setDynamicContent(tourController.currentStepData.id, content);
         } else {
-          // Otherwise just pass the content
-          tourController.setDynamicContent(content);
+          // If no current step, use a default empty string for the stepId
+          tourController.setDynamicContent("", content);
         }
       }
     }
