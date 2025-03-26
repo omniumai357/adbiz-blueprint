@@ -21,10 +21,22 @@ interface TourTooltipProps {
     type: "image" | "video" | "gif";
     url: string;
     alt?: string;
+    animation?: string;
   };
   nextLabel?: string;
   prevLabel?: string;
   skipLabel?: string;
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
 }
 
 export const TourTooltip: React.FC<TourTooltipProps> = ({
@@ -42,11 +54,17 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   nextLabel,
   prevLabel,
   skipLabel,
+  transition,
+  spotlight
 }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    // Delay showing the tooltip to allow for animation
+    const timer = setTimeout(() => setVisible(true), 50);
+    
     const calculatePosition = () => {
       const rect = targetElement.getBoundingClientRect();
       const scrollY = window.scrollY;
@@ -110,6 +128,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     return () => {
       window.removeEventListener('resize', calculatePosition);
       window.removeEventListener('scroll', calculatePosition);
+      clearTimeout(timer);
     };
   }, [targetElement, position]);
 
@@ -126,6 +145,8 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
         default: return 'translate(-50%, 0)';
       }
     })(),
+    opacity: visible ? 1 : 0,
+    transition: `opacity ${transition?.duration || 300}ms ease-in-out, transform ${transition?.duration || 300}ms ease-in-out`,
   };
 
   const arrowStyles = {
@@ -142,19 +163,44 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     left: 'border-t border-r',
   };
 
-  // Animation class mappings with enhanced options
+  // Enhanced animation class mappings with more options
   const animationClasses = {
     "fade-in": "animate-fade-in",
     "scale-in": "animate-scale-in",
     "slide-in": "animate-slide-in-right",
     "enter": "animate-enter",
     "float": "animate-float",
-    "fade-up": "animate-fade-up"
+    "fade-up": "animate-fade-up",
+    "zoom-in": "animate-[scale-in_0.3s_ease-out]",
+    "bounce": "animate-[bounce_0.5s_ease-in-out]",
+    "slide-up": "animate-[slide-up_0.3s_ease-out]",
+    "slide-down": "animate-[slide-down_0.3s_ease-out]",
+    "pulse": "animate-pulse",
+    "spin": "animate-spin",
   };
   
-  // Render media content if provided
+  // Transition class mappings based on transition type and direction
+  const getTransitionClass = () => {
+    if (!transition || transition.type === "none") return "";
+    
+    const { type, direction = "right" } = transition;
+    
+    const transitionMappings = {
+      fade: "animate-fade-in",
+      slide: `animate-slide-in-${direction}`,
+      zoom: "animate-scale-in",
+      flip: "animate-flip",
+    };
+    
+    return transitionMappings[type] || "";
+  };
+  
+  // Render media content if provided with enhanced animations
   const renderMedia = () => {
     if (!media) return null;
+    
+    const mediaAnimation = media.animation || "fade-in";
+    const animationClass = animationClasses[mediaAnimation as keyof typeof animationClasses] || "animate-fade-in";
     
     switch (media.type) {
       case "image":
@@ -163,7 +209,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
             <img 
               src={media.url} 
               alt={media.alt || title} 
-              className="rounded-md max-h-32 max-w-full object-contain"
+              className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
             />
           </div>
         );
@@ -172,7 +218,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
           <div className="mt-2 mb-3 flex justify-center">
             <video 
               src={media.url} 
-              className="rounded-md max-h-32 max-w-full object-contain" 
+              className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
               controls
               muted
               autoPlay
@@ -186,13 +232,32 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
             <img 
               src={media.url} 
               alt={media.alt || title} 
-              className="rounded-md max-h-32 max-w-full object-contain"
+              className={cn("rounded-md max-h-32 max-w-full object-contain", animationClass)}
             />
           </div>
         );
       default:
         return null;
     }
+  };
+
+  // Dynamic spotlight styles based on spotlight config
+  const getSpotlightStyles = () => {
+    if (!spotlight) return {};
+    
+    const intensityMap = {
+      low: "0 0 15px 2px",
+      medium: "0 0 20px 5px",
+      high: "0 0 30px 8px",
+    };
+    
+    const shadowSize = intensityMap[spotlight.intensity || "medium"];
+    const shadowColor = spotlight.color || "rgba(139, 92, 246, 0.7)";
+    
+    return {
+      boxShadow: `${shadowSize} ${shadowColor}`,
+      animation: spotlight.pulseEffect ? "pulse 2s infinite" : "none",
+    };
   };
 
   return (
@@ -203,9 +268,10 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
       <div 
         className={cn(
           "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50",
-          animationClasses[animation as keyof typeof animationClasses] || "animate-fade-in"
+          animationClasses[animation as keyof typeof animationClasses] || "animate-fade-in",
+          getTransitionClass()
         )}
-        style={tooltipStyles as React.CSSProperties}
+        style={{ ...tooltipStyles as React.CSSProperties, ...getSpotlightStyles() }}
       >
         <div 
           className={cn(

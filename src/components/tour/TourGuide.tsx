@@ -63,6 +63,19 @@ export const TourGuide: React.FC = () => {
   // Get the appropriate animation settings
   const highlightAnimation = currentStepData.animation?.highlight || "pulse";
   const entryAnimation = currentStepData.animation?.entry || "fade-in";
+  const exitAnimation = currentStepData.animation?.exit;
+  const transitionType = currentStepData.animation?.transition || "slide";
+  const transitionDuration = currentStepData.animation?.duration || 300;
+  
+  // Extract spotlight settings if present
+  const spotlight = currentStepData.spotlight;
+  
+  // Create transition object for components
+  const transition = {
+    type: transitionType as "fade" | "slide" | "zoom" | "flip" | "none",
+    direction: "right" as "up" | "down" | "left" | "right",
+    duration: transitionDuration
+  };
 
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
@@ -77,6 +90,8 @@ export const TourGuide: React.FC = () => {
         onPrev={handlePrev}
         onClose={handleClose}
         highlightAnimation={highlightAnimation}
+        transition={transition}
+        spotlight={spotlight}
       />
     );
   }
@@ -94,6 +109,9 @@ export const TourGuide: React.FC = () => {
       onClose={handleClose}
       highlightAnimation={highlightAnimation}
       entryAnimation={entryAnimation}
+      exitAnimation={exitAnimation}
+      transition={transition}
+      spotlight={spotlight}
     />
   );
 };

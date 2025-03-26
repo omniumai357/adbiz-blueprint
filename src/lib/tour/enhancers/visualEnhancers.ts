@@ -12,7 +12,14 @@ export function animatedStep(
     entry?: string;
     exit?: string;
     highlight?: string;
-  } = { entry: "fade-in", highlight: "pulse" }
+    transition?: string;
+    duration?: number;
+  } = { 
+    entry: "fade-in", 
+    highlight: "pulse", 
+    transition: "slide",
+    duration: 300
+  }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
@@ -47,12 +54,64 @@ export function mediaEnhancedStep(
     type: "image" | "video" | "gif";
     url: string;
     alt?: string;
+    animation?: string;
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      media
+      media: {
+        ...media,
+        animation: media.animation || "fade-in"
+      }
+    };
+  };
+}
+
+/**
+ * Adds spotlight effect to draw attention to specific elements
+ * 
+ * @param spotlightOptions Spotlight configuration
+ * @returns A function that enhances the step with spotlight effect
+ */
+export function spotlightStep(
+  spotlightOptions: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  } = { 
+    intensity: "medium", 
+    pulseEffect: true,
+    fadeBackground: true
+  }
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      spotlight: spotlightOptions
+    };
+  };
+}
+
+/**
+ * Configures transition effects between steps
+ * 
+ * @param transitionOptions Transition configuration
+ * @returns A function that enhances the step with transition effects
+ */
+export function transitionStep(
+  transitionOptions: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+    easing?: string;
+  }
+): (step: TourStep) => TourStep {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      transition: transitionOptions
     };
   };
 }

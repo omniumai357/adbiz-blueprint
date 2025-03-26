@@ -5,6 +5,7 @@ import { ChevronRight, ChevronLeft, X } from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerFooter } from "@/components/ui/drawer";
 import { TourOverlay } from "./TourOverlay";
 import { TourStep } from "@/contexts/tour-context";
+import { cn } from "@/lib/utils";
 
 interface TourMobileViewProps {
   currentStepData: TourStep;
@@ -16,6 +17,17 @@ interface TourMobileViewProps {
   onPrev: () => void;
   onClose: () => void;
   highlightAnimation: string;
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
 }
 
 export const TourMobileView: React.FC<TourMobileViewProps> = ({
@@ -27,7 +39,9 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   onNext,
   onPrev,
   onClose,
-  highlightAnimation
+  highlightAnimation,
+  transition,
+  spotlight
 }) => {
   // Handle swipe gestures for mobile
   const handleTouchStart = React.useRef<number | null>(null);
@@ -62,10 +76,42 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
     handleTouchMove.current = null;
   };
 
+  // Animation class mappings with enhanced options
+  const animationClasses = {
+    "fade-in": "animate-fade-in",
+    "scale-in": "animate-scale-in",
+    "slide-in": "animate-slide-in-right",
+    "enter": "animate-enter",
+    "float": "animate-float",
+    "fade-up": "animate-fade-up",
+    "zoom-in": "animate-zoom-in",
+    "slide-up": "animate-slide-up",
+    "slide-down": "animate-slide-down"
+  };
+  
+  // Get animation class based on transition type
+  const getAnimationClass = () => {
+    if (!transition || transition.type === "none") return "animate-fade-in";
+    
+    const { type, direction = "up" } = transition;
+    
+    const mappings = {
+      fade: "animate-fade-in",
+      slide: `animate-slide-in-${direction}`,
+      zoom: "animate-zoom-in",
+      flip: "animate-flip"
+    };
+    
+    return mappings[type] || "animate-fade-in";
+  };
+
   // Render media content if provided
   const renderMedia = () => {
     const media = currentStepData.media;
     if (!media) return null;
+    
+    const mediaAnimation = media.animation || "fade-in";
+    const animationClass = animationClasses[mediaAnimation as keyof typeof animationClasses] || "animate-fade-in";
     
     switch (media.type) {
       case "image":
@@ -74,7 +120,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
             <img 
               src={media.url} 
               alt={media.alt || currentStepData.title} 
-              className="rounded-md max-h-36 object-contain"
+              className={cn("rounded-md max-h-36 object-contain", animationClass)}
             />
           </div>
         );
@@ -83,7 +129,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
           <div className="mt-2 mb-4 flex justify-center">
             <video 
               src={media.url} 
-              className="rounded-md max-h-36 object-contain" 
+              className={cn("rounded-md max-h-36 object-contain", animationClass)}
               controls
               muted
               autoPlay
@@ -97,7 +143,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
             <img 
               src={media.url} 
               alt={media.alt || currentStepData.title} 
-              className="rounded-md max-h-36 object-contain"
+              className={cn("rounded-md max-h-36 object-contain", animationClass)}
             />
           </div>
         );
@@ -116,9 +162,11 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
       <TourOverlay 
         targetElement={targetElement} 
         animation={highlightAnimation}
+        spotlight={spotlight}
+        transition={transition}
       />
       <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
-        <DrawerContent className="max-h-[85vh] overflow-auto">
+        <DrawerContent className={cn("max-h-[85vh] overflow-auto", getAnimationClass())}>
           <div className="absolute right-4 top-3">
             <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
               <X className="h-4 w-4" />
@@ -130,7 +178,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
           </DrawerHeader>
           
           <div 
-            className="px-4 pb-4 text-muted-foreground animate-fade-in"
+            className="px-4 pb-4 text-muted-foreground"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -185,7 +233,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
                   {skipLabel || "Skip"}
                 </Button>
               )}
-              <Button size="sm" onClick={onNext}>
+              <Button size="sm" onClick={onNext} className="animate-pulse-subtle">
                 {isLastStep ? 
                   (nextLabel || "Finish") : 
                   (nextLabel || "Next")}

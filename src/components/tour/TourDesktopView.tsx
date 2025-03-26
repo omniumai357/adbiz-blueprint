@@ -15,6 +15,18 @@ interface TourDesktopViewProps {
   onClose: () => void;
   highlightAnimation: string;
   entryAnimation: string;
+  exitAnimation?: string;
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
 }
 
 export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
@@ -27,7 +39,10 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
   onPrev,
   onClose,
   highlightAnimation,
-  entryAnimation
+  entryAnimation,
+  exitAnimation,
+  transition,
+  spotlight
 }) => {
   const isLastStep = currentStep === totalSteps - 1;
   const nextLabel = currentStepData.actions?.next?.label;
@@ -39,6 +54,8 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
       <TourOverlay 
         targetElement={targetElement} 
         animation={highlightAnimation}
+        spotlight={spotlight}
+        transition={transition}
       />
       {targetElement && (
         <TourTooltip
@@ -56,6 +73,8 @@ export const TourDesktopView: React.FC<TourDesktopViewProps> = ({
           skipLabel={skipLabel}
           isLastStep={isLastStep}
           animation={entryAnimation}
+          transition={transition}
+          spotlight={spotlight}
         />
       )}
     </>
