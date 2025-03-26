@@ -1,3 +1,4 @@
+
 import { ChangeEvent } from 'react';
 import { FileState } from '@/hooks/useFileUpload';
 import { validateFiles } from '@/utils/file-validation';
@@ -30,8 +31,9 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     if (Array.isArray(event)) {
       selectedFiles = [...event];
     } else {
-      // Now TypeScript knows this is a ChangeEvent
-      const files = event.target.files;
+      // Use type assertion to tell TypeScript this is a ChangeEvent
+      const inputEvent: ChangeEvent<HTMLInputElement> = event;
+      const files = inputEvent.target.files;
       if (files) {
         selectedFiles = Array.from(files);
       }
