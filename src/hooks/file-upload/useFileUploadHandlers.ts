@@ -31,9 +31,8 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     if (Array.isArray(event)) {
       selectedFiles = [...event];
     } else {
-      // Use type assertion to tell TypeScript this is a ChangeEvent
-      const inputEvent: ChangeEvent<HTMLInputElement> = event;
-      const files = inputEvent.target.files;
+      // We already know event is a ChangeEvent here, not a File array
+      const files = event.target.files;
       if (files) {
         selectedFiles = Array.from(files);
       }
