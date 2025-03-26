@@ -11,6 +11,11 @@ type TranslationKeys = {
     next?: string;
     prev?: string;
     skip?: string;
+    finish?: string;
+  }
+  aria?: {
+    description?: string;
+    navigation?: string;
   }
 };
 
@@ -21,7 +26,7 @@ type TranslationKeys = {
  */
 export function useTourTranslation() {
   const { t } = useTranslation('tour');
-  const { currentLanguage } = useLanguage();
+  const { currentLanguage, direction } = useLanguage();
   
   // Functions for translating tour content
   const translateStep = useMemo(() => (
@@ -66,10 +71,41 @@ export function useTourTranslation() {
           label: t(keys.actions.skip)
         };
       }
+      
+      if (keys.actions.finish && translatedStep.actions) {
+        translatedStep.actions.finish = {
+          ...translatedStep.actions.finish,
+          label: t(keys.actions.finish)
+        };
+      }
+    }
+    
+    // Add ARIA translations if specified
+    if (keys?.aria) {
+      translatedStep.a11y = {
+        ...step.a11y,
+        description: keys.aria.description ? t(keys.aria.description) : step.a11y?.description,
+        navigationDescription: keys.aria.navigation ? t(keys.aria.navigation) : step.a11y?.navigationDescription,
+      };
+    }
+    
+    // Handle RTL-specific adjustments for tour elements
+    if (direction === 'rtl' && translatedStep.placement) {
+      // Adjust placement for RTL languages
+      const placementMap: Record<string, string> = {
+        'left': 'right',
+        'left-start': 'right-start',
+        'left-end': 'right-end',
+        'right': 'left',
+        'right-start': 'left-start',
+        'right-end': 'left-end'
+      };
+      
+      translatedStep.placement = (placementMap[translatedStep.placement] as any) || translatedStep.placement;
     }
     
     return translatedStep;
-  }, [t]);
+  }, [t, direction]);
   
   // Function to translate multiple steps
   const translateSteps = useMemo(() => (
@@ -94,12 +130,21 @@ export function useTourTranslation() {
     pauseTour: t('pauseTour'),
     resumeTour: t('resumeTour'),
     keyboardShortcuts: t('keyboardShortcuts'),
-    earnPoints: t('earnPoints')
+    earnPoints: t('earnPoints'),
+    // Accessibility texts
+    navigationHelp: t('a11y.navigationHelp', 'Use arrow keys to navigate, Escape to exit'),
+    currentStepInfo: (current: number, total: number) =>
+      t('a11y.currentStepInfo', 'Step {{current}} of {{total}}', { current: current + 1, total }),
+    tourComplete: t('a11y.tourComplete', 'Tour completed'),
+    tourStarted: t('a11y.tourStarted', 'Tour started'),
+    stepChanged: t('a11y.stepChanged', 'Moved to step {{step}}'),
   }), [t, currentLanguage]);
   
   return {
     translateStep,
     translateSteps,
-    tourTexts
+    tourTexts,
+    currentLanguage,
+    direction
   };
 }

@@ -4,6 +4,12 @@ import { useLanguage } from '@/contexts/language-context';
 
 /**
  * Hook to enhance screen reader support for multi-language content
+ * 
+ * Improves accessibility by:
+ * - Setting appropriate language attributes on HTML elements
+ * - Managing RTL text direction
+ * - Announcing language changes to screen readers
+ * - Managing language-specific CSS classes
  */
 export function useLanguageA11y() {
   const { currentLanguage, direction } = useLanguage();
@@ -35,7 +41,7 @@ export function useLanguageA11y() {
         return div;
       })();
       
-    // Announce language change
+    // Announce language change with culturally appropriate names
     const languageNames = {
       en: 'English',
       es: 'Spanish (Español)',
@@ -50,5 +56,22 @@ export function useLanguageA11y() {
       announcer.textContent = '';
     }, 1000);
     
+    // Add language-specific attributes to key content areas
+    document.querySelectorAll('[data-i18n-section]').forEach(element => {
+      element.setAttribute('lang', currentLanguage);
+    });
+    
   }, [currentLanguage, direction]);
+  
+  // Return utility functions for component-level usage
+  return {
+    applyLanguageAttributes: (element: HTMLElement) => {
+      element.setAttribute('lang', currentLanguage);
+      if (direction === 'rtl') {
+        element.setAttribute('dir', 'rtl');
+      } else {
+        element.removeAttribute('dir');
+      }
+    }
+  };
 }

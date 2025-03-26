@@ -35,7 +35,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   onClaimReward,
   isClaimingReward = false
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('rewards');
   const progress = Math.min(100, Math.round((currentPoints / pointsRequired) * 100));
   const pointsRemaining = pointsRequired - currentPoints;
   
@@ -43,7 +43,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
     <Card className="overflow-hidden border shadow-sm">
       <div className={`h-2 ${isCompleted ? 'bg-green-500' : 'bg-primary'}`} />
       <CardContent className="p-6">
-        <div className="flex flex-row items-start gap-4">
+        <div className="flex flex-row items-start gap-4" data-i18n-section>
           <RewardIcon iconName={icon} completed={isCompleted} />
           
           <div className="flex-1">
@@ -53,13 +53,13 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
             {!isCompleted && (
               <div className="mt-4 space-y-2">
                 <div className="flex justify-between text-sm mb-1">
-                  <span>{currentPoints} points</span>
-                  <span>{pointsRequired} points</span>
+                  <span>{currentPoints} {t('points', 'points')}</span>
+                  <span>{pointsRequired} {t('points', 'points')}</span>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress value={progress} className="h-2" aria-label={t('progressInfo', '{{progress}}% complete', { progress })} />
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                   <Clock className="h-3 w-3" />
-                  <span>{t('rewards.pointsToGo', { points: pointsRemaining })}</span>
+                  <span>{t('pointsToGo', { points: pointsRemaining })}</span>
                 </p>
               </div>
             )}
@@ -74,8 +74,9 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
             disabled={isClaimingReward}
             className="w-full"
             variant="default"
+            aria-label={t('claimRewardAriaLabel', 'Claim your reward for completing {{name}}', { name })}
           >
-            {isClaimingReward ? "Processing..." : t('rewards.claimReward')}
+            {isClaimingReward ? t('processing', 'Processing...') : t('claimReward')}
           </Button>
         </CardFooter>
       )}
@@ -84,7 +85,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
         <CardFooter className="bg-green-50 px-6 py-3">
           <div className="w-full flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
             <CheckCircle className="h-4 w-4" />
-            <span>{t('rewards.rewardClaimed')}</span>
+            <span>{t('rewardClaimed')}</span>
           </div>
         </CardFooter>
       )}

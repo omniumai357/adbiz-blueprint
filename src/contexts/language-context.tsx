@@ -7,9 +7,10 @@ import i18n from '../i18n';
 interface LanguageContextType {
   currentLanguage: string;
   changeLanguage: (lang: string) => void;
-  languages: { code: string; name: string; nativeName: string }[];
+  languages: { code: string; name: string; nativeName: string; direction?: string }[];
   isChangingLanguage: boolean;
   direction: 'ltr' | 'rtl';
+  isRTL: boolean;
 }
 
 // Create context with default values
@@ -22,7 +23,8 @@ const LanguageContext = createContext<LanguageContextType>({
     { code: 'fr', name: 'Français', nativeName: 'Français' }
   ],
   isChangingLanguage: false,
-  direction: 'ltr'
+  direction: 'ltr',
+  isRTL: false
 });
 
 // Hook to use the language context
@@ -35,13 +37,19 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isChangingLanguage, setIsChangingLanguage] = useState(false);
   const [direction, setDirection] = useState<'ltr' | 'rtl'>('ltr');
 
-  // Enhanced language definitions with native names
+  // Enhanced language definitions with native names and directions
   const languages = useMemo(() => [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    { code: 'es', name: 'Español', nativeName: 'Español' },
-    { code: 'fr', name: 'Français', nativeName: 'Français' }
+    { code: 'en', name: 'English', nativeName: 'English', direction: 'ltr' },
+    { code: 'es', name: 'Español', nativeName: 'Español', direction: 'ltr' },
+    { code: 'fr', name: 'Français', nativeName: 'Français', direction: 'ltr' },
+    // Future RTL languages
+    // { code: 'ar', name: 'Arabic', nativeName: 'العربية', direction: 'rtl' },
+    // { code: 'he', name: 'Hebrew', nativeName: 'עִברִית', direction: 'rtl' }
   ], []);
 
+  // RTL language codes
+  const rtlLanguages = useMemo(() => ['ar', 'he', 'fa', 'ur'], []);
+  
   // Enhanced change language function with loading state
   const changeLanguage = (lang: string) => {
     if (lang === currentLanguage) return;
@@ -67,7 +75,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.documentElement.setAttribute('lang', i18n.language);
       
       // Set text direction for RTL languages
-      const rtlLanguages = ['ar', 'he', 'fa', 'ur'];
       const isRtl = rtlLanguages.includes(i18n.language);
       
       setDirection(isRtl ? 'rtl' : 'ltr');
@@ -79,6 +86,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       } else {
         document.body.classList.remove('rtl');
       }
+      
+      // Store language preference
+      localStorage.setItem('userLanguage', i18n.language);
     };
 
     // Set initial language
@@ -90,7 +100,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => {
       i18n.off('languageChanged', handleLanguageChanged);
     };
-  }, [i18n]);
+  }, [i18n, rtlLanguages]);
 
   // Memoized context value to prevent unnecessary renders
   const contextValue = useMemo(() => ({
@@ -98,7 +108,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     changeLanguage,
     languages,
     isChangingLanguage,
-    direction
+    direction,
+    isRTL: direction === 'rtl'
   }), [currentLanguage, languages, isChangingLanguage, direction]);
 
   return (
