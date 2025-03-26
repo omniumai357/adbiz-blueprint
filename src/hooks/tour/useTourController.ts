@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, KeyboardEvent } from 'react';
 import { useToggle } from '@/patterns/hooks/useToggle';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 
@@ -19,6 +19,7 @@ export function useTourController(
   const [currentPath, setCurrentPath] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [tourPaths, setTourPaths] = useState<TourPath[]>(initialPaths);
+  const [visibleSteps, setVisibleSteps] = useState<TourStep[]>([]);
   
   // Toggle active state with explicit boolean
   const toggleActive = useCallback((state?: boolean) => {
@@ -89,6 +90,22 @@ export function useTourController(
     }
   }, [isActive, currentPath, currentStep]);
 
+  // Filter steps based on conditional logic
+  useEffect(() => {
+    const currentPathData = getCurrentPathData();
+    if (currentPathData) {
+      const filteredSteps = currentPathData.steps.filter(step => {
+        // If the step has a condition function, evaluate it
+        if (step.condition && typeof step.condition === 'function') {
+          return step.condition();
+        }
+        // If no condition is specified, always show the step
+        return true;
+      });
+      setVisibleSteps(filteredSteps);
+    }
+  }, [currentPath, tourPaths]);
+
   const getCurrentPathData = useCallback((): TourPath | undefined => {
     return tourPaths.find((path) => path.id === currentPath);
   }, [tourPaths, currentPath]);
@@ -108,13 +125,12 @@ export function useTourController(
   }, [toggleActive]);
 
   const nextStep = useCallback(() => {
-    const pathData = getCurrentPathData();
-    if (pathData && currentStep < pathData.steps.length - 1) {
+    if (visibleSteps.length > 0 && currentStep < visibleSteps.length - 1) {
       setCurrentStep(currentStep => currentStep + 1);
     } else {
       endTour();
     }
-  }, [getCurrentPathData, currentStep, endTour]);
+  }, [visibleSteps, currentStep, endTour]);
 
   const prevStep = useCallback(() => {
     if (currentStep > 0) {
@@ -123,21 +139,37 @@ export function useTourController(
   }, [currentStep]);
 
   const goToStep = useCallback((stepIndex: number) => {
-    const pathData = getCurrentPathData();
-    if (pathData && stepIndex >= 0 && stepIndex < pathData.steps.length) {
+    if (visibleSteps.length > 0 && stepIndex >= 0 && stepIndex < visibleSteps.length) {
       setCurrentStep(stepIndex);
     }
-  }, [getCurrentPathData]);
+  }, [visibleSteps]);
+
+  const handleKeyNavigation = useCallback((event: KeyboardEvent) => {
+    if (!isActive) return;
+    
+    switch(event.key) {
+      case 'ArrowRight':
+      case 'Enter':
+        nextStep();
+        break;
+      case 'ArrowLeft':
+        prevStep();
+        break;
+      case 'Escape':
+        endTour();
+        break;
+      default:
+        break;
+    }
+  }, [isActive, nextStep, prevStep, endTour]);
 
   const currentStepData = useCallback((): TourStep | null => {
-    const pathData = getCurrentPathData();
-    return pathData && isActive ? pathData.steps[currentStep] : null;
-  }, [getCurrentPathData, isActive, currentStep]);
+    return visibleSteps[currentStep] || null;
+  }, [visibleSteps, currentStep]);
 
   const totalSteps = useCallback((): number => {
-    const pathData = getCurrentPathData();
-    return pathData?.steps.length || 0;
-  }, [getCurrentPathData]);
+    return visibleSteps.length || 0;
+  }, [visibleSteps]);
 
   return {
     isActive,
@@ -151,5 +183,7 @@ export function useTourController(
     goToStep,
     currentStepData: currentStepData(),
     availablePaths: tourPaths,
+    handleKeyNavigation,
+    visibleSteps,
   };
 }

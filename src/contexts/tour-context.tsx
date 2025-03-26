@@ -1,6 +1,15 @@
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
+import { useLocation } from "react-router-dom";
+
+export type StepConditionFn = () => boolean;
+
+export type StepAnimation = {
+  entry?: string;
+  exit?: string;
+  highlight?: string;
+};
 
 export type TourStep = {
   id: string;
@@ -8,6 +17,9 @@ export type TourStep = {
   title: string;
   content: string;
   position?: "top" | "right" | "bottom" | "left";
+  condition?: StepConditionFn;
+  animation?: StepAnimation;
+  isOptional?: boolean;
 };
 
 export type TourPath = {
@@ -28,6 +40,8 @@ type TourContextType = {
   goToStep: (stepIndex: number) => void;
   currentStepData: TourStep | null;
   availablePaths: TourPath[];
+  handleKeyNavigation: (event: React.KeyboardEvent) => void;
+  visibleSteps: TourStep[];
 };
 
 const defaultContext: TourContextType = {
@@ -42,6 +56,8 @@ const defaultContext: TourContextType = {
   goToStep: () => {},
   currentStepData: null,
   availablePaths: [],
+  handleKeyNavigation: () => {},
+  visibleSteps: [],
 };
 
 const TourContext = createContext<TourContextType>(defaultContext);
@@ -51,9 +67,12 @@ export const useTour = () => useContext(TourContext);
 export const TourProvider: React.FC<{ 
   children: React.ReactNode;
   currentPathname?: string;
-}> = ({ children, currentPathname = "/" }) => {
-  // Use our new hook to manage tour state
-  const tourController = useTourController([], currentPathname);
+}> = ({ children, currentPathname }) => {
+  const location = useLocation();
+  const pathname = currentPathname || location.pathname;
+  
+  // Use our hook to manage tour state
+  const tourController = useTourController([], pathname);
   
   return <TourContext.Provider value={tourController}>{children}</TourContext.Provider>;
 };

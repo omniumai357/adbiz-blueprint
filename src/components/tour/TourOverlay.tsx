@@ -1,11 +1,16 @@
 
 import React, { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface TourOverlayProps {
   targetElement: HTMLElement | null;
+  animation?: string;
 }
 
-export const TourOverlay: React.FC<TourOverlayProps> = ({ targetElement }) => {
+export const TourOverlay: React.FC<TourOverlayProps> = ({ 
+  targetElement,
+  animation = "pulse" 
+}) => {
   const [dimensions, setDimensions] = useState({
     top: 0,
     left: 0,
@@ -46,7 +51,14 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ targetElement }) => {
     >
       {/* Cutout area */}
       <div
-        className="absolute bg-transparent border-2 border-primary pointer-events-none transition-all duration-300 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"
+        className={cn(
+          "absolute bg-transparent border-2 border-primary pointer-events-none transition-all duration-300 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]",
+          {
+            "animate-pulse": animation === "pulse",
+            "animate-bounce": animation === "bounce",
+            "animate-[ping_1s_cubic-bezier(0,0,0.2,1)_infinite]": animation === "ping",
+          }
+        )}
         style={{
           top: dimensions.top,
           left: dimensions.left,
@@ -54,7 +66,6 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({ targetElement }) => {
           height: dimensions.height,
           borderRadius: '4px',
           boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
-          animation: 'pulse 2s infinite',
         }}
       />
     </div>

@@ -16,6 +16,7 @@ interface TourTooltipProps {
   onNext: () => void;
   onClose: () => void;
   isLastStep: boolean;
+  animation?: string;
 }
 
 export const TourTooltip: React.FC<TourTooltipProps> = ({
@@ -28,6 +29,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
   onNext,
   onClose,
   isLastStep,
+  animation = "fade-in",
 }) => {
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
@@ -123,13 +125,24 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     left: 'border-t border-r',
   };
 
+  // Animation class mappings
+  const animationClasses = {
+    "fade-in": "animate-fade-in",
+    "scale-in": "animate-scale-in",
+    "slide-in": "animate-slide-in-right",
+    "enter": "animate-enter"
+  };
+
   return (
     <div 
       className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" 
       style={{ zIndex: 9999 }}
     >
       <div 
-        className="absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-72 pointer-events-auto animate-fade-in border z-50"
+        className={cn(
+          "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-72 pointer-events-auto border z-50",
+          animationClasses[animation as keyof typeof animationClasses] || "animate-fade-in"
+        )}
         style={tooltipStyles as React.CSSProperties}
       >
         <div 

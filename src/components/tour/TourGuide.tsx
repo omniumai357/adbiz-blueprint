@@ -16,10 +16,31 @@ export const TourGuide: React.FC = () => {
     currentStep,
     totalSteps,
     endTour,
+    handleKeyNavigation,
   } = useTour();
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   const isMobile = useMediaQuery("(max-width: 640px)");
+
+  // Add keyboard navigation event listener
+  useEffect(() => {
+    if (!isActive) return;
+    
+    // Use a keydown listener for the document to handle keyboard navigation
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isActive) {
+        // Convert DOM KeyboardEvent to React KeyboardEvent (simplified) for our handler
+        handleKeyNavigation(e as unknown as React.KeyboardEvent);
+      }
+    };
+    
+    document.addEventListener("keydown", handleKeyDown);
+    
+    // Clean up the event listener
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isActive, handleKeyNavigation]);
 
   if (!isActive || !currentStepData) {
     return null;
@@ -29,7 +50,10 @@ export const TourGuide: React.FC = () => {
   if (isMobile) {
     return (
       <>
-        <TourOverlay targetElement={targetElement} />
+        <TourOverlay 
+          targetElement={targetElement} 
+          animation={currentStepData.animation?.highlight}
+        />
         <TourDrawer 
           title={currentStepData.title}
           content={currentStepData.content}
@@ -46,7 +70,10 @@ export const TourGuide: React.FC = () => {
   // For desktop, use tooltips that point to elements
   return (
     <>
-      <TourOverlay targetElement={targetElement} />
+      <TourOverlay 
+        targetElement={targetElement} 
+        animation={currentStepData.animation?.highlight}
+      />
       {targetElement && (
         <TourTooltip
           targetElement={targetElement}
@@ -58,6 +85,7 @@ export const TourGuide: React.FC = () => {
           onNext={nextStep}
           onClose={endTour}
           isLastStep={currentStep === totalSteps - 1}
+          animation={currentStepData.animation?.entry}
         />
       )}
     </>
