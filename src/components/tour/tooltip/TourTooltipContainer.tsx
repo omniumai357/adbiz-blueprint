@@ -56,6 +56,27 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         id={tooltipId}
         aria-live="polite"
       >
+        {/* Skip repetitive content link - visually hidden but available to screen readers */}
+        <Button
+          variant="link"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-10 focus:text-xs focus:p-1"
+          data-tour-action="skip-repetitive"
+          aria-label="Skip repetitive content"
+          tabIndex={0}
+          onClick={(e) => {
+            // Prevent event bubbling
+            e.stopPropagation();
+            
+            // Find the next button and focus it, skipping repetitive content
+            const nextButton = document.querySelector('[data-tour-action="next"]') as HTMLElement;
+            if (nextButton) {
+              nextButton.focus();
+            }
+          }}
+        >
+          Skip to actions
+        </Button>
+        
         {/* Arrow */}
         <div 
           className={cn(

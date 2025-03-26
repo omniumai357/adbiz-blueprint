@@ -9,7 +9,8 @@ type NavigationAction =
   | 'close'
   | 'jump_forward'
   | 'jump_backward'
-  | 'show_shortcuts_help';
+  | 'show_shortcuts_help'
+  | 'skip_to_main';
 
 type KeyboardOptions = {
   enableHomeEndKeys?: boolean;
@@ -95,6 +96,17 @@ export function useTourKeyboard(
           event.preventDefault();
         }
         break;
+        
+      case 's':
+      case 'S':
+        // Skip to main content when Tab+S is pressed
+        if (document.activeElement && 
+            document.activeElement.tagName !== 'BODY' && 
+            document.activeElement !== document.documentElement) {
+          handleNavigationAction(reactLikeEvent as any, 'skip_to_main');
+          event.preventDefault();
+        }
+        break;
     }
   }, [isActive, handleNavigationAction, enableHomeEndKeys, enablePageKeys, enableShortcutsHelp]);
 
@@ -153,6 +165,17 @@ export function useTourKeyboard(
       case '?':
         if (enableShortcutsHelp && event.shiftKey) {
           handleNavigationAction(event, 'show_shortcuts_help');
+          event.preventDefault();
+        }
+        break;
+        
+      case 's':
+      case 'S':
+        // Skip to main content when Tab+S is pressed
+        if (document.activeElement && 
+            document.activeElement.tagName !== 'BODY' && 
+            document.activeElement !== document.documentElement) {
+          handleNavigationAction(event, 'skip_to_main');
           event.preventDefault();
         }
         break;

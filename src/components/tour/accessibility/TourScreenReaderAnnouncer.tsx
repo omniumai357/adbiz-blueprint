@@ -33,7 +33,7 @@ export const TourScreenReaderAnnouncer: React.FC<TourScreenReaderAnnouncerProps>
     if (isActive) {
       if (previousStepRef.current === -1) {
         // Tour just started
-        const announcement = `Tour started. ${totalSteps} steps in total. Use arrow keys to navigate between steps, Space to select, and Escape to exit the tour.`;
+        const announcement = `Tour started. ${totalSteps} steps in total. Use arrow keys to navigate between steps, Space to select, and Escape to exit the tour. You can press question mark to view all keyboard shortcuts, or press Tab+S to skip to main content.`;
         
         if (assertiveForStatus) {
           assertiveAnnouncementRef.current = announcement;
@@ -61,13 +61,27 @@ export const TourScreenReaderAnnouncer: React.FC<TourScreenReaderAnnouncerProps>
       // Only announce if this is a step change (not initial load)
       if (previousStepRef.current !== -1 && previousStepRef.current !== currentStep) {
         const direction = currentStep > previousStepRef.current ? 'forward' : 'backward';
-        const announcement = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}. ${currentStepData.content || ''}`;
+        let announcement = `Step ${currentStep + 1} of ${totalSteps}: ${currentStepData.title}. ${currentStepData.content || ''}`;
+        
+        // Add path connection announcements
+        if (currentStepData.path?.enabled && currentStepData.path?.targetElementId) {
+          announcement += ` This step is connected to the ${currentStepData.path.targetElementId} element.`;
+          
+          if (currentStepData.path.style) {
+            announcement += ` The connection is visualized with a ${currentStepData.path.style} path.`;
+          }
+          
+          if (currentStepData.path.waypoints && currentStepData.path.waypoints.length > 0) {
+            announcement += ` The path goes through ${currentStepData.path.waypoints.length} intermediate points.`;
+          }
+        }
         
         // Add navigation hints based on current position
         const navigationHints = [];
         if (currentStep > 0) navigationHints.push("Press left arrow or shift+tab to go back");
         if (currentStep < totalSteps - 1) navigationHints.push("Press right arrow or tab to continue");
         if (currentStep === totalSteps - 1) navigationHints.push("Press Enter or Space to complete the tour");
+        navigationHints.push("Press Tab+S to skip to main content");
         
         politeAnnouncementRef.current = `${announcement} ${navigationHints.join(". ")}`;
       }
