@@ -19,8 +19,8 @@ import { useParams } from "react-router-dom";
  */
 const Checkout = () => {
   const { packageId } = useParams<{ packageId: string }>();
-  const { data: userData } = useAuthUser();
-  const userId = userData?.user?.id;
+  const { data } = useAuthUser();
+  const userId = data?.user?.id;
   const api = useService('api');
   const [packageDetails, setPackageDetails] = useState<PackageDetails | null>(null);
   const [isLoadingPackage, setIsLoadingPackage] = useState(true);
@@ -122,7 +122,7 @@ const Checkout = () => {
           ) : (
             <CheckoutForm 
               checkout={checkout}
-              onOrderSuccess={(orderId) => checkout.handleOrderSuccess(orderId)}
+              onOrderSuccess={checkout.handleOrderSuccess}
             />
           )}
         </div>

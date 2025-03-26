@@ -1,4 +1,11 @@
 
+/**
+ * Consolidated checkout hook
+ * 
+ * This hook brings together all checkout-related functionality into a single interface,
+ * reducing complexity and making the checkout flow easier to understand and maintain.
+ */
+
 import { useState, useEffect } from "react";
 import { useService } from "@/hooks/services/useService";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -8,7 +15,8 @@ import { useCheckoutTotals } from "./useCheckoutTotals";
 import { useProfile } from "@/hooks/data/useProfile";
 import { CustomerInfo, PackageDetails } from "@/types/checkout";
 import { useCheckoutState } from "./useCheckoutState";
-import { useCheckoutActions } from "./useCheckoutActions";
+import { useOrderDetails } from "./useOrderDetails";
+import { Profile } from "@/types/api";
 
 /**
  * Consolidated checkout hook
@@ -36,6 +44,9 @@ export function useCheckoutConsolidated(
   
   // Get user profile data
   const { profile, isLoading: isProfileLoading } = useProfile(userId);
+  
+  // Get order details
+  const orderDetails = useOrderDetails();
   
   // Customer and payment state
   const checkoutState = useCheckoutState();
@@ -120,6 +131,21 @@ export function useCheckoutConsolidated(
   };
   
   return {
+    // Order details (added this to fix the TypeScript error)
+    orderDetails: {
+      showDownloadOptions,
+      orderId,
+      invoiceNumber,
+      isGeneratingInvoice,
+      userId: userId || '',
+      packageName: packageDetails.title,
+      packagePrice: packageDetails.price,
+      packageDetails,
+      isProfileLoading,
+      profile: profile as Profile,
+      handleOrderSuccess
+    },
+    
     // State
     isLoading,
     isProfileLoading,

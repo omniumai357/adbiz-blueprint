@@ -9,7 +9,9 @@
 // Export all auth hooks
 export { useAuthActions } from './useAuthActions';
 export { useAuthNavigation } from './useAuthNavigation';
-export { useAuthData } from './useAuthData';
+
+// Re-export from data directory
+export { useAuthData } from '../data/useAuthData';
 
 // Re-export from queries directory
 export { useAuthUser } from '../queries/useAuthUser';
