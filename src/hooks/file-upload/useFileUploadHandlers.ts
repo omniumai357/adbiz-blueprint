@@ -1,4 +1,3 @@
-
 import { ChangeEvent } from 'react';
 import { FileState } from '@/hooks/useFileUpload';
 import { validateFiles } from '@/utils/file-validation';
@@ -29,12 +28,12 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     
     // Handle both File array and input change event
     if (Array.isArray(event)) {
-      // Handle direct array of files
       selectedFiles = [...event];
     } else {
-      // Handle input change event - we know it's a ChangeEvent now
-      if (event.target?.files) {
-        selectedFiles = Array.from(event.target.files);
+      // Now TypeScript knows this is a ChangeEvent
+      const files = event.target.files;
+      if (files) {
+        selectedFiles = Array.from(files);
       }
     }
     
@@ -55,25 +54,18 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     if (fileType === 'logo') {
       if (validFiles.length > 0) {
         const logoFile = validFiles[0];
-        
         setFiles({ ...files, logo: logoFile });
       }
       return;
     }
     
     // Handle multiple files (images, videos, documents)
-    // Update files state
     setFiles({
       ...files,
       [fileType]: [...files[fileType], ...validFiles],
     });
   };
   
-  /**
-   * Remove a file from the files state
-   * @param fileType - Type of file to remove (logo, images, videos, documents)
-   * @param index - Index of file to remove (only for arrays of files)
-   */
   const onRemoveFile = (fileType: keyof FileState, index?: number) => {
     // Handle logo (single file)
     if (fileType === 'logo') {
