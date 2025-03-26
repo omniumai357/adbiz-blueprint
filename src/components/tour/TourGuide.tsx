@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTour } from "@/contexts/tour-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
@@ -10,6 +10,7 @@ import { useTourCompletionTracker } from "@/hooks/tour/useTourCompletionTracker"
 import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigation";
 import { TourMobileView } from "./TourMobileView";
 import { TourTooltip } from "./TourTooltip";
+import { TourPath } from "./path/TourPath";
 
 export const TourGuide: React.FC = () => {
   const {
@@ -24,11 +25,15 @@ export const TourGuide: React.FC = () => {
     currentPath,
     availablePaths,
     setDynamicContent,
+    visibleSteps,
   } = useTour();
   
   // Find target element for the current step
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   
+  // Find the path's target element if specified
+  const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
+
   // Check if we're on a mobile device
   const isMobile = useMediaQuery("(max-width: 640px)");
   
@@ -55,6 +60,37 @@ export const TourGuide: React.FC = () => {
     { nextStep, prevStep, endTour }
   );
 
+  // Find path target element if specified
+  useEffect(() => {
+    if (
+      isActive && 
+      currentStepData?.path?.enabled && 
+      currentStepData?.path?.targetElementId
+    ) {
+      const targetId = currentStepData.path.targetElementId;
+      const element = document.getElementById(targetId);
+      
+      if (element) {
+        setPathTargetElement(element);
+      } else {
+        // Try with query selector as fallback
+        try {
+          const potentialElement = document.querySelector(
+            `#${targetId}, .${targetId}, [data-tour-id="${targetId}"]`
+          );
+          if (potentialElement instanceof HTMLElement) {
+            setPathTargetElement(potentialElement);
+          }
+        } catch (e) {
+          console.warn(`Path target element not found: ${targetId}`);
+          setPathTargetElement(null);
+        }
+      }
+    } else {
+      setPathTargetElement(null);
+    }
+  }, [isActive, currentStepData]);
+
   // Don't render anything if tour is not active or no current step
   if (!isActive || !currentStepData) {
     return null;
@@ -78,43 +114,67 @@ export const TourGuide: React.FC = () => {
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
     return (
-      <TourMobileView
-        currentStepData={currentStepData}
-        content={content}
-        targetElement={targetElement}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        onNext={handleNext}
-        onPrev={handlePrev}
-        onClose={handleClose}
-        highlightAnimation={highlightAnimation}
-        transition={transition}
-        spotlight={spotlight}
-      />
+      <>
+        {/* Animated path if enabled */}
+        {currentStepData.path?.enabled && targetElement && pathTargetElement && (
+          <TourPath
+            sourceElement={targetElement}
+            targetElement={pathTargetElement}
+            isActive={true}
+            options={currentStepData.path}
+          />
+        )}
+
+        <TourMobileView
+          currentStepData={currentStepData}
+          content={content}
+          targetElement={targetElement}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={handleNext}
+          onPrev={handlePrev}
+          onClose={handleClose}
+          highlightAnimation={highlightAnimation}
+          transition={transition}
+          spotlight={spotlight}
+        />
+      </>
     );
   }
 
   // For desktop, use tooltips that point to elements
   return (
-    <TourTooltip
-      targetElement={targetElement!}
-      position={currentStepData.position || "bottom"}
-      title={currentStepData.title}
-      content={content}
-      stepInfo={`${currentStep + 1} of ${totalSteps}`}
-      onPrev={currentStep > 0 ? handlePrev : undefined}
-      onNext={handleNext}
-      onClose={handleClose}
-      isLastStep={currentStep === totalSteps - 1}
-      animation={entryAnimation}
-      media={currentStepData.media}
-      nextLabel={currentStepData.actions?.next?.label}
-      prevLabel={currentStepData.actions?.prev?.label}
-      skipLabel={currentStepData.actions?.skip?.label}
-      transition={transition}
-      spotlight={spotlight}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-    />
+    <>
+      {/* Animated path if enabled */}
+      {currentStepData.path?.enabled && targetElement && pathTargetElement && (
+        <TourPath
+          sourceElement={targetElement}
+          targetElement={pathTargetElement}
+          isActive={true}
+          options={currentStepData.path}
+        />
+      )}
+
+      <TourTooltip
+        targetElement={targetElement!}
+        position={currentStepData.position || "bottom"}
+        title={currentStepData.title}
+        content={content}
+        stepInfo={`${currentStep + 1} of ${totalSteps}`}
+        onPrev={currentStep > 0 ? handlePrev : undefined}
+        onNext={handleNext}
+        onClose={handleClose}
+        isLastStep={currentStep === totalSteps - 1}
+        animation={entryAnimation}
+        media={currentStepData.media}
+        nextLabel={currentStepData.actions?.next?.label}
+        prevLabel={currentStepData.actions?.prev?.label}
+        skipLabel={currentStepData.actions?.skip?.label}
+        transition={transition}
+        spotlight={spotlight}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
+    </>
   );
 };

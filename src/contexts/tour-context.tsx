@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
 import { useAuth } from "@/contexts/auth-context";
 import { DynamicContentProvider } from "@/hooks/tour/analytics/types";
+import { PathOptions } from "@/lib/utils/path-utils";
 
 export type StepConditionFn = () => boolean | Promise<boolean>;
 
@@ -68,6 +69,17 @@ export type TourStep = {
     direction?: "up" | "down" | "left" | "right";
     duration?: number;
   };
+  path?: {
+    enabled?: boolean;
+    targetElementId?: string;
+    style?: "direct" | "curved" | "angled";
+    color?: string;
+    width?: number;
+    dashArray?: string;
+    animationDuration?: number;
+    showArrow?: boolean;
+    arrowSize?: number;
+  } & Partial<PathOptions>;
 };
 
 export type TourPath = {

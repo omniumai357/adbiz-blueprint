@@ -45,8 +45,17 @@ export {
 export { 
   animatedStep,
   optionalStep,
-  mediaEnhancedStep
+  mediaEnhancedStep,
+  spotlightStep,
+  positionStep,
+  visuallyEnhancedStep
 } from './enhancers/visualEnhancers';
+
+// Re-export path enhancers
+export {
+  pathAnimatedStep,
+  connectedStep
+} from './enhancers/pathEnhancers';
 
 // Re-export action enhancers
 export { 
