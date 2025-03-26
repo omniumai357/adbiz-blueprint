@@ -3,16 +3,20 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
-import { AuthMessage } from "@/components/auth/auth-message";
-import { AuthContainer } from "@/components/auth/auth-container";
-import { SignInForm } from "@/components/auth/sign-in-form";
-import { SignUpForm } from "@/components/auth/sign-up-form";
-import { WelcomeCoupon } from "@/components/auth/welcome-coupon";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, BadgePercent, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+
+// Import from the new feature folder
+import { 
+  AuthMessage, 
+  AuthContainer, 
+  SignInForm, 
+  SignUpForm, 
+  WelcomeCoupon 
+} from "@/features/auth";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("signin");
