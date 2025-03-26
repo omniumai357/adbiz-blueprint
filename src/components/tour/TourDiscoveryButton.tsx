@@ -53,6 +53,7 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
   // Simple icon button with tooltip for a single tour
   if (variant === "icon" || displayTours.length === 1) {
     const tourPathId = displayTours[0]?.id;
+    const tourName = displayTours[0]?.name || "Guided Tour";
     
     return (
       <TooltipProvider>
@@ -63,9 +64,9 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
               size={size === "default" ? "icon" : size}
               className={`${className} animate-pulse-subtle`}
               onClick={() => tourPathId && startTour(tourPathId)}
-              aria-label="Start guided tour"
+              aria-label={`Start ${tourName}`}
             >
-              <HelpCircle className="h-4 w-4" />
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
               {showLabel && <span className="ml-2">Tour Guide</span>}
             </Button>
           </TooltipTrigger>
@@ -88,7 +89,7 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
             className={className}
             aria-label="Tour options"
           >
-            <BookOpen className="h-4 w-4 mr-2" />
+            <BookOpen className="h-4 w-4 mr-2" aria-hidden="true" />
             Tours
           </Button>
         </DropdownMenuTrigger>
@@ -113,8 +114,9 @@ export const TourDiscoveryButton: React.FC<TourDiscoveryButtonProps> = ({
       size={size}
       className={className}
       onClick={() => displayTours[0] && startTour(displayTours[0].id)}
+      aria-label={`Start ${displayTours[0]?.name || "Guided Tour"}`}
     >
-      <HelpCircle className="h-4 w-4 mr-2" />
+      <HelpCircle className="h-4 w-4 mr-2" aria-hidden="true" />
       Guided Tour
     </Button>
   );

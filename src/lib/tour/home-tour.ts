@@ -34,6 +34,12 @@ export const homeTourPath = createTourPath(
     metadata: {
       pageContext: "home",
       importance: "high"
+    },
+    accessibility: {
+      announceSteps: true,
+      keyboardNavigation: true,
+      restoreFocus: true,
+      focusTrap: true
     }
   }
 );

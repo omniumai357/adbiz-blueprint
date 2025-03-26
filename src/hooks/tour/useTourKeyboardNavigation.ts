@@ -1,33 +1,55 @@
 
-import { useEffect, useCallback } from "react";
+import { useEffect } from 'react';
 
 /**
  * Hook to handle keyboard navigation for tours
  * 
  * @param isActive Whether the tour is active
- * @param handleKeyNavigation Function to handle keyboard navigation events
+ * @param handler Function to handle keyboard events
+ * @returns void
  */
 export function useTourKeyboardNavigation(
   isActive: boolean,
-  handleKeyNavigation: (e: React.KeyboardEvent) => void
+  handler: (event: KeyboardEvent) => void
 ) {
-  // Add keyboard navigation event listener
   useEffect(() => {
     if (!isActive) return;
     
-    // Use a keydown listener for the document to handle keyboard navigation
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isActive) {
-        // Convert DOM KeyboardEvent to React KeyboardEvent (simplified) for our handler
-        handleKeyNavigation(e as unknown as React.KeyboardEvent);
+    const keyboardHandler = (event: KeyboardEvent) => {
+      // Only process if tour is active and not when user is typing in form fields
+      const tagName = (event.target as HTMLElement)?.tagName?.toLowerCase();
+      const isFormElement = ['input', 'textarea', 'select'].includes(tagName);
+      
+      if (isActive && !isFormElement) {
+        handler(event);
+        
+        // Handle additional accessibility shortcuts
+        switch (event.key) {
+          case 'Escape':
+            // Adding specific keyboard behavior for escape key
+            document.dispatchEvent(new CustomEvent('tour:escape'));
+            break;
+          case ' ':
+          case 'Enter':
+            // Space or Enter can move to next step when focused on appropriate element
+            if ((event.target as HTMLElement)?.getAttribute('data-tour-next') === 'true') {
+              event.preventDefault();
+              document.dispatchEvent(new CustomEvent('tour:next'));
+            }
+            break;
+          default:
+            // Let other keys be handled by the main handler
+            break;
+        }
       }
     };
     
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', keyboardHandler);
     
-    // Clean up the event listener
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', keyboardHandler);
     };
-  }, [isActive, handleKeyNavigation]);
+  }, [isActive, handler]);
 }
+
+export default useTourKeyboardNavigation;

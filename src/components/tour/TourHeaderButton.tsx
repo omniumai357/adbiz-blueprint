@@ -8,10 +8,12 @@ import { TourDiscoveryButton } from "./TourDiscoveryButton";
 
 interface TourHeaderButtonProps {
   className?: string;
+  ariaLabel?: string;
 }
 
 export const TourHeaderButton: React.FC<TourHeaderButtonProps> = ({ 
-  className = ""
+  className = "",
+  ariaLabel = "Start guided tour"
 }) => {
   const location = useLocation();
   const { availablePaths } = useTour();
@@ -40,6 +42,7 @@ export const TourHeaderButton: React.FC<TourHeaderButtonProps> = ({
       <TourDiscoveryButton 
         variant="icon" 
         className="h-12 w-12 rounded-full bg-primary text-white hover:bg-primary/90 shadow-md" 
+        showLabel={false}
       />
     </div>
   );

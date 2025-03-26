@@ -1,21 +1,15 @@
 
 import React, { useEffect, useRef, useState } from "react";
-import { 
-  calculateOptimalPathPoints, 
-  PathOptions, 
-  defaultPathOptions,
-  calculatePath,
-  PathStyle 
-} from "@/lib/utils/path-utils";
-import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
+import { calculatePath, PathOptions } from "@/lib/utils/path-utils";
+import { TourPathDot } from "./TourPathDot";
 
 interface TourPathProps {
-  sourceElement: HTMLElement | null;
-  targetElement: HTMLElement | null;
+  sourceElement: HTMLElement;
+  targetElement: HTMLElement;
   isActive: boolean;
   options?: Partial<PathOptions>;
-  onAnimationComplete?: () => void;
-  className?: string;
+  ariaHidden?: boolean;
 }
 
 export const TourPath: React.FC<TourPathProps> = ({
@@ -23,151 +17,117 @@ export const TourPath: React.FC<TourPathProps> = ({
   targetElement,
   isActive,
   options = {},
-  onAnimationComplete,
-  className
+  ariaHidden = true
 }) => {
-  const [pathLength, setPathLength] = useState<number>(0);
-  const [pathD, setPathD] = useState<string>("");
-  const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [arrowPoints, setArrowPoints] = useState<string>("");
-  
+  const [svgPath, setSvgPath] = useState<string>("");
+  const pathId = useRef(`path-${Math.random().toString(36).substring(2, 9)}`).current;
   const svgRef = useRef<SVGSVGElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
   
-  // Merge default options with provided options
+  // Merge with default options
   const pathOptions: PathOptions = {
-    ...defaultPathOptions,
-    ...options
+    style: options.style || "curved",
+    color: options.color || "rgba(99, 102, 241, 0.7)",
+    width: options.width || 3,
+    dashArray: options.dashArray || "5,5",
+    animationDuration: options.animationDuration || 1000,
+    showArrow: options.showArrow !== undefined ? options.showArrow : true,
+    arrowSize: options.arrowSize || 6
   };
   
+  // Calculate and update path when elements or options change
   useEffect(() => {
-    // Reset state when elements change
-    setIsVisible(false);
-    setPathLength(0);
+    if (!isActive || !sourceElement || !targetElement) return;
     
-    const timer = setTimeout(() => {
-      if (sourceElement && targetElement && isActive) {
-        // Calculate optimal path between elements
-        const pathPoints = calculateOptimalPathPoints(sourceElement, targetElement);
-        
-        // Generate path string
-        const pathString = calculatePath(
-          sourceElement,
-          targetElement,
-          pathOptions.style as PathStyle
-        );
-        
-        setPathD(pathString);
-        setIsVisible(true);
-        
-        // Calculate path length for animation
-        if (pathRef.current) {
-          const length = pathRef.current.getTotalLength();
-          setPathLength(length);
-        }
-        
-        // Create arrow marker if needed
-        if (pathOptions.showArrow) {
-          // For simplicity, we'll use a triangle pointing right
-          const size = pathOptions.arrowSize || 6;
-          setArrowPoints(`0,0 ${size},${size/2} 0,${size}`);
-        }
-      }
-    }, 100);
+    // Calculate the path
+    const path = calculatePath(sourceElement, targetElement, pathOptions.style);
+    setSvgPath(path);
     
-    return () => clearTimeout(timer);
-  }, [sourceElement, targetElement, isActive, pathOptions.style]);
-  
-  // Handle animation completion
-  useEffect(() => {
-    if (isVisible && onAnimationComplete) {
-      const timer = setTimeout(() => {
-        onAnimationComplete();
-      }, pathOptions.animationDuration);
-      
-      return () => clearTimeout(timer);
+    // Position the SVG to cover the entire viewport
+    if (svgRef.current) {
+      svgRef.current.style.position = "fixed";
+      svgRef.current.style.top = "0";
+      svgRef.current.style.left = "0";
+      svgRef.current.style.width = "100%";
+      svgRef.current.style.height = "100%";
+      svgRef.current.style.pointerEvents = "none";
+      svgRef.current.style.zIndex = "9999";
     }
-  }, [isVisible, onAnimationComplete, pathOptions.animationDuration]);
+    
+    // Update the path when window is resized
+    const handleResize = () => {
+      const updatedPath = calculatePath(sourceElement, targetElement, pathOptions.style);
+      setSvgPath(updatedPath);
+    };
+    
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleResize);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleResize);
+    };
+  }, [isActive, sourceElement, targetElement, pathOptions.style]);
   
-  if (!isActive || !sourceElement || !targetElement) {
+  // Don't render anything if not active or elements are missing
+  if (!isActive || !sourceElement || !targetElement || !svgPath) {
     return null;
   }
   
-  // Calculate SVG viewport to cover the entire document
-  const viewBoxWidth = Math.max(document.documentElement.scrollWidth, window.innerWidth);
-  const viewBoxHeight = Math.max(document.documentElement.scrollHeight, window.innerHeight);
-  
-  return (
-    <svg
-      ref={svgRef}
-      className={cn(
-        "fixed top-0 left-0 w-full h-full pointer-events-none z-[59]",
-        className
-      )}
-      style={{ 
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        zIndex: 9997, // Just below the tour overlay
-        opacity: isVisible ? 1 : 0,
-        transition: `opacity ${pathOptions.animationDuration / 2}ms ease-in-out`
-      }}
-      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+  // Create the SVG in a portal to ensure it's positioned correctly
+  return createPortal(
+    <svg 
+      ref={svgRef} 
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden={ariaHidden}
+      role={!ariaHidden ? "graphics-symbol" : undefined}
+      aria-label={!ariaHidden ? "Path connecting tour elements" : undefined}
     >
-      {/* Arrow marker definition */}
-      {pathOptions.showArrow && (
-        <defs>
+      <defs>
+        {pathOptions.showArrow && (
           <marker
-            id="tour-arrow"
-            viewBox="0 0 10 10"
-            refX="5"
-            refY="5"
-            markerWidth="6"
-            markerHeight="6"
+            id="arrowhead"
+            markerWidth={pathOptions.arrowSize}
+            markerHeight={pathOptions.arrowSize}
+            refX={pathOptions.arrowSize - 2}
+            refY={pathOptions.arrowSize / 2}
             orient="auto"
           >
-            <polygon 
-              points={arrowPoints} 
-              fill={pathOptions.color} 
+            <polygon
+              points={`0 0, ${pathOptions.arrowSize} ${pathOptions.arrowSize / 2}, 0 ${pathOptions.arrowSize}`}
+              fill={pathOptions.color}
             />
           </marker>
-        </defs>
-      )}
+        )}
+      </defs>
       
-      {/* The animated path */}
       <path
-        ref={pathRef}
-        d={pathD}
+        id={pathId}
+        d={svgPath}
         fill="none"
         stroke={pathOptions.color}
         strokeWidth={pathOptions.width}
         strokeDasharray={pathOptions.dashArray}
-        style={{
-          strokeDashoffset: isVisible ? 0 : pathLength,
-          transition: `stroke-dashoffset ${pathOptions.animationDuration}ms ease-in-out`,
-          markerEnd: pathOptions.showArrow ? "url(#tour-arrow)" : undefined
-        }}
-        strokeDashoffset={isVisible ? 0 : pathLength}
-        markerEnd={pathOptions.showArrow ? "url(#tour-arrow)" : undefined}
-      />
+        strokeDashoffset="0"
+        markerEnd={pathOptions.showArrow ? "url(#arrowhead)" : undefined}
+        aria-hidden="true"
+      >
+        <animate
+          attributeName="stroke-dashoffset"
+          from="1000"
+          to="0"
+          dur={`${pathOptions.animationDuration}ms`}
+          begin="0s"
+          fill="freeze"
+        />
+      </path>
       
-      {/* Optional traveling dot animation */}
-      {isVisible && (
-        <circle
-          r={pathOptions.width * 2}
-          fill={pathOptions.color}
-          opacity={0.8}
-          className="animate-pulse"
-        >
-          <animateMotion
-            dur={`${pathOptions.animationDuration * 1.2}ms`}
-            repeatCount="indefinite"
-            path={pathD}
-          />
-        </circle>
-      )}
-    </svg>
+      <TourPathDot
+        pathId={pathId}
+        color={pathOptions.color}
+        duration={pathOptions.animationDuration * 2}
+        ariaHidden={ariaHidden}
+      />
+    </svg>,
+    document.body
   );
 };

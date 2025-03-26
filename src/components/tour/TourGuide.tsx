@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTour } from "@/contexts/tour-context";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
@@ -33,6 +33,9 @@ export const TourGuide: React.FC = () => {
   
   // Find the path's target element if specified
   const [pathTargetElement, setPathTargetElement] = useState<HTMLElement | null>(null);
+  
+  // Track previous focused element to restore focus when tour ends
+  const previousFocusRef = useRef<HTMLElement | null>(null);
 
   // Check if we're on a mobile device
   const isMobile = useMediaQuery("(max-width: 640px)");
@@ -90,6 +93,39 @@ export const TourGuide: React.FC = () => {
       setPathTargetElement(null);
     }
   }, [isActive, currentStepData]);
+
+  // Save and restore focus when tour starts/ends
+  useEffect(() => {
+    if (isActive) {
+      // Save the currently focused element
+      previousFocusRef.current = document.activeElement as HTMLElement;
+    } else if (previousFocusRef.current) {
+      // When tour ends, restore focus
+      previousFocusRef.current.focus();
+      previousFocusRef.current = null;
+    }
+  }, [isActive]);
+
+  // Announce tour step to screen readers
+  useEffect(() => {
+    if (isActive && currentStepData) {
+      // Create or get a live region for announcements
+      let liveRegion = document.getElementById('tour-announcer');
+      if (!liveRegion) {
+        liveRegion = document.createElement('div');
+        liveRegion.id = 'tour-announcer';
+        liveRegion.setAttribute('aria-live', 'polite');
+        liveRegion.setAttribute('aria-atomic', 'true');
+        liveRegion.className = 'sr-only';
+        document.body.appendChild(liveRegion);
+      }
+      
+      // Announce current step
+      const stepNumber = currentStep + 1;
+      const announcement = `Step ${stepNumber} of ${totalSteps}: ${currentStepData.title}. ${content}`;
+      liveRegion.textContent = announcement;
+    }
+  }, [isActive, currentStepData, currentStep, totalSteps, content]);
 
   // Don't render anything if tour is not active or no current step
   if (!isActive || !currentStepData) {
@@ -152,6 +188,7 @@ export const TourGuide: React.FC = () => {
           targetElement={pathTargetElement}
           isActive={true}
           options={currentStepData.path}
+          ariaHidden={true}
         />
       )}
 

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect } from "react";
+
+import React, { createContext, useContext, useEffect, useRef } from "react";
 import { useTourController } from "@/hooks/tour/useTourController";
 import { useLocation } from "react-router-dom";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
@@ -80,6 +81,14 @@ export type TourStep = {
     showArrow?: boolean;
     arrowSize?: number;
   } & Partial<PathOptions>;
+  // Accessibility properties
+  ariaLive?: "off" | "polite" | "assertive";
+  focusOnOpen?: boolean;
+  keyboardShortcuts?: {
+    next?: string;
+    previous?: string;
+    close?: string;
+  };
 };
 
 export type TourPath = {
@@ -92,6 +101,12 @@ export type TourPath = {
   requiredUserRoles?: StepUserRole[];
   completionCallback?: () => void;
   metadata?: Record<string, any>;
+  accessibility?: {
+    announceSteps?: boolean;
+    keyboardNavigation?: boolean;
+    restoreFocus?: boolean;
+    focusTrap?: boolean;
+  };
 };
 
 type TourContextType = {
@@ -138,6 +153,26 @@ export const TourProvider: React.FC<{
 }> = ({ children, currentPathname }) => {
   const location = useLocation();
   const pathname = currentPathname || location.pathname;
+  const announcerRef = useRef<HTMLDivElement | null>(null);
+  
+  // Create screen reader announcer
+  useEffect(() => {
+    if (!announcerRef.current) {
+      const announcer = document.createElement('div');
+      announcer.id = 'tour-sr-announcer';
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'sr-only';
+      document.body.appendChild(announcer);
+      announcerRef.current = announcer;
+    }
+    
+    return () => {
+      if (announcerRef.current && document.body.contains(announcerRef.current)) {
+        document.body.removeChild(announcerRef.current);
+      }
+    };
+  }, []);
   
   // Try to get user information from the auth context first
   let userId: string | undefined;
@@ -158,5 +193,24 @@ export const TourProvider: React.FC<{
   // Use our hook to manage tour state with user context for analytics
   const tourController = useTourController([], pathname, userId, userType);
   
+  // Announce tour changes to screen readers
+  useEffect(() => {
+    if (tourController.isActive && tourController.currentStepData && announcerRef.current) {
+      const { title, content } = tourController.currentStepData;
+      const stepNumber = tourController.currentStep + 1;
+      const announcement = `Step ${stepNumber} of ${tourController.totalSteps}: ${title}`;
+      
+      // Clear it first (hack to ensure it re-announces even if the text is the same)
+      announcerRef.current.textContent = '';
+      
+      // Schedule the announcement for the next tick
+      setTimeout(() => {
+        if (announcerRef.current) {
+          announcerRef.current.textContent = announcement;
+        }
+      }, 50);
+    }
+  }, [tourController.isActive, tourController.currentStep, tourController.currentStepData]);
+
   return <TourContext.Provider value={tourController}>{children}</TourContext.Provider>;
 };
