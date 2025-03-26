@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -12,6 +11,7 @@ import { TourMobileSwipeHint } from "./mobile/TourMobileSwipeHint";
 import { TourMobileActions } from "./mobile/TourMobileActions";
 import { useTooltipAnimation } from "./tooltip/useTooltipAnimation";
 import { useDevice } from "@/hooks/use-mobile";
+import { TourStep } from "@/contexts/tour/types";
 
 import { TourMobileCompactView } from "./mobile/TourMobileCompactView";
 import { TourMobileDrawerView } from "./mobile/TourMobileDrawerView";
