@@ -24,8 +24,13 @@ export const introductionStepGroup = createStepGroup(
         'This is our homepage where you can learn about our services and get started with our platform.',
         'bottom'
       ),
-      // Chain enhancers properly with composition
-      step => animatedStep()(stepInGroup('home-introduction')(step))
+      // Combine enhancers correctly by creating a function that applies both enhancers
+      step => {
+        // Apply stepInGroup first
+        const withGroup = stepInGroup('home-introduction')(step);
+        // Then apply animation and return the result
+        return animatedStep()(withGroup);
+      }
     ),
     
     enhanceStep(
