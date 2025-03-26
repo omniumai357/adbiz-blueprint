@@ -12,8 +12,20 @@ type WelcomeCouponProps = {
   userId: string;
 };
 
+// Define a proper type for the coupon to avoid infinite type instantiation
+interface Coupon {
+  id: string;
+  code: string;
+  type?: string;
+  discount_percentage: number;
+  description?: string;
+  expires_at?: string;
+  is_active?: boolean;
+  created_at?: string;
+}
+
 export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
-  const [coupon, setCoupon] = useState<any>(null);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState(false);
   const { toast } = useToast();
@@ -36,7 +48,7 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
         }
 
         if (existingCoupons) {
-          setCoupon(existingCoupons);
+          setCoupon(existingCoupons as Coupon);
           setLoading(false);
           return;
         }
@@ -63,7 +75,7 @@ export function WelcomeCoupon({ userId }: WelcomeCouponProps) {
         if (insertError) {
           console.error("Error creating coupon:", insertError);
         } else {
-          setCoupon(newCoupon);
+          setCoupon(newCoupon as Coupon);
         }
       } catch (error) {
         console.error("Unexpected error:", error);
