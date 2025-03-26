@@ -4,197 +4,181 @@ import {
   createStepGroup, 
   enhanceStep,
   animatedStep,
-  dynamicContentStep,
-  roleRestrictedStep,
+  conditionalStep,
   stepInGroup,
-  transitionStep,
-  spotlightStep
+  spotlightStep,
+  positionStep,
+  roleRestrictedStep
 } from '@/lib/tour/index';
 
 /**
- * Basic introduction step group - suitable for all users
+ * Home welcome steps group - introductory steps for the home page
  */
-export const introductionStepGroup = createStepGroup(
-  'home-introduction',
-  'Homepage Introduction',
+export const homeWelcomeStepGroup = createStepGroup(
+  'home-welcome',
+  'Home Welcome',
   [
+    // Main welcome step
     enhanceStep(
       createStep(
-        'welcome',
-        'hero-section',
-        'Welcome to Our Platform',
-        'This is our homepage where you can learn about our services and get started with our platform.',
-        'bottom'
+        "welcome",
+        "hero-section",
+        "Welcome to the Tour!",
+        "This guided tour will help you explore our site features. Let's start with the home page.",
+        "bottom"
       ),
-      step => {
-        // Apply stepInGroup first
-        const withGroup = stepInGroup('home-introduction')(step);
-        // Then apply animation and return the result
-        return animatedStep({
-          entry: "fade-in",
-          highlight: "pulse",
-          transition: "slide"
-        })(withGroup);
-      }
+      step => animatedStep({ highlight: "pulse", entry: "fade-up" })(
+        stepInGroup('home-welcome')(step)
+      )
     ),
     
+    // Header navigation step
     enhanceStep(
       createStep(
-        'services-intro',
-        'services-section',
-        'Our Services',
-        'Browse through our service categories to find the perfect fit for your business needs.',
-        'bottom'
+        "navigation",
+        "main-navigation",
+        "Site Navigation",
+        "Use this navigation menu to explore different sections of our website.",
+        "bottom"
       ),
       step => {
-        const withGroup = stepInGroup('home-introduction')(step);
-        return transitionStep({
-          type: "slide",
-          direction: "left",
-          duration: 400
-        })(withGroup);
+        const withAnimation = animatedStep({ 
+          highlight: "glow", 
+          entry: "fade-in"
+        })(step);
+        return stepInGroup('home-welcome')(withAnimation);
       }
     ),
   ],
-  'Basic introduction steps for all users to learn about the platform',
-  {
-    tags: ['introduction', 'welcome', 'onboarding'],
-    experienceLevel: 'beginner',
-    featureArea: 'homepage'
-  }
+  'Welcome steps for the home page tour'
 );
 
 /**
- * Feature highlights step group - for showcasing key platform capabilities
+ * Features steps group - explaining main site features
  */
-export const featureHighlightsStepGroup = createStepGroup(
+export const featureStepsGroup = createStepGroup(
   'home-features',
-  'Feature Highlights',
+  'Home Features',
   [
+    // Features section intro
     enhanceStep(
       createStep(
-        'testimonials',
-        'testimonials-section',
-        'Customer Testimonials',
-        'Read what our satisfied customers have to say about our services.',
-        'top'
+        "features-intro",
+        "features-section",
+        "Our Key Features",
+        "Here you can see our core offerings and what makes us stand out.",
+        "left"
       ),
       step => {
-        const withGroup = stepInGroup('home-features')(step);
-        return spotlightStep({
+        const withAnimation = animatedStep({ 
+          highlight: "solid", 
+          entry: "scale-in" 
+        })(step);
+        const withPosition = positionStep("left")(withAnimation);
+        return stepInGroup('home-features')(withPosition);
+      }
+    ),
+    
+    // Feature detail step with spotlight
+    enhanceStep(
+      createStep(
+        "feature-detail",
+        "feature-card-1",
+        "Feature Details",
+        "Click on any feature to learn more about our solutions.",
+        "top"
+      ),
+      step => {
+        const withAnimation = animatedStep({ 
+          highlight: "pulse", 
+          entry: "slide-in" 
+        })(step);
+        const withSpotlight = spotlightStep({
           intensity: "medium",
           pulseEffect: true
-        })(transitionStep({
-          type: "fade",
-          duration: 300
-        })(withGroup));
-      }
-    ),
-    
-    enhanceStep(
-      createStep(
-        'faq-section',
-        'faq-section',
-        'Frequently Asked Questions',
-        'Find answers to common questions about our services and platform.',
-        'top'
-      ),
-      step => {
-        const withGroup = stepInGroup('home-features')(step);
-        return spotlightStep({
-          intensity: "high",
-          color: "rgba(99, 102, 241, 0.7)"
-        })(transitionStep({
-          type: "zoom",
-          duration: 350
-        })(withGroup));
+        })(withAnimation);
+        return stepInGroup('home-features')(withSpotlight);
       }
     ),
   ],
-  'Highlights of key platform features for all users',
-  {
-    tags: ['features', 'testimonials', 'faq'],
-    experienceLevel: 'beginner',
-    featureArea: 'homepage'
-  }
+  'Steps explaining the main features on the home page'
 );
 
 /**
- * Advanced features step group - only for registered users
+ * Call-to-action steps group - guide users toward conversion
  */
-export const advancedFeaturesStepGroup = createStepGroup(
-  'home-advanced',
-  'Advanced Features',
+export const ctaStepsGroup = createStepGroup(
+  'home-cta',
+  'Home CTAs',
   [
+    // Packages section intro
     enhanceStep(
       createStep(
-        'cta',
-        'cta-section',
-        'Get Started Today',
-        'Ready to boost your business? Click here to explore our service packages.',
-        'top'
+        "packages-intro",
+        "packages-section",
+        "Service Packages",
+        "Browse our service packages and select one that fits your needs.",
+        "right"
       ),
       step => {
-        // First apply the group
-        const withGroup = stepInGroup('home-advanced')(step);
-        // Then apply role restriction and return the result
-        return roleRestrictedStep(['user', 'admin'])(withGroup);
+        const withAnimation = animatedStep({ 
+          highlight: "spotlight", 
+          entry: "fade-up" 
+        })(step);
+        return stepInGroup('home-cta')(withAnimation);
       }
     ),
     
+    // CTA button highlight
     enhanceStep(
       createStep(
-        'user-dashboard',
-        'dashboard-preview',
-        'Your Dashboard',
-        'Once you sign up, you'll have access to your personalized dashboard with analytics and controls.',
-        'bottom'
+        "main-cta",
+        "main-cta-button",
+        "Ready to Get Started?",
+        "Click here to start your journey with us!",
+        "bottom"
       ),
       step => {
-        // First apply the group
-        const withGroup = stepInGroup('home-advanced')(step);
-        // Then apply role restriction and return the result
-        return roleRestrictedStep(['user', 'admin'])(withGroup);
+        const withAnimation = animatedStep({ 
+          highlight: "focus-ring", 
+          entry: "bounce" 
+        })(step);
+        const withSpotlight = spotlightStep({
+          intensity: "high",
+          pulseEffect: true
+        })(withAnimation);
+        return stepInGroup('home-cta')(withSpotlight);
       }
     ),
   ],
-  'Advanced features for registered users',
-  {
-    tags: ['dashboard', 'advanced-features'],
-    experienceLevel: 'intermediate',
-    featureArea: 'user-tools'
-  }
+  'Steps guiding users toward conversion actions'
 );
 
 /**
- * Admin features step group - only for admins
+ * Admin-only steps group - only shown to administrators
  */
-export const adminFeaturesStepGroup = createStepGroup(
+export const adminStepsGroup = createStepGroup(
   'home-admin',
   'Admin Features',
   [
+    // Admin dashboard access
     enhanceStep(
       createStep(
-        'admin-controls',
-        'admin-preview',
-        'Admin Controls',
-        'As an admin, you have access to advanced controls and analytics.',
-        'left'
+        "admin-access",
+        "admin-link",
+        "Admin Dashboard",
+        "As an administrator, you have access to the admin dashboard. Click here to manage site content and users.",
+        "left"
       ),
       step => {
-        // First apply the group
-        const withGroup = stepInGroup('home-admin')(step);
-        // Then apply role restriction and return the result
-        return roleRestrictedStep(['admin'])(withGroup);
+        const withAnimation = animatedStep({ 
+          highlight: "bounce", 
+          entry: "slide-in" 
+        })(step);
+        const withRole = roleRestrictedStep(["admin"])(withAnimation);
+        return stepInGroup('home-admin')(withRole);
       }
     ),
   ],
-  'Admin-specific features and controls',
-  {
-    tags: ['admin', 'controls'],
-    experienceLevel: 'advanced',
-    featureArea: 'admin-dashboard',
-    requiredRoles: ['admin'],
-    priority: 10
-  }
+  'Steps only visible to site administrators'
 );
