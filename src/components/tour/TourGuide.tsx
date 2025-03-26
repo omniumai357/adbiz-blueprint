@@ -103,13 +103,17 @@ export const TourGuide: React.FC = () => {
     return null;
   }
 
+  // Get the appropriate animation settings
+  const highlightAnimation = currentStepData.animation?.highlight || "pulse";
+  const entryAnimation = currentStepData.animation?.entry || "fade-in";
+
   // For mobile devices, use a drawer at the bottom of the screen
   if (isMobile) {
     return (
       <>
         <TourOverlay 
           targetElement={targetElement} 
-          animation={currentStepData.animation?.highlight}
+          animation={highlightAnimation}
         />
         <TourDrawer 
           title={currentStepData.title}
@@ -129,7 +133,7 @@ export const TourGuide: React.FC = () => {
     <>
       <TourOverlay 
         targetElement={targetElement} 
-        animation={currentStepData.animation?.highlight}
+        animation={highlightAnimation}
       />
       {targetElement && (
         <TourTooltip
@@ -142,7 +146,7 @@ export const TourGuide: React.FC = () => {
           onNext={handleNext}
           onClose={handleClose}
           isLastStep={currentStep === totalSteps - 1}
-          animation={currentStepData.animation?.entry}
+          animation={entryAnimation}
         />
       )}
     </>

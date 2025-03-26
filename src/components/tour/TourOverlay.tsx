@@ -31,8 +31,17 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
       };
 
       updateDimensions();
+      
+      // Add event listeners for responsive updates
       window.addEventListener('resize', updateDimensions);
       window.addEventListener('scroll', updateDimensions);
+      
+      // Scroll element into view with a small offset
+      targetElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'center' 
+      });
 
       return () => {
         window.removeEventListener('resize', updateDimensions);
@@ -43,20 +52,23 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
 
   if (!targetElement) return null;
 
-  // Create an SVG mask with a hole for the target element
+  // Enhanced overlay with improved animations
   return (
     <div 
       className="fixed inset-0 z-50 pointer-events-none animate-fade-in"
-      style={{ backdropFilter: 'brightness(70%)', zIndex: 9998 }}
+      style={{ backdropFilter: 'brightness(60%)', zIndex: 9998 }}
     >
-      {/* Cutout area */}
+      {/* Enhanced cutout area with better animations */}
       <div
         className={cn(
-          "absolute bg-transparent border-2 border-primary pointer-events-none transition-all duration-300 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]",
+          "absolute bg-transparent border-2 pointer-events-none transition-all duration-300",
           {
-            "animate-pulse": animation === "pulse",
-            "animate-bounce": animation === "bounce",
-            "animate-[ping_1s_cubic-bezier(0,0,0.2,1)_infinite]": animation === "ping",
+            "animate-pulse border-primary": animation === "pulse",
+            "animate-bounce border-primary": animation === "bounce",
+            "border-primary shadow-[0_0_10px_2px_rgba(139,92,246,0.7)]": animation === "glow",
+            "animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] border-primary": animation === "ping",
+            "border-primary": animation === "solid",
+            "border-dashed border-primary animate-pulse": animation === "dashed",
           }
         )}
         style={{
@@ -65,7 +77,7 @@ export const TourOverlay: React.FC<TourOverlayProps> = ({
           width: dimensions.width,
           height: dimensions.height,
           borderRadius: '4px',
-          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.5)',
+          boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.65)',
         }}
       />
     </div>

@@ -41,7 +41,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
       const scrollX = window.scrollX;
       
       // Add a small buffer for spacing between tooltip and target
-      const buffer = 12;
+      const buffer = 16;
 
       // Base position calculations
       const positions = {
@@ -91,9 +91,14 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
 
     calculatePosition();
     
-    // Recalculate on window resize
+    // Recalculate on window resize and scroll
     window.addEventListener('resize', calculatePosition);
-    return () => window.removeEventListener('resize', calculatePosition);
+    window.addEventListener('scroll', calculatePosition);
+    
+    return () => {
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition);
+    };
   }, [targetElement, position]);
 
   const tooltipStyles = {
@@ -125,12 +130,14 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     left: 'border-t border-r',
   };
 
-  // Animation class mappings
+  // Animation class mappings with enhanced options
   const animationClasses = {
     "fade-in": "animate-fade-in",
     "scale-in": "animate-scale-in",
     "slide-in": "animate-slide-in-right",
-    "enter": "animate-enter"
+    "enter": "animate-enter",
+    "float": "animate-float",
+    "fade-up": "animate-fade-up"
   };
 
   return (
@@ -140,7 +147,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
     >
       <div 
         className={cn(
-          "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-72 pointer-events-auto border z-50",
+          "absolute bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50",
           animationClasses[animation as keyof typeof animationClasses] || "animate-fade-in"
         )}
         style={tooltipStyles as React.CSSProperties}
@@ -156,7 +163,7 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-2 right-2 h-6 w-6" 
+          className="absolute top-2 right-2 h-6 w-6 hover:bg-muted/60" 
           onClick={onClose}
         >
           <X className="h-4 w-4" />
@@ -164,19 +171,19 @@ export const TourTooltip: React.FC<TourTooltipProps> = ({
         
         <div className="mb-4 mt-1">
           <h3 className="font-medium text-lg">{title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{content}</p>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{content}</p>
         </div>
         
         <div className="flex items-center justify-between mt-4">
           <span className="text-xs text-muted-foreground">{stepInfo}</span>
           <div className="flex gap-2">
             {onPrev && (
-              <Button size="sm" variant="outline" onClick={onPrev}>
+              <Button size="sm" variant="outline" onClick={onPrev} className="h-8">
                 <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
+                Prev
               </Button>
             )}
-            <Button size="sm" onClick={onNext}>
+            <Button size="sm" onClick={onNext} className="h-8">
               {isLastStep ? 'Finish' : 'Next'}
               {!isLastStep && <ChevronRight className="h-4 w-4 ml-1" />}
             </Button>
