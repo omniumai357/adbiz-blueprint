@@ -42,17 +42,45 @@ export function useTourController(
 
   // Setup tour persistence
   const {
+    endAndCleanupTour,
     markCurrentTourCompleted
   } = useTourPersistence(
     isActive,
     currentPath,
-    currentStep
+    currentStep,
+    tourPaths,
+    setCurrentPath,
+    setCurrentStep,
+    toggleActive
   );
+
+  // Tour content management
+  const {
+    setDynamicContent,
+    getContentForStep
+  } = useTourContent(visibleSteps, setVisibleSteps);
 
   // Setup analytics integration
   const {
-    trackEvent
-  } = useTourAnalyticsIntegration(userId, userType);
+    startTour: analyticsStartTour,
+    endTour: analyticsEndTour,
+    keyboardNavigationHandler,
+    trackStepSkipped,
+    trackStepInteraction
+  } = useTourAnalyticsIntegration(
+    isActive,
+    currentPath,
+    tourPaths,
+    currentStep,
+    visibleSteps,
+    getCurrentPathData,
+    () => {}, // placeholder for nextStep
+    () => {}, // placeholder for prevStep
+    endAndCleanupTour,
+    markCurrentTourCompleted,
+    userId,
+    userType
+  );
 
   // Load tour paths based on the current route
   useTourPathLoading(
@@ -62,12 +90,6 @@ export function useTourController(
     setVisibleSteps,
     getCurrentPathData
   );
-
-  // Tour content management
-  const {
-    setDynamicContent,
-    getContentForStep
-  } = useTourContent(visibleSteps, setVisibleSteps);
 
   // Tour navigation handlers
   const {
@@ -89,7 +111,11 @@ export function useTourController(
       toggleActive,
       setCurrentPath,
       markTourCompleted: markCurrentTourCompleted,
-      trackEvent
+      trackEvent: (eventName: string, data?: any) => {
+        console.log('Tour event:', eventName, data);
+        // This is a placeholder for actual event tracking
+        // In a real implementation, you would call the appropriate analytics method
+      }
     }
   );
 

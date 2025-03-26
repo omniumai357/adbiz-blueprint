@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useTourAnalytics } from '../../useTourAnalytics';
@@ -40,7 +41,8 @@ export function useTourAnalyticsIntegration(
     
     if (pathData) {
       // Determine if tour was completed or abandoned
-      const wasCompleted = currentStep === visibleSteps.length - 1;
+      const totalSteps = visibleSteps?.length || 0;
+      const wasCompleted = currentStep === totalSteps - 1;
       
       if (wasCompleted) {
         analytics.trackTourCompleted(pathData, userId, userType);
@@ -51,7 +53,7 @@ export function useTourAnalyticsIntegration(
     }
     
     endAndCleanupTour();
-  }, [getCurrentPathData, currentStep, visibleSteps.length, analytics, userId, userType, endAndCleanupTour, markCurrentTourCompleted]);
+  }, [getCurrentPathData, currentStep, visibleSteps, analytics, userId, userType, endAndCleanupTour, markCurrentTourCompleted]);
 
   // Start tour with analytics
   const startTour = useCallback((pathId: string) => {
@@ -86,18 +88,14 @@ export function useTourAnalyticsIntegration(
       showKeyboardShortcutsHelp
     };
 
-    // The issue is here - we need to match the expected parameter types
-    // Looking at key-navigation.ts, we should pass a navigation action string (or undefined),
-    // not the entire config object as the second parameter
-
     // Call handleKeyNavigation with the correct parameter types
     handleKeyNavigation(event, undefined, {
       isActive,
       currentPath,
       tourPaths,
       currentStep,
-      totalSteps: visibleSteps.length,
-      visibleSteps,
+      totalSteps: visibleSteps?.length || 0,
+      visibleSteps: visibleSteps || [],
       userId,
       userType,
       handlers
