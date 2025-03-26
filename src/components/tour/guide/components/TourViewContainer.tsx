@@ -1,7 +1,7 @@
 
 import React, { useRef } from "react";
 import { useTour } from "@/contexts/tour";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useDevice } from "@/hooks/use-mobile";
 import { useTourInteractions } from "@/hooks/tour/useTourInteractions";
 import { useTourDynamicContent } from "@/hooks/tour/useTourDynamicContent";
 import { useUserContext } from "@/hooks/tour/useUserContext";
@@ -27,7 +27,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   } = useTour();
   
   const { userId, userType } = useUserContext();
-  const isMobile = useIsMobile();
+  const { deviceType, isMobile, isTablet, hasTouchCapability } = useDevice();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const desktopViewRef = useRef<TourDesktopViewHandle>(null);
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
@@ -67,7 +67,11 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
   
   const spotlight = currentStepData.spotlight;
   
-  return isMobile ? (
+  // Enhanced device-specific rendering
+  // Use mobile view for mobile devices and tablets in portrait mode
+  const useMobileView = isMobile || (isTablet && hasTouchCapability);
+  
+  return useMobileView ? (
     <TourMobileView
       currentStepData={currentStepData}
       content={content}
@@ -81,6 +85,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
       transition={supportedTransition}
       spotlight={spotlight}
       onShowKeyboardShortcuts={showKeyboardShortcutsHelp}
+      deviceType={deviceType}
     />
   ) : (
     <TourDesktopView
@@ -107,6 +112,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElem
       totalSteps={totalSteps}
       showKeyboardShortcuts={showKeyboardShortcutsHelp}
       tooltipRef={tooltipRef}
+      hasTouchCapability={hasTouchCapability}
     />
   );
 };

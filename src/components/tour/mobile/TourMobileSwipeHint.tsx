@@ -11,6 +11,7 @@ interface TourMobileSwipeHintProps {
   onNext: () => void;
   onPrev: () => void;
   className?: string;
+  deviceType?: "mobile" | "tablet" | "desktop";
 }
 
 export const TourMobileSwipeHint: React.FC<TourMobileSwipeHintProps> = ({
@@ -18,9 +19,11 @@ export const TourMobileSwipeHint: React.FC<TourMobileSwipeHintProps> = ({
   totalSteps,
   onNext,
   onPrev,
-  className
+  className,
+  deviceType = "mobile"
 }) => {
   const isLandscape = useMediaQuery("(orientation: landscape)");
+  const isTablet = deviceType === "tablet";
   const hasMultipleSteps = totalSteps > 1;
   
   // Skip rendering if only one step
@@ -38,6 +41,45 @@ export const TourMobileSwipeHint: React.FC<TourMobileSwipeHintProps> = ({
     );
   }
   
+  // Enhanced layout for tablets
+  if (isTablet && !isLandscape) {
+    return (
+      <div className={cn(
+        "flex justify-center items-center mt-6 mb-2 text-sm text-muted-foreground", 
+        className
+      )}>
+        <div className="flex items-center space-x-6">
+          {currentStep > 0 && (
+            <div 
+              className="flex flex-col items-center cursor-pointer hover:text-foreground transition-colors"
+              onClick={onPrev}
+            >
+              <ChevronLeft className="h-5 w-5 mb-1" />
+              <span className="text-xs font-medium">Swipe right</span>
+            </div>
+          )}
+          
+          <div className="flex flex-col items-center px-2 py-1 bg-muted rounded-full">
+            <span className="text-xs font-medium">
+              {currentStep + 1} / {totalSteps}
+            </span>
+          </div>
+          
+          {currentStep < totalSteps - 1 && (
+            <div 
+              className="flex flex-col items-center cursor-pointer hover:text-foreground transition-colors"
+              onClick={onNext}
+            >
+              <ChevronRight className="h-5 w-5 mb-1" />
+              <span className="text-xs font-medium">Swipe left</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+  
+  // Standard mobile view
   return (
     <div className={cn("flex justify-center mt-4 text-sm text-muted-foreground font-medium", className)}>
       <span className="inline-flex items-center">

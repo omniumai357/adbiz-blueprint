@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useTour } from "@/contexts/tour";
 import { useTourFocusTrap } from "@/hooks/tour/useTourFocusTrap";
 import { TourFocusManager } from "../../accessibility/TourFocusManager";
@@ -8,6 +8,7 @@ import { TourStepFocusManager } from "../../accessibility/TourStepFocusManager";
 import { TourFocusStyles } from "../../accessibility/TourFocusStyles";
 import { TourScreenReaderAnnouncer } from "../../accessibility/TourScreenReaderAnnouncer";
 import { TourSkipNavigation } from "../../accessibility/TourSkipNavigation";
+import { useDevice } from "@/hooks/use-mobile";
 
 interface TourAccessibilityManagerProps {
   tooltipRef: React.RefObject<HTMLDivElement>;
@@ -24,6 +25,7 @@ export const TourAccessibilityManager: React.FC<TourAccessibilityManagerProps> =
   
   const [lastStepIndex, setLastStepIndex] = useState<number>(-1);
   const { focusElement } = useTourFocusTrap(isActive, tooltipRef, true);
+  const { deviceType, hasTouchCapability } = useDevice();
   
   // Handle skip to main content functionality
   const handleSkipToMain = () => {
@@ -64,7 +66,9 @@ export const TourAccessibilityManager: React.FC<TourAccessibilityManagerProps> =
       {/* Skip navigation links for keyboard users */}
       <TourSkipNavigation 
         isActive={isActive} 
-        onSkipToMain={handleSkipToMain} 
+        onSkipToMain={handleSkipToMain}
+        isTouchDevice={hasTouchCapability}
+        deviceType={deviceType}
       />
       
       {/* Enhanced screen reader announcements */}

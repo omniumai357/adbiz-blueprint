@@ -12,6 +12,7 @@ import { TourMobileSwipeHint } from "./mobile/TourMobileSwipeHint";
 import { TourMobileActions } from "./mobile/TourMobileActions";
 import { useTooltipAnimation } from "./tooltip/useTooltipAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDevice } from "@/hooks/use-device";
 
 interface TourMobileViewProps {
   currentStepData: TourStep;
@@ -35,6 +36,7 @@ interface TourMobileViewProps {
     fadeBackground?: boolean;
   };
   onShowKeyboardShortcuts?: () => void;
+  deviceType?: "mobile" | "tablet" | "desktop";
 }
 
 export const TourMobileView: React.FC<TourMobileViewProps> = ({
@@ -49,11 +51,13 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   highlightAnimation,
   transition,
   spotlight,
-  onShowKeyboardShortcuts
+  onShowKeyboardShortcuts,
+  deviceType = "mobile"
 }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const isMobile = useIsMobile();
+  const { deviceType: detectedDeviceType, hasTouchCapability } = useDevice();
+  const actualDeviceType = deviceType || detectedDeviceType;
   const isSmallMobile = useMediaQuery("(max-width: 380px)");
   
   const { touchHandlers } = useTourGestures({
@@ -97,7 +101,9 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   const titleSize = isSmallMobile ? "text-lg" : "text-xl";
   const drawerHeight = isSmallMobile ? "max-h-[90vh]" : "max-h-[85vh]";
 
-  const useCompactView = useMediaQuery("(max-height: 500px) and (orientation: landscape)");
+  const isTablet = actualDeviceType === "tablet";
+  const useCompactView = useMediaQuery("(max-height: 500px) and (orientation: landscape)") || 
+                         (isTablet && useMediaQuery("(orientation: landscape)"));
 
   return (
     <>
@@ -140,35 +146,50 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
         </div>
       ) : (
         <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
-          <DrawerContent className={cn(drawerHeight, "overflow-auto", animationClass)}>
+          <DrawerContent className={cn(
+            drawerHeight, 
+            "overflow-auto", 
+            animationClass,
+            isTablet ? "tablet-optimized-drawer max-w-[800px] mx-auto" : ""
+          )}>
             <div className="absolute right-4 top-3">
               <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
                 <X className="h-4 w-4" />
               </Button>
             </div>
             
-            <DrawerHeader className="pt-8 pb-2">
+            <DrawerHeader className={cn("pt-8 pb-2", isTablet ? "px-6" : "")}>
               <h3 className={cn("font-semibold", titleSize)}>{currentStepData.title}</h3>
             </DrawerHeader>
             
             <div 
-              className="px-4 pb-4 text-muted-foreground"
+              className={cn("px-4 pb-4 text-muted-foreground", isTablet ? "px-6" : "")}
               {...touchHandlers}
             >
               <TourMobileProgress 
                 currentStep={currentStep} 
                 totalSteps={totalSteps} 
+                variant={isTablet ? "full" : "standard"}
               />
               
-              <TourMobileMedia currentStepData={currentStepData} />
+              <TourMobileMedia 
+                currentStepData={currentStepData}
+                className={isTablet ? "mt-4 mb-6" : ""}
+              />
               
-              <p className="leading-relaxed mt-3">{content}</p>
+              <p className={cn(
+                "leading-relaxed mt-3",
+                isTablet ? "text-base" : "text-sm"
+              )}>
+                {content}
+              </p>
               
               <TourMobileSwipeHint 
                 currentStep={currentStep} 
                 totalSteps={totalSteps} 
                 onNext={onNext} 
-                onPrev={onPrev} 
+                onPrev={onPrev}
+                deviceType={actualDeviceType}
               />
             </div>
             
@@ -182,6 +203,7 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
                 nextLabel={nextLabel}
                 prevLabel={prevLabel}
                 skipLabel={skipLabel}
+                deviceType={actualDeviceType}
               />
             </DrawerFooter>
           </DrawerContent>
