@@ -1,16 +1,15 @@
 
-import { TourPath, TourStep } from "@/contexts/tour/types";
-import { composeStepGroups } from "../tourStepGroups";
-import { createTourPath } from "./createTourPath";
+import { TourStep, TourPath } from '@/contexts/tour/types';
+import { getAllStepGroups } from '../tourStepGroups';
 
 /**
- * Creates a tour path by composing steps from predefined step groups
+ * Creates a tour path by combining multiple step groups
  * 
  * @param id Unique identifier for the tour path
  * @param name Display name for the tour path
  * @param groupIds Array of step group IDs to include
- * @param options Additional tour path configuration options
- * @returns A configured TourPath object with steps from the specified groups
+ * @param options Additional configuration options
+ * @returns A tour path object with steps from the specified groups
  */
 export function createTourPathFromGroups(
   id: string,
@@ -19,19 +18,40 @@ export function createTourPathFromGroups(
   options?: {
     allowSkip?: boolean;
     showProgress?: boolean;
-    autoStart?: boolean;
-    requiredUserRoles?: string[];
-    completionCallback?: () => void;
-    metadata?: Record<string, any>;
-    filterSteps?: (step: TourStep) => boolean;
-    transformStep?: (step: TourStep) => TourStep;
+    route?: string;
+    tags?: string[];
+    userRoles?: string[];
+    displayCondition?: () => boolean | Promise<boolean>;
   }
 ): TourPath {
-  const { filterSteps, transformStep, ...pathOptions } = options || {};
+  // Get all registered step groups
+  const allGroups = getAllStepGroups();
   
-  // Compose steps from the specified groups
-  const composedSteps = composeStepGroups(groupIds, { filterSteps, transformStep });
+  // Collect steps from the specified groups
+  let allSteps: TourStep[] = [];
   
-  // Create the tour path with the composed steps
-  return createTourPath(id, composedSteps, pathOptions);
+  groupIds.forEach(groupId => {
+    const group = allGroups[groupId];
+    if (group && group.steps) {
+      allSteps = [...allSteps, ...group.steps];
+    }
+  });
+  
+  // Create and return the tour path
+  return {
+    id,
+    name,
+    steps: allSteps,
+    allowSkip: options?.allowSkip ?? true,
+    showProgress: options?.showProgress ?? true,
+    route: options?.route,
+    config: {
+      allowSkip: options?.allowSkip,
+      showProgress: options?.showProgress,
+      metadata: {
+        tags: options?.tags || [],
+        userRoles: options?.userRoles || []
+      }
+    }
+  };
 }

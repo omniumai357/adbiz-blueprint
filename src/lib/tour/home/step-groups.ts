@@ -1,9 +1,7 @@
 
 import { 
   createStep, 
-  createStepGroup, 
-  enhanceStep,
-  stepInGroup
+  enhanceStep
 } from '@/lib/tour/core/tourPathFactory';
 
 import { 
@@ -15,6 +13,31 @@ import {
   spotlightStep,
   positionStep
 } from '@/lib/tour/enhancers/visualEnhancers';
+
+// Helper for step in group
+function stepInGroup(groupId: string) {
+  return (step: any) => {
+    return {
+      ...step,
+      group: groupId
+    };
+  };
+}
+
+// Helper for creating step groups
+function createStepGroup(
+  id: string,
+  name: string,
+  steps: any[],
+  description?: string
+) {
+  return {
+    id,
+    name,
+    steps,
+    description
+  };
+}
 
 /**
  * Welcome step group for home page tour
@@ -116,10 +139,10 @@ export const homeFeaturesStepGroup = createStepGroup(
         "premium-feature-section",
         "Premium Features",
         "Explore our premium features available with paid plans.",
-        "bottom-right"
+        "bottom"
       ),
       step => {
-        const withPosition = positionStep("bottom-right")(step);
+        const withPosition = positionStep("bottom")(step);
         const asOptional = optionalStep()(withPosition);
         return stepInGroup('home-features')(asOptional);
       }

@@ -90,10 +90,21 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     }
   }, [tourController]);
   
-  // Create a wrapper for handleKeyNavigation that converts React.KeyboardEvent to KeyboardEvent
+  // Create a wrapper for handleKeyNavigation that converts DOM KeyboardEvent to React.KeyboardEvent
   const handleKeyNavigationWrapper = useCallback((event: KeyboardEvent) => {
     if (typeof tourController.handleKeyNavigation === 'function') {
-      tourController.handleKeyNavigation(event);
+      // Create a basic adapter for the DOM KeyboardEvent to satisfy React.KeyboardEvent requirements
+      const adaptedEvent = {
+        ...event,
+        nativeEvent: event,
+        isDefaultPrevented: () => false,
+        isPropagationStopped: () => false,
+        persist: () => {},
+        locale: '',
+        // Add any other required properties
+      };
+      
+      tourController.handleKeyNavigation(adaptedEvent as any);
     }
   }, [tourController.handleKeyNavigation]);
   

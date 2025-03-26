@@ -4,7 +4,6 @@ export * from './core/paths/createTourPath';
 export * from './core/paths/createTourPathFromGroups';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';
-export * from './core/registry';
 
 // Export enhancers
 export * from './enhancers/visualEnhancers';
@@ -21,7 +20,7 @@ export * from './utils/tour-composer/createFeatureTour';
 export * from './utils/tour-composer/createOnboardingTour';
 
 // Core building blocks
-export { createStep, enhanceStep, conditionalStep, stepInGroup } from './core/tourPathFactory';
+export { createStep, enhanceStep } from './core/tourPathFactory';
 
 // Common enhancers (directly exported for convenience)
 import { 

@@ -1,114 +1,57 @@
 
-import { 
-  createTourPath, 
-  enhanceStep,
-  conditionalStep, 
-  animatedStep, 
-  optionalStep,
-  mediaEnhancedStep,
-  actionEnhancedStep
-} from '../index';
-
-import {
-  hasAvailableDiscounts,
-  hasSavedPaymentMethods,
-  isReturningCustomer
-} from './conditions';
-
-import {
-  getPaymentStep,
-  createWelcomeStep,
-  createWelcomeReturningStep,
-  createCustomerInfoStep,
-  createAddOnsStep,
-  createDiscountsStep,
-  createSavedPaymentMethodsStep,
-  createOrderSummaryStep
-} from './steps';
+import { TourPath } from '@/contexts/tour/types';
+import { createStep } from '@/lib/tour/core/tourPathFactory';
+import { mediaEnhancedStep, spotlightStep } from '@/lib/tour/enhancers/visualEnhancers';
 
 /**
- * Main checkout tour path definition
+ * Tour path for the checkout page
  */
-export const checkoutTourPath = createTourPath(
-  "checkout-tour",
-  [
-    enhanceStep(
-      createWelcomeStep(),
-      step => {
-        // Chain enhancers
-        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
-        return conditionalStep(() => !isReturningCustomer())(withAnimation);
-      }
-    ),
-    
-    enhanceStep(
-      createWelcomeReturningStep(),
-      step => {
-        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
-        return conditionalStep(isReturningCustomer)(withAnimation);
-      }
-    ),
-    
-    enhanceStep(
-      createCustomerInfoStep(),
-      animatedStep({ highlight: "pulse", entry: "scale-in" })
-    ),
-    
-    enhanceStep(
-      createAddOnsStep(),
-      step => {
-        const withAnimation = animatedStep({ highlight: "bounce", entry: "slide-in" })(step);
-        return mediaEnhancedStep({
-          type: "image",
-          url: "/placeholder.svg",
-          alt: "Example add-ons selection"
-        })(withAnimation);
-      }
-    ),
-    
-    conditionalStep(hasAvailableDiscounts)(
-      animatedStep({ highlight: "dashed", entry: "fade-in" })(
-        createDiscountsStep()
-      )
-    ),
-    
-    conditionalStep(hasSavedPaymentMethods)(
-      animatedStep({ highlight: "solid", entry: "scale-in" })(
-        createSavedPaymentMethodsStep()
-      )
-    ),
-    
-    // The payment step will adapt based on device
-    enhanceStep(
-      getPaymentStep(),
-      animatedStep({ highlight: "pulse", entry: "fade-up" })
-    ),
-    
-    enhanceStep(
-      createOrderSummaryStep(),
-      step => {
-        const withAnimation = animatedStep({ highlight: "glow", entry: "float" })(step);
-        const withOptional = optionalStep()(withAnimation);
-        return actionEnhancedStep({
-          next: {
-            label: "Complete Tour",
-          },
-          skip: {
-            label: "Finish Shopping"
-          }
-        })(withOptional);
-      }
-    )
-  ],
-  {
-    allowSkip: true,
-    showProgress: true,
-    completionCallback: () => {
-      console.log("Checkout tour completed!");
+export const checkoutTourPath: TourPath = {
+  id: 'checkout-tour',
+  name: 'Checkout Page Tour',
+  steps: [
+    // Welcome to checkout
+    {
+      id: 'checkout-welcome',
+      elementId: 'checkout-header',
+      title: 'Welcome to Checkout',
+      content: 'This tour will guide you through the checkout process.',
+      placement: 'bottom',
+      animation: 'fade-in'
     },
-    metadata: {
-      importance: "high",
-      averageCompletionTimeSeconds: 120
+    
+    // Order summary
+    {
+      ...createStep(
+        'order-summary',
+        'order-summary-section',
+        'Order Summary',
+        'Review your order details before proceeding with payment.',
+        'right'
+      ),
+      ...spotlightStep({
+        intensity: 'medium',
+        fadeBackground: true
+      })({} as any)
+    },
+    
+    // Payment methods
+    {
+      ...createStep(
+        'payment-methods',
+        'payment-section',
+        'Payment Methods',
+        'Choose from multiple payment options for your convenience.',
+        'left'
+      ),
+      media: {
+        type: 'image',
+        url: '/images/payment-methods.png',
+        alt: 'Available payment methods'
+      }
     }
-  }
-);
+  ],
+  allowSkip: true,
+  showProgress: true,
+  route: '/checkout'
+};
