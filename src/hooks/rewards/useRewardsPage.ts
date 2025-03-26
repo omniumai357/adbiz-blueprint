@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/features/auth";
 
 /**
  * Custom hook for managing the Rewards page state and business logic

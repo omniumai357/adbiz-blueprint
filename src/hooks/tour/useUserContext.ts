@@ -1,5 +1,5 @@
 
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/features/auth";
 import { useAuthUser } from "@/hooks/queries/useAuthUser";
 
 /**
