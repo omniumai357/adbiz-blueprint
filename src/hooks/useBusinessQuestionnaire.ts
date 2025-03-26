@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/features/auth';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/ui/use-toast';
 import { useUpdateMilestoneProgress } from '@/hooks/queries/useUpdateMilestoneProgress';
