@@ -1,178 +1,108 @@
 
-import { 
-  createStep, 
-  createStepGroup, 
-  enhanceStep,
-  animatedStep,
-  conditionalStep,
-  stepInGroup
-} from '@/lib/tour/index';
-
+import { createStepGroup } from '../core/tourStepGroups';
 import {
-  hasAvailableDiscounts,
-  hasSavedPaymentMethods,
-  isReturningCustomer
-} from './conditions';
+  createStep,
+  enhanceStep
+} from '@/lib/tour/core/tourPathFactory';
+import {
+  optionalStep
+} from '@/lib/tour/enhancers/visualEnhancers';
 
 /**
- * Welcome steps group for checkout - varies based on customer type
+ * Welcome step group for the checkout flow
  */
 export const checkoutWelcomeStepGroup = createStepGroup(
   'checkout-welcome',
   'Checkout Welcome',
   [
-    // Welcome step for new customers
-    enhanceStep(
-      createStep(
-        "welcome",
-        "checkout-header",
-        "Welcome to Checkout",
-        "This is the checkout page where you can complete your purchase. Let's walk through the process.",
-        "bottom"
-      ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
-        return conditionalStep(() => !isReturningCustomer())(
-          stepInGroup('checkout-welcome')(withAnimation)
-        );
-      }
-    ),
-    
-    // Welcome step for returning customers
-    enhanceStep(
-      createStep(
-        "welcome-returning",
-        "checkout-header",
-        "Welcome Back",
-        "Welcome back to checkout! We've customized this tour for returning customers.",
-        "bottom"
-      ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "glow", entry: "fade-up" })(step);
-        return conditionalStep(isReturningCustomer)(
-          stepInGroup('checkout-welcome')(withAnimation)
-        );
-      }
-    ),
+    createStep(
+      'welcome-to-checkout',
+      'checkout-header',
+      'Welcome to Checkout',
+      'This tour will guide you through the checkout process.',
+      'bottom'
+    )
   ],
-  'Welcome steps for the checkout process'
+  'Introduction to the checkout page'
 );
 
 /**
- * Core checkout steps group - essential steps for all users
+ * Core checkout steps - required for all users
  */
 export const checkoutCoreStepGroup = createStepGroup(
   'checkout-core',
-  'Core Checkout Steps',
+  'Essential Steps',
   [
-    // Customer information step
-    enhanceStep(
-      createStep(
-        "customer-info",
-        "customer-info-section",
-        "Customer Information",
-        "Here you can enter your personal and business details. This information will be used for your invoice.",
-        "right"
-      ),
-      step => animatedStep({ highlight: "pulse", entry: "scale-in" })(
-        stepInGroup('checkout-core')(step)
-      )
+    createStep(
+      'customer-info',
+      'customer-info-section',
+      'Customer Information',
+      'Enter your personal and business details here.',
+      'right'
     ),
-    
-    // Add-ons step
-    enhanceStep(
-      createStep(
-        "add-ons",
-        "add-ons-section",
-        "Service Add-ons",
-        "Enhance your package with these optional add-ons. Select any that might benefit your business.",
-        "left"
-      ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "bounce", entry: "slide-in" })(step);
-        return stepInGroup('checkout-core')(withAnimation);
-      }
-    ),
+    createStep(
+      'payment-method',
+      'payment-method-section',
+      'Payment Method',
+      'Choose your preferred payment method.',
+      'left'
+    )
   ],
-  'Core steps for the checkout process'
+  'Required steps in the checkout process'
 );
 
 /**
- * Optional checkout features step group - shown conditionally
+ * Optional steps in the checkout process
  */
 export const checkoutOptionalStepGroup = createStepGroup(
   'checkout-optional',
-  'Optional Checkout Features',
+  'Optional Features',
   [
-    // Discounts step - only shown if discounts are available
     enhanceStep(
       createStep(
-        "discounts",
-        "discounts-section",
-        "Available Discounts",
-        "View applicable discounts and special offers. You can also enter coupon codes here.",
-        "top"
+        'add-ons',
+        'add-ons-section',
+        'Additional Services',
+        'Consider these add-ons to enhance your package.',
+        'bottom'
       ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "dashed", entry: "fade-in" })(step);
-        return conditionalStep(hasAvailableDiscounts)(
-          stepInGroup('checkout-optional')(withAnimation)
-        );
-      }
+      optionalStep
     ),
-    
-    // Saved payment methods - only shown if user has saved methods
     enhanceStep(
       createStep(
-        "saved-payment-methods",
-        "saved-payment-methods",
-        "Your Saved Payment Methods",
-        "Choose from your previously saved payment methods for faster checkout.",
-        "left"
+        'discount-code',
+        'discount-section',
+        'Discount Code',
+        'Enter a discount code if you have one.',
+        'top'
       ),
-      step => {
-        const withAnimation = animatedStep({ highlight: "solid", entry: "scale-in" })(step);
-        return conditionalStep(hasSavedPaymentMethods)(
-          stepInGroup('checkout-optional')(withAnimation)
-        );
-      }
-    ),
+      optionalStep
+    )
   ],
-  'Optional features in the checkout process, shown conditionally'
+  'Optional features you might want to explore'
 );
 
 /**
- * Final checkout steps group - completion and summary
+ * Final checkout steps
  */
 export const checkoutFinalStepGroup = createStepGroup(
   'checkout-final',
-  'Checkout Summary',
+  'Complete Order',
   [
-    // Payment method step
-    enhanceStep(
-      createStep(
-        "payment-methods",
-        "payment-method-section",
-        "Payment Methods",
-        "Choose your preferred payment method to complete your purchase.",
-        "left"
-      ),
-      step => animatedStep({ highlight: "pulse", entry: "fade-up" })(
-        stepInGroup('checkout-final')(step)
-      )
+    createStep(
+      'order-summary',
+      'order-summary-section',
+      'Order Summary',
+      'Review your order details before completing the purchase.',
+      'right'
     ),
-    
-    // Order summary step
-    enhanceStep(
-      createStep(
-        "order-summary",
-        "order-summary-section",
-        "Order Summary",
-        "Review your order details, including selected package, add-ons, and total cost before finalizing.",
-        "right"
-      ),
-      step => stepInGroup('checkout-final')(step)
-    ),
+    createStep(
+      'confirm-order',
+      'confirm-button',
+      'Complete Purchase',
+      'Click here to confirm and complete your order.',
+      'top'
+    )
   ],
-  'Final steps in the checkout process'
+  'Final steps to complete your purchase'
 );

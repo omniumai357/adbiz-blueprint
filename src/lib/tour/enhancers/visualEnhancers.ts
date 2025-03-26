@@ -1,140 +1,149 @@
 
-import { TourStep } from "@/contexts/tour/types";
+import { TourStep } from '@/contexts/tour/types';
 
 /**
- * Enhances a step with animation effects
+ * Apply animation effects to a tour step
  * 
- * @param animation Animation configuration
- * @returns A function that enhances the step with animation
+ * @param options Animation options
+ * @returns Enhanced step with animation effects
  */
-export function animatedStep(
-  animation: string | {
-    entry?: string;
-    highlight?: string;
-    exit?: string;
+export function animatedStep(options: {
+  type?: string;
+  duration?: number;
+  delay?: number;
+  highlight?: string;
+  entry?: string;
+  exit?: string;
+}) {
+  return function <T extends TourStep>(step: T): T {
+    return {
+      ...step,
+      animation: typeof options === 'string' 
+        ? options 
+        : {
+            entry: options.entry || 'fade-in',
+            highlight: options.highlight || 'pulse',
+            exit: options.exit || 'fade-out'
+          }
+    };
+  };
+}
+
+/**
+ * Mark a tour step as optional
+ * 
+ * @returns Enhanced step marked as optional
+ */
+export function optionalStep<T extends TourStep>(step: T): T {
+  return {
+    ...step,
+    isOptional: true
+  };
+}
+
+/**
+ * Add media content to a tour step
+ * 
+ * @param options Media content options
+ * @returns Enhanced step with media content
+ */
+export function mediaEnhancedStep(options: {
+  type: "image" | "video" | "gif";
+  url: string;
+  alt?: string;
+  animation?: string;
+}) {
+  return function <T extends TourStep>(step: T): T {
+    return {
+      ...step,
+      media: options
+    };
+  };
+}
+
+/**
+ * Add spotlight effect to a tour step
+ * 
+ * @param options Spotlight effect options
+ * @returns Enhanced step with spotlight effect
+ */
+export function spotlightStep(options: {
+  intensity?: "low" | "medium" | "high";
+  color?: string;
+  pulseEffect?: boolean;
+  fadeBackground?: boolean;
+}) {
+  return function <T extends TourStep>(step: T): T {
+    return {
+      ...step,
+      spotlight: options
+    };
+  };
+}
+
+/**
+ * Customize the position of a tour step
+ * 
+ * @param options Position options
+ * @returns Enhanced step with custom positioning
+ */
+export function positionStep(options: {
+  position: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  offset?: {
+    x?: number;
+    y?: number;
   }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
+}) {
+  return function <T extends TourStep>(step: T): T {
     return {
       ...step,
-      animation
+      position: options.position,
+      // Add offset to floating UI options if provided
+      floatingUIOptions: options.offset ? {
+        ...step.floatingUIOptions,
+        offset: options.offset
+      } : step.floatingUIOptions
     };
   };
 }
 
 /**
- * Marks a step as optional in the tour
+ * Enhance a step with visual styling
  * 
- * @returns A function that enhances the step as optional
+ * @param options Visual styling options
+ * @returns Enhanced step with visual styling
  */
-export function optionalStep(): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      isOptional: true
-    };
+export function visuallyEnhancedStep(options: {
+  highlightClass?: string;
+  effects3D?: {
+    enable?: boolean;
+    intensity?: number;
   };
-}
-
-/**
- * Enhances a step with media content
- * 
- * @param mediaConfig Media configuration
- * @returns A function that enhances the step with media
- */
-export function mediaEnhancedStep(
-  mediaConfig: {
-    type: "image" | "video" | "gif";
-    url: string;
-    alt?: string;
-    animation?: string;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      media: mediaConfig
-    };
-  };
-}
-
-/**
- * Adds spotlight effect to a tour step
- * 
- * @param spotlightConfig Spotlight configuration
- * @returns A function that enhances the step with spotlight effects
- */
-export function spotlightStep(
-  spotlightConfig: {
-    intensity?: "low" | "medium" | "high";
-    color?: string;
-    pulseEffect?: boolean;
-    fadeBackground?: boolean;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      spotlight: spotlightConfig
-    };
-  };
-}
-
-/**
- * Sets the position of a tour step
- * 
- * @param position Position relative to the target element
- * @returns A function that enhances the step with position
- */
-export function positionStep(
-  position: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left"
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
-    return {
-      ...step,
-      position
-    };
-  };
-}
-
-/**
- * Enhances a step with visual styling
- * 
- * @param options Visual enhancement options
- * @returns A function that enhances the step visually
- */
-export function visuallyEnhancedStep(
-  options: {
-    highlightClass?: string;
-    spotlightPadding?: number;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
+}) {
+  return function <T extends TourStep>(step: T): T {
     return {
       ...step,
       highlightClass: options.highlightClass,
-      spotlightPadding: options.spotlightPadding
+      effects3D: options.effects3D
     };
   };
 }
 
 /**
- * Adds transition effects to a tour step
+ * Add transition effects between steps
  * 
- * @param transitionConfig Transition configuration
- * @returns A function that enhances the step with transitions
+ * @param options Transition options
+ * @returns Enhanced step with transition effects
  */
-export function transitionStep(
-  transitionConfig: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "up" | "down" | "left" | "right";
-    duration?: number;
-  }
-): (step: TourStep) => TourStep {
-  return (step: TourStep): TourStep => {
+export function transitionStep(options: {
+  type: "fade" | "slide" | "zoom" | "flip" | "none";
+  direction?: "up" | "down" | "left" | "right";
+  duration?: number;
+}) {
+  return function <T extends TourStep>(step: T): T {
     return {
       ...step,
-      transition: transitionConfig
+      transition: options
     };
   };
 }

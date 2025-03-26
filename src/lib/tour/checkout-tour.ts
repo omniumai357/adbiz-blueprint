@@ -25,7 +25,7 @@ export const checkoutTourPath = createTourPath(
     allowSkip: true,
     showProgress: true,
     route: '/checkout',
-    // Store the callback in metadata to work around the type limitation
+    // Store the user roles in metadata
     userRoles: ['customer'],
     displayCondition: () => {
       console.log("Checkout tour condition check");

@@ -12,9 +12,11 @@ export function getStepGroupsByTag(tag: string): string[] {
   
   return Object.keys(allGroups).filter(groupId => {
     const group = allGroups[groupId];
-    if (!group.metadata || !group.metadata.tags) return false;
+    // Safely check for metadata and tags
+    const metadata = group.metadata || {};
+    const tags = metadata.tags || [];
     
-    return group.metadata.tags.includes(tag);
+    return tags.includes(tag);
   });
 }
 
@@ -31,9 +33,11 @@ export function getStepGroupsByExperienceLevel(
   
   return Object.keys(allGroups).filter(groupId => {
     const group = allGroups[groupId];
-    if (!group.metadata || !group.metadata.experienceLevel) return level === 'all';
+    // Safely check for metadata and experienceLevel
+    const metadata = group.metadata || {};
+    const experienceLevel = metadata.experienceLevel || 'all';
     
     if (level === 'all') return true;
-    return group.metadata.experienceLevel === level || group.metadata.experienceLevel === 'all';
+    return experienceLevel === level || experienceLevel === 'all';
   });
 }

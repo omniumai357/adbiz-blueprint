@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 import { ThemePreset } from '@/lib/tour/types/theme';
+import { cn } from '@/lib/utils';
 
 interface ThemeSelectorProps {
   availableThemes: ThemePreset[];
@@ -28,53 +29,49 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   return (
     <div className={cn("space-y-4", className)}>
       <div className={cn(
-        "grid gap-2",
+        "grid gap-4",
         isMobile ? "grid-cols-2" : 
         isTablet ? "grid-cols-3" : 
         "grid-cols-4"
       )}>
         {availableThemes.map(theme => (
-          <Button
+          <Card 
             key={theme.id}
-            variant={currentTheme === theme.id ? "default" : "outline"}
-            size={isMobile ? "sm" : "default"}
-            onClick={() => onThemeChange(theme.id)}
             className={cn(
-              "min-w-24 justify-start px-3",
-              isMobile && "text-xs",
-              isTransitioning && "opacity-50 pointer-events-none"
+              "cursor-pointer hover:bg-accent/5 transition-colors", 
+              currentTheme === theme.id && "ring-2 ring-primary"
             )}
-            disabled={isTransitioning}
+            onClick={() => onThemeChange(theme.id)}
           >
-            <span 
-              className="w-3 h-3 rounded-full mr-2"
-              style={{ 
-                backgroundColor: theme.colors.accentBlue || 'currentColor',
-                boxShadow: theme.id === currentTheme 
-                  ? '0 0 0 2px rgba(255,255,255,0.8)' 
-                  : 'none'
-              }}
-            />
-            {theme.name}
-          </Button>
+            <CardContent className="p-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-center h-16 bg-muted rounded-md">
+                  <div 
+                    className="w-8 h-8 rounded-full" 
+                    style={{ 
+                      backgroundColor: theme.colors.primary || theme.colors.accentBlue || '#3b82f6' 
+                    }}
+                  />
+                </div>
+                <div className="text-sm font-medium text-center">
+                  {theme.name}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
       
-      {availableThemes.find(t => t.id === currentTheme)?.description && (
-        <p className="text-sm text-muted-foreground mt-2">
-          {availableThemes.find(t => t.id === currentTheme)?.description}
-        </p>
-      )}
-      
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onReset}
-        className="mt-4"
-        disabled={isTransitioning || currentTheme === 'default'}
-      >
-        Reset to Default
-      </Button>
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onReset}
+          disabled={isTransitioning || currentTheme === "default"}
+        >
+          Reset to Default
+        </Button>
+      </div>
     </div>
   );
 };

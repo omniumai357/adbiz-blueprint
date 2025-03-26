@@ -1,33 +1,71 @@
 
 import { TourPath } from '@/contexts/tour/types';
-import { homeWelcomeStepGroup, homeFeaturesStepGroup } from './step-groups';
+import { createStep } from '@/lib/tour/core/tourPathFactory';
 
 /**
- * Main tour path for the home page
+ * Home welcome tour path
  */
-export const homeTourPath: TourPath = {
-  id: 'home-tour',
-  name: 'Home Page Tour',
+export const homeWelcomeTourPath: TourPath = {
+  id: 'home-welcome-tour',
+  name: 'Welcome to Our Homepage',
   steps: [
-    ...homeWelcomeStepGroup.steps,
-    ...homeFeaturesStepGroup.steps
+    // Welcome step
+    createStep(
+      'home-welcome',
+      'hero-section',
+      'Welcome to Our Site',
+      'This tour will guide you through the main features of our homepage.',
+      'bottom'
+    ),
+    // Features step
+    createStep(
+      'home-features',
+      'features-section',
+      'Our Features',
+      'Explore the key features that make our product unique.',
+      'right' 
+    )
   ],
   allowSkip: true,
   showProgress: true,
-  route: '/'
+  // Make route safe by using config property
+  config: {
+    metadata: {
+      route: '/'
+    }
+  }
 };
 
 /**
- * Onboarding tour path for new users on the home page
+ * Home features tour path
  */
-export const homeOnboardingTourPath: TourPath = {
-  id: 'home-onboarding',
-  name: 'New User Onboarding',
+export const homeFeaturesPath: TourPath = {
+  id: 'home-features-tour',
+  name: 'Homepage Features Tour',
   steps: [
-    ...homeWelcomeStepGroup.steps.slice(0, 1), // Just the welcome step
-    // Add more onboarding-specific steps here
+    // Features overview step
+    createStep(
+      'features-overview',
+      'features-section',
+      'Feature Overview',
+      'Discover all the powerful features we offer.',
+      'bottom'
+    ),
+    // Get started step
+    createStep(
+      'get-started',
+      'cta-section',
+      'Get Started',
+      'Ready to begin? Click here to start your journey.',
+      'top'
+    )
   ],
-  allowSkip: false,
+  allowSkip: true,
   showProgress: true,
-  route: '/'
+  // Make route safe by using config property
+  config: {
+    metadata: {
+      route: '/'
+    }
+  }
 };

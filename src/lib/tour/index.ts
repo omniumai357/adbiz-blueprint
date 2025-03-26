@@ -1,8 +1,8 @@
 
 // Export core functionality
 export * from './core/paths/createTourPath';
-// Rename the import to avoid duplicate export
-export { createTourPath as createCoreTourPath } from './core/paths/createTourPathFromGroups';
+// Export renamed function to avoid name conflicts
+export { createTourPath as createTourPathFromGroups } from './core/paths/createTourPathFromGroups';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';
 
@@ -23,27 +23,6 @@ export * from './utils/tour-composer/createOnboardingTour';
 // Core building blocks
 export { createStep, enhanceStep } from './core/tourPathFactory';
 export { conditionalStep, stepInGroup } from './core/tourStepGroups';
-
-// Common enhancers (directly exported for convenience)
-import { 
-  animatedStep, 
-  optionalStep, 
-  mediaEnhancedStep,
-  spotlightStep,
-  positionStep,
-  visuallyEnhancedStep,
-  transitionStep
-} from './enhancers/visualEnhancers';
-
-export {
-  animatedStep,
-  optionalStep,
-  mediaEnhancedStep,
-  spotlightStep,
-  positionStep,
-  visuallyEnhancedStep,
-  transitionStep
-};
 
 // Utility types
 export * from './types';

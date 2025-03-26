@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTourTheme } from '@/lib/tour/hooks/useTourTheme';
@@ -29,7 +28,13 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
   
   const { isPortrait } = useDevice();
   
-  const [customColors, setCustomColors] = useState<TourThemeColors>({
+  const [customColors, setCustomColors] = useState<Partial<TourThemeColors>>({
+    primary: "#FF5733",
+    secondary: "#E04020",
+    background: "#FFFFFF",
+    text: "#1A1F2C",
+    border: "#E5E7EB",
+    accent: "#FF5733",
     accentBlue: '#FF5733',
     borderHighlight: '#FF5733',
     buttonPrimaryBg: '#FF5733',
@@ -60,7 +65,7 @@ export const ThemeDemo: React.FC<ThemeDemoProps> = ({ className }) => {
   
   const handleCustomTheme = () => {
     setCustomThemeColors(
-      customColors, 
+      customColors as TourThemeColors, 
       'Custom Theme', 
       { duration: transitionDuration },
       responsiveColors

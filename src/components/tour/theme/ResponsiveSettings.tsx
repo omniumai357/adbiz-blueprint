@@ -13,7 +13,7 @@ interface ResponsiveSettingsProps {
     mobile?: Partial<TourThemeColors>;
     tablet?: Partial<TourThemeColors>;
   };
-  customColors: TourThemeColors;
+  customColors: Partial<TourThemeColors>;
   onDeviceChange: (device: 'mobile' | 'tablet' | 'desktop') => void;
   onResponsiveColorChange: (device: 'mobile' | 'tablet', key: keyof TourThemeColors, value: string) => void;
   onApplyTheme: () => void;
@@ -92,8 +92,8 @@ export const ResponsiveSettings: React.FC<ResponsiveSettingsProps> = ({
           
           <ColorPicker
             label={`${activeDevice === 'mobile' ? 'Mobile' : 'Tablet'} Button Color`}
-            colorKey="buttonPrimaryBg"
-            currentValue={responsiveColors[activeDevice]?.buttonPrimaryBg || customColors.buttonPrimaryBg || '#FF5733'}
+            colorKey="primary"
+            currentValue={responsiveColors[activeDevice]?.primary || customColors.primary || '#FF5733'}
             onChange={(key, value) => onResponsiveColorChange(activeDevice as 'mobile' | 'tablet', key, value)}
           />
         </div>

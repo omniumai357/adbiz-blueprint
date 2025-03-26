@@ -10,6 +10,7 @@ export type TourThemeName =
   | "custom";
 
 export interface TourThemeColors {
+  // Core required properties
   primary: string;
   secondary: string;
   background: string;
@@ -17,7 +18,7 @@ export interface TourThemeColors {
   border: string;
   accent: string;
   
-  // Additional theme properties used in components
+  // Extended theme properties
   accentBlue?: string;
   accentPurple?: string;
   accentGreen?: string;
@@ -26,6 +27,7 @@ export interface TourThemeColors {
   
   borderHighlight?: string;
   borderPrimary?: string;
+  borderRadius?: string;
   
   textPrimary?: string;
   textSecondary?: string;
@@ -40,7 +42,6 @@ export interface TourThemeColors {
   spotlightGlow?: string;
   
   shadow?: string;
-  borderRadius?: string;
 }
 
 export interface TourThemeOptions {

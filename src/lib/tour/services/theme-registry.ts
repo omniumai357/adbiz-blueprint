@@ -1,4 +1,3 @@
-
 import { ThemePreset, ThemeRegistry, TourThemeColors } from '../types/theme';
 
 /**
@@ -10,6 +9,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Default',
     description: 'Standard tour theme with blue accents',
     colors: {
+      primary: "#3b82f6",
+      secondary: "#6b7280",
+      background: "#ffffff",
+      text: "#1f2937",
+      border: "#e5e7eb",
+      accent: "#3b82f6",
       accentBlue: '#0ea5e9',
       accentPurple: '#8b5cf6',
       accentGreen: '#10b981',
@@ -24,6 +29,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Blue',
     description: 'Cool blue theme with ocean-inspired colors',
     colors: {
+      primary: "#0ea5e9",
+      secondary: "#60a5fa",
+      background: "#ffffff",
+      text: "#0f172a",
+      border: "#e2e8f0",
+      accent: "#0ea5e9",
       accentBlue: '#0ea5e9',
       accentPurple: '#8b5cf6', 
       borderHighlight: '#0ea5e9',
@@ -36,6 +47,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Purple',
     description: 'Rich purple theme with vibrant accents',
     colors: {
+      primary: "#8b5cf6",
+      secondary: "#a78bfa",
+      background: "#ffffff",
+      text: "#1e1b4b",
+      border: "#e9d5ff",
+      accent: "#8b5cf6",
       accentBlue: '#8b5cf6',
       accentPurple: '#9333ea',
       borderHighlight: '#8b5cf6',
@@ -52,6 +69,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Green',
     description: 'Fresh green theme with natural feel',
     colors: {
+      primary: "#10b981",
+      secondary: "#34d399",
+      background: "#ffffff",
+      text: "#064e3b",
+      border: "#d1fae5",
+      accent: "#10b981",
       accentBlue: '#10b981',
       accentGreen: '#059669',
       borderHighlight: '#10b981',
@@ -64,6 +87,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Amber',
     description: 'Warm amber theme with autumn colors',
     colors: {
+      primary: "#f59e0b",
+      secondary: "#fbbf24",
+      background: "#ffffff",
+      text: "#78350f",
+      border: "#fef3c7",
+      accent: "#f59e0b",
       accentBlue: '#f59e0b',
       accentAmber: '#d97706',
       borderHighlight: '#f59e0b',
@@ -76,6 +105,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Corporate',
     description: 'Professional theme for business applications',
     colors: {
+      primary: "#3b82f6",
+      secondary: "#64748b",
+      background: "#f8fafc",
+      text: "#1e293b",
+      border: "#e2e8f0",
+      accent: "#3b82f6",
       accentBlue: '#3b82f6',
       accentPurple: '#6366f1',
       bgPrimary: '#ffffff',
@@ -93,6 +128,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Minimal',
     description: 'Clean and minimalist design',
     colors: {
+      primary: "#525252",
+      secondary: "#737373",
+      background: "#ffffff",
+      text: "#171717",
+      border: "#e5e5e5",
+      accent: "#525252",
       accentBlue: '#525252',
       accentPurple: '#737373',
       bgPrimary: '#ffffff',
@@ -110,6 +151,12 @@ const builtInThemes: ThemePreset[] = [
     name: 'Playful',
     description: 'Fun and colorful theme with rounded elements',
     colors: {
+      primary: "#8b5cf6",
+      secondary: "#d946ef",
+      background: "#ffffff",
+      text: "#581c87",
+      border: "#e9d5ff",
+      accent: "#8b5cf6",
       accentBlue: '#8b5cf6',
       accentPurple: '#d946ef',
       accentGreen: '#34d399',
@@ -236,7 +283,7 @@ export const themeRegistry = new ThemeRegistryService();
 export function createCustomTheme(
   id: string, 
   name: string, 
-  colors: TourThemeColors, 
+  colors: Partial<TourThemeColors>, 
   options?: {
     description?: string;
     previewUrl?: string;
@@ -251,10 +298,23 @@ export function createCustomTheme(
     };
   }
 ): ThemePreset {
+  // Ensure all required properties are present
+  const defaultColors: TourThemeColors = {
+    primary: colors.primary || "#3b82f6",
+    secondary: colors.secondary || "#6b7280",
+    background: colors.background || "#ffffff",
+    text: colors.text || "#1f2937",
+    border: colors.border || "#e5e7eb",
+    accent: colors.accent || colors.primary || "#3b82f6"
+  };
+
+  // Merge with provided colors
+  const mergedColors = { ...defaultColors, ...colors };
+
   return {
     id,
     name,
-    colors,
+    colors: mergedColors,
     ...(options || {})
   };
 }

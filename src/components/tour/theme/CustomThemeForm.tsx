@@ -8,7 +8,7 @@ import { TourThemeColors } from '@/lib/tour/types/theme';
 import { ColorPicker } from './ColorPicker';
 
 interface CustomThemeFormProps {
-  customColors: TourThemeColors;
+  customColors: Partial<TourThemeColors>;
   responsiveColors: {
     mobile?: Partial<TourThemeColors>;
     tablet?: Partial<TourThemeColors>;
@@ -39,8 +39,8 @@ export const CustomThemeForm: React.FC<CustomThemeFormProps> = ({
         <div className="space-y-4">
           <ColorPicker
             label="Accent Color" 
-            colorKey="accentBlue" 
-            currentValue={customColors.accentBlue || '#FF5733'}
+            colorKey="primary" 
+            currentValue={customColors.primary || '#FF5733'}
             onChange={onCustomColorChange}
           />
           
@@ -59,15 +59,15 @@ export const CustomThemeForm: React.FC<CustomThemeFormProps> = ({
         <div className="space-y-4">
           <ColorPicker
             label="Text Color" 
-            colorKey="textPrimary" 
-            currentValue={customColors.textPrimary || '#1a1f2c'}
+            colorKey="text" 
+            currentValue={customColors.text || '#1a1f2c'}
             onChange={onCustomColorChange}
           />
           
           <ColorPicker
             label="Background Color" 
-            colorKey="bgPrimary" 
-            currentValue={customColors.bgPrimary || '#ffffff'}
+            colorKey="background" 
+            currentValue={customColors.background || '#ffffff'}
             onChange={onCustomColorChange}
           />
         </div>

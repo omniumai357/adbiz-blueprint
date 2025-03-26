@@ -6,7 +6,7 @@ export interface TourStep {
   target: string;
   elementId?: string;
   position?: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
-  placement?: string; // Added for RTL support
+  placement?: string;
   a11y?: {
     description?: string;
     navigationDescription?: string;
@@ -27,7 +27,7 @@ export interface TourStep {
       callback?: () => void;
       onClick?: () => void;
     };
-    finish?: {  // Added for completion actions
+    finish?: {
       label?: string;
       callback?: () => void;
       onClick?: () => void;
@@ -62,7 +62,6 @@ export interface TourStep {
     enable?: boolean;
     intensity?: number;
   };
-  // Add additional properties needed by enhancers
   metadata?: Record<string, any>;
   dependencies?: string[];
   triggers?: {
@@ -110,12 +109,12 @@ export interface TourPath {
   allowSkip?: boolean;
   showProgress?: boolean;
   autoStart?: boolean;
-  route?: string; // Add route property that was missing
+  route?: string;
   config?: {
     allowSkip?: boolean;
     showProgress?: boolean;
     autoStart?: boolean;
-    completionCallback?: () => void; // Add completionCallback
+    completionCallback?: () => void;
     metadata?: Record<string, any>;
     userRoles?: string[];
     accessibility?: {

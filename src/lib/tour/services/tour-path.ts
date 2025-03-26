@@ -1,6 +1,7 @@
 
 import { TourPath } from '@/contexts/tour/types';
 import { createStep } from '@/lib/tour/core/tourPathFactory';
+import { mediaEnhancedStep, spotlightStep } from '@/lib/tour/enhancers/visualEnhancers';
 
 /**
  * Tour path for the services page
@@ -13,7 +14,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'services-welcome',
       elementId: 'services-header',
-      target: 'services-header', // Add target property
+      target: 'services-header',
       title: 'Welcome to Our Services',
       content: 'This tour will show you the various services we offer.',
       placement: 'bottom',
@@ -24,7 +25,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'service-categories',
       elementId: 'service-categories-section',
-      target: 'service-categories-section', // Add target property
+      target: 'service-categories-section',
       title: 'Service Categories',
       content: 'Browse through our different service categories.',
       placement: 'right',
@@ -35,7 +36,7 @@ export const servicesTourPath: TourPath = {
     {
       id: 'service-pricing',
       elementId: 'pricing-section',
-      target: 'pricing-section', // Add target property
+      target: 'pricing-section',
       title: 'Pricing Plans',
       content: 'Compare our different pricing plans to find what suits you best.',
       placement: 'left',
