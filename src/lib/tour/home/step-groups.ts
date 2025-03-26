@@ -105,7 +105,9 @@ export const advancedFeaturesStepGroup = createStepGroup(
         'top'
       ),
       step => {
+        // First apply the group
         const withGroup = stepInGroup('home-advanced')(step);
+        // Then apply role restriction and return the result
         return roleRestrictedStep(['user', 'admin'])(withGroup);
       }
     ),
@@ -119,7 +121,9 @@ export const advancedFeaturesStepGroup = createStepGroup(
         'bottom'
       ),
       step => {
+        // First apply the group
         const withGroup = stepInGroup('home-advanced')(step);
+        // Then apply role restriction and return the result
         return roleRestrictedStep(['user', 'admin'])(withGroup);
       }
     ),
@@ -148,7 +152,9 @@ export const adminFeaturesStepGroup = createStepGroup(
         'left'
       ),
       step => {
+        // First apply the group
         const withGroup = stepInGroup('home-admin')(step);
+        // Then apply role restriction and return the result
         return roleRestrictedStep(['admin'])(withGroup);
       }
     ),
