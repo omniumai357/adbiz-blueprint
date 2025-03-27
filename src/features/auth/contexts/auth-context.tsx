@@ -57,11 +57,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Computed property for easier auth status checks
   const isAuthenticated = !!user;
 
-  // Fixed return type to Promise<void>
+  // Fixed logout function to return Promise<void> instead of Promise<{ error: any; } | { success: boolean; }>
   const logout = async (): Promise<void> => {
     try {
       const result = await signOut();
-      // Type guard to check if result has error property
+      
+      // Handle result but don't return it
       if ('error' in result && result.error) {
         logger.error('Error signing out:', result.error);
       } else {

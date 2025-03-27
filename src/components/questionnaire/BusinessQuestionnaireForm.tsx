@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import QuestionnaireProgress from "./QuestionnaireProgress";
@@ -12,6 +11,7 @@ import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
 import { FileUploadProvider } from "@/contexts/file-upload-context";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
 import { fileAdapter } from "@/utils/file-adapter";
+import { FileState, FileItem } from "@/features/file-upload/types";
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
@@ -50,8 +50,19 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     }
   };
   
+  // Create a properly structured FileState object for adaptation
+  const fileState: FileState = {
+    identity: [],
+    business: [],
+    additional: [],
+    logo: files.logo,
+    images: files.images as FileItem[],
+    videos: files.videos as FileItem[],
+    documents: files.documents as FileItem[]
+  };
+  
   // Adapt files for the ReviewSection component which expects plain File objects
-  const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+  const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
   
   return (
     <div className="bg-card rounded-lg shadow-sm border p-6 max-w-4xl mx-auto">

@@ -31,6 +31,7 @@ export interface TourStep {
   title: string;
   content: string;
   target?: string;
+  elementId?: string;
   placement?: "top" | "right" | "bottom" | "left";
   actions?: TourStepActions;
   condition?: (state: any) => boolean;
@@ -38,6 +39,38 @@ export interface TourStep {
   triggers?: string[];
   triggerData?: any[];
   pathVisualization?: TourPathVisualization;
+  
+  // Additional properties needed by various components
+  animation?: string;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
+  path?: string | {
+    enabled: boolean;
+    targetElementId: string;
+    style: string;
+    color?: string;
+    animationDuration?: number;
+    showArrow?: boolean;
+    waypoints?: Array<{x: number, y: number}>;
+  };
+  metadata?: Record<string, any>;
+  dependencies?: string[];
+  isHidden?: boolean;
+  order?: number;
+  position?: string;
+  isOptional?: boolean;
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  floatingUIOptions?: any;
+  userRoles?: string[];
 }
 
 export interface TourPath {
@@ -45,6 +78,18 @@ export interface TourPath {
   name: string;
   description?: string;
   steps: TourStep[];
+  
+  // Additional properties needed by components
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  route?: string;
+  config?: {
+    metadata?: Record<string, any>;
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    autoStart?: boolean;
+  };
 }
 
 export interface TourStepData {
@@ -63,3 +108,45 @@ export interface TourStartData extends Omit<TourStepData, 'stepId'> {}
 export interface TourCompleteData extends Omit<TourStepData, 'stepId'> {}
 
 export type TourStepEnhancer = (step: TourStep) => TourStep;
+
+// Tour context type definition
+export interface TourContextType {
+  isActive: boolean;
+  currentStep: number;
+  totalSteps: number;
+  currentStepData: TourStep | null;
+  currentPath: string | null;
+  currentPathData?: TourPath;
+  tourPaths: TourPath[];
+  availablePaths: TourPath[];
+  
+  // Tour navigation
+  nextStep: () => void;
+  prevStep: () => void;
+  goToStep: (index: number) => void;
+  startTour: (pathId?: string) => void;
+  endTour: () => void;
+  pauseTour: () => void;
+  resumeTour: () => void;
+  resetTour: () => void;
+  goToPath: (pathId: string) => void;
+  
+  // Tour state management
+  registerPath: (path: TourPath) => void;
+  unregisterPath: (pathId: string) => void;
+  setDynamicContent: (stepId: string, content: string) => void;
+  setAvailablePaths: (paths: TourPath[]) => void;
+  
+  // Custom configuration
+  customConfig: Record<string, any>;
+  setCustomConfig: (config: Record<string, any>) => void;
+  
+  // Additional properties
+  handleKeyNavigation: (event: React.KeyboardEvent<Element> | KeyboardEvent) => void;
+  visibleSteps: TourStep[];
+  content: string;
+  
+  // Tour paths management
+  setTourPaths: (paths: TourPath[]) => void;
+  setVisibleSteps: (steps: TourStep[]) => void;
+}

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 import { useTourState } from './controller/tour-controller/use-tour-state';
@@ -11,6 +12,7 @@ import { useTourKeyboard } from './controller/use-tour-keyboard';
 import { getCurrentStepData } from './controller/step-processor';
 import { useTourInteractions } from './controller/interactions/use-tour-interactions';
 import { useTourAccessibility } from './controller/accessibility/use-tour-accessibility';
+import { NavigationAction } from './controller/navigation/types';
 
 /**
  * Custom hook for managing tour state and navigation
@@ -148,10 +150,11 @@ export function useTourController(
     currentStepData
   );
 
-  // Handle keyboard navigation
+  // Handle keyboard navigation with correctly typed parameter function
   const { handleKeyNavigation } = useTourKeyboard(
     isActive,
-    (event: React.KeyboardEvent<Element> | KeyboardEvent, action?: any) => {
+    // Fix the function signature to match expected parameters
+    (event: React.KeyboardEvent<Element> | KeyboardEvent, action: NavigationAction) => {
       if (!action) return;
       interactions.handleNavigationAction(action);
     },

@@ -9,7 +9,7 @@ import {
   validateContactInfoStep,
   validateMarketingGoalsStep
 } from "@/utils/questionnaire-validation";
-import { FileState } from "@/features/file-upload/types";
+import { FileState, FileItem } from "@/features/file-upload/types";
 import { fileAdapter } from "@/utils/file-adapter";
 
 // Define the form schema for validation
@@ -123,8 +123,19 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   };
   
   const onSubmit = async (data: QuestionnaireFormValues) => {
+    // Create a properly structured FileState object
+    const fileState: FileState = {
+      identity: [],
+      business: [],
+      additional: [],
+      logo: files.logo,
+      images: files.images as FileItem[],
+      videos: files.videos as FileItem[],
+      documents: files.documents as FileItem[]
+    };
+    
     // Get UI-friendly files
-    const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+    const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
     
     // Convert back to the full FileState format with identity, business, additional arrays
     const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedFiles);

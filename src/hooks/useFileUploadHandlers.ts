@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { FileState, FileItem } from '@/features/file-upload/types';
 import { validateFiles } from '@/utils/file-validation';
@@ -32,7 +33,7 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     
     if (newFiles.length === 0) return;
 
-    // Convert fileType to string to satisfy type constraints
+    // Convert fileType to string explicitly
     const fileTypeStr = fileAdapter.fileTypeToString(fileType);
 
     // For logo, we only keep one file
@@ -63,9 +64,17 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
         // Create FileItem objects from valid Files
         const newFileItems = fileAdapter.createFileItems(validFiles);
         
+        // Ensure we're working with the correct array type
+        const prevArray = prev[fileType] as FileItem[];
+        
+        // Make sure the previous value is an array before spreading
+        const updatedArray = Array.isArray(prevArray)
+          ? [...prevArray, ...newFileItems]
+          : newFileItems;
+          
         return {
           ...prev,
-          [fileType]: [...(prev[fileType] as FileItem[] || []), ...newFileItems]
+          [fileType]: updatedArray
         };
       });
     }
@@ -80,11 +89,20 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
       return;
     }
     
-    if (index !== undefined && Array.isArray(files[fileType])) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: (prev[fileType] as FileItem[]).filter((_, i) => i !== index)
-      }));
+    if (index !== undefined) {
+      setFiles(prev => {
+        // Make sure we're working with an array
+        const fileArray = prev[fileType];
+        
+        if (Array.isArray(fileArray)) {
+          return {
+            ...prev,
+            [fileType]: fileArray.filter((_, i) => i !== index)
+          };
+        }
+        
+        return prev;
+      });
     }
   };
 

@@ -154,7 +154,17 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
       return false;
     }
     
-    const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+    const fileState: FileState = {
+      identity: [],
+      business: [],
+      additional: [],
+      logo: files.logo,
+      images: files.images as FileItem[],
+      videos: files.videos as FileItem[],
+      documents: files.documents as FileItem[]
+    };
+    
+    const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
     
     const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedFiles);
     
