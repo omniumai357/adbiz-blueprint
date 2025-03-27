@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { FileState } from '@/features/file-upload/types';
+import { logger } from '@/utils/logger';
 
 /**
  * Hook for validating file uploads
@@ -41,16 +42,27 @@ export const useFileValidation = () => {
 
     // Check file size
     if (file.size > maxSize) {
+      logger.warn(`File "${file.name}" exceeds maximum size for ${fileType}`, {
+        fileSize: formatFileSize(file.size),
+        maxSize: formatFileSize(maxSize)
+      });
       return false;
     }
 
     // Check file type if we have restrictions
     if (allowedTypes[fileType] && allowedTypes[fileType].length > 0) {
-      return allowedTypes[fileType].includes(file.type);
+      const isValidType = allowedTypes[fileType].includes(file.type);
+      if (!isValidType) {
+        logger.warn(`File "${file.name}" has invalid type for ${fileType}`, {
+          actualType: file.type,
+          allowedTypes: allowedTypes[fileType].join(', ')
+        });
+      }
+      return isValidType;
     }
 
     return true;
-  }, [getMaxFileSize]);
+  }, [getMaxFileSize, formatFileSize]);
 
   return {
     formatFileSize,

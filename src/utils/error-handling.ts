@@ -1,5 +1,6 @@
 
 import { toast } from "sonner";
+import { logger } from "./logger";
 
 /**
  * Custom error types for application-specific errors
@@ -95,25 +96,39 @@ export const formatErrorMessage = (error: unknown): string => {
  */
 export const logError = (error: unknown, context: string = ''): void => {
   const timestamp = new Date().toISOString();
-  const contextPrefix = context ? `[${context}] ` : '';
-  
-  console.error(`${contextPrefix}Error ${timestamp}:`, error);
+  const contextPrefix = context ? `[${context}]` : '';
   
   if (error instanceof Error) {
-    if (error.stack) {
-      console.error(`${contextPrefix}Stack trace:`, error.stack);
+    // Log different levels based on error type
+    if (error instanceof APIError && error.statusCode >= 500) {
+      logger.error(`${contextPrefix}Server Error:`, error);
+    } else if (error instanceof ValidationError) {
+      logger.warn(`${contextPrefix}Validation Error:`, error);
+    } else if (error instanceof AuthenticationError) {
+      logger.warn(`${contextPrefix}Auth Error:`, error);
+    } else if (error instanceof NetworkError) {
+      logger.error(`${contextPrefix}Network Error:`, error);
+    } else {
+      logger.error(`${contextPrefix}Error:`, error);
     }
     
-    // Log additional properties for custom error types
+    // Additional properties for specific error types
+    if (error.stack) {
+      logger.debug(`${contextPrefix}Stack trace:`, error.stack);
+    }
+    
     if (error instanceof APIError) {
-      console.error(`${contextPrefix}Status Code:`, error.statusCode);
+      logger.debug(`${contextPrefix}Status Code:`, error.statusCode);
     }
     if (error instanceof ValidationError && error.fields) {
-      console.error(`${contextPrefix}Validation Fields:`, error.fields);
+      logger.debug(`${contextPrefix}Validation Fields:`, error.fields);
     }
     if (error instanceof PaymentError && error.code) {
-      console.error(`${contextPrefix}Payment Error Code:`, error.code);
+      logger.debug(`${contextPrefix}Payment Error Code:`, error.code);
     }
+  } else {
+    // For non-Error objects
+    logger.error(`${contextPrefix}Unknown Error:`, error);
   }
 };
 

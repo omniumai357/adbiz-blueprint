@@ -1,5 +1,6 @@
 
 import { FileItem, FileState } from "@/features/file-upload/types";
+import { logger } from "./logger";
 
 /**
  * Adapter to convert between FileState (with FileItems) and UI components that expect regular Files
@@ -11,7 +12,12 @@ export const fileAdapter = {
    * @returns Array of File objects
    */
   getFilesFromFileItems(fileItems: FileItem[]): File[] {
-    return fileItems.map(item => item.file);
+    try {
+      return fileItems.map(item => item.file);
+    } catch (error) {
+      logger.error("Error extracting files from FileItems:", error);
+      return [];
+    }
   },
 
   /**
@@ -24,18 +30,29 @@ export const fileAdapter = {
     videos: File[];
     documents: File[];
   } {
-    return {
-      logo: fileState.logo,
-      images: Array.isArray(fileState.images) 
-        ? fileState.images.map(item => item.file) 
-        : [],
-      videos: Array.isArray(fileState.videos) 
-        ? fileState.videos.map(item => item.file) 
-        : [],
-      documents: Array.isArray(fileState.documents) 
-        ? fileState.documents.map(item => item.file) 
-        : []
-    };
+    try {
+      return {
+        logo: fileState.logo,
+        images: Array.isArray(fileState.images) 
+          ? fileState.images.map(item => item.file) 
+          : [],
+        videos: Array.isArray(fileState.videos) 
+          ? fileState.videos.map(item => item.file) 
+          : [],
+        documents: Array.isArray(fileState.documents) 
+          ? fileState.documents.map(item => item.file) 
+          : []
+      };
+    } catch (error) {
+      logger.error("Error adapting file state for UI:", error);
+      // Return empty state if there's an error
+      return {
+        logo: null,
+        images: [],
+        videos: [],
+        documents: []
+      };
+    }
   },
 
   /**

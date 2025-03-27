@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/ui/use-toast";
+import { logger } from "@/utils/logger";
 
 /**
  * Hook providing core authentication actions with standardized error handling and user feedback.
@@ -8,7 +9,7 @@ import { toast } from "@/hooks/ui/use-toast";
 export const useAuthActions = () => {
   // Helper function for consistent error handling
   const handleAuthError = (error: any, action: string) => {
-    console.error(`Auth error during ${action}:`, error);
+    logger.error(`Auth error during ${action}:`, error);
     
     const errorMessage = error?.message || `An error occurred during ${action}.`;
     
@@ -34,6 +35,8 @@ export const useAuthActions = () => {
    */
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
     try {
+      logger.info("Attempting user signup", { email });
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -46,6 +49,8 @@ export const useAuthActions = () => {
         throw error;
       }
 
+      logger.info("User signup successful", { email });
+      
       toast({
         title: "Account created",
         description: "Please check your email for the confirmation link.",
@@ -62,6 +67,8 @@ export const useAuthActions = () => {
    */
   const signIn = async (email: string, password: string) => {
     try {
+      logger.info("Attempting user signin", { email });
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -71,6 +78,8 @@ export const useAuthActions = () => {
         throw error;
       }
 
+      logger.info("User signin successful", { email });
+      
       toast({
         title: "Welcome back!",
         description: "You have successfully signed in.",
@@ -87,11 +96,15 @@ export const useAuthActions = () => {
    */
   const signOut = async () => {
     try {
+      logger.info("Attempting user signout");
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
         throw error;
       }
+      
+      logger.info("User signout successful");
       
       toast({
         title: "Signed out",
@@ -109,6 +122,8 @@ export const useAuthActions = () => {
    */
   const resetPassword = async (email: string) => {
     try {
+      logger.info("Attempting password reset", { email });
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?reset=true`,
       });
@@ -116,6 +131,8 @@ export const useAuthActions = () => {
       if (error) {
         throw error;
       }
+      
+      logger.info("Password reset email sent", { email });
       
       toast({
         title: "Password reset email sent",
@@ -136,6 +153,8 @@ export const useAuthActions = () => {
    */
   const updatePassword = async (newPassword: string) => {
     try {
+      logger.info("Attempting password update");
+      
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -143,6 +162,8 @@ export const useAuthActions = () => {
       if (error) {
         throw error;
       }
+      
+      logger.info("Password updated successfully");
       
       toast({
         title: "Password updated",
