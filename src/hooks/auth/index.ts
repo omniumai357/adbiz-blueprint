@@ -1,3 +1,9 @@
-// Re-export all auth-related hooks for backward compatibility
+
+/**
+ * Re-export all auth-related hooks for backward compatibility
+ * 
+ * This file maintains the old import paths while redirecting to 
+ * the new feature-based organization structure.
+ */
 export * from './useAuthNavigation';
-// Add other hooks as needed
+// Add other auth hooks re-exports here as needed

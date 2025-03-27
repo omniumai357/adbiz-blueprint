@@ -32,7 +32,7 @@ function MyComponent() {
 For authentication with navigation handling:
 
 ```tsx
-import { useAuthNavigation } from "@/hooks/auth";
+import { useAuthNavigation } from "@/features/auth";
 
 function LoginForm() {
   const { handleSignIn } = useAuthNavigation();
@@ -83,3 +83,14 @@ if (result.success) {
   // Error handling with result.error.message
 }
 ```
+
+## Refactoring Notes
+
+This feature module has been refactored to improve:
+
+1. **Organization** - All auth-related code is now in a single feature directory
+2. **Documentation** - Comprehensive JSDoc comments and README
+3. **Type Safety** - Strong TypeScript types for all auth operations
+4. **Backward Compatibility** - Legacy imports still work via re-exports
+
+The refactoring focused on maintaining the exact same functionality while improving the code structure and readability.
