@@ -1,77 +1,12 @@
 
+import { ReactNode } from "react";
+
 export interface TourStep {
   id: string;
+  target: string;
   title: string;
   content: string;
-  target: string;
-  elementId?: string;
-  position?: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
-  placement?: string;
-  a11y?: {
-    description?: string;
-    navigationDescription?: string;
-  };
-  actions?: {
-    next?: {
-      label?: string;
-      callback?: () => void;
-      onClick?: () => void;
-    };
-    prev?: {
-      label?: string;
-      callback?: () => void;
-      onClick?: () => void;
-    };
-    skip?: {
-      label?: string;
-      callback?: () => void;
-      onClick?: () => void;
-    };
-    finish?: {
-      label?: string;
-      callback?: () => void;
-      onClick?: () => void;
-    };
-  };
-  condition?: () => boolean | Promise<boolean>;
-  onBeforeStep?: () => Promise<boolean> | boolean;
-  onAfterStep?: () => void;
-  delay?: number;
-  animation?: string | {
-    entry?: string;
-    highlight?: string;
-    exit?: string;
-  };
-  media?: {
-    type: "image" | "video" | "gif";
-    url: string;
-    alt?: string;
-    animation?: string;
-  };
-  disableOverlay?: boolean;
-  disableScrolling?: boolean;
-  disableCloseOnEsc?: boolean;
-  disableCloseOnClickOutside?: boolean;
-  disableKeyboardNavigation?: boolean;
-  spotlightPadding?: number;
-  isOptional?: boolean;
-  showProgress?: boolean;
-  floatingUIOptions?: any;
-  highlightClass?: string;
-  effects3D?: {
-    enable?: boolean;
-    intensity?: number;
-  };
-  metadata?: Record<string, any>;
-  dependencies?: string[];
-  triggers?: {
-    event: string;
-    element?: string;
-    condition?: () => boolean;
-    action: () => void;
-  }[];
-  priority?: number;
-  userRoles?: string[];
+  position: "top" | "right" | "bottom" | "left";
   path?: string | {
     enabled: boolean;
     targetElementId: string;
@@ -79,61 +14,57 @@ export interface TourStep {
     color?: string;
     animationDuration?: number;
     showArrow?: boolean;
-    waypoints?: Array<{x: number, y: number}>;
+    waypoints?: { x: number; y: number }[];
   };
-  spotlight?: {
-    intensity?: "low" | "medium" | "high"; 
-    color?: string;
-    pulseEffect?: boolean;
-    fadeBackground?: boolean;
+  dependency?: TourDependency;
+  metadata?: Record<string, any>;
+  condition?: (state: any) => boolean;
+  order?: number;
+  isHidden?: boolean;
+  elementSelector?: string;
+  spotlightPadding?: number;
+  nextLabel?: string;
+  prevLabel?: string;
+  skipLabel?: string;
+  disableOverlay?: boolean;
+  hideButtons?: boolean;
+  highlightTarget?: boolean;
+  accessibilityOptions?: {
+    a11yLabel?: string;
+    ariaLive?: "off" | "polite" | "assertive";
+    focusOnTitle?: boolean;
+    roleDescription?: string;
   };
-  transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "up" | "down" | "left" | "right";
-    duration?: number;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
   };
-  keyboardShortcuts?: Record<string, string>;
-  waypoints?: Array<{x: number, y: number}>;
-  enabled?: boolean;
-  targetElementId?: string;
-  style?: string;
-  color?: string;
-  animationDuration?: number;
-  showArrow?: boolean;
+  onBeforeStep?: (stepIndex: number) => Promise<boolean> | boolean;
+  onAfterStep?: (stepIndex: number) => void;
 }
 
 export interface TourPath {
   id: string;
-  name?: string;
-  steps: TourStep[];
-  allowSkip?: boolean;
-  showProgress?: boolean;
-  autoStart?: boolean;
+  name: string;
+  description?: string;
   route?: string;
-  routePattern?: string;
-  getStep?: (index: number) => TourStep | null;
-  getStepById?: (id: string) => TourStep | null;
-  getStepIndex?: (id: string) => number;
-  getAllSteps?: () => TourStep[];
-  config?: {
-    allowSkip?: boolean;
-    showProgress?: boolean;
-    autoStart?: boolean;
-    completionCallback?: () => void;
-    metadata?: {
-      route?: string;
-      routePattern?: string;
-      tags?: string[];
-      userRoles?: string[];
-      [key: string]: any;
-    };
-    accessibility?: {
-      announceSteps?: boolean;
-      keyboardNavigation?: boolean;
-      restoreFocus?: boolean;
-      focusTrap?: boolean;
-    };
-  };
+  steps: TourStep[];
+  customConfig?: Record<string, any>;
+  dependency?: TourDependency;
+  useDefaultKeyboardNavigation?: boolean;
+  showProgressIndicator?: boolean;
+  metadata?: Record<string, any>;
+}
+
+export interface TourDependency {
+  type: "step" | "path" | "feature" | "user" | "custom";
+  completedSteps?: string[];
+  completedPaths?: string[];
+  enabledFeatures?: string[];
+  userType?: string[];
+  customCheck?: () => boolean | Promise<boolean>;
 }
 
 export interface TourContextType {
@@ -142,12 +73,14 @@ export interface TourContextType {
   totalSteps: number;
   currentStepData: TourStep | null;
   currentPath: string | null;
+  currentPathData?: TourPath;
+  tourPaths: TourPath[];
   availablePaths: TourPath[];
   
   // Tour navigation
   nextStep: () => void;
   prevStep: () => void;
-  goToStep: (step: number) => void;
+  goToStep: (stepIndex: number) => void;
   startTour: (pathId: string) => void;
   endTour: () => void;
   pauseTour: () => void;
@@ -162,15 +95,15 @@ export interface TourContextType {
   setAvailablePaths: (paths: TourPath[]) => void;
   
   // Custom configuration
-  customConfig: {
-    theme?: string;
-    isMobile?: boolean;
-    [key: string]: any;
-  };
-  setCustomConfig: (config: any) => void;
+  customConfig: Record<string, any>;
+  setCustomConfig: (config: Record<string, any>) => void;
   
   // Additional properties
-  handleKeyNavigation: (event: KeyboardEvent) => void;
+  handleKeyNavigation: (event: React.KeyboardEvent<HTMLElement> | KeyboardEvent, navigationAction?: string) => void;
   visibleSteps: TourStep[];
   content: string;
+  
+  // Tour paths management
+  setTourPaths: (paths: TourPath[] | ((prev: TourPath[]) => TourPath[])) => void;
+  setVisibleSteps: (steps: TourStep[] | ((prev: TourStep[]) => TourStep[])) => void;
 }

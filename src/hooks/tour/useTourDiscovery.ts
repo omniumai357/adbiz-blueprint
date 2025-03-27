@@ -1,127 +1,190 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTour } from '@/contexts/tour';
-
-interface TourDiscoveryState {
-  hasSeenAnyTour: boolean;
-  hasStartedTour: boolean;
-  completedTours: string[];
-  dismissedTours: string[];
-  viewCounts: Record<string, number>;
-  lastSeenDate: string;
-}
+import { TourPath } from '@/contexts/tour/types';
 
 /**
- * Hook for discovering and managing tour paths for the current page
+ * Hook for tour discovery and management
  */
-export const useTourDiscovery = () => {
+export function useTourDiscovery() {
   const location = useLocation();
-  const { startTour, availablePaths } = useTour();
-  const [state, setState] = useState<TourDiscoveryState>({
-    hasSeenAnyTour: false,
-    hasStartedTour: false,
-    completedTours: [],
-    dismissedTours: [],
-    viewCounts: {},
-    lastSeenDate: ''
-  });
-
-  // Load tour state from localStorage on initial render
+  const {
+    isActive,
+    startTour,
+    endTour,
+    currentPath,
+    currentPathData,
+    tourPaths
+  } = useTour();
+  
+  const [hasSeenAnyTour, setHasSeenAnyTour] = useState(false);
+  const [hasStartedTour, setHasStartedTour] = useState(false);
+  const [completedTours, setCompletedTours] = useState<string[]>([]);
+  const [dismissedTours, setDismissedTours] = useState<string[]>([]);
+  const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
+  const [lastSeenDate, setLastSeenDate] = useState('');
+  
+  // Load tour state from local storage on mount
   useEffect(() => {
-    try {
-      const savedState = localStorage.getItem('tour-discovery-state');
-      if (savedState) {
-        setState(JSON.parse(savedState));
-      } else {
-        // Initialize from individual storage items for backward compatibility
-        const completedTours = JSON.parse(localStorage.getItem('completedTours') || '[]');
-        const dismissedTours = JSON.parse(localStorage.getItem('dismissedTours') || '[]');
-        const viewCounts = JSON.parse(localStorage.getItem('tourViewCounts') || '{}');
-        const hasSeenAnyTour = localStorage.getItem('hasSeenAnyTour') === 'true';
-        
-        setState({
-          hasSeenAnyTour,
-          hasStartedTour: false,
-          completedTours,
-          dismissedTours,
-          viewCounts,
-          lastSeenDate: localStorage.getItem('lastTourDate') || ''
-        });
-      }
-    } catch (e) {
-      console.error('Error loading tour discovery state:', e);
+    const storedHasSeenAnyTour = localStorage.getItem('hasSeenAnyTour');
+    const storedCompletedTours = localStorage.getItem('completedTours');
+    const storedDismissedTours = localStorage.getItem('dismissedTours');
+    const storedViewCounts = localStorage.getItem('tourViewCounts');
+    const storedLastSeenDate = localStorage.getItem('tourLastSeenDate');
+    
+    if (storedHasSeenAnyTour) {
+      setHasSeenAnyTour(JSON.parse(storedHasSeenAnyTour));
+    }
+    
+    if (storedCompletedTours) {
+      setCompletedTours(JSON.parse(storedCompletedTours));
+    }
+    
+    if (storedDismissedTours) {
+      setDismissedTours(JSON.parse(storedDismissedTours));
+    }
+    
+    if (storedViewCounts) {
+      setViewCounts(JSON.parse(storedViewCounts));
+    }
+    
+    if (storedLastSeenDate) {
+      setLastSeenDate(storedLastSeenDate);
     }
   }, []);
-
-  // Save state to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('tour-discovery-state', JSON.stringify(state));
-    } catch (e) {
-      console.error('Error saving tour discovery state:', e);
-    }
-  }, [state]);
-
-  // Check if the current page tour has been completed
+  
+  // Check if current page tour has been completed
   const hasCompletedCurrentPageTour = useCallback(() => {
-    const currentPath = location.pathname;
-    const pagePathId = `${currentPath.replace(/\//g, '-')}-tour`.replace(/^-/, '');
-    return state.completedTours.includes(pagePathId);
-  }, [location.pathname, state.completedTours]);
-
+    const currentPageTourId = findAppropriatePathForCurrentPage();
+    return completedTours.includes(currentPageTourId);
+  }, [completedTours]);
+  
   // Find the appropriate tour path for the current page
   const findAppropriatePathForCurrentPage = useCallback(() => {
-    const currentPath = location.pathname;
+    const currentPagePath = location.pathname;
     
-    // First look for exact route match
-    for (const path of availablePaths) {
-      if (path.route === currentPath || path.config?.metadata?.route === currentPath) {
-        return path.id;
-      }
+    // Find a tour that matches the current route
+    const matchingPath = tourPaths.find(path => path.route === currentPagePath);
+    
+    // If found, return its ID
+    if (matchingPath) {
+      return matchingPath.id;
     }
     
-    // Then try pattern matching
-    for (const path of availablePaths) {
-      const pathPattern = path.routePattern || path.config?.metadata?.routePattern;
-      if (pathPattern && new RegExp(pathPattern).test(currentPath)) {
-        return path.id;
-      }
+    // Otherwise, generate a generic tour ID based on the path
+    const pathId = `${currentPagePath.replace(/\//g, '-')}-tour`.replace(/^-/, '');
+    return pathId;
+  }, [location.pathname, tourPaths]);
+  
+  // Mark the current tour as completed
+  const markCurrentTourCompleted = useCallback(() => {
+    if (currentPath) {
+      const updatedCompletedTours = [...completedTours, currentPath];
+      setCompletedTours(updatedCompletedTours);
+      localStorage.setItem('completedTours', JSON.stringify(updatedCompletedTours));
+      
+      // Also mark that we've seen at least one tour
+      setHasSeenAnyTour(true);
+      localStorage.setItem('hasSeenAnyTour', JSON.stringify(true));
     }
+  }, [currentPath, completedTours]);
+  
+  // Dismiss the current tour without completing it
+  const dismissCurrentTour = useCallback(() => {
+    const tourId = findAppropriatePathForCurrentPage();
+    const updatedDismissedTours = [...dismissedTours, tourId];
+    setDismissedTours(updatedDismissedTours);
+    localStorage.setItem('dismissedTours', JSON.stringify(updatedDismissedTours));
     
-    // Default to page-specific tour ID
-    return `${currentPath.replace(/\//g, '-')}-tour`.replace(/^-/, '');
-  }, [location.pathname, availablePaths]);
-
+    // Also mark that we've seen at least one tour
+    setHasSeenAnyTour(true);
+    localStorage.setItem('hasSeenAnyTour', JSON.stringify(true));
+    
+    // End the tour if it's active
+    if (isActive) {
+      endTour();
+    }
+  }, [dismissedTours, findAppropriatePathForCurrentPage, isActive, endTour]);
+  
   // Start the appropriate tour for the current page
   const startAppropriatePageTour = useCallback(() => {
-    const pathId = findAppropriatePathForCurrentPage();
-    if (pathId) {
-      startTour(pathId);
-      
-      // Update state to reflect that user has seen a tour
-      setState(prev => ({
-        ...prev,
-        hasSeenAnyTour: true,
-        hasStartedTour: true,
-        viewCounts: {
-          ...prev.viewCounts,
-          [pathId]: (prev.viewCounts[pathId] || 0) + 1
-        },
-        lastSeenDate: new Date().toISOString()
-      }));
+    const tourId = findAppropriatePathForCurrentPage();
+    
+    // Check if this tour has been completed or dismissed
+    if (completedTours.includes(tourId) || dismissedTours.includes(tourId)) {
+      return false;
     }
-  }, [findAppropriatePathForCurrentPage, startTour]);
-
+    
+    // Start the tour
+    startTour(tourId);
+    setHasStartedTour(true);
+    
+    // Update view count
+    const newViewCounts = { ...viewCounts };
+    newViewCounts[tourId] = (newViewCounts[tourId] || 0) + 1;
+    setViewCounts(newViewCounts);
+    localStorage.setItem('tourViewCounts', JSON.stringify(newViewCounts));
+    
+    // Update last seen date
+    const today = new Date().toISOString().split('T')[0];
+    setLastSeenDate(today);
+    localStorage.setItem('tourLastSeenDate', today);
+    
+    return true;
+  }, [
+    findAppropriatePathForCurrentPage,
+    completedTours,
+    dismissedTours,
+    startTour,
+    viewCounts
+  ]);
+  
+  // Reset all tour progress
+  const resetAllTourProgress = useCallback(() => {
+    setCompletedTours([]);
+    setDismissedTours([]);
+    setViewCounts({});
+    setLastSeenDate('');
+    setHasSeenAnyTour(false);
+    
+    localStorage.removeItem('completedTours');
+    localStorage.removeItem('dismissedTours');
+    localStorage.removeItem('tourViewCounts');
+    localStorage.removeItem('tourLastSeenDate');
+    localStorage.removeItem('hasSeenAnyTour');
+    
+    if (isActive) {
+      endTour();
+    }
+  }, [isActive, endTour]);
+  
+  // Mark tour as completed when the last step is reached
+  useEffect(() => {
+    if (isActive && currentPathData && currentPath) {
+      const handleTourComplete = () => {
+        markCurrentTourCompleted();
+      };
+      
+      document.addEventListener('tour:complete', handleTourComplete);
+      
+      return () => {
+        document.removeEventListener('tour:complete', handleTourComplete);
+      };
+    }
+  }, [isActive, currentPathData, currentPath, markCurrentTourCompleted]);
+  
   return {
-    hasSeenAnyTour: state.hasSeenAnyTour,
-    hasStartedTour: state.hasStartedTour,
-    completedTours: state.completedTours,
-    dismissedTours: state.dismissedTours,
-    viewCounts: state.viewCounts,
-    lastSeenDate: state.lastSeenDate,
+    hasSeenAnyTour,
+    hasStartedTour,
+    completedTours,
+    dismissedTours,
+    viewCounts,
+    lastSeenDate,
     hasCompletedCurrentPageTour,
+    markCurrentTourCompleted,
+    dismissCurrentTour,
     startAppropriatePageTour,
+    resetAllTourProgress,
     findAppropriatePathForCurrentPage
   };
-};
+}

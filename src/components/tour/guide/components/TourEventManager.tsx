@@ -1,43 +1,56 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useTour } from "@/contexts/tour";
-import { useTourInteractions } from "@/hooks/tour/useTourInteractions";
-import { useUserContext } from "@/hooks/tour/useUserContext";
 import { TourEventListeners } from "../../events/TourEventListeners";
+import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
+import { useAuth } from "@/features/auth";
 
 export const TourEventManager: React.FC = () => {
   const {
+    isActive,
+    currentStep,
     currentStepData,
     currentPath,
-    availablePaths,
-    currentStep,
+    currentPathData,
     nextStep,
     prevStep,
     endTour
   } = useTour();
   
-  const { userId, userType } = useUserContext();
+  const { user } = useAuth();
+  const analytics = useTourAnalytics();
   
-  // Get current path ID safely
-  const currentPathId = currentPath ? 
-    (typeof currentPath === 'string' ? currentPath : currentPath.id) : 
-    null;
-  
-  const { handleNext, handlePrev, handleClose } = useTourInteractions(
-    currentStepData,
-    currentPathId,
-    availablePaths,
-    currentStep,
-    userId,
-    userType,
-    { nextStep, prevStep, endTour }
-  );
-  
+  // Track completion or exit events
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isActive && currentStepData && currentPathData && currentPath) {
+        analytics.trackTourExit(
+          currentPathData, 
+          currentStepData, 
+          currentStep,
+          "page_unload",
+          user?.id, 
+          user?.type
+        );
+      }
+    };
+    
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isActive, currentStep, currentStepData, currentPath, currentPathData, analytics, user?.id, user?.type]);
+
+  if (!isActive) {
+    return null;
+  }
+
   return (
     <TourEventListeners 
-      handleNext={handleNext}
-      handlePrev={handlePrev}
-      handleClose={handleClose}
+      handleNext={nextStep}
+      handlePrev={prevStep}
+      handleClose={endTour}
     />
   );
 };

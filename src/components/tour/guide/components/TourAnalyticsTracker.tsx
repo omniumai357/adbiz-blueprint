@@ -1,23 +1,37 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useTour } from "@/contexts/tour";
-import { useTourCompletionTracker } from "@/hooks/tour/useTourCompletionTracker";
+import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
+import { useAuth } from "@/features/auth";
 
 export const TourAnalyticsTracker: React.FC = () => {
-  const { isActive, currentStep, totalSteps, currentPath } = useTour();
+  const {
+    isActive,
+    currentStep,
+    currentStepData,
+    currentPath,
+    currentPathData,
+  } = useTour();
   
-  // Ensure values are defined before passing to hook
-  const isActiveSafe = isActive || false;
-  const currentStepSafe = currentStep || 0;
-  const totalStepsSafe = totalSteps || 0;
+  const { user } = useAuth();
+  const analytics = useTourAnalytics();
   
-  // Get the path ID safely
-  const currentPathId = currentPath ? 
-    (typeof currentPath === 'string' ? currentPath : currentPath.id) : 
-    null;
-  
-  // Track tour completion and analytics
-  useTourCompletionTracker(isActiveSafe, currentStepSafe, totalStepsSafe, currentPathId);
-  
+  // Track tour view and step impression
+  useEffect(() => {
+    if (isActive && currentStepData && currentPathData && currentPath) {
+      // Track tour view when it first becomes active
+      analytics.trackTourView(currentPathData, user?.id, user?.type);
+      
+      // Track step impression
+      analytics.trackStepImpression(
+        currentPathData, 
+        currentStepData, 
+        currentStep, 
+        user?.id, 
+        user?.type
+      );
+    }
+  }, [isActive, currentStep, currentStepData, currentPath, currentPathData, analytics, user?.id, user?.type]);
+
   return null;
 };
