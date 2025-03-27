@@ -27,6 +27,7 @@ export interface UserProfile {
 
 /**
  * Auth result type for consistent error handling
+ * This is a discriminated union type with 'success' as the discriminant
  */
 export type AuthResult = 
   | { success: true; data?: any; message?: string }

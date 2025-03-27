@@ -51,6 +51,7 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
     });
     
     if (result && !result.success) {
+      // Only access error when success is false
       form.setSubmitError(result.error.message);
     } else {
       // Redirect to auth page with registrationSuccess flag

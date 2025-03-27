@@ -10,13 +10,15 @@ import { Sparkles, BadgePercent, ChevronRight } from "lucide-react";
 
 // Import consistently from the features/auth module
 import { 
-  AuthMessage, 
-  AuthContainer, 
   SignInForm, 
   SignUpForm, 
-  WelcomeCoupon,
   useAuth 
 } from "@/features/auth";
+
+// Import from auth components
+import { AuthMessage } from "@/features/auth/components/auth-message";
+import { AuthContainer } from "@/features/auth/components/auth-container";
+import { WelcomeCoupon } from "@/features/auth/components/welcome-coupon";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState("signin");
