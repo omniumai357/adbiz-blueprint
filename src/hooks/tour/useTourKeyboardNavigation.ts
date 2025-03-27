@@ -93,7 +93,6 @@ export function useTourKeyboardNavigation(
           navigationAction = 'show_shortcuts_help';
         } else {
           // Use the parseNavigationAction utility for other keys
-          // Fixed: We now use the parsed string value, not the event directly
           navigationAction = parseNavigationAction(event, isFormElement);
           
           if (navigationAction) {

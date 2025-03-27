@@ -28,30 +28,26 @@ export const TourGuideControllerInner: React.FC = () => {
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   
   // Define a handleKeyNavigation function with RTL awareness
-  const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent) => {
+  const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent, navigationAction?: string) => {
+    if (!navigationAction) return;
+    
     // RTL-aware arrow key handling
-    if (event.key === 'ArrowRight') {
+    if (navigationAction === 'next_keyboard_shortcut') {
       isRTL ? prevStep() : nextStep();
-    } else if (event.key === 'ArrowLeft') {
+    } else if (navigationAction === 'previous_keyboard_shortcut') {
       isRTL ? nextStep() : prevStep();
-    } else if (event.key === 'Enter') {
+    } else if (navigationAction === 'next_from_element') {
       nextStep();
-    } else if (event.key === 'Escape') {
+    } else if (navigationAction === 'escape') {
       // This would need an endTour function
-    } else if (event.key === '?') {
+    } else if (navigationAction === 'show_shortcuts_help') {
       showKeyboardShortcutsHelp();
     }
   };
   
   useTourKeyboardNavigation(
     isActive, 
-    (event, navigationAction) => {
-      if (navigationAction === 'show_shortcuts_help') {
-        showKeyboardShortcutsHelp();
-      } else {
-        handleKeyNavigation(event as any);
-      }
-    },
+    handleKeyNavigation,
     {
       enableHomeEndKeys: true,
       enablePageKeys: true,

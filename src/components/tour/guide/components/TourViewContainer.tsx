@@ -10,7 +10,7 @@ import { TourDesktopView, TourDesktopViewHandle } from "../../TourDesktopView";
 import { useKeyboardShortcuts } from "@/contexts/tour/KeyboardShortcutsContext";
 import { TourPath } from "@/contexts/tour/types";
 
-interface TourViewContainerProps {
+export interface TourViewContainerProps {
   targetElement: HTMLElement | null;
   isRTL?: boolean;
   direction?: 'ltr' | 'rtl';
@@ -128,6 +128,8 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
       showKeyboardShortcuts={showKeyboardShortcutsHelp}
       tooltipRef={tooltipRef}
       hasTouchCapability={hasTouchCapability}
+      isRTL={isRTL}
+      direction={direction}
     />
   );
 };
