@@ -6,6 +6,29 @@ import { fileAdapter } from '@/utils/file-adapter';
 import { logger } from '@/utils/logger';
 
 /**
+ * Create a logMessage function that wraps strings in an object for LogData compatibility
+ */
+function createLogMessageWrapper() {
+  return (message: string, additionalData?: Record<string, any>): LogData => {
+    return {
+      message,
+      ...additionalData
+    };
+  };
+}
+
+// In your hooks where string is passed to logger functions, replace with:
+// logger.info("Your message", createLogMessageWrapper()("Details", { otherData: value }));
+
+// Or directly use an object instead of a string:
+// logger.info("Your message", { data: { details: "Your details" } });
+
+interface LogData {
+  message?: string;
+  [key: string]: any;
+}
+
+/**
  * Main hook for file upload functionality
  * 
  * This hook is maintained for backward compatibility with existing components

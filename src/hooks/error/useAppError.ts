@@ -46,8 +46,8 @@ export function useAppError() {
     });
     
     // Handle validation errors
-    if (err instanceof ValidationError && err.fields) {
-      setFieldErrors(err.fields);
+    if (err instanceof ValidationError && err.fieldErrors) {
+      setFieldErrors(err.fieldErrors);
     }
   }, []);
   
@@ -122,7 +122,7 @@ export function useAppError() {
       // Handle structured API errors
       if (apiErr.message) {
         if (apiErr.status && apiErr.status >= 400) {
-          return new APIError(apiErr.message, apiErr.status);
+          return new APIError(apiErr.message, apiErr.status, '');
         }
         return new Error(apiErr.message);
       }

@@ -7,6 +7,22 @@ export interface LogData {
   context?: string;
   data?: Record<string, any>;
   [key: string]: any; // Allow arbitrary properties for flexibility
+  
+  // Explicitly define commonly used properties to improve TypeScript support
+  email?: string;
+  hasLogo?: boolean;
+  step?: string | number;
+  count?: number;
+  fileType?: string;
+  businessId?: string;
+  fileName?: string;
+  url?: string;
+  fileSize?: number;
+  actualType?: string;
+  fileTypes?: string[];
+  error?: any;
+  currentStep?: string | number;
+  packageName?: string;
 }
 
 // Define a logger class with methods for different log levels

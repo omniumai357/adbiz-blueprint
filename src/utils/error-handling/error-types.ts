@@ -8,43 +8,57 @@
 
 export class APIError extends Error {
   status: number;
-  endpoint: string; // Added missing property
+  endpoint: string;
+  statusCode: number; // Added for compatibility with existing code
   
-  constructor(message: string, status: number, endpoint: string) {
+  constructor(message: string, status: number, endpoint: string = '') {
     super(message);
     this.name = 'APIError';
     this.status = status;
+    this.statusCode = status; // Match status with statusCode for compatibility
     this.endpoint = endpoint;
   }
 }
 
 export class ValidationError extends Error {
-  fieldErrors: Record<string, string>; // Added missing property
+  fieldErrors: Record<string, string>;
+  fields: Record<string, string>; // Added for compatibility
+  errors?: Record<string, string>; // Added for compatibility
   
   constructor(message: string, fieldErrors: Record<string, string> = {}) {
     super(message);
     this.name = 'ValidationError';
     this.fieldErrors = fieldErrors;
+    this.fields = fieldErrors; // Alias for compatibility
+    this.errors = fieldErrors; // Alias for compatibility
   }
 }
 
 export class AuthenticationError extends Error {
-  action: string; // Added missing property
+  action: string;
+  method: string; // Added for compatibility
   
-  constructor(message: string, action: string = 'access') {
+  constructor(message: string, action: string = 'access', method: string = 'token') {
     super(message);
     this.name = 'AuthenticationError';
     this.action = action;
+    this.method = method;
   }
 }
 
 export class NetworkError extends Error {
-  requestInfo: any; // Added missing property
+  requestInfo: any;
+  url: string; // Added for compatibility
+  status: number; // Added for compatibility
+  retryable: boolean; // Added for compatibility
   
-  constructor(message: string, requestInfo: any = {}) {
+  constructor(message: string, requestInfo: any = {}, retryable: boolean = false) {
     super(message);
     this.name = 'NetworkError';
     this.requestInfo = requestInfo;
+    this.url = requestInfo.url || '';
+    this.status = requestInfo.status || 0;
+    this.retryable = retryable;
   }
 }
 
@@ -91,5 +105,19 @@ export class BusinessLogicError extends Error {
     this.name = 'BusinessLogicError';
     this.code = code;
     this.details = details;
+  }
+}
+
+// Add the missing PaymentError class
+export class PaymentError extends Error {
+  paymentId?: string;
+  provider?: string;
+  statusCode?: number;
+  
+  constructor(message: string, paymentId?: string, provider: string = 'generic') {
+    super(message || 'Payment processing failed');
+    this.name = 'PaymentError';
+    this.paymentId = paymentId;
+    this.provider = provider;
   }
 }

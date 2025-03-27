@@ -1,5 +1,5 @@
 
-import { logger, LogData } from '@/utils/logger';
+import { logger, LogData } from '@/lib/utils/logging';
 import { 
   APIError, 
   ValidationError, 
@@ -22,7 +22,7 @@ export function logError(error: unknown, context = 'ErrorHandler') {
     logger.error(`API Error: ${error.message}`, {
       context,
       data: { 
-        statusCode: error.statusCode,
+        status: error.status,
         endpoint: error.endpoint
       }
     });
@@ -30,7 +30,7 @@ export function logError(error: unknown, context = 'ErrorHandler') {
     logger.warn(`Validation Error: ${error.message}`, { 
       context,
       data: { 
-        validationErrors: error.errors || error.fields 
+        validationErrors: error.fieldErrors
       }
     });
   } else if (error instanceof AuthenticationError) {

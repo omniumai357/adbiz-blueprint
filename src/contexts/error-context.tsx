@@ -55,8 +55,8 @@ export const ErrorProvider = ({ children }: { children: ReactNode }) => {
     });
     
     // Handle validation errors specially
-    if (err instanceof ValidationError && err.fields) {
-      setValidationErrors(err.fields);
+    if (err instanceof ValidationError && err.fieldErrors) {
+      setValidationErrors(err.fieldErrors);
     }
   }, [toast]);
 

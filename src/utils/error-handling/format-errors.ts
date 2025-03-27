@@ -26,7 +26,7 @@ export const formatErrorMessage = (error: unknown): string => {
       return error.message || 'Payment processing failed';
     }
     if (error instanceof APIError) {
-      return `${error.message || 'Service unavailable'} (${error.statusCode})`;
+      return `${error.message || 'Service unavailable'} (${error.status})`;
     }
     if (error instanceof NetworkError) {
       return `${error.message} ${error.retryable ? 'Please try again.' : ''}`;
