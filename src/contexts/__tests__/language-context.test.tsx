@@ -1,9 +1,8 @@
-
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { LanguageProvider, useLanguage } from '../language-context';
+import userEvent from '@testing-library/user-event';
 
 // Mock i18n with mocked functions
 jest.mock('../../i18n', () => ({

@@ -14,10 +14,6 @@ export const createTourPath = (steps: TourStep[]): TourPath => {
     steps,
     allowSkip: true,
     showProgress: true,
-    getStep: (index: number) => steps[index] || null,
-    getStepById: (id: string) => steps.find(step => step.id === id) || null,
-    getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
-    getAllSteps: () => [...steps],
     config: {
       allowSkip: true,
       showProgress: true
@@ -52,10 +48,6 @@ export const createNamedTourPath = (
     steps,
     allowSkip: options?.allowSkip ?? true,
     showProgress: options?.showProgress ?? true,
-    getStep: (index: number) => steps[index] || null,
-    getStepById: (id: string) => steps.find(step => step.id === id) || null,
-    getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
-    getAllSteps: () => [...steps],
     config: {
       allowSkip: options?.allowSkip,
       showProgress: options?.showProgress,

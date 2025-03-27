@@ -14,10 +14,6 @@ const tourPathCreator = (steps: TourStep[]): TourPath => {
     steps,
     allowSkip: true,
     showProgress: true,
-    getStep: (index: number) => steps[index] || null,
-    getStepById: (id: string) => steps.find(step => step.id === id) || null,
-    getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
-    getAllSteps: () => [...steps],
     config: {
       allowSkip: true,
       showProgress: true

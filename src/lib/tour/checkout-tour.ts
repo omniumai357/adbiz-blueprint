@@ -1,5 +1,6 @@
 
 import { createTourPath } from './core/paths/createTourPath';
+import { TourStep } from './types';
 
 // Import step groups
 import {
@@ -12,27 +13,12 @@ import {
 /**
  * Main checkout tour path definition using step groups
  */
-export const checkoutTourPath = createTourPath(
-  "checkout-tour",
-  "Checkout Page Tour",
-  [
-    ...checkoutWelcomeStepGroup.steps,
-    ...checkoutCoreStepGroup.steps,
-    ...checkoutOptionalStepGroup.steps,
-    ...checkoutFinalStepGroup.steps
-  ],
-  {
-    allowSkip: true,
-    showProgress: true,
-    route: '/checkout',
-    // Store the user roles in metadata
-    userRoles: ['customer'],
-    displayCondition: () => {
-      console.log("Checkout tour condition check");
-      return true;
-    }
-  }
-);
+export const checkoutTourPath = createTourPath([
+  ...checkoutWelcomeStepGroup.steps,
+  ...checkoutCoreStepGroup.steps,
+  ...checkoutOptionalStepGroup.steps,
+  ...checkoutFinalStepGroup.steps
+]);
 
 // Add an event listener for tour completion
 document.addEventListener('tour:complete', (e: any) => {

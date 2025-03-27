@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom'; // Add this import
 import { LanguageSelector } from '../LanguageSelector';
 import { LanguageProvider } from '@/contexts/language-context';
 
