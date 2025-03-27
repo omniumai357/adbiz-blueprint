@@ -38,6 +38,11 @@ export interface TourStep {
   a11y?: {
     description?: string;
     navigationDescription?: string;
+    focusStrategy?: 'first-interactive' | 'specific-element' | 'none';
+    focusSelector?: string;
+    removeAriaHidden?: boolean;
+    announceOnEnter?: boolean;
+    srOnly?: string;
   };
   actions?: {
     next?: {
@@ -170,6 +175,19 @@ export interface TourPath {
       keyboardNavigation?: boolean;
       restoreFocus?: boolean;
       focusTrap?: boolean;
+      focusManagement?: {
+        initialFocus?: 'first-interactive' | 'specific-element' | 'manual' | 'none';
+        restoreFocus?: boolean;
+        visualFocusRing?: boolean;
+        enhancedFocusVisibility?: boolean;
+        autoSkipNavigationOptions?: boolean;
+      };
+      screenReader?: {
+        announceStepChanges?: boolean;
+        describeActions?: boolean;
+        politeAnnouncements?: boolean;
+        srOnlyInstructions?: boolean;
+      };
     };
   };
 }

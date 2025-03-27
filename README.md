@@ -1,4 +1,3 @@
-
 # AdBiz.pro - Professional Marketing Services Platform
 
 ## Overview
@@ -42,6 +41,7 @@ Our expertly crafted ads are designed to capture attention and drive conversions
 - **Payment Processing**: Stripe, PayPal
 - **Deployment**: Continuous deployment via GitHub Actions
 - **AI Chatbot**: Deepseek Coder AI model for cost-effective support
+- **Accessibility**: Enhanced focus management system with WCAG 2.1 AA compliance
 
 ## User Experience
 
@@ -50,7 +50,10 @@ Our platform follows Apple-inspired design principles with a focus on:
 - Minimalist aesthetics
 - Responsive design for all devices
 - Seamless transitions and micro-interactions
-- Accessible interface (WCAG 2.1 compliant)
+- Accessible interface (WCAG 2.1 AA compliant)
+- Enhanced keyboard navigation and screen reader support
+- Customizable focus management system
+- RTL language support
 
 ## Customer Support
 
@@ -58,6 +61,35 @@ Our platform follows Apple-inspired design principles with a focus on:
 - Email support with 24-hour response time
 - Live chat during business hours
 - Comprehensive knowledge base and FAQ
+- Accessible support options for all users
+
+## Accessibility Features
+
+Our platform includes a comprehensive focus management system:
+
+- **Keyboard Navigation**
+  - Full keyboard accessibility
+  - Visible focus indicators
+  - Skip navigation links
+  - Custom keyboard shortcuts
+
+- **Screen Reader Support**
+  - ARIA live regions
+  - Contextual announcements
+  - Semantic HTML structure
+  - Descriptive labels and instructions
+
+- **Focus Management**
+  - Smart focus trapping
+  - Focus restoration
+  - Enhanced visual indicators
+  - Configurable focus behavior
+
+- **International Support**
+  - RTL language support
+  - Bi-directional text handling
+  - Cultural considerations
+  - Language-specific focus patterns
 
 ## Getting Started
 
