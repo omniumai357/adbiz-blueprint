@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OrderSummaryHeader from "./order-summary-header";
@@ -5,7 +6,7 @@ import PackageSection from "./package-section";
 import { DiscountsSection } from "./discounts-section"; 
 import OrderTotal from "./order-total";
 import { useDevice } from "@/hooks/use-device";
-import { logger } from "@/utils/logger";
+import { logger } from "@/lib/utils/logging";
 import { AddOnItem } from "../add-on-item";
 import { BundleDiscountInfo } from "../bundle-discount";
 import { LimitedTimeOfferInfo } from "../limited-time-offer";
@@ -29,7 +30,14 @@ interface OrderSummaryProps {
   isLoyaltyProgramEnabled?: boolean;
   limitedTimeOffer?: LimitedTimeOfferInfo | null;
   offerDiscountAmount?: number;
-  appliedCoupon?: { code: string; discount: number } | null;
+  appliedCoupon?: { 
+    code: string; 
+    discount: number;
+    id: string; 
+    name: string;
+    discountAmount: number;
+    firstPurchaseBonus?: number;
+  } | null;
   couponDiscountAmount?: number;
   appliedMilestoneReward?: UserMilestone | null;
   milestoneRewardAmount?: number;

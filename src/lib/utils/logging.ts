@@ -6,6 +6,7 @@
 export interface LogData {
   context?: string;
   data?: Record<string, any>;
+  [key: string]: any; // Allow arbitrary properties for flexibility
 }
 
 // Define a logger class with methods for different log levels

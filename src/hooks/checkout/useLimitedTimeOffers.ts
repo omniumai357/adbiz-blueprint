@@ -11,8 +11,7 @@ export interface LimitedTimeOfferInfo {
   discountType: "percentage" | "fixed";
   active: boolean;
   expiresAt: string;
-  // Custom property used internally
-  endTime?: Date;
+  endTime?: Date; // Added to support the existing implementation
 }
 
 export function useLimitedTimeOffers(subtotal: number) {

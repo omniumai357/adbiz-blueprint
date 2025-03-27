@@ -2,18 +2,20 @@
 import React from 'react';
 import type { BundleDiscountInfo } from '../bundle-discount';
 import type { LimitedTimeOfferInfo } from '../limited-time-offer';
-import TieredDiscount from '../tiered-discount';
-import MilestoneRewards from '../milestone-rewards';
 import { UserMilestone } from '@/hooks/rewards/useMilestones';
+
+interface CouponDiscount {
+  id: string;
+  name: string;
+  discountAmount: number;
+  code?: string;
+  discount?: number;
+  firstPurchaseBonus?: number;
+}
 
 interface DiscountsSectionProps {
   bundleDiscount?: BundleDiscountInfo | null;
-  couponDiscount?: {
-    id: string;
-    name: string;
-    discountAmount: number;
-    firstPurchaseBonus?: number;
-  } | null;
+  couponDiscount?: CouponDiscount | null;
   limitedTimeOffer?: LimitedTimeOfferInfo | null;
   milestoneReward?: UserMilestone | null;
   tieredDiscount?: {
@@ -72,10 +74,10 @@ export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
         {couponDiscount && (
           <li className="flex justify-between">
             <span className="text-gray-600">
-              Coupon: {couponDiscount.name}
+              Coupon: {couponDiscount.name || couponDiscount.code || "Discount"}
             </span>
             <span className="font-medium">
-              -${couponDiscount.discountAmount.toFixed(2)}
+              -${(couponDiscount.discountAmount || couponDiscount.discount || 0).toFixed(2)}
             </span>
           </li>
         )}

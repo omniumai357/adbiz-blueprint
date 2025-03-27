@@ -1,80 +1,95 @@
 
 /**
- * Custom error types for application-specific errors
+ * Custom error types used throughout the application
+ * 
+ * These provide more specific error information and context
+ * than the standard Error class.
  */
 
-/**
- * Error thrown when an API request fails
- */
 export class APIError extends Error {
-  statusCode: number;
-  endpoint?: string;
+  status: number;
+  endpoint: string; // Added missing property
   
-  constructor(message: string, statusCode: number = 500, endpoint?: string) {
+  constructor(message: string, status: number, endpoint: string) {
     super(message);
     this.name = 'APIError';
-    this.statusCode = statusCode;
+    this.status = status;
     this.endpoint = endpoint;
   }
 }
 
-/**
- * Error thrown when user authentication is required
- */
-export class AuthenticationError extends Error {
-  method?: string;
-  action?: string;
+export class ValidationError extends Error {
+  fieldErrors: Record<string, string>; // Added missing property
   
-  constructor(message: string = 'You must be logged in to perform this action', method?: string, action?: string) {
+  constructor(message: string, fieldErrors: Record<string, string> = {}) {
+    super(message);
+    this.name = 'ValidationError';
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+export class AuthenticationError extends Error {
+  action: string; // Added missing property
+  
+  constructor(message: string, action: string = 'access') {
     super(message);
     this.name = 'AuthenticationError';
-    this.method = method;
     this.action = action;
   }
 }
 
-/**
- * Error thrown when form validation fails
- */
-export class ValidationError extends Error {
-  fields?: Record<string, string>;
-  errors?: Record<string, string>;
-  
-  constructor(message: string, fields?: Record<string, string>) {
-    super(message);
-    this.name = 'ValidationError';
-    this.fields = fields;
-    this.errors = fields; // For compatibility
-  }
-}
-
-/**
- * Error thrown when a payment operation fails
- */
-export class PaymentError extends Error {
-  code?: string;
-  
-  constructor(message: string, code?: string) {
-    super(message);
-    this.name = 'PaymentError';
-    this.code = code;
-  }
-}
-
-/**
- * Error thrown when a network request fails
- */
 export class NetworkError extends Error {
-  retryable: boolean;
-  url?: string;
-  status?: number;
-  requestInfo?: any;
+  requestInfo: any; // Added missing property
   
-  constructor(message: string, retryable: boolean = true, url?: string, status?: number) {
+  constructor(message: string, requestInfo: any = {}) {
     super(message);
     this.name = 'NetworkError';
-    this.retryable = retryable;
-    this.url = url;
-    this.status = status;
+    this.requestInfo = requestInfo;
+  }
+}
+
+export class ResourceNotFoundError extends Error {
+  resourceType: string;
+  resourceId: string;
+  
+  constructor(resourceType: string, resourceId: string) {
+    super(`${resourceType} with ID ${resourceId} was not found`);
+    this.name = 'ResourceNotFoundError';
+    this.resourceType = resourceType;
+    this.resourceId = resourceId;
+  }
+}
+
+export class PermissionError extends Error {
+  resourceType: string;
+  action: string;
+  
+  constructor(resourceType: string, action: string) {
+    super(`You don't have permission to ${action} this ${resourceType}`);
+    this.name = 'PermissionError';
+    this.resourceType = resourceType;
+    this.action = action;
+  }
+}
+
+export class RateLimitError extends Error {
+  retryAfter: number;
+  
+  constructor(message: string, retryAfter: number = 60) {
+    super(message || 'Rate limit exceeded. Please try again later.');
+    this.name = 'RateLimitError';
+    this.retryAfter = retryAfter;
+  }
+}
+
+export class BusinessLogicError extends Error {
+  code: string;
+  details: any;
+  
+  constructor(message: string, code: string = 'business_rule_violation', details: any = {}) {
+    super(message);
+    this.name = 'BusinessLogicError';
+    this.code = code;
+    this.details = details;
   }
 }
