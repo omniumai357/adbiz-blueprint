@@ -7,11 +7,11 @@
  */
 
 // Re-export individual hook implementations
-export { useAuthActions } from './useAuthActions';
+export { useAuthActions } from '@/features/auth/hooks/use-auth-actions';
 export { useAuthNavigation } from './useAuthNavigation';
 
-// Re-export hooks from features/auth for backwards compatibility
-export { useAuth } from '@/features/auth/auth-context';
+// Re-export core authentication hooks
+export { useAuth } from '@/features/auth/contexts/auth-context';
 export { useAuthData } from '@/features/auth/hooks/use-auth-data';
 
 /**
