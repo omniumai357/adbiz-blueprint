@@ -1,73 +1,29 @@
 
-import { TourStep, TourPath } from '@/contexts/tour/types';
-import { getAllStepGroups } from '../tourStepGroups';
+import { createTourPath } from './createTourPath';
+import { TourStep, TourPath, TourStepGroup } from '../../types';
 
 /**
- * Creates a tour path by combining multiple step groups
+ * Creates a tour path from an array of step groups
+ * This allows organizing steps into logical sections
  * 
- * @param id Unique identifier for the tour path
- * @param name Display name for the tour path
- * @param groupIds Array of step group IDs to include
- * @param options Additional configuration options
- * @returns A tour path object with steps from the specified groups
+ * @param stepGroups Array of step groups
+ * @returns A flattened tour path
  */
-export function createTourPath(
-  id: string,
-  name: string,
-  groupIds: string[],
-  options?: {
-    allowSkip?: boolean;
-    showProgress?: boolean;
-    route?: string;
-    tags?: string[];
-    userRoles?: string[];
-    displayCondition?: () => boolean | Promise<boolean>;
-  }
-): TourPath {
-  // Get all registered step groups
-  const allGroups = getAllStepGroups();
-  
-  // Collect steps from the specified groups
-  let allSteps: TourStep[] = [];
-  
-  groupIds.forEach(groupId => {
-    const group = allGroups[groupId];
-    if (group && group.steps) {
-      allSteps = [...allSteps, ...group.steps];
-    }
-  });
-  
-  // Create and return the tour path
-  return {
-    id,
-    name,
-    steps: allSteps,
-    allowSkip: options?.allowSkip ?? true,
-    showProgress: options?.showProgress ?? true,
-    config: {
-      allowSkip: options?.allowSkip,
-      showProgress: options?.showProgress,
-      metadata: {
-        route: options?.route,
-        tags: options?.tags || [],
-        userRoles: options?.userRoles || []
+export const createTourPathFromGroups = (
+  stepGroups: TourStepGroup[]
+): TourPath => {
+  // Flatten all steps from all groups
+  const allSteps: TourStep[] = stepGroups.reduce(
+    (acc: TourStep[], group: TourStepGroup) => {
+      // If group has steps, add them to the accumulator
+      if (group.steps && group.steps.length) {
+        return [...acc, ...group.steps];
       }
-    }
-  };
-}
+      return acc;
+    },
+    []
+  );
 
-// Add these functions to ensure stepInGroup and conditionalStep are available
-export function stepInGroup(stepId: string, groupId: string) {
-  // Implementation for stepInGroup
-  return {
-    stepId,
-    groupId
-  };
-}
-
-export function conditionalStep(step: TourStep, condition: () => boolean): TourStep {
-  return {
-    ...step,
-    condition
-  };
-}
+  // Create a path from the flattened steps
+  return createTourPath(allSteps);
+};

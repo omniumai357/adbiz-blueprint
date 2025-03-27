@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { LanguageProvider, useLanguage } from '../language-context';
@@ -16,12 +17,7 @@ jest.mock('../../i18n', () => ({
 }));
 
 // Get the mocked i18n instance
-const mockedI18n = (i18n as unknown) as {
-  changeLanguage: jest.Mock;
-  language: string;
-  on: jest.Mock;
-  off: jest.Mock;
-};
+const mockedI18n = jest.requireMock('../../i18n').default;
 
 // Mock localStorage
 const localStorageMock = (() => {
