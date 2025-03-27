@@ -1,3 +1,4 @@
+
 import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
@@ -10,10 +11,12 @@ interface TourViewContainerProps {
   placement?: string;
   className?: string;
   style?: React.CSSProperties;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
 export const TourViewContainer = forwardRef<HTMLDivElement, TourViewContainerProps>(
-  ({ children, targetElement, placement = "bottom", className, style }, ref) => {
+  ({ children, targetElement, placement = "bottom", className, style, isRTL = false, direction = 'ltr' }, ref) => {
     // Calculate position and dimensions based on the target element
     const calculatePosition = () => {
       if (!targetElement) return {};
@@ -29,7 +32,7 @@ export const TourViewContainer = forwardRef<HTMLDivElement, TourViewContainerPro
       };
       
       // Convert string placement to Position type to ensure type safety
-      const safePosition: Position = (placement as Position) || "bottom";
+      const safePosition = (placement as Position) || "bottom";
       
       // Position the tooltip based on the placement
       switch (safePosition) {
@@ -79,6 +82,7 @@ export const TourViewContainer = forwardRef<HTMLDivElement, TourViewContainerPro
           ...calculatePosition(),
           ...style,
         }}
+        dir={direction}
       >
         {children}
       </div>

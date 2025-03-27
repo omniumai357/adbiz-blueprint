@@ -1,4 +1,6 @@
+
 import { TourStep } from "@/contexts/tour/types";
+import { TourStepEnhancer } from "@/lib/tour/types";
 
 /**
  * Creates a step that depends on another step being completed
@@ -67,7 +69,7 @@ export function branchingStep(
       ...step,
       actions: {
         next: {
-          label: "Continue",
+          text: "Continue", // Changed from label to text
           callback: () => {
             // The next path depends on the condition
             const nextPathId = condition() ? truePathId : falsePathId;

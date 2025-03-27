@@ -18,6 +18,7 @@ export type NavigationHandler = {
   showKeyboardShortcutsHelp?: () => void;
 };
 
+// Update NavigationAction to include all possible values
 export type NavigationAction = 
   | 'first_step'
   | 'last_step'
@@ -28,7 +29,10 @@ export type NavigationAction =
   | 'next_keyboard_shortcut'
   | 'previous_keyboard_shortcut'
   | 'skip_keyboard_shortcut'
-  | 'escape';
+  | 'escape'
+  | 'next'
+  | 'prev'
+  | 'skip';
 
 export interface KeyboardHandlerOptions {
   isActive: boolean;
