@@ -1,168 +1,207 @@
+# Theming and Internationalization (i18n) Guide
 
-# Theming and Internationalization
-
-This document provides guidance on using and extending the theming and internationalization (i18n) capabilities of the application.
+## Table of Contents
+- [Theming](#theming)
+  - [Theme Configuration](#theme-configuration)
+  - [Custom Themes](#custom-themes)
+  - [Responsive Theming](#responsive-theming)
+- [Internationalization (i18n)](#internationalization-i18n)
+  - [Setting Up Translations](#setting-up-translations)
+  - [Using Translations](#using-translations)
+  - [Language Switching](#language-switching)
+  - [Testing Translations](#testing-translations)
 
 ## Theming
 
-### CSS Variable System
+Our application uses a combination of Tailwind CSS and CSS variables for theming. This allows for consistent styling across components while enabling easy customization.
 
-The application uses CSS variables for consistent theming across components. These are defined in the root styles and can be modified for custom themes.
+### Theme Configuration
 
-#### Core Variables
+The base theme is defined in `src/styles/themes.ts` and consists of the following key components:
 
-```css
-:root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 240 5.9% 10%;
-  
-  /* Tour-specific variables */
-  --tour-tooltip-bg: 0 0% 100%;
-  --tour-tooltip-text: 240 10% 3.9%;
-  --tour-tooltip-border: 240 5.9% 90%;
-  --tour-tooltip-accent: 221 83% 53%;
-  --tour-tooltip-accent-hover: 217 91% 60%;
-  --tour-tooltip-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-```
+- **Colors**: Primary, secondary, accent, neutral, success, warning, error
+- **Typography**: Font families, sizes, weights
+- **Spacing**: Standard spacing values
+- **Borders**: Border radiuses, widths
+- **Shadows**: Box shadow variants
+- **Transitions**: Standard transition timings
 
-### Creating Custom Themes
-
-To create a custom theme:
-
-1. Define a new CSS class with overridden variables
-2. Apply the class to a container element
-
-Example:
-
-```css
-.theme-purple {
-  --primary: 270 70% 50%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 270 60% 96%;
-  --accent-foreground: 270 70% 50%;
-  --ring: 270 70% 50%;
-}
-```
-
-### Applying Themes
-
-Themes can be applied programmatically:
+Example usage:
 
 ```tsx
-import { useEffect } from 'react';
+// Using theme colors in a component
+<button className="bg-primary hover:bg-primary-dark text-primary-foreground">
+  Click Me
+</button>
+```
 
-function ThemeApplier({ theme = 'default' }) {
-  useEffect(() => {
-    if (theme !== 'default') {
-      document.documentElement.classList.add(`theme-${theme}`);
-    }
-    
-    return () => {
-      document.documentElement.classList.remove(
-        "theme-blue",
-        "theme-purple", 
-        "theme-green",
-        "theme-amber"
-      );
-    };
-  }, [theme]);
+### Custom Themes
+
+To create a custom theme, extend the base theme:
+
+1. Create a new theme file in `src/styles/themes/`
+2. Import and extend the base theme
+3. Register the theme in `src/providers/theme-provider.tsx`
+
+Example custom theme:
+
+```tsx
+// src/styles/themes/dark-theme.ts
+import { baseTheme } from '../base-theme';
+
+export const darkTheme = {
+  ...baseTheme,
+  colors: {
+    ...baseTheme.colors,
+    primary: '#3B82F6',
+    background: '#121212',
+    foreground: '#F8FAFC',
+  }
+};
+```
+
+### Responsive Theming
+
+For responsive theme variations:
+
+1. Use CSS media queries for breakpoint-specific theming
+2. Utilize the `useMediaQuery` hook for conditional theming in components
+
+```tsx
+// Using responsive theming
+import { useMediaQuery } from '@/hooks/use-media-query';
+
+const Component = () => {
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   
-  return null;
-}
+  return (
+    <div className={isDesktop ? 'p-6' : 'p-4'}>
+      {/* Content */}
+    </div>
+  );
+};
 ```
 
 ## Internationalization (i18n)
 
-The application uses `react-i18next` for internationalization.
+Our application uses `react-i18next` for internationalization. This enables multi-language support throughout the application.
 
-### Structure
+### Setting Up Translations
 
-- Translations are stored in JSON files under `src/i18n/locales/[language code]/`
-- Each feature has its own translation file (e.g., `auth.json`, `common.json`)
+Translation files are located in `public/locales/{lang}/translation.json`. Each language has its own folder with translation files.
 
-### Adding New Translations
+Example structure:
+```
+public/
+  locales/
+    en/
+      translation.json
+    es/
+      translation.json
+    fr/
+      translation.json
+```
 
-1. Add new keys to existing translation files
-2. Ensure keys are added to all supported languages
-
-Example (`src/i18n/locales/en/auth.json`):
-
+Example translation file:
 ```json
 {
-  "signIn": "Sign In",
-  "signUp": "Sign Up",
-  "email": "Email",
-  "password": "Password",
-  "confirmPassword": "Confirm Password"
+  "common": {
+    "welcome": "Welcome",
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address"
+  }
 }
 ```
 
 ### Using Translations
 
+To use translations in your components:
+
 ```tsx
 import { useTranslation } from 'react-i18next';
 
-function AuthComponent() {
-  const { t } = useTranslation('auth');
+const MyComponent = () => {
+  const { t } = useTranslation();
   
   return (
     <div>
-      <h2>{t('signIn')}</h2>
-      <label>{t('email')}</label>
-      <input type="email" />
-      <label>{t('password')}</label>
-      <input type="password" />
+      <h1>{t('common.welcome')}</h1>
+      <p>{t('common.description')}</p>
     </div>
   );
-}
+};
 ```
 
-### RTL Support
-
-The application supports right-to-left (RTL) languages:
-
-1. Language context provides `isRTL` and `direction` properties
-2. These are used to conditionally apply RTL-specific styles
-3. Components that need directional awareness accept `isRTL` and `direction` props
-
-Example:
+For translations with variables:
 
 ```tsx
-import { useLanguage } from '@/contexts/language-context';
-
-function DirectionalComponent() {
-  const { isRTL, direction } = useLanguage();
-  
-  return (
-    <div dir={direction} className={isRTL ? 'rtl-specific-class' : ''}>
-      {/* Component content */}
-    </div>
-  );
-}
+// Translation: "Hello, {{name}}!"
+t('greeting', { name: 'John' }) // "Hello, John!"
 ```
 
-### Adding a New Language
+### Language Switching
 
-1. Create a new folder under `src/i18n/locales/` with the language code
-2. Copy all translation files from an existing language
-3. Translate all values (keep the keys the same)
-4. Add the language to the supported languages list in `src/i18n/index.ts`
-5. Update the language detection configuration if needed
+Use the `LanguageSelector` component to allow users to switch languages:
+
+```tsx
+import { LanguageSelector } from '@/components/language/LanguageSelector';
+
+const Header = () => {
+  return (
+    <header>
+      {/* Other header content */}
+      <LanguageSelector />
+    </header>
+  );
+};
+```
+
+### Testing Translations
+
+For testing internationalization:
+
+1. Use the `i18next-mock` library in test files
+2. Set up a test helper for rendering components with i18n context
+3. Assert that correct translations are rendered based on the current language
+
+Example test:
+
+```tsx
+import { render, screen } from '@/utils/test-utils';
+import { setLanguage } from '@/utils/i18n-test-helper';
+import WelcomeMessage from './WelcomeMessage';
+
+describe('WelcomeMessage', () => {
+  it('renders greeting in English', () => {
+    setLanguage('en');
+    render(<WelcomeMessage />);
+    expect(screen.getByText('Welcome to our app')).toBeInTheDocument();
+  });
+  
+  it('renders greeting in Spanish', () => {
+    setLanguage('es');
+    render(<WelcomeMessage />);
+    expect(screen.getByText('Bienvenido a nuestra aplicación')).toBeInTheDocument();
+  });
+});
+```
+
+## Best Practices
+
+1. **Text Extraction**: Extract all user-facing text into translation files
+2. **Namespacing**: Use namespaces to organize translations logically
+3. **Placeholder Consistency**: Maintain consistent naming for variables
+4. **Right-to-Left Support**: Add RTL support for languages like Arabic
+5. **Dates & Numbers**: Use i18n formatting for dates, numbers, and currencies
+6. **Lang Attribute**: Ensure `lang` attribute is updated when language changes
+7. **Content Expansion**: Accommodate text that may be longer in other languages
+
+## Additional Resources
+
+- [React-i18next Documentation](https://react.i18next.com/)
+- [Tailwind CSS Theme Configuration](https://tailwindcss.com/docs/theme)
+- [MDN Internationalization Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl)

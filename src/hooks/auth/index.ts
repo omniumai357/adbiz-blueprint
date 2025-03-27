@@ -1,17 +1,24 @@
 
 /**
- * Auth Hooks Barrel Export
+ * Authentication hooks index file
  * 
- * This file consolidates all authentication-related hooks exports,
- * making imports cleaner throughout the application.
+ * This file exports all authentication-related hooks from a centralized location,
+ * improving discoverability and preventing import duplication.
  */
 
-// Export all auth hooks
+// Re-export individual hook implementations
 export { useAuthActions } from './useAuthActions';
 export { useAuthNavigation } from './useAuthNavigation';
 
-// Re-export from data directory
-export { useAuthData } from '../data/useAuthData';
+// Re-export hooks from features/auth for backwards compatibility
+export { useAuth } from '@/features/auth/auth-context';
+export { useAuthData } from '@/features/auth/hooks/use-auth-data';
 
-// Re-export from queries directory
-export { useAuthUser } from '../queries/useAuthUser';
+/**
+ * This module provides the following hooks:
+ * 
+ * - useAuth: Main hook for accessing authentication context and state
+ * - useAuthActions: Core authentication operations (sign in, sign up, etc.)
+ * - useAuthNavigation: Authentication actions with navigation handling
+ * - useAuthData: Simpler hook for just accessing user authentication data
+ */

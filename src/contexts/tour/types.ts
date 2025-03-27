@@ -40,7 +40,27 @@ export interface TourStep {
   triggers?: string[];
   triggerData?: any[];
   pathVisualization?: TourPathVisualization;
-  metadata?: Record<string, any>;
+  metadata?: {
+    responsiveContent?: {
+      default: string;
+      mobile?: string;
+      tablet?: string;
+      desktop?: string;
+    };
+    responsivePosition?: {
+      default: string;
+      mobile?: string;
+      tablet?: string;
+      desktop?: string;
+    };
+    responsiveSelector?: {
+      default: string;
+      mobile?: string;
+      tablet?: string;
+      desktop?: string;
+    };
+    [key: string]: any;
+  };
   
   // Additional properties needed by various components
   animation?: string;
