@@ -1,6 +1,5 @@
 
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
-import { useFileUpload } from "@/hooks/useFileUpload";
 import { useQuestionnaireSubmit } from "@/hooks/useQuestionnaireSubmit";
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
@@ -12,6 +11,7 @@ import {
 } from "@/utils/questionnaire-validation";
 import { FileState, FileItem } from "@/features/file-upload/types";
 import { fileAdapter } from "@/utils/file-adapter";
+import { useFileUploadContext } from "@/contexts/file-upload-context";
 
 // Define the form schema for validation
 const formSchema = z.object({
@@ -73,6 +73,7 @@ export const marketingGoalOptions = [
 export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   const { step, showReview, nextStep, prevStep, onShowReview } = useQuestionnaireSteps(1);
   
+  // Use the file upload context directly
   const {
     files,
     uploadProgress,
@@ -82,7 +83,7 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
     onRemoveFile,
     uploadFiles,
     setUploadError
-  } = useFileUpload();
+  } = useFileUploadContext();
   
   const { submitting, submitQuestionnaire } = useQuestionnaireSubmit();
   
@@ -124,23 +125,11 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   };
   
   const onSubmit = async (data: QuestionnaireFormValues) => {
-    // Create a properly structured FileState object
-    const fileState: FileState = {
-      identity: [],
-      business: [],
-      additional: [],
-      logo: files.logo,
-      // Use fileAdapter to create FileItems from Files
-      images: fileAdapter.createFileItems(files.images || []),
-      videos: fileAdapter.createFileItems(files.videos || []),
-      documents: fileAdapter.createFileItems(files.documents || [])
-    };
+    // Convert UI Files to FileState format
+    const adaptedUIFiles = fileAdapter.adaptFileStateForUI(files);
     
-    // Get UI-friendly files
-    const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
-    
-    // Convert back to the full FileState format with identity, business, additional arrays
-    const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedFiles);
+    // Convert back to the full FileState format with proper file items
+    const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedUIFiles);
     
     const success = await submitQuestionnaire(data, compatibleFiles, uploadFiles);
     
@@ -148,7 +137,7 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
       onComplete({
         businessId: generateUniqueId('business'),
         data,
-        files: adaptedFiles,
+        files: adaptedUIFiles,
       });
     }
   };

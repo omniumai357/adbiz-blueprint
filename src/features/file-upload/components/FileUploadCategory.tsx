@@ -1,5 +1,5 @@
 
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
@@ -7,6 +7,7 @@ import { FileState } from "../types";
 import FilePreviewGrid from "./FilePreviewGrid";
 import { getReadableFileFormats } from "@/utils/file-validation";
 import { useFileValidation } from "../hooks/useFileValidation";
+import { fileAdapter } from "@/utils/file-adapter";
 
 interface FileUploadCategoryProps {
   title: string;
@@ -14,10 +15,10 @@ interface FileUploadCategoryProps {
   fileType: keyof FileState;
   files: File[];
   acceptFormats: string;
-  onFileChange: (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
 }
 
-const FileUploadCategory: FC<FileUploadCategoryProps> = ({
+export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   title,
   description,
   fileType,
@@ -26,8 +27,8 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   onFileChange,
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
-  // Convert keyof FileState to string before using it as an argument
-  const fileTypeStr = String(fileType);
+  // Convert keyof FileState to string safely
+  const fileTypeStr = fileAdapter.fileTypeToString(fileType);
   const maxFileSize = getMaxFileSize(fileTypeStr);
   const readableFormats = getReadableFileFormats(fileTypeStr);
   
@@ -80,5 +81,3 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
     </div>
   );
 };
-
-export default FileUploadCategory;

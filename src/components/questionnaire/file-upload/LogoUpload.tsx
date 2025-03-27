@@ -1,21 +1,22 @@
 
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Image } from "lucide-react";
-import { FileState } from "@/hooks/useFileUpload";
-import { useFileValidation } from "@/hooks/file-upload/useFileValidation";
+import { FileState } from "@/features/file-upload/types";
+import { useFileValidation } from "@/features/file-upload/hooks/useFileValidation";
 import { getReadableFileFormats } from "@/utils/file-validation";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
+import { formatFileSize } from "@/features/file-upload/utils";
 
 interface LogoUploadProps {
   logo: File | null;
-  onFileChange: (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => void;
 }
 
 const LogoUpload: FC<LogoUploadProps> = ({ logo, onFileChange }) => {
   const { onRemoveFile } = useFileUploadContext();
-  const { formatFileSize, getMaxFileSize } = useFileValidation();
+  const { getMaxFileSize } = useFileValidation();
   const maxFileSize = getMaxFileSize('logo');
   const readableFormats = getReadableFileFormats('logo');
   

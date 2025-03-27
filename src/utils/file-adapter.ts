@@ -1,117 +1,79 @@
 
-import { FileItem, FileState } from "@/features/file-upload/types";
-import { logger } from "./logger";
+import { FileState, FileItem } from '@/features/file-upload/types';
+import { createFileItem, createFileItems } from '@/features/file-upload/utils';
 
 /**
- * Adapter to convert between FileState (with FileItems) and UI components that expect regular Files
+ * File Adapter Utilities
+ * 
+ * Helper functions for adapting between different file representations
  */
 export const fileAdapter = {
   /**
-   * Extract actual File objects from FileItem objects
-   * @param fileItems Array of FileItem objects or undefined
-   * @returns Array of File objects
+   * Convert FileState to a UI-friendly format with File objects
    */
-  getFilesFromFileItems(fileItems: FileItem[] | undefined): File[] {
-    try {
-      if (!fileItems || !Array.isArray(fileItems)) return [];
-      return fileItems.map(item => item.file);
-    } catch (error) {
-      logger.error("Error extracting files from FileItems:", error);
-      return [];
+  adaptFileStateForUI: (fileState: FileState): Record<string, File | File[] | null> => {
+    const result: Record<string, File | File[] | null> = {};
+    
+    // Handle logo (special case - single File)
+    if ('logo' in fileState) {
+      result.logo = fileState.logo;
     }
+    
+    // Convert FileItem arrays to File arrays
+    Object.entries(fileState).forEach(([key, value]) => {
+      if (key !== 'logo' && Array.isArray(value)) {
+        // Cast FileItem[] to File[]
+        result[key] = (value as FileItem[]).map(item => item.file);
+      }
+    });
+    
+    return result;
   },
-
+  
   /**
-   * Convert File objects to FileItem objects
-   * @param files Array of File objects
-   * @returns Array of FileItem objects
+   * Convert UI files back to FileState format
    */
-  createFileItems(files: File[]): FileItem[] {
-    try {
-      return files.map(file => ({
-        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-        file,
-        progress: 0
-      }));
-    } catch (error) {
-      logger.error("Error creating FileItems:", error);
-      return [];
+  adaptUIFilesToFileState: (uiFiles: Record<string, File | File[] | null>): FileState => {
+    const result: Partial<FileState> = {
+      identity: [],
+      business: [],
+      additional: [],
+      logo: null,
+      images: [],
+      videos: [],
+      documents: []
+    };
+    
+    // Handle logo (special case - single File)
+    if ('logo' in uiFiles) {
+      result.logo = uiFiles.logo as File | null;
     }
+    
+    // Convert File arrays to FileItem arrays
+    Object.entries(uiFiles).forEach(([key, value]) => {
+      if (key !== 'logo' && Array.isArray(value)) {
+        // Convert File[] to FileItem[]
+        result[key] = createFileItems(value as File[]);
+      }
+    });
+    
+    return result as FileState;
   },
-
+  
   /**
-   * Converts a FileState object to a format with plain File objects
-   * that can be consumed by UI components
+   * Create FileItems from a File array
    */
-  adaptFileStateForUI(fileState: FileState): {
-    logo: File | null;
-    images: File[];
-    videos: File[];
-    documents: File[];
-  } {
-    try {
-      return {
-        logo: fileState.logo,
-        images: Array.isArray(fileState.images) 
-          ? this.getFilesFromFileItems(fileState.images)
-          : [],
-        videos: Array.isArray(fileState.videos) 
-          ? this.getFilesFromFileItems(fileState.videos)
-          : [],
-        documents: Array.isArray(fileState.documents) 
-          ? this.getFilesFromFileItems(fileState.documents)
-          : []
-      };
-    } catch (error) {
-      logger.error("Error adapting file state for UI:", error);
-      // Return empty state if there's an error
-      return {
-        logo: null,
-        images: [],
-        videos: [],
-        documents: []
-      };
-    }
-  },
-
+  createFileItems,
+  
   /**
-   * Converts UI file objects to a complete FileState
+   * Create a single FileItem from a File
    */
-  adaptUIFilesToFileState(files: {
-    logo: File | null;
-    images: File[];
-    videos: File[];
-    documents: File[];
-  }): FileState {
-    try {
-      return {
-        logo: files.logo,
-        images: this.createFileItems(files.images),
-        videos: this.createFileItems(files.videos),
-        documents: this.createFileItems(files.documents),
-        identity: [],
-        business: [],
-        additional: []
-      };
-    } catch (error) {
-      logger.error("Error adapting UI files to FileState:", error);
-      // Return empty state if there's an error
-      return {
-        logo: null,
-        images: [],
-        videos: [],
-        documents: [],
-        identity: [],
-        business: [],
-        additional: []
-      };
-    }
-  },
-
+  createFileItem,
+  
   /**
-   * Safely convert keyof FileState to string
+   * Convert a keyof FileState to a string safely
    */
-  fileTypeToString(fileType: keyof FileState): string {
+  fileTypeToString: (fileType: keyof FileState): string => {
     return String(fileType);
   }
 };

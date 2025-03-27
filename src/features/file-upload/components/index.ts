@@ -1,26 +1,12 @@
 
 /**
- * File Upload Components Module
+ * Feature Components
  * 
- * This file exports all file upload related components from a centralized location,
- * improving discoverability and preventing import duplication.
+ * Export all file upload related components from the feature module
  */
 
-// Core components
-export { default as FileItem } from './FileItem';
+export { FileUploadCategory } from './FileUploadCategory';
 export { default as FilePreviewGrid } from './FilePreviewGrid';
-export { default as FileUploadCategory } from './FileUploadCategory';
-
-// UI components
-export { FileUploadField } from './FileUploadField';
+export { default as FileItem } from './FileItem';
 export { FilePreview } from './FilePreview';
-
-/**
- * Available file upload components:
- * 
- * - FileItem: Individual file display with preview and removal options
- * - FilePreviewGrid: Grid display of multiple uploaded files
- * - FileUploadCategory: Category-based file upload with validation
- * - FileUploadField: Input field for file uploads with drag & drop
- * - FilePreview: Preview of selected files with progress
- */
+export { FileUploadField } from './FileUploadField';

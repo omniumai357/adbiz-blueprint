@@ -1,95 +1,103 @@
+
 # File Upload Feature
 
-This directory contains the file upload functionality for the application. It follows a feature-based organization pattern to encapsulate all file upload related components, hooks, and utilities.
+This feature module provides a complete file upload system with hooks, components, types, and utilities for handling file uploads across the application.
 
 ## Structure
 
-- `/components` - React components related to file uploads
-- `/hooks` - Custom hooks for file upload operations
-- `/types.ts` - TypeScript types for file upload related data
-- `/utils.ts` - Utility functions for file uploads
+```
+src/features/file-upload/
+├── components/           # UI components for file uploads
+├── hooks/                # React hooks for file upload state management
+├── types.ts              # TypeScript type definitions
+├── utils.ts              # Utility functions
+└── index.ts              # Main entry point and exports
+```
 
 ## Usage
 
-### Basic File Upload
-
-To implement basic file uploads:
+### Basic Usage
 
 ```tsx
-import { useFileUpload } from "@/features/file-upload";
+import { useFileUpload } from '@/features/file-upload/hooks';
+import { FileUploadField } from '@/features/file-upload/components';
 
-function MyComponent() {
+const MyComponent = () => {
   const { 
-    files,
-    handleFileChange,
-    onRemoveFile,
-    uploadFiles,
-    uploading
+    files, 
+    handleFileChange, 
+    onRemoveFile, 
+    uploadProgress,
+    uploadError
   } = useFileUpload();
   
-  // Use file upload state and methods
-}
-```
-
-### File Upload Context
-
-For more complex scenarios, use the FileUploadProvider:
-
-```tsx
-import { FileUploadProvider } from "@/contexts/file-upload-context";
-
-function App() {
-  return (
-    <FileUploadProvider>
-      {/* Your app components */}
-    </FileUploadProvider>
-  );
-}
-```
-
-### Components
-
-Ready-to-use file upload components:
-
-```tsx
-import { FileUploadField, FilePreview } from "@/features/file-upload";
-
-function UploadForm() {
   return (
     <div>
-      <FileUploadField 
-        fileType="images" 
-        label="Upload Images" 
+      <FileUploadField
+        label="Upload Documents"
+        fileType="documents"
+        acceptedFormats=".pdf,.doc,.docx"
+        onChange={(e) => handleFileChange('documents', e)}
       />
-      <FilePreview fileType="images" />
+      
+      {/* Display file preview and upload progress */}
     </div>
   );
-}
+};
 ```
 
-## File State Pattern
+### With Context Provider
 
-The file upload system uses a standardized `FileState` type:
+For larger applications, you can use the `FileUploadProvider` to make file upload functionality available globally:
 
-```ts
-interface FileState {
-  logo: File | null;
-  images: FileItem[];
-  videos: FileItem[];
-  documents: FileItem[];
-  // ... other file types
-}
+```tsx
+// In your App.tsx or a parent component
+import { FileUploadProvider } from '@/contexts/file-upload-context';
+
+const App = () => {
+  return (
+    <FileUploadProvider>
+      {/* Your application components */}
+    </FileUploadProvider>
+  );
+};
+
+// In a child component
+import { useFileUploadContext } from '@/contexts/file-upload-context';
+
+const UploadComponent = () => {
+  const { files, handleFileChange } = useFileUploadContext();
+  
+  // Use file upload functionality
+};
 ```
 
-This allows for consistent handling of different file types.
+## Components
 
-## Refactoring Notes
+| Component | Description |
+|-----------|-------------|
+| `FileUploadCategory` | Category-based file upload with preview |
+| `FileUploadField` | Basic file upload input field |
+| `FileItem` | Individual file item display |
+| `FilePreview` | Preview of uploaded files |
+| `FilePreviewGrid` | Grid layout for file previews |
 
-This feature module has been refactored to improve:
+## Hooks
 
-1. **Organization** - All file upload related code is now in a single feature directory
-2. **Documentation** - Comprehensive JSDoc comments and README
-3. **Type Safety** - Strong TypeScript types for all file upload operations
-4. **Backward Compatibility** - Legacy imports still work via re-exports
+| Hook | Description |
+|------|-------------|
+| `useFileUpload` | Main hook for file upload functionality |
+| `useFileUploadState` | Hook for managing file state |
+| `useFileUploadProgress` | Hook for tracking upload progress |
+| `useFileValidation` | Hook for file validation |
+| `useFileUploadHandlers` | Hook for file event handlers |
 
-The refactoring focused on maintaining the exact same functionality while improving the code structure and readability.
+## Migration Guide
+
+If you're migrating from the old file upload system:
+
+1. Replace imports from `@/hooks/useFileUpload` with `@/features/file-upload/hooks`
+2. Replace file component imports with components from `@/features/file-upload/components`
+3. Update any type imports to use `@/features/file-upload/types`
+
+For more complex migrations, see the compatibility layer in `src/hooks/file-upload/index.ts`.
