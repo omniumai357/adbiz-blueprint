@@ -2,7 +2,7 @@
 import { createTourPath } from './core/paths/createTourPath';
 import { TourStep } from './types';
 
-// Import step groups
+// Import step groups but convert them to the right type
 import {
   checkoutWelcomeStepGroup,
   checkoutCoreStepGroup,
@@ -10,14 +10,27 @@ import {
   checkoutFinalStepGroup
 } from './checkout/step-groups';
 
+// Helper function to adapt steps between different TourStep interfaces
+function adaptTourSteps(steps: any[]): TourStep[] {
+  return steps.map(step => {
+    // Ensure target property is always present
+    const adaptedStep: TourStep = {
+      ...step,
+      target: step.target || document.body.tagName, // Provide a fallback target
+    };
+    
+    return adaptedStep;
+  });
+}
+
 /**
  * Main checkout tour path definition using step groups
  */
 export const checkoutTourPath = createTourPath([
-  ...checkoutWelcomeStepGroup.steps,
-  ...checkoutCoreStepGroup.steps,
-  ...checkoutOptionalStepGroup.steps,
-  ...checkoutFinalStepGroup.steps
+  ...adaptTourSteps(checkoutWelcomeStepGroup.steps),
+  ...adaptTourSteps(checkoutCoreStepGroup.steps),
+  ...adaptTourSteps(checkoutOptionalStepGroup.steps),
+  ...adaptTourSteps(checkoutFinalStepGroup.steps)
 ]);
 
 // Add an event listener for tour completion

@@ -80,12 +80,13 @@ export function prioritizedStep(
  */
 export const withStepTriggers = (triggers: StepTrigger[]): ((step: TourStep) => Partial<TourStep>) => {
   return (step: TourStep) => {
-    // Convert triggers to strings to make TypeScript happy
+    // Instead of returning triggers directly, convert them to a format that matches the expected type
     const triggerIds = triggers.map(trigger => trigger.id);
     
     return {
-      // Explicitly specify return type as strings
-      triggers: triggerIds,
+      // Use explicit type assertion to ensure compatibility
+      triggers: triggerIds as string[],
+      // Store the full trigger data in a separate property
       triggerData: triggers
     };
   };

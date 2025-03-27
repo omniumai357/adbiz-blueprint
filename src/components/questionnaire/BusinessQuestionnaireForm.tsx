@@ -1,3 +1,4 @@
+
 import { Form } from "@/components/ui/form";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import QuestionnaireProgress from "./QuestionnaireProgress";
@@ -56,9 +57,10 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     business: [],
     additional: [],
     logo: files.logo,
-    images: files.images as FileItem[],
-    videos: files.videos as FileItem[],
-    documents: files.documents as FileItem[]
+    // Use fileAdapter to create FileItems from Files
+    images: fileAdapter.createFileItems(files.images || []),
+    videos: fileAdapter.createFileItems(files.videos || []),
+    documents: fileAdapter.createFileItems(files.documents || [])
   };
   
   // Adapt files for the ReviewSection component which expects plain File objects

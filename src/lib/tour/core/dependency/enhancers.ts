@@ -1,4 +1,4 @@
-import { TourStep } from '@/contexts/tour/types';
+import { TourStep } from "@/contexts/tour/types";
 
 /**
  * Creates a step that depends on another step being completed
@@ -159,4 +159,33 @@ export const withCustomButtons = (customButtons: {
 
     return step;
   };
+};
+
+/**
+ * Adds custom next button text to a tour step
+ */
+export function withNextButtonText(text: string): TourStepEnhancer {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      actions: {
+        ...step.actions,
+        next: {
+          ...step.actions?.next,
+          text // Use text instead of label property
+        }
+      }
+    };
+  };
+}
+
+// Export other enhancers for use elsewhere
+export const tourStepEnhancers: Record<string, TourStepEnhancer> = {
+  dependentStep,
+  reEntryPoint,
+  sectionStep,
+  branchingStep,
+  withButtonLabels,
+  withCustomButtons,
+  withNextButtonText
 };

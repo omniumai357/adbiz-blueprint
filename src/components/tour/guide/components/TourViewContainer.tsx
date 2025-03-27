@@ -1,82 +1,89 @@
+import React, { forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
-import React from 'react';
-import { useTour } from '@/contexts/tour';
-import { useTourElementFinder } from '@/hooks/tour/useTourElementFinder';
-import { useTourPosition } from '@/hooks/tour/useTourPosition';
-import { TourMobileView } from '../../TourMobileView';
-import { TourDesktopView } from '../../TourDesktopView';
-import { useMediaQuery } from '@/hooks/ui/useMediaQuery';
+// Define a Position type to match expected values
+type Position = "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
 
 interface TourViewContainerProps {
-  targetElement: HTMLElement | null;
-  isRTL: boolean;
-  direction: 'ltr' | 'rtl';
+  children: React.ReactNode;
+  targetElement?: HTMLElement | null;
+  placement?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export const TourViewContainer: React.FC<TourViewContainerProps> = ({
-  targetElement,
-  isRTL,
-  direction
-}) => {
-  const {
-    isActive,
-    currentStepData,
-    nextStep,
-    prevStep,
-    endTour,
-    currentStep,
-    totalSteps,
-  } = useTour();
-  
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  const targetRect = targetElement?.getBoundingClientRect();
-  const { position, arrowPosition } = useTourPosition(targetRect, currentStepData?.position || 'bottom');
-  
-  // Don't render if not active or no step data
-  if (!isActive || !currentStepData) {
-    return null;
-  }
-  
-  const isLastStep = currentStep === totalSteps - 1;
-  
-  // Generate step info text
-  const stepInfo = `${currentStep + 1} / ${totalSteps}`;
-  
-  if (isMobile) {
+export const TourViewContainer = forwardRef<HTMLDivElement, TourViewContainerProps>(
+  ({ children, targetElement, placement = "bottom", className, style }, ref) => {
+    // Calculate position and dimensions based on the target element
+    const calculatePosition = () => {
+      if (!targetElement) return {};
+      
+      const targetRect = targetElement.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Default styles
+      const baseStyles = {
+        position: "absolute" as const,
+        zIndex: 1000,
+      };
+      
+      // Convert string placement to Position type to ensure type safety
+      const safePosition: Position = (placement as Position) || "bottom";
+      
+      // Position the tooltip based on the placement
+      switch (safePosition) {
+        case "top":
+          return {
+            ...baseStyles,
+            top: targetRect.top - 10,
+            left: targetRect.left + targetRect.width / 2,
+            transform: "translate(-50%, -100%)",
+          };
+        case "right":
+          return {
+            ...baseStyles,
+            top: targetRect.top + targetRect.height / 2,
+            left: targetRect.right + 10,
+            transform: "translate(0, -50%)",
+          };
+        case "bottom":
+          return {
+            ...baseStyles,
+            top: targetRect.bottom + 10,
+            left: targetRect.left + targetRect.width / 2,
+            transform: "translate(-50%, 0)",
+          };
+        case "left":
+          return {
+            ...baseStyles,
+            top: targetRect.top + targetRect.height / 2,
+            left: targetRect.left - 10,
+            transform: "translate(-100%, -50%)",
+          };
+        default:
+          return {
+            ...baseStyles,
+            top: targetRect.bottom + 10,
+            left: targetRect.left + targetRect.width / 2,
+            transform: "translate(-50%, 0)",
+          };
+      }
+    };
+    
     return (
-      <TourMobileView
-        step={currentStepData}
-        stepInfo={stepInfo}
-        onNext={nextStep}
-        onPrev={prevStep}
-        onClose={endTour}
-        isLastStep={isLastStep}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        targetElement={targetElement}
-        isRTL={isRTL}
-        direction={direction}
-      />
+      <div
+        ref={ref}
+        className={cn("tour-view-container", className)}
+        style={{
+          ...calculatePosition(),
+          ...style,
+        }}
+      >
+        {children}
+      </div>
     );
   }
-  
-  // Ensure we're passing all required properties to TourDesktopView
-  return (
-    <TourDesktopView
-      position={position}
-      arrowPosition={arrowPosition}
-      title={currentStepData.title || "Tour Guide"}
-      content={currentStepData.content || ""}
-      stepInfo={stepInfo}
-      onNext={nextStep}
-      onPrev={prevStep}
-      onClose={endTour}
-      isLastStep={isLastStep}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-      isRTL={isRTL}
-      targetElement={targetElement || document.body}
-      direction={direction}
-    />
-  );
-};
+);
+
+TourViewContainer.displayName = "TourViewContainer";

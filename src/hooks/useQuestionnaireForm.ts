@@ -1,3 +1,4 @@
+
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useQuestionnaireSubmit } from "@/hooks/useQuestionnaireSubmit";
@@ -129,9 +130,10 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
       business: [],
       additional: [],
       logo: files.logo,
-      images: files.images as FileItem[],
-      videos: files.videos as FileItem[],
-      documents: files.documents as FileItem[]
+      // Use fileAdapter to create FileItems from Files
+      images: fileAdapter.createFileItems(files.images || []),
+      videos: fileAdapter.createFileItems(files.videos || []),
+      documents: fileAdapter.createFileItems(files.documents || [])
     };
     
     // Get UI-friendly files

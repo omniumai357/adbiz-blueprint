@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 import { useTourState } from './controller/tour-controller/use-tour-state';
@@ -153,8 +152,8 @@ export function useTourController(
   // Handle keyboard navigation with correctly typed parameter function
   const { handleKeyNavigation } = useTourKeyboard(
     isActive,
-    // Fix the function signature to match expected parameters
-    (event: React.KeyboardEvent<Element> | KeyboardEvent, action: NavigationAction) => {
+    // Use a generic handler function that works with both action types
+    (event: React.KeyboardEvent<Element> | KeyboardEvent, action: any) => {
       if (!action) return;
       interactions.handleNavigationAction(action);
     },

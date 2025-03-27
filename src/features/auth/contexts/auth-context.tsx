@@ -57,7 +57,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Computed property for easier auth status checks
   const isAuthenticated = !!user;
 
-  // Fixed logout function to return Promise<void> instead of Promise<{ error: any; } | { success: boolean; }>
+  // Fixed logout function to return Promise<void>
   const logout = async (): Promise<void> => {
     try {
       const result = await signOut();
@@ -65,14 +65,15 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       // Handle result but don't return it
       if ('error' in result && result.error) {
         logger.error('Error signing out:', result.error);
+        // Don't rethrow - just log it and return void
       } else {
         setUser(null);
         setSession(null);
       }
     } catch (error) {
       logger.error('Error during logout:', error);
+      // Don't rethrow - just log it and return void
     }
-    // No return value for void Promise
   };
 
   return (
