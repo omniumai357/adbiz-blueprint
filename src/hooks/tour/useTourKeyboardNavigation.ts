@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { parseNavigationAction } from './controller/navigation/navigation-actions';
 
 /**
  * Configuration options for keyboard navigation in tours
@@ -74,102 +75,41 @@ export function useTourKeyboardNavigation(
       if (isActive && !isFormElement) {
         let navigationAction: string | undefined;
         
-        // Handle modifier keys for accessibility combinations
-        const hasShiftKey = event.shiftKey;
-        const hasCtrlKey = event.ctrlKey;
-        const hasAltKey = event.altKey;
-        
         // Determine the navigation action based on the key pressed
-        switch (event.key) {
-          case 'Home':
-            if (enableHomeEndKeys) {
+        if (enableHomeEndKeys && event.key === 'Home') {
+          event.preventDefault();
+          navigationAction = 'first_step';
+        } else if (enableHomeEndKeys && event.key === 'End') {
+          event.preventDefault();
+          navigationAction = 'last_step';
+        } else if (enablePageKeys && event.key === 'PageUp') {
+          event.preventDefault();
+          navigationAction = `jump_back_${pageKeyJumpSize}`;
+        } else if (enablePageKeys && event.key === 'PageDown') {
+          event.preventDefault();
+          navigationAction = `jump_forward_${pageKeyJumpSize}`;
+        } else if (enableShortcutsHelp && event.key === '?' && event.shiftKey) {
+          event.preventDefault();
+          navigationAction = 'show_shortcuts_help';
+        } else {
+          // Use the parseNavigationAction utility for other keys
+          const parsedAction = parseNavigationAction(event, isFormElement);
+          if (parsedAction) {
+            navigationAction = parsedAction;
+            
+            // Prevent default for navigation actions
+            if (navigationAction !== 'next_from_element') {
               event.preventDefault();
-              navigationAction = 'first_step';
             }
-            break;
-          case 'End':
-            if (enableHomeEndKeys) {
-              event.preventDefault();
-              navigationAction = 'last_step';
-            }
-            break;
-          case 'PageUp':
-            if (enablePageKeys) {
-              event.preventDefault();
-              navigationAction = `jump_back_${pageKeyJumpSize}`;
-            }
-            break;
-          case 'PageDown':
-            if (enablePageKeys) {
-              event.preventDefault();
-              navigationAction = `jump_forward_${pageKeyJumpSize}`;
-            }
-            break;
-          case '?':
-            if (enableShortcutsHelp && hasShiftKey) {
-              event.preventDefault();
-              navigationAction = 'show_shortcuts_help';
-            }
-            break;
-          case 'Escape':
-            // Adding specific keyboard behavior for escape key
-            event.preventDefault();
-            document.dispatchEvent(new CustomEvent('tour:escape'));
-            navigationAction = 'escape';
-            break;
-          case ' ':
-          case 'Enter':
-            // Space or Enter can move to next step when focused on appropriate element
-            if ((event.target as HTMLElement)?.getAttribute('data-tour-next') === 'true') {
-              event.preventDefault();
+            
+            // Dispatch custom events for some actions
+            if (navigationAction === 'escape') {
+              document.dispatchEvent(new CustomEvent('tour:escape'));
+            } else if (navigationAction === 'next_keyboard_shortcut' || navigationAction === 'next_from_element') {
               document.dispatchEvent(new CustomEvent('tour:next'));
-              navigationAction = 'next_from_element';
-            }
-            break;
-          case 'n':
-            // 'n' for next (when not in a form field)
-            if (!isFormElement) {
-              event.preventDefault();
-              document.dispatchEvent(new CustomEvent('tour:next'));
-              navigationAction = 'next_keyboard_shortcut';
-            }
-            break;
-          case 'p':
-            // 'p' for previous (when not in a form field)
-            if (!isFormElement) {
-              event.preventDefault();
+            } else if (navigationAction === 'previous_keyboard_shortcut') {
               document.dispatchEvent(new CustomEvent('tour:previous'));
-              navigationAction = 'previous_keyboard_shortcut';
             }
-            break;
-          case 'Tab':
-            // Let the default tab behavior work, but we'll enhance it with
-            // focus trapping in the component itself
-            break;
-          default:
-            // Let other keys be handled without specific navigation action
-            break;
-        }
-        
-        // For any key command with Alt+Shift for accessibility
-        if (hasAltKey && hasShiftKey) {
-          switch (event.key) {
-            case 'N': // Alt+Shift+N for Next
-              event.preventDefault();
-              navigationAction = 'next_keyboard_shortcut';
-              break;
-            case 'P': // Alt+Shift+P for Previous
-              event.preventDefault();
-              navigationAction = 'previous_keyboard_shortcut';
-              break;
-            case 'S': // Alt+Shift+S for Skip
-              event.preventDefault();
-              navigationAction = 'skip_keyboard_shortcut';
-              break;
-            case 'H': // Alt+Shift+H for Help
-              event.preventDefault();
-              navigationAction = 'show_shortcuts_help';
-              break;
           }
         }
         
