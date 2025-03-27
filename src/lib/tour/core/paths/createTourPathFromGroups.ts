@@ -1,29 +1,29 @@
 
-import { createTourPath } from './createTourPath';
-import { TourStep, TourPath, TourStepGroup } from '../../types';
+import { TourPath, TourStepGroup } from '../../types';
+import { createNamedTourPath } from './createTourPath';
 
 /**
  * Creates a tour path from an array of step groups
- * This allows organizing steps into logical sections
  * 
+ * @param id Path identifier
+ * @param name Display name
  * @param stepGroups Array of step groups
- * @returns A flattened tour path
+ * @param options Configuration options
+ * @returns A tour path
  */
 export const createTourPathFromGroups = (
-  stepGroups: TourStepGroup[]
+  id: string,
+  name: string,
+  stepGroups: TourStepGroup[],
+  options?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    route?: string;
+    userRoles?: string[];
+  }
 ): TourPath => {
-  // Flatten all steps from all groups
-  const allSteps: TourStep[] = stepGroups.reduce(
-    (acc: TourStep[], group: TourStepGroup) => {
-      // If group has steps, add them to the accumulator
-      if (group.steps && group.steps.length) {
-        return [...acc, ...group.steps];
-      }
-      return acc;
-    },
-    []
-  );
-
-  // Create a path from the flattened steps
-  return createTourPath(allSteps);
+  // Flatten all steps from the groups
+  const allSteps = stepGroups.reduce((acc, group) => [...acc, ...group.steps], [] as TourStep[]);
+  
+  return createNamedTourPath(id, name, allSteps, options);
 };

@@ -1,10 +1,10 @@
 
 import { TourThemeName } from './types/theme';
 
-// Re-export the types from contexts for consistency
+// Re-export existing types from contexts
 export type { TourStep, TourPath, TourContextType } from '@/contexts/tour/types';
 
-// Add TourStepGroup type definition
+// Add TourStepGroup type definition that was missing
 export interface TourStepGroup {
   id: string;
   name: string;

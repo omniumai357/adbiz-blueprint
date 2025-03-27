@@ -1,6 +1,7 @@
+
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { render, screen, act, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom'; // This import is critical for the DOM matchers
 import { LanguageProvider, useLanguage } from '../language-context';
 import userEvent from '@testing-library/user-event';
 
