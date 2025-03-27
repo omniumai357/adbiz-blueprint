@@ -12,5 +12,5 @@ export * from '@/features/file-upload/hooks/useFileUploadHandlers';
 export * from '@/features/file-upload/hooks/useFileUploadProgress';
 export * from '@/features/file-upload/hooks/useFileValidator';
 
-// Re-export types
-export * from '@/features/file-upload/types';
+// Re-export types without conflicting with the ones from the feature module
+export type { FileState, FileItem, UploadProgressItem, FileUploadHook } from '@/features/file-upload/types';
