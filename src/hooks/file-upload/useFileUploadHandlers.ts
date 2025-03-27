@@ -1,161 +1,112 @@
 
 import { useState, useCallback } from 'react';
-import { FileState, FileUploadState, FileUploadProps } from '@/features/file-upload/types';
+import { useFileUploadContext } from '@/contexts/file-upload-context';
+import { FileState } from '@/contexts/file-upload-context';
 
 export interface UploadHandlersResult {
-  handleFileSelect: (event: React.ChangeEvent<HTMLInputElement>, category: string) => void;
-  handleFileRemove: (fileId: string, category: string) => void;
-  handleDragOver: (event: React.DragEvent<HTMLDivElement>) => void;
-  handleDragLeave: (event: React.DragEvent<HTMLDivElement>) => void;
-  handleDrop: (event: React.DragEvent<HTMLDivElement>, category: string) => void;
-  handleCancelUpload: (fileId: string, category: string) => void;
-  isDragging: boolean;
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveFile: (fileId: string) => void;
+  uploadFile: (file: File, metadata?: Record<string, any>) => Promise<FileState>;
+  uploadFiles: (files: FileList | File[], metadata?: Record<string, any>) => Promise<FileState[]>;
 }
 
-/**
- * Hook for handling file upload actions
- */
-export function useFileUploadHandlers(
-  files: FileUploadState,
-  setFiles: React.Dispatch<React.SetStateAction<FileUploadState>>,
-  uploadFile: (file: File, category: string) => Promise<void>,
-  validateFile: (file: File, options: FileUploadProps) => { valid: boolean; error?: string }
-): UploadHandlersResult {
-  const [isDragging, setIsDragging] = useState(false);
+export const useFileUploadHandlers = (): UploadHandlersResult => {
+  const { addFile, removeFile, updateFileStatus } = useFileUploadContext();
+  const [activeUploads, setActiveUploads] = useState<Record<string, boolean>>({});
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>, category: string) => {
-    const fileList = event.target.files;
-    if (!fileList || fileList.length === 0) return;
-
-    const newFiles: File[] = Array.from(fileList);
-    processFiles(newFiles, category);
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     
-    // Reset input value to allow selecting the same file again
-    event.target.value = '';
-  }, []);
-
-  const handleFileRemove = useCallback((fileId: string, category: string) => {
-    setFiles(prevFiles => {
-      const updatedCategory = { ...prevFiles[category] };
-      delete updatedCategory[fileId];
-      return { ...prevFiles, [category]: updatedCategory };
+    Array.from(files).forEach(file => {
+      uploadFile(file);
     });
-  }, [setFiles]);
-
-  const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>, category: string) => {
-    event.preventDefault();
-    setIsDragging(false);
     
-    const droppedFiles = event.dataTransfer.files;
-    if (!droppedFiles || droppedFiles.length === 0) return;
-    
-    const newFiles: File[] = Array.from(droppedFiles);
-    processFiles(newFiles, category);
+    // Reset the input value to allow uploading the same file again
+    e.target.value = '';
   }, []);
 
-  const processFiles = useCallback((newFiles: File[], category: string) => {
-    // Process each file individually
-    newFiles.forEach(file => {
-      // Validate file before adding it
-      const validation = validateFile(file, { 
-        category,
-        maxSizeMB: 5,
-        acceptedFileTypes: ['image/*', 'application/pdf'] 
-      });
-
-      if (!validation.valid) {
-        // Handle invalid file
-        console.error(`File validation error: ${validation.error}`);
-        return;
-      }
-
-      // Generate unique ID for the file
-      const fileId = `${Date.now()}-${file.name}`;
-      
-      // Add file to state
-      setFiles(prevFiles => {
-        const categoryFiles = prevFiles[category] || {};
-        return {
-          ...prevFiles,
-          [category]: {
-            ...categoryFiles,
-            [fileId]: {
-              id: fileId,
-              file,
-              name: file.name,
-              size: file.size,
-              type: file.type,
-              progress: 0,
-              status: 'pending',
-              error: null,
-              url: null
-            }
-          }
-        };
-      });
-
-      // Start uploading the file
-      uploadFile(file, category)
-        .then(() => {
-          // Upload success
-          setFiles(prevFiles => {
-            const categoryFiles = prevFiles[category] || {};
-            return {
-              ...prevFiles,
-              [category]: {
-                ...categoryFiles,
-                [fileId]: {
-                  ...categoryFiles[fileId],
-                  status: 'success',
-                  progress: 100
-                }
-              }
-            };
-          });
-        })
-        .catch(error => {
-          // Upload error
-          setFiles(prevFiles => {
-            const categoryFiles = prevFiles[category] || {};
-            return {
-              ...prevFiles,
-              [category]: {
-                ...categoryFiles,
-                [fileId]: {
-                  ...categoryFiles[fileId],
-                  status: 'error',
-                  error: error.message || 'Upload failed'
-                }
-              }
-            };
-          });
+  const uploadFile = useCallback(async (file: File, metadata?: Record<string, any>): Promise<FileState> => {
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Add file to context
+    const fileState = addFile({
+      id: fileId,
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      status: 'uploading',
+      progress: 0,
+      metadata: metadata || {}
+    });
+    
+    setActiveUploads(prev => ({ ...prev, [fileId]: true }));
+    
+    try {
+      // Simulate upload progress
+      const updateProgress = (progress: number) => {
+        updateFileStatus(fileId, { 
+          progress, 
+          status: progress === 100 ? 'uploaded' : 'uploading' 
         });
-    });
-  }, [setFiles, uploadFile, validateFile]);
+      };
+      
+      await simulateFileUpload(updateProgress);
+      
+      // Update file status to uploaded
+      const updatedFileState = updateFileStatus(fileId, { 
+        status: 'uploaded', 
+        progress: 100,
+        url: URL.createObjectURL(file) 
+      });
+      
+      return updatedFileState;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorFileState = updateFileStatus(fileId, { 
+        status: 'error', 
+        error: errorMessage 
+      });
+      return errorFileState;
+    } finally {
+      setActiveUploads(prev => {
+        const newState = { ...prev };
+        delete newState[fileId];
+        return newState;
+      });
+    }
+  }, [addFile, updateFileStatus]);
 
-  const handleCancelUpload = useCallback((fileId: string, category: string) => {
-    // Implement cancel upload logic here
-    // For now, just remove the file from state
-    handleFileRemove(fileId, category);
-  }, [handleFileRemove]);
+  const uploadFiles = useCallback(async (files: FileList | File[], metadata?: Record<string, any>): Promise<FileState[]> => {
+    const fileArray = Array.from(files);
+    const promises = fileArray.map(file => uploadFile(file, metadata));
+    return Promise.all(promises);
+  }, [uploadFile]);
+
+  const onRemoveFile = useCallback((fileId: string) => {
+    removeFile(fileId);
+  }, [removeFile]);
 
   return {
-    handleFileSelect,
-    handleFileRemove,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    handleCancelUpload,
-    isDragging
+    handleFileChange,
+    onRemoveFile,
+    uploadFile,
+    uploadFiles
   };
-}
+};
+
+// Helper function to simulate file upload
+const simulateFileUpload = (progressCallback: (progress: number) => void): Promise<void> => {
+  return new Promise((resolve) => {
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      progressCallback(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 200);
+  });
+};

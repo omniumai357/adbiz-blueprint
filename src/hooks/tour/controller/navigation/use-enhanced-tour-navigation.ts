@@ -1,158 +1,123 @@
 
 import { useCallback } from 'react';
 import { useTour } from '@/contexts/tour';
-import { TourPath, TourStep } from '@/contexts/tour/types';
-import { useTourAnalytics } from '@/hooks/tour/useTourAnalytics';
 import { useAuth } from '@/features/auth';
-import { NavigationAction } from './types';
+import { useTourAnalytics } from '../../useTourAnalytics';
 
-/**
- * Enhanced tour navigation hook with analytics integration
- */
-export function useEnhancedTourNavigation() {
+interface ExtendedAnalytics extends ReturnType<typeof useTourAnalytics> {
+  trackTourExited: (data: any) => boolean;
+}
+
+export const useEnhancedTourNavigation = () => {
   const {
     isActive,
     currentStep,
     totalSteps,
-    currentStepData,
-    currentPath,
+    nextStep: baseNextStep,
+    prevStep: basePrevStep,
+    endTour: baseEndTour,
+    goToStep: baseGoToStep,
     currentPathData,
-    nextStep,
-    prevStep,
-    goToStep,
-    endTour
+    currentStepData,
   } = useTour();
-  
-  const { user } = useAuth();
-  const analytics = useTourAnalytics();
 
-  const handleNavigationAction = useCallback((
-    event: React.KeyboardEvent | KeyboardEvent,
-    action: NavigationAction
-  ) => {
-    if (!isActive || !currentPathData || !currentStepData) return;
-    
-    switch (action) {
-      case 'next_keyboard_shortcut':
-      case 'next_from_element':
-        // Track analytics before moving to next step
-        analytics.trackStepInteraction(
-          currentPathData,
-          currentStepData,
-          currentStep,
-          'next_keyboard',
-          user?.id,
-          user?.type
-        );
-        nextStep();
-        break;
-        
-      case 'previous_keyboard_shortcut':
-        // Track analytics before moving to previous step
-        analytics.trackStepInteraction(
-          currentPathData,
-          currentStepData,
-          currentStep,
-          'previous_keyboard',
-          user?.id,
-          user?.type
-        );
-        prevStep();
-        break;
-        
-      case 'first_step':
-        // Track jump to first step
-        analytics.trackStepInteraction(
-          currentPathData,
-          currentStepData,
-          currentStep,
-          'jump_to_first',
-          user?.id,
-          user?.type
-        );
-        goToStep(0);
-        break;
-        
-      case 'last_step':
-        // Track jump to last step
-        analytics.trackStepInteraction(
-          currentPathData,
-          currentStepData,
-          currentStep,
-          'jump_to_last',
-          user?.id,
-          user?.type
-        );
-        goToStep(totalSteps - 1);
-        break;
-        
-      case 'escape':
-        // Track tour exit via escape key
-        analytics.trackTourExit(
-          currentPathData,
-          currentStepData,
-          currentStep,
-          'escape_key',
-          user?.id,
-          user?.type
-        );
-        endTour();
-        break;
-        
-      default:
-        // Handle jump navigation
-        if (action.startsWith('jump_forward_')) {
-          const jumpSize = parseInt(action.replace('jump_forward_', ''), 10);
-          
-          if (!isNaN(jumpSize)) {
-            const targetStep = Math.min(currentStep + jumpSize, totalSteps - 1);
-            
-            analytics.trackStepInteraction(
-              currentPathData,
-              currentStepData,
-              currentStep,
-              `jump_forward_${jumpSize}`,
-              user?.id,
-              user?.type
-            );
-            
-            goToStep(targetStep);
-          }
-        } else if (action.startsWith('jump_back_')) {
-          const jumpSize = parseInt(action.replace('jump_back_', ''), 10);
-          
-          if (!isNaN(jumpSize)) {
-            const targetStep = Math.max(currentStep - jumpSize, 0);
-            
-            analytics.trackStepInteraction(
-              currentPathData,
-              currentStepData,
-              currentStep,
-              `jump_back_${jumpSize}`,
-              user?.id,
-              user?.type
-            );
-            
-            goToStep(targetStep);
-          }
-        }
+  const { user } = useAuth();
+  const analytics = useTourAnalytics() as ExtendedAnalytics;
+
+  // Enhanced next step with analytics
+  const nextStep = useCallback(() => {
+    if (!isActive || !currentPathData || !currentStepData) {
+      baseNextStep();
+      return;
     }
-  }, [
-    isActive,
-    currentStep,
-    totalSteps,
-    currentStepData,
-    currentPath,
-    currentPathData,
-    nextStep,
-    prevStep,
-    goToStep,
-    endTour,
-    analytics,
-    user
-  ]);
+
+    // Track interaction
+    analytics.trackInteraction('next', {
+      pathId: currentPathData.id,
+      tourId: currentPathData.id,
+      tourName: currentPathData.name || '',
+      stepId: currentStepData.id,
+      stepIndex: currentStep,
+      totalSteps: totalSteps,
+      userId: user?.id || '',
+      userType: user?.type || ''
+    });
+
+    baseNextStep();
+  }, [isActive, currentPathData, currentStepData, currentStep, totalSteps, baseNextStep, analytics, user?.id, user?.type]);
+
+  // Enhanced previous step with analytics
+  const prevStep = useCallback(() => {
+    if (!isActive || !currentPathData || !currentStepData) {
+      basePrevStep();
+      return;
+    }
+
+    // Track interaction
+    analytics.trackInteraction('prev', {
+      pathId: currentPathData.id,
+      tourId: currentPathData.id,
+      tourName: currentPathData.name || '',
+      stepId: currentStepData.id,
+      stepIndex: currentStep,
+      totalSteps: totalSteps,
+      userId: user?.id || '',
+      userType: user?.type || ''
+    });
+
+    basePrevStep();
+  }, [isActive, currentPathData, currentStepData, currentStep, totalSteps, basePrevStep, analytics, user?.id, user?.type]);
+
+  // Enhanced end tour with analytics
+  const endTour = useCallback(() => {
+    if (!isActive || !currentPathData || !currentStepData) {
+      baseEndTour();
+      return;
+    }
+
+    // Track exit
+    analytics.trackTourExited({
+      pathId: currentPathData.id,
+      tourId: currentPathData.id,
+      tourName: currentPathData.name || '',
+      stepId: currentStepData.id,
+      stepIndex: currentStep,
+      totalSteps: totalSteps,
+      reason: 'user_closed',
+      userId: user?.id || '',
+      userType: user?.type || ''
+    });
+
+    baseEndTour();
+  }, [isActive, currentPathData, currentStepData, currentStep, totalSteps, baseEndTour, analytics, user?.id, user?.type]);
+
+  // Enhanced go to step with analytics
+  const goToStep = useCallback((stepIndex: number) => {
+    if (!isActive || !currentPathData || !currentStepData) {
+      baseGoToStep(stepIndex);
+      return;
+    }
+
+    // Track interaction
+    analytics.trackInteraction('go_to_step', {
+      pathId: currentPathData.id,
+      tourId: currentPathData.id,
+      tourName: currentPathData.name || '',
+      stepId: currentStepData.id,
+      currentStepIndex: currentStep,
+      targetStepIndex: stepIndex,
+      totalSteps: totalSteps,
+      userId: user?.id || '',
+      userType: user?.type || ''
+    });
+
+    baseGoToStep(stepIndex);
+  }, [isActive, currentPathData, currentStepData, currentStep, totalSteps, baseGoToStep, analytics, user?.id, user?.type]);
 
   return {
-    handleNavigationAction
+    nextStep,
+    prevStep,
+    endTour,
+    goToStep,
   };
-}
+};

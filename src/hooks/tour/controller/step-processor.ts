@@ -1,102 +1,50 @@
 
-import { TourStep, TourPath } from '@/contexts/tour/types';
-import { DynamicContentProvider } from '@/hooks/tour/analytics/types';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
- * Filters tour steps based on conditions
- * @param tourPath The tour path to filter steps for
- * @returns Array of visible steps after filtering
+ * Find a tour path by ID
  */
-export const getVisibleSteps = (tourPath: TourPath | undefined): TourStep[] => {
-  if (!tourPath) return [];
-  
-  return tourPath.steps.filter(step => {
-    // If the step has a condition function, evaluate it
-    if (step.condition && typeof step.condition === 'function') {
-      return step.condition();
-    }
-    // If no condition is specified, always show the step
-    return true;
-  });
-};
-
-/**
- * Gets the current step data
- * @param visibleSteps Array of visible steps
- * @param currentStep Current step index
- * @returns The current step data or null
- */
-export const getCurrentStepData = (
-  visibleSteps: TourStep[] | undefined,
-  currentStep: number
-): TourStep | null => {
-  if (!visibleSteps || visibleSteps.length === 0) return null;
-  return visibleSteps[currentStep] || null;
-};
-
-/**
- * Finds a tour path by ID
- * @param tourPaths Available tour paths
- * @param pathId The tour path ID to find
- * @returns The found tour path or undefined
- */
-export const findTourPathById = (
+export function findTourPathById(
   tourPaths: TourPath[],
   pathId: string | null
-): TourPath | undefined => {
+): TourPath | undefined {
   if (!pathId) return undefined;
-  return tourPaths.find((path) => path.id === pathId);
-};
+  return tourPaths.find(path => path.id === pathId);
+}
 
 /**
- * Processes dynamic content for a step
- * @param step The step to process
- * @returns Promise that resolves to the step with processed content
+ * Get current step data
  */
-export const processDynamicContent = async (step: TourStep): Promise<TourStep> => {
-  // Check if step has a dynamic content provider
-  if (step.metadata && step.metadata.dynamicContentProvider) {
-    try {
-      const contentProvider = step.metadata.dynamicContentProvider as DynamicContentProvider;
-      const dynamicContent = await Promise.resolve(contentProvider());
-      
-      return {
-        ...step,
-        content: dynamicContent || step.metadata.originalContent || step.content
-      };
-    } catch (error) {
-      console.error('Error loading dynamic content for step:', step.id, error);
-      // Fall back to original content
-      return {
-        ...step,
-        content: step.metadata?.originalContent || step.content
-      };
-    }
+export function getCurrentStepData(
+  steps: TourStep[] | undefined, 
+  currentStep: number
+): TourStep | null {
+  if (!steps || steps.length === 0) {
+    return null;
   }
   
-  // Return step unchanged if it has no dynamic content
-  return step;
-};
+  return steps[currentStep] || null;
+}
 
 /**
- * Updates a step's content
- * @param steps Array of steps
- * @param stepId ID of step to update
- * @param content New content
- * @returns Updated array of steps
+ * Get visible steps based on conditions
  */
-export const updateStepContent = (
-  steps: TourStep[],
-  stepId: string,
-  content: string
-): TourStep[] => {
-  return steps.map(step => {
-    if (step.id === stepId) {
-      return {
-        ...step,
-        content
-      };
+export function getVisibleSteps(steps: TourStep[], state: any = {}): TourStep[] {
+  return steps.filter(step => {
+    // Skip hidden steps
+    if (step.isHidden) return false;
+    
+    // Evaluate condition if present
+    if (step.condition && !step.condition(state)) {
+      return false;
     }
-    return step;
+    
+    return true;
+  }).sort((a, b) => {
+    // Sort by order if present
+    if (a.order !== undefined && b.order !== undefined) {
+      return a.order - b.order;
+    }
+    return 0;
   });
-};
+}

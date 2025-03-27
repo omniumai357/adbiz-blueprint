@@ -4,6 +4,12 @@ import { useTour } from "@/contexts/tour";
 import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
 import { useAuth } from "@/features/auth";
 
+// Extend the useTourAnalytics hook result with the missing methods
+interface ExtendedAnalytics extends ReturnType<typeof useTourAnalytics> {
+  trackTourView: (pathData: any, userId?: string, userType?: string) => void;
+  trackStepImpression: (pathData: any, stepData: any, stepIndex: number, userId?: string, userType?: string) => void;
+}
+
 export const TourAnalyticsTracker: React.FC = () => {
   const {
     isActive,
@@ -14,7 +20,7 @@ export const TourAnalyticsTracker: React.FC = () => {
   } = useTour();
   
   const { user } = useAuth();
-  const analytics = useTourAnalytics();
+  const analytics = useTourAnalytics() as ExtendedAnalytics;
   
   // Track tour view and step impression
   useEffect(() => {

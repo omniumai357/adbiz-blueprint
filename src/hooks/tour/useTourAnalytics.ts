@@ -42,6 +42,43 @@ export function useTourAnalytics() {
     return clearData();
   }, []);
 
+  /**
+   * Track tour view (when a tour is first displayed)
+   */
+  const trackTourView = useCallback((pathData: any, userId?: string, userType?: string) => {
+    console.log('Tour viewed:', pathData.id, userId, userType);
+    return trackTourStarted({
+      pathId: pathData.id,
+      tourId: pathData.id,
+      tourName: pathData.name || '',
+      userId: userId || '',
+      userType: userType || ''
+    });
+  }, []);
+
+  /**
+   * Track step impression
+   */
+  const trackStepImpression = useCallback((
+    pathData: any, 
+    stepData: any, 
+    stepIndex: number, 
+    userId?: string, 
+    userType?: string
+  ) => {
+    console.log('Step impression:', pathData.id, stepData.id, stepIndex, userId, userType);
+    return trackStepViewed({
+      pathId: pathData.id,
+      tourId: pathData.id,
+      tourName: pathData.name || '',
+      stepId: stepData.id,
+      stepIndex,
+      totalSteps: pathData.steps.length,
+      userId: userId || '',
+      userType: userType || ''
+    });
+  }, []);
+
   return {
     // Event tracking functions
     trackTourStarted,
@@ -51,6 +88,10 @@ export function useTourAnalytics() {
     trackStepSkipped,
     trackInteraction,
     trackStepInteraction,
+    
+    // Additional helper methods
+    trackTourView,
+    trackStepImpression,
     
     // Data management functions
     loadAnalyticsData,

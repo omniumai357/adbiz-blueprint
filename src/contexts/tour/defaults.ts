@@ -7,6 +7,8 @@ export const defaultContext: TourContextType = {
   totalSteps: 0,
   currentStepData: null,
   currentPath: null,
+  currentPathData: undefined,
+  tourPaths: [],
   availablePaths: [],
   
   // Tour navigation
@@ -36,4 +38,8 @@ export const defaultContext: TourContextType = {
   handleKeyNavigation: () => {},
   visibleSteps: [],
   content: "",
+  
+  // Tour paths management
+  setTourPaths: () => {},
+  setVisibleSteps: () => {}
 };

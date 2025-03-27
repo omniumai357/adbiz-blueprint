@@ -5,6 +5,11 @@ import { TourEventListeners } from "../../events/TourEventListeners";
 import { useTourAnalytics } from "@/hooks/tour/useTourAnalytics";
 import { useAuth } from "@/features/auth";
 
+// Extend the useTourAnalytics hook result with the missing methods
+interface ExtendedAnalytics extends ReturnType<typeof useTourAnalytics> {
+  trackTourExited: (data: any) => boolean;
+}
+
 export const TourEventManager: React.FC = () => {
   const {
     isActive,
@@ -18,20 +23,23 @@ export const TourEventManager: React.FC = () => {
   } = useTour();
   
   const { user } = useAuth();
-  const analytics = useTourAnalytics();
+  const analytics = useTourAnalytics() as ExtendedAnalytics;
   
   // Track completion or exit events
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (isActive && currentStepData && currentPathData && currentPath) {
-        analytics.trackTourExit(
-          currentPathData, 
-          currentStepData, 
-          currentStep,
-          "page_unload",
-          user?.id, 
-          user?.type
-        );
+        analytics.trackTourExited({
+          pathId: currentPathData.id,
+          tourId: currentPathData.id,
+          tourName: currentPathData.name || '',
+          stepId: currentStepData.id,
+          stepIndex: currentStep,
+          totalSteps: currentPathData.steps.length,
+          reason: "page_unload",
+          userId: user?.id || '',
+          userType: user?.type || ''
+        });
       }
     };
     

@@ -21,6 +21,7 @@ export interface TourStep {
   condition?: (state: any) => boolean;
   order?: number;
   isHidden?: boolean;
+  elementId?: string;
   elementSelector?: string;
   spotlightPadding?: number;
   nextLabel?: string;
@@ -43,6 +44,61 @@ export interface TourStep {
   };
   onBeforeStep?: (stepIndex: number) => Promise<boolean> | boolean;
   onAfterStep?: (stepIndex: number) => void;
+  // Add missing properties
+  animation?: string | {
+    entry?: string;
+    highlight?: string;
+    exit?: string;
+  };
+  actions?: {
+    next?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    prev?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    skip?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    finish?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+  };
+  a11y?: {
+    description?: string;
+    navigationDescription?: string;
+    focusStrategy?: 'first-interactive' | 'specific-element' | 'none';
+    focusSelector?: string;
+    removeAriaHidden?: boolean;
+    announceOnEnter?: boolean;
+    srOnly?: string;
+  };
+  placement?: string;
+  isOptional?: boolean;
+  dependencies?: string[];
+  triggers?: {
+    event: string;
+    element?: string;
+    condition?: () => boolean;
+    action: () => void;
+  }[];
+  priority?: number;
+  userRoles?: string[];
+  spotlight?: {
+    intensity?: "low" | "medium" | "high"; 
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  floatingUIOptions?: any;
 }
 
 export interface TourPath {
@@ -56,6 +112,22 @@ export interface TourPath {
   useDefaultKeyboardNavigation?: boolean;
   showProgressIndicator?: boolean;
   metadata?: Record<string, any>;
+  // Add missing properties
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  config?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    autoStart?: boolean;
+    completionCallback?: () => void;
+    metadata?: {
+      route?: string;
+      tags?: string[];
+      userRoles?: string[];
+      [key: string]: any;
+    };
+  };
 }
 
 export interface TourDependency {

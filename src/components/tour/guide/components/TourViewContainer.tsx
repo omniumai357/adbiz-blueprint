@@ -56,18 +56,19 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
   if (isMobile) {
     return (
       <TourMobileView
-        title={currentStepData.title || "Tour"}
+        currentStepData={currentStepData}
         content={currentStepData.content || ""}
-        stepInfo={stepInfo}
+        targetElement={targetElement}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
         onNext={nextStep}
         onPrev={currentStep > 0 ? prevStep : undefined}
         onClose={endTour}
-        isLastStep={isLastStep}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        targetElement={targetElement}
-        isRTL={isRTL}
-        direction={direction}
+        highlightAnimation={typeof currentStepData.animation === 'string' ? currentStepData.animation : 'fade-in'}
+        transition={currentStepData.transition}
+        spotlight={currentStepData.spotlight}
+        onShowKeyboardShortcuts={showKeyboardShortcutsHelp}
+        deviceType="mobile"
       />
     );
   }
