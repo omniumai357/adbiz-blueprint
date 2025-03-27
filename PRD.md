@@ -60,54 +60,9 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 ### 3.1 Core Features
 
 #### 3.1.1 Marketing Service Packages
-**Monthly Posting Plans**
-- Basic Plan ($129/month)
-  - 8 Craigslist posts per month
-  - Email support
-  - Basic performance metrics
-  - Single geographic area
-
-- Standard Plan ($199/month)
-  - 15 Craigslist posts per month
-  - 24/7 support via chat and email
-  - Advanced analytics dashboard
-  - A/B testing of ad content
-  - Up to 3 geographic areas
-
-- Premium Plan ($499/month)
-  - 30 Craigslist posts per month
-  - Dedicated account manager
-  - Multi-channel posting (Craigslist + social media)
-  - Competitor analysis reports
-  - Unlimited geographic areas
-  - Weekly performance calls
-
-**Custom SEO-Ad Creation**
-- Tier 1 ($149)
-  - Professional text-only ad
-  - Basic keyword optimization
-  - 1 revision
-  - Delivery within 48 hours
-
-- Tier 2 ($199)
-  - Text + professional image
-  - Enhanced keyword targeting
-  - 2 revisions
-  - Delivery within 48 hours
-
-- Tier 3 ($299)
-  - Advanced text with image overlay
-  - Strategic keyword integration
-  - 3 revisions
-  - Performance analytics
-  - Delivery within 48 hours
-
-- Platinum ($999)
-  - Complete 12-month campaign strategy
-  - Multi-language support (English + second language)
-  - Unlimited revisions
-  - Advanced performance tracking
-  - Quarterly strategy review sessions
+See [Service Packages Specification](src/docs/SERVICE_PACKAGES.md) for detailed information on:
+- Monthly Posting Plans (Basic, Standard, Premium)
+- Custom SEO-Ad Creation (Tier 1-3, Platinum)
 
 #### 3.1.2 User Account Management
 - User registration and authentication
@@ -155,186 +110,46 @@ AdBiz.pro aims to be the leading platform for service businesses to enhance thei
 - Accessibility preference storage and personalization
 
 ### 3.2 Administrative Features
-
-#### 3.2.1 Package Management
-- Create/edit service packages
-- Adjust pricing and features
-- Enable/disable packages
-- Create promotional offers
-
-#### 3.2.2 User Management
-- View and manage user accounts
-- Access control and permissions
-- Customer service tools
-- Communication management
-
-#### 3.2.3 Content Management
-- Ad template creation
-- Content library management
-- Keyword database
-- Geographic targeting options
-
-#### 3.2.4 Reporting
-- System-wide performance metrics
-- Financial reporting
-- Customer acquisition analysis
-- Churn analysis
+See [Admin Features Specification](src/docs/ADMIN_FEATURES.md) for detailed information on:
+- Package Management
+- User Management
+- Content Management
+- Reporting
 
 ### 3.3 Technical Requirements
-
-#### 3.3.1 Platform Architecture
-- React frontend with TypeScript
-- Responsive design using Tailwind CSS
-- RESTful API architecture
-- PostgreSQL database via Supabase
-- Scalable cloud infrastructure
-- AI integration for customer support
-
-#### 3.3.2 Performance Requirements
-- Page load time < 2 seconds
-- API response time < 500ms
-- 99.9% uptime SLA
-- Support for 10,000+ concurrent users
-- AI chatbot response time < 1 second
-
-#### 3.3.3 Security Requirements
-- HTTPS/TLS encryption
-- JWT authentication
-- Role-based access control
-- PCI DSS compliance for payment processing
-- Regular security audits
-- GDPR and CCPA compliance
-
-#### 3.3.4 Integration Requirements
-- Payment gateways (Stripe, PayPal)
-- Email marketing platforms
-- CRM systems
-- Analytics tools
-- Social media platforms
-- Deepseek AI for chatbot functionality
-
-#### 3.3.5 Accessibility Requirements
-- WCAG 2.1 AA compliance throughout the application
-- Full keyboard navigation support
-- Screen reader compatibility
-- Color contrast compliance
-- Alternative text for images
-- Proper form labeling and error handling
-- Configurable focus management system
-- RTL language and layout support
-- Accessibility preference storage
-- Skip-to-content navigation
-- ARIA attributes for complex UI components
+See [Technical Requirements Specification](src/docs/TECHNICAL_REQUIREMENTS.md) for detailed information on:
+- Platform Architecture
+- Performance Requirements
+- Security Requirements
+- Integration Requirements
+- Accessibility Requirements
 
 ## 4. User Interface Requirements
-
-### 4.1 Design Principles
-- Clean, minimalist aesthetic inspired by Apple's design language
-- Intuitive navigation with clear visual hierarchy
-- Consistent design patterns throughout the application
-- Responsive design for all device sizes
-- Accessibility compliance (WCAG 2.1 AA)
-
-### 4.2 Key UI Components
-- Modern, responsive navigation
-- Interactive service selection interface
-- Streamlined checkout process
-- User-friendly file upload system
-- Interactive analytics dashboard
-- Intuitive ad creation wizard
-- Floating AI chatbot widget
-
-### 4.3 User Flows
-- Account creation and onboarding
-- Service package selection and purchase
-- Business questionnaire completion
-- Ad approval and revision process
-- Subscription management
-- Performance review
-- AI chatbot interaction and escalation
+See [UI Requirements Specification](src/docs/UI_REQUIREMENTS.md) for detailed information on:
+- Design Principles
+- Key UI Components
+- User Flows
 
 ## 5. Milestones and Timeline
-
-### 5.1 Phase 1 (MVP) - Q2 2024
-- Core user authentication
-- Basic service package selection
-- Simplified business questionnaire
-- Essential admin functionality
-- Payment processing integration
-
-### 5.2 Phase 2 - Q3 2024
-- Enhanced analytics dashboard
-- Advanced ad creation tools
-- Multi-channel posting capabilities
-- CRM integration
-- Customer portal enhancements
-- AI chatbot initial implementation
-
-### 5.3 Phase 3 - Q4 2024
-- AI-powered ad optimization
-- Advanced reporting features
-- Agency/multi-client management
-- Mobile application
-- API for third-party integrations
-- Enhanced AI support capabilities
-- Advanced accessibility features and focus management system
+See [Project Timeline](src/docs/PROJECT_TIMELINE.md) for detailed information on:
+- Phase 1 (MVP) - Q2 2024
+- Phase 2 - Q3 2024
+- Phase 3 - Q4 2024
 
 ## 6. Success Metrics
-
-### 6.1 Business Metrics
-- Monthly recurring revenue (MRR)
-- Customer acquisition cost (CAC)
-- Customer lifetime value (CLV)
-- Churn rate
-- Expansion revenue
-- Support ticket reduction via AI chatbot
-
-### 6.2 User Engagement Metrics
-- Active users (daily, weekly, monthly)
-- Session duration
-- Feature adoption rate
-- Conversion rate
-- Net Promoter Score (NPS)
-- Chatbot satisfaction rating
-- Accessibility score improvements
-
-### 6.3 Performance Metrics
-- Ad campaign effectiveness
-- Customer satisfaction ratings
-- Support resolution time
-- Platform uptime
-- System performance
-- AI chatbot accuracy and resolution rate
-- Keyboard navigation efficiency
-- Screen reader compatibility score
+See [Success Metrics Specification](src/docs/SUCCESS_METRICS.md) for detailed information on:
+- Business Metrics
+- User Engagement Metrics
+- Performance Metrics
 
 ## 7. Appendices
-
-### 7.1 Competitor Analysis
-Detailed competitive landscape analysis including strengths, weaknesses, and market positioning of key competitors.
-
-### 7.2 Market Research
-Summary of market research findings, target audience insights, and industry trends.
-
-### 7.3 Technical Architecture Diagram
-Comprehensive system architecture diagram illustrating the relationships between different components.
-
-### 7.4 UI/UX Mockups and Prototypes
-High-fidelity mockups and interactive prototypes of key user interfaces and flows.
-
-### 7.5 AI Chatbot Implementation Details
-Technical specifications for the Deepseek Coder-based chatbot implementation, including system requirements, API integration, and deployment options.
-
-### 7.6 Accessibility Implementation Guide
-- Focus management system architecture and configuration
-- Keyboard navigation patterns and shortcuts
-- Screen reader optimization techniques
-- RTL language support implementation
-- ARIA live region management
-- Focus trap and restoration patterns
-- Visual focus indicator customization
-- Skip navigation implementation
-- Accessibility preference management
+For additional information, refer to:
+- [Competitor Analysis](src/docs/appendices/COMPETITOR_ANALYSIS.md)
+- [Market Research](src/docs/appendices/MARKET_RESEARCH.md)
+- [Technical Architecture Diagram](src/docs/appendices/TECHNICAL_ARCHITECTURE.md)
+- [UI/UX Mockups](src/docs/appendices/UI_UX_MOCKUPS.md)
+- [AI Chatbot Implementation](src/docs/appendices/AI_CHATBOT.md)
+- [Accessibility Implementation Guide](src/docs/appendices/ACCESSIBILITY_GUIDE.md)
 
 ---
 
