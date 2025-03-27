@@ -1,7 +1,7 @@
 
 // Export core functionality
 export * from './core/paths/createTourPath';
-// Import from core/paths/index.ts which has the renamed export
+// Rename the export to avoid conflict
 export { createTourPathFromGroups } from './core/paths';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';
