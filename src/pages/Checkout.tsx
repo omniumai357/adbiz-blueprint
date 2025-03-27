@@ -10,6 +10,9 @@ import { PackageDetails } from "@/types/checkout";
 import { useCheckoutConsolidated } from "@/hooks/checkout/useCheckoutConsolidated";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useParams } from "react-router-dom";
+import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
+import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 /**
  * Checkout Page Component
@@ -94,8 +97,13 @@ const Checkout = () => {
             packageName={packageDetails.title} 
             packagePrice={packageDetails.price}
             selectedAddOns={checkout.addOns.selectedItems}
-            appliedDiscount={checkout.discounts.bundle.info}
-            tieredDiscount={checkout.discounts.tiered.info}
+            appliedDiscount={checkout.discounts.bundle.info as BundleDiscountInfo}
+            tieredDiscount={checkout.discounts.tiered.info as {
+              id: string;
+              name: string;
+              discountAmount: number;
+              firstPurchaseBonus?: number;
+            }}
             isFirstPurchase={checkout.discounts.tiered.isFirstPurchase}
             bundleDiscountAmount={checkout.discounts.bundle.amount}
             tieredDiscountAmount={checkout.discounts.tiered.amount}
@@ -103,11 +111,11 @@ const Checkout = () => {
             totalDiscountAmount={checkout.discounts.total}
             invoiceNumber={checkout.invoiceNumber}
             isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
-            limitedTimeOffer={checkout.discounts.offers.available ?? undefined}
+            limitedTimeOffer={checkout.discounts.offers.available as LimitedTimeOfferInfo}
             offerDiscountAmount={checkout.discounts.offers.amount}
-            appliedCoupon={checkout.discounts.coupons.applied ?? undefined}
+            appliedCoupon={checkout.discounts.coupons.applied}
             couponDiscountAmount={checkout.discounts.coupons.amount}
-            appliedMilestoneReward={checkout.discounts.rewards.applied}
+            appliedMilestoneReward={checkout.discounts.rewards.applied as UserMilestone}
             milestoneRewardAmount={checkout.discounts.rewards.amount}
           />
           

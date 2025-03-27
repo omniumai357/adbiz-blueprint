@@ -6,16 +6,17 @@ import { Sparkles } from "lucide-react";
 
 interface OrderTotalProps {
   subtotal: number;
+  discount?: number;
   totalDiscountAmount: number;
   total: number;
-  showSpecialOffer: boolean;
+  showSpecialOffer?: boolean;
 }
 
 const OrderTotal = ({ 
   subtotal, 
   totalDiscountAmount, 
   total,
-  showSpecialOffer
+  showSpecialOffer = false
 }: OrderTotalProps) => {
   return (
     <>

@@ -7,8 +7,8 @@ import { formatCurrency } from "@/lib/utils/format-utils";
 export interface AddOnItem {
   id: string;
   name: string;
-  description: string;
   price: number;
+  description?: string;
   popular?: boolean;
   valueProposition?: string;
 }
@@ -51,7 +51,9 @@ const AddOnItem = ({ item, selected, onToggle }: AddOnItemProps) => {
             <span className="font-medium">{formatCurrency(item.price)}</span>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+        {item.description && (
+          <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+        )}
         {item.valueProposition && (
           <div className="mt-2 text-xs flex items-center text-primary">
             <DollarSign className="h-3 w-3 mr-1" />

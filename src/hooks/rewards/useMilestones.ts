@@ -1,104 +1,94 @@
-
 import { useState, useEffect } from "react";
-import { milestoneService } from "@/services/milestone/milestone-service";
-import { UserMilestone, MilestoneProgress, AvailableReward } from '@/types/api';
+import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Hook for managing user milestones and rewards
- * 
- * Provides functionality to:
- * - Fetch all active milestones in the system
- * - Track user progress toward milestones
- * - Manage available rewards
- * - Claim rewards
- * 
- * @param userId - The ID of the user whose milestones to manage
- * @returns Object containing milestone data, rewards, and functions to interact with them
- */
-export function useMilestones(userId: string | null | undefined) {
-  const [milestones, setMilestones] = useState<UserMilestone[]>([]);
-  const [availableRewards, setAvailableRewards] = useState<AvailableReward[]>([]);
-  const [progress, setProgress] = useState<MilestoneProgress[]>([]);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [isClaimingReward, setIsClaimingReward] = useState(false);
-
-  /**
-   * Fetches all milestone data for the user
-   */
-  const fetchData = async () => {
-    if (!userId) return;
-    setIsLoading(true);
-    
-    try {
-      // Use Promise.all to fetch all data in parallel for better performance
-      const [milestonesData, progressData, rewardsData, pointsTotal] = await Promise.all([
-        milestoneService.getUserMilestones(userId),
-        milestoneService.getUserMilestoneProgress(userId),
-        milestoneService.getAvailableRewards(userId),
-        milestoneService.calculateTotalPoints(userId)
-      ]);
-      
-      setMilestones(milestonesData);
-      setProgress(progressData);
-      setAvailableRewards(rewardsData);
-      setTotalPoints(pointsTotal);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching milestone data:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error fetching milestone data'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Claims a reward for the user
-   */
-  const claimReward = async (milestoneId: string) => {
-    if (!userId) return false;
-    setIsClaimingReward(true);
-    
-    try {
-      const success = await milestoneService.claimReward(userId, milestoneId);
-      if (success) {
-        // Refresh data after successful claim
-        await fetchData();
-        return true;
-      }
-      return false;
-    } catch (err) {
-      console.error('Error claiming reward:', err);
-      return false;
-    } finally {
-      setIsClaimingReward(false);
-    }
-  };
-
-  // Load all data when component mounts or userId changes
-  useEffect(() => {
-    fetchData();
-  }, [userId]);
-
-  // Filter milestones into active/completed
-  const activeMilestones = milestones.filter(milestone => !milestone.is_completed);
-  const completedMilestones = milestones.filter(milestone => milestone.is_completed);
-
-  return {
-    milestones,
-    progress,
-    activeMilestones,
-    completedMilestones,
-    availableRewards,
-    totalPoints,
-    isLoading,
-    error,
-    claimReward,
-    isClaimingReward,
-    refreshData: fetchData
-  };
+export interface UserMilestone {
+  id: string;
+  user_id: string;
+  milestone_id: string;
+  milestone_name: string;
+  current_points: number;
+  points_target: number;
+  is_completed: boolean;
+  reward_claimed: boolean;
+  reward_type: string;
+  reward_value: number;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+  name?: string; // For backward compatibility
+  discount?: number; // For backward compatibility
 }
 
-// Export the types for use in other components
-export type { UserMilestone, MilestoneProgress, AvailableReward };
+/**
+ * Hook to manage milestone rewards for a user.
+ * Fetches available milestones and handles reward application.
+ * 
+ * @param userId The current user's ID
+ * @param total The current order total
+ * @returns Object containing milestone state and handlers
+ */
+export function useMilestoneRewards(userId: string | undefined, total: number) {
+  const [availableMilestones, setAvailableMilestones] = useState<UserMilestone[]>([]);
+  const [appliedMilestoneReward, setAppliedMilestoneReward] = useState<UserMilestone | null>(null);
+  const [milestoneRewardAmount, setMilestoneRewardAmount] = useState<number>(0);
+
+  // Fetch available milestones for the user
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      if (!userId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from<UserMilestone>('user_milestones')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_completed', true)
+          .eq('reward_claimed', false);
+
+        if (error) {
+          console.error("Error fetching milestones:", error);
+          return;
+        }
+
+        setAvailableMilestones(data || []);
+      } catch (error) {
+        console.error("Error fetching milestones:", error);
+      }
+    };
+
+    fetchMilestones();
+  }, [userId]);
+
+  // Apply a milestone reward
+  const handleMilestoneRewardApplied = (reward: UserMilestone) => {
+    setAppliedMilestoneReward(reward);
+  };
+
+  // Calculate milestone reward amount
+  const calculateMilestoneRewardAmount = (subtotal: number) => {
+    if (appliedMilestoneReward) {
+      return subtotal * (appliedMilestoneReward.reward_value / 100);
+    }
+    return 0;
+  };
+
+  // Award milestone points
+  const awardMilestonePoints = async (orderId: string, orderTotal: number) => {
+    if (!userId) return;
+
+    try {
+      // Simulate awarding points (replace with actual logic)
+      console.log(`Awarding ${orderTotal} points to user ${userId} for order ${orderId}`);
+    } catch (error) {
+      console.error("Error awarding milestone points:", error);
+    }
+  };
+
+  return {
+    availableMilestones,
+    appliedMilestoneReward,
+    handleMilestoneRewardApplied,
+    calculateMilestoneRewardAmount,
+    awardMilestonePoints,
+  };
+}

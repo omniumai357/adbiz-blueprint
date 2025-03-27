@@ -7,23 +7,32 @@ import DiscountsSection from "./discounts-section";
 import OrderTotal from "./order-total";
 import { useDevice } from "@/hooks/use-device";
 import { logger } from "@/utils/logger";
+import { AddOnItem } from "../add-on-item";
+import { BundleDiscountInfo } from "../bundle-discount";
+import { LimitedTimeOfferInfo } from "../limited-time-offer";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface OrderSummaryProps {
   packageName: string;
   packagePrice: number;
-  selectedAddOns?: Array<{ id: string; name: string; price: number }>;
-  appliedDiscount?: string | null;
+  selectedAddOns?: AddOnItem[];
+  appliedDiscount?: BundleDiscountInfo | null;
   bundleDiscountAmount?: number;
-  tieredDiscount?: string | null;
+  tieredDiscount?: {
+    id: string;
+    name: string;
+    discountAmount: number;
+    firstPurchaseBonus?: number;
+  } | null;
   isFirstPurchase?: boolean;
   tieredDiscountAmount?: number;
   loyaltyBonusAmount?: number;
   isLoyaltyProgramEnabled?: boolean;
-  limitedTimeOffer?: { name: string; discount: number; expiresAt: string } | null;
+  limitedTimeOffer?: LimitedTimeOfferInfo | null;
   offerDiscountAmount?: number;
   appliedCoupon?: { code: string; discount: number } | null;
   couponDiscountAmount?: number;
-  appliedMilestoneReward?: { id: string; name: string; discount: number } | null;
+  appliedMilestoneReward?: UserMilestone | null;
   milestoneRewardAmount?: number;
   totalDiscountAmount?: number;
   invoiceNumber?: string | null;
@@ -55,11 +64,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   
   logger.debug('Rendering OrderSummary component', {
     context: 'OrderSummary',
-    data: {
-      packageName,
-      totalDiscount: totalDiscountAmount,
-      deviceType: isMobile ? 'mobile' : isDesktop ? 'desktop' : 'tablet'
-    }
+    packageName,
+    totalDiscount: totalDiscountAmount,
+    deviceType: isMobile ? 'mobile' : isDesktop ? 'desktop' : 'tablet'
   });
 
   if (isLoading) {
@@ -89,12 +96,18 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   
   // Calculate final total after all discounts
   const total = Math.max(0, subtotal - (totalDiscountAmount || 0));
+  
+  // Calculate savings percentage for the header
+  const savingsPercentage = subtotal > 0 
+    ? Math.round((totalDiscountAmount / subtotal) * 100) 
+    : 0;
 
   return (
     <div className="bg-card rounded-lg border shadow-sm p-4 lg:p-6 mb-8">
       <OrderSummaryHeader 
         packageName={packageName} 
         invoiceNumber={invoiceNumber}
+        savingsPercentage={savingsPercentage > 0 ? savingsPercentage : undefined}
       />
       
       <div className={`space-y-6 ${isMobile ? 'pt-3' : 'pt-4'}`}>
@@ -106,27 +119,28 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         
         {hasAnyDiscount && (
           <DiscountsSection 
-            appliedDiscount={appliedDiscount}
+            showDiscounts={hasAnyDiscount}
+            appliedDiscount={appliedDiscount || undefined}
             bundleDiscountAmount={bundleDiscountAmount}
-            tieredDiscount={tieredDiscount}
+            tieredDiscount={tieredDiscount || undefined}
             isFirstPurchase={isFirstPurchase}
             tieredDiscountAmount={tieredDiscountAmount}
             loyaltyBonusAmount={loyaltyBonusAmount}
             isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
-            limitedTimeOffer={limitedTimeOffer}
+            limitedTimeOffer={limitedTimeOffer || undefined}
             offerDiscountAmount={offerDiscountAmount}
-            appliedCoupon={appliedCoupon}
+            appliedCoupon={appliedCoupon || undefined}
             couponDiscountAmount={couponDiscountAmount}
-            appliedMilestoneReward={appliedMilestoneReward}
+            appliedMilestoneReward={appliedMilestoneReward || undefined}
             milestoneRewardAmount={milestoneRewardAmount}
-            totalDiscountAmount={totalDiscountAmount}
           />
         )}
         
         <OrderTotal 
           subtotal={subtotal}
-          discount={totalDiscountAmount}
+          totalDiscountAmount={totalDiscountAmount}
           total={total}
+          showSpecialOffer={offerDiscountAmount > 0 || (appliedMilestoneReward !== null && milestoneRewardAmount > 0)}
         />
       </div>
     </div>

@@ -66,6 +66,11 @@ const logSymbols = {
   [LogLevel.DEBUG]: '🔍'
 };
 
+// Flexible data object type for logging
+export interface LogData {
+  [key: string]: any;
+}
+
 /**
  * Format log message with context and level
  */
@@ -81,136 +86,87 @@ const formatLogMessage = (level: LogLevel, message: string, context?: string): s
     ? `[${context.padEnd(config.contextPadding)}]` 
     : ''.padEnd(config.contextPadding + 2);
   
-  const timestamp = new Date().toISOString().split('T')[1].split('Z')[0];
-  return `${timestamp} ${logSymbols[level]} ${level.toUpperCase().padEnd(5)} ${contextStr} ${message}`;
+  const timestamp = new Date().toISOString().split('T')[1].slice(0, 8);
+  return `${timestamp} ${logSymbols[level]} ${contextStr} ${message}`;
 };
 
 /**
- * Log a message with the specified level if the level is enabled
+ * Generic logging function with context and data support
  */
-const log = (level: LogLevel, message: string, options: { context?: string; data?: any } = {}) => {
-  if (!config.enabled) return;
-  
-  // Only log if the level priority is less than or equal to the minimum level priority
-  if (logLevelPriority[level] <= logLevelPriority[config.minLevel]) {
-    const { context, data } = options;
-    
-    // Format the message
+export function log(level: LogLevel, message: string, data?: LogData | string | Error) {
+  if (logLevelPriority[level] > logLevelPriority[config.minLevel] || !config.enabled) {
+    return;
+  }
+
+  if (!data) {
+    logMethods[level](formatLogMessage(level, message));
+    return;
+  }
+
+  // Handle different data types
+  if (typeof data === 'string') {
+    logMethods[level](formatLogMessage(level, message), data);
+  } else if (data instanceof Error) {
+    logMethods[level](formatLogMessage(level, message), data);
+  } else {
+    // Extract context from data object if it exists
+    const { context, ...restData } = data as LogData & { context?: string };
     const formattedMessage = formatLogMessage(level, message, context);
     
-    // Log with appropriate console method
-    if (data) {
-      logMethods[level](formattedMessage, data);
+    // If there are other data properties, log them
+    const hasData = Object.keys(restData).length > 0;
+    
+    if (hasData) {
+      logMethods[level](formattedMessage, restData);
     } else {
       logMethods[level](formattedMessage);
     }
   }
-};
+}
 
 /**
- * Configure the logger
+ * Main logger object with methods for different log levels
  */
-export const configureLogger = (newConfig: Partial<LoggerConfig>) => {
-  config = { ...config, ...newConfig };
-};
-
-/**
- * Enable or disable the logger
- */
-export const enableLogger = (enabled: boolean) => {
-  config.enabled = enabled;
-};
-
-/**
- * Set the minimum log level
- */
-export const setLogLevel = (level: LogLevel) => {
-  config.minLevel = level;
-};
-
-/**
- * Format error details for consistent error logging
- */
-export const formatErrorDetails = (error: unknown): Record<string, any> => {
-  if (error instanceof Error) {
-    return {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      ...(error as any).code && { code: (error as any).code },
-      ...(error as any).statusCode && { statusCode: (error as any).statusCode },
-    };
-  }
-  
-  return { raw: String(error) };
-};
-
-/**
- * Create a component-specific logger with a predefined context
- */
-export const createComponentLogger = (component: string) => {
-  return {
-    error: (message: string, data?: any) => log(LogLevel.ERROR, message, { context: component, data }),
-    warn: (message: string, data?: any) => log(LogLevel.WARN, message, { context: component, data }),
-    info: (message: string, data?: any) => log(LogLevel.INFO, message, { context: component, data }),
-    debug: (message: string, data?: any) => log(LogLevel.DEBUG, message, { context: component, data })
-  };
-};
-
-/**
- * Create a performance logger for timing operations
- */
-export const createPerformanceLogger = (operationName: string, context?: string) => {
-  let startTime: number;
-  
-  return {
-    start: () => {
-      startTime = performance.now();
-      log(LogLevel.DEBUG, `⏱️ Starting ${operationName}`, { context });
-    },
-    end: () => {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      log(LogLevel.DEBUG, `⏱️ ${operationName} completed in ${duration.toFixed(2)}ms`, { context });
-      return duration;
-    }
-  };
-};
-
-// Expose log methods with consistent interface
 export const logger = {
-  error: (message: string, options?: { context?: string; data?: any }) => 
-    log(LogLevel.ERROR, message, options),
-  warn: (message: string, options?: { context?: string; data?: any }) => 
-    log(LogLevel.WARN, message, options),
-  info: (message: string, options?: { context?: string; data?: any }) => 
-    log(LogLevel.INFO, message, options),
-  debug: (message: string, options?: { context?: string; data?: any }) => 
-    log(LogLevel.DEBUG, message, options),
+  error: (message: string, data?: LogData | string | Error) => log(LogLevel.ERROR, message, data),
+  warn: (message: string, data?: LogData | string | Error) => log(LogLevel.WARN, message, data),
+  info: (message: string, data?: LogData | string | Error) => log(LogLevel.INFO, message, data),
+  debug: (message: string, data?: LogData | string | Error) => log(LogLevel.DEBUG, message, data),
   
-  // Special method for critical errors that should always be logged
-  critical: (message: string, error?: Error, additionalData?: any) => {
-    // Always log critical errors regardless of level
-    console.error(`CRITICAL: ${message}`, error, additionalData);
-    
-    // In production, you could send to an error reporting service here
-    if (isProduction) {
-      // Example: errorReportingService.report(message, error, additionalData);
-    }
-  },
-  
-  // Helper factory methods
-  createComponentLogger,
-  createPerformanceLogger
+  /**
+   * Create a context-specific logger
+   */
+  createContextLogger: (defaultContext: string) => ({
+    error: (message: string, data?: LogData) => 
+      log(LogLevel.ERROR, message, { context: defaultContext, ...data }),
+    warn: (message: string, data?: LogData) => 
+      log(LogLevel.WARN, message, { context: defaultContext, ...data }),
+    info: (message: string, data?: LogData) => 
+      log(LogLevel.INFO, message, { context: defaultContext, ...data }),
+    debug: (message: string, data?: LogData) => 
+      log(LogLevel.DEBUG, message, { context: defaultContext, ...data }),
+  }),
 };
 
-// Development helpers
-if (isDevelopment) {
-  // Expose configuration in development for easier debugging
-  (window as any).__loggerConfig = {
-    getConfig: () => ({ ...config }),
-    setConfig: configureLogger,
-    enableLogs: enableLogger,
-    setLevel: setLogLevel
-  };
+// Utility for performance logging
+export function logPerformance(operationName: string, fn: () => any) {
+  const start = performance.now();
+  const result = fn();
+  const duration = performance.now() - start;
+  logger.debug(`Operation "${operationName}" took ${duration.toFixed(2)}ms`, { 
+    context: 'Performance', 
+    duration, 
+    operation: operationName 
+  });
+  return result;
+}
+
+// Enable or disable all logging
+export function setLoggingEnabled(enabled: boolean) {
+  config.enabled = enabled;
+}
+
+// Set the minimum log level
+export function setMinLogLevel(level: LogLevel) {
+  config.minLevel = level;
 }

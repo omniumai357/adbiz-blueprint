@@ -14,6 +14,7 @@ interface DiscountsSectionProps {
   offerDiscountAmount?: number;
   appliedCoupon?: {
     code: string;
+    discount?: number;
     description?: string;
   };
   couponDiscountAmount?: number;
@@ -22,7 +23,7 @@ interface DiscountsSectionProps {
   tieredDiscount?: {
     id: string;
     name: string;
-    discountAmount: number;
+    discountAmount?: number;
     firstPurchaseBonus?: number;
   } | null;
   isFirstPurchase?: boolean;
@@ -118,7 +119,7 @@ const DiscountsSection = ({
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span>{appliedMilestoneReward.milestone_name} Reward</span>
+              <span>{appliedMilestoneReward.milestone_name || appliedMilestoneReward.name} Reward</span>
               <Badge variant="default" className="text-xs">
                 Milestone
               </Badge>
