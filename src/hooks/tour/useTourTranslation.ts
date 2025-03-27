@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '@/contexts/language-context';
@@ -51,24 +50,27 @@ export function useTourTranslation() {
     if (keys?.actions) {
       translatedStep.actions = translatedStep.actions || {};
       
-      if (keys.actions.next) {
+      if (step?.actions?.next?.text) {
+        const nextLabel = t(step.actions.next.text, step.actions.next.text);
         translatedStep.actions.next = translatedStep.actions.next || {};
-        translatedStep.actions.next.label = t(keys.actions.next);
+        translatedStep.actions.next.text = nextLabel;
       }
       
-      if (keys.actions.prev) {
+      if (step?.actions?.prev?.text) {
+        const prevLabel = t(step.actions.prev.text, step.actions.prev.text);
         translatedStep.actions.prev = translatedStep.actions.prev || {};
-        translatedStep.actions.prev.label = t(keys.actions.prev);
+        translatedStep.actions.prev.text = prevLabel;
       }
       
-      if (keys.actions.skip) {
+      if (step?.actions?.skip?.text) {
+        const skipLabel = t(step.actions.skip.text, step.actions.skip.text);
         translatedStep.actions.skip = translatedStep.actions.skip || {};
-        translatedStep.actions.skip.label = t(keys.actions.skip);
+        translatedStep.actions.skip.text = skipLabel;
       }
       
       if (keys.actions.finish && translatedStep.actions) {
         translatedStep.actions.finish = translatedStep.actions.finish || {};
-        translatedStep.actions.finish.label = t(keys.actions.finish);
+        translatedStep.actions.finish.text = t(keys.actions.finish);
       }
     }
     

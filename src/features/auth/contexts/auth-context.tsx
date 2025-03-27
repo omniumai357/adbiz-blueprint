@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,16 +54,16 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Computed property for easier auth status checks
   const isAuthenticated = !!user;
 
+  // Fixed return type to Promise<void>
   const logout = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error signing out:', error);
-      // Handle error if needed
     } else {
       setUser(null);
       setSession(null);
     }
-    // Don't return anything - void return type
+    // No return value
   };
 
   return (

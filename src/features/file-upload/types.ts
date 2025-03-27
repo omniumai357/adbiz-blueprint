@@ -8,6 +8,7 @@ export interface FileItem {
   url?: string;
 }
 
+// Update the FileState interface to include all required properties
 export interface FileState {
   identity: FileItem[];
   business: FileItem[];

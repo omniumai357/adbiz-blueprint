@@ -26,8 +26,8 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   onFileChange,
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
-  const maxFileSize = getMaxFileSize(fileType);
-  const readableFormats = getReadableFileFormats(fileType);
+  const maxFileSize = getMaxFileSize(String(fileType)); // Convert keyof FileState to string safely
+  const readableFormats = getReadableFileFormats(String(fileType)); // Convert keyof FileState to string safely
   
   return (
     <div className="space-y-4">
@@ -43,12 +43,12 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
               type="button"
               variant="outline"
               className="relative"
-              onClick={() => document.getElementById(`${fileType}-upload`)?.click()}
+              onClick={() => document.getElementById(`${String(fileType)}-upload`)?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
               Select {title}
               <input
-                id={`${fileType}-upload`}
+                id={`${String(fileType)}-upload`}
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 accept={acceptFormats}
@@ -71,7 +71,7 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
           <FilePreviewGrid
             files={files}
             fileType={fileType}
-            emptyMessage={`No ${fileType} uploaded yet`}
+            emptyMessage={`No ${String(fileType)} uploaded yet`}
           />
         )}
       </div>

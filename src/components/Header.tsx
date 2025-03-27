@@ -14,9 +14,9 @@ const Header: React.FC = () => {
   
   const { user, signOut } = useAuth();
 
-  // Safe access to user properties with proper type handling
-  const userImage = user?.user_metadata?.image || user?.user_metadata?.avatar_url || '';
-  const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  // Safe access to user properties without using user_metadata
+  const userImage = user?.avatar_url || '';
+  const userName = user?.name || user?.email?.split('@')[0] || '';
 
   return (
     <header className="bg-white shadow">

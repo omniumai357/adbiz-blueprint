@@ -1,4 +1,3 @@
-
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useQuestionnaireSubmit } from "@/hooks/useQuestionnaireSubmit";
@@ -122,7 +121,13 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   };
   
   const onSubmit = async (data: QuestionnaireFormValues) => {
-    const success = await submitQuestionnaire(data, files, uploadFiles);
+    const compatibleFiles: FileState = {
+      ...files,
+      identity: [],
+      business: [],
+      additional: []
+    };
+    const success = await submitQuestionnaire(data, compatibleFiles, uploadFiles);
     
     if (success && onComplete) {
       onComplete({

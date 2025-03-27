@@ -1,8 +1,8 @@
-
 import { useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { loadTourPath } from '../tour-loader';
 import { getVisibleSteps } from '../step-processor';
+import { getTourPathSteps } from './tour-path-utils';
 
 /**
  * Load tour paths for a given route

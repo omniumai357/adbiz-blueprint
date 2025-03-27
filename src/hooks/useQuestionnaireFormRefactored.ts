@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
@@ -174,10 +173,17 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
     // Convert files to the expected format for the questionnaire submit function
     const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
     
+    // Add the missing properties to make the adaptedFiles compatible with FileState
+    const compatibleFiles: FileState = {
+      ...adaptedFiles,
+      identity: [],
+      business: [],
+      additional: []
+    };
+    
     // Then submit questionnaire data
-    // Modified to use a function that returns a Promise<boolean> instead of a boolean directly
     const uploadFilesPromise = () => Promise.resolve(filesUploaded);
-    const success = await submitQuestionnaire(data, adaptedFiles, uploadFilesPromise);
+    const success = await submitQuestionnaire(data, compatibleFiles, uploadFilesPromise);
     
     if (success && onComplete) {
       onComplete({

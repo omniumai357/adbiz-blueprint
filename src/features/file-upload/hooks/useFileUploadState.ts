@@ -6,7 +6,7 @@ import { FileState, FileItem } from '../types';
  * Hook for managing file upload state
  */
 export const useFileUploadState = () => {
-  // Fix the initial state to match the FileState interface
+  // Fix the initial state to match the FileState interface with empty arrays
   const [files, setFiles] = useState<FileState>({
     identity: [],
     business: [],
@@ -36,9 +36,12 @@ export const useFileUploadState = () => {
           progress: 0
         };
         
+        // Ensure we're working with an array type
+        const currentFiles = Array.isArray(prev[type]) ? prev[type] as FileItem[] : [];
+        
         return { 
           ...prev, 
-          [type]: [...(prev[type] as FileItem[]), newFileItem] 
+          [type]: [...currentFiles, newFileItem] 
         };
       }
     });
@@ -49,7 +52,9 @@ export const useFileUploadState = () => {
       if (type === 'logo') {
         return { ...prev, [type]: null };
       } else if (index !== undefined) {
-        const newFiles = [...(prev[type] as FileItem[])];
+        // Ensure we're working with an array type
+        const currentFiles = Array.isArray(prev[type]) ? prev[type] as FileItem[] : [];
+        const newFiles = [...currentFiles];
         newFiles.splice(index, 1);
         return { ...prev, [type]: newFiles };
       }

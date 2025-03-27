@@ -15,7 +15,7 @@ export const useFileUploadProgress = () => {
   const updateProgress = useCallback((key: string, name: string, progress: number) => {
     setUploadProgress(prev => ({
       ...prev,
-      [key]: { name, progress }
+      [key]: { fileName: name, progress } // Fixed to use fileName instead of name
     }));
   }, []);
 

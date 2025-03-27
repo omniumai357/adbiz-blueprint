@@ -1,96 +1,88 @@
 
-import { ChangeEvent } from 'react';
-import { FileState } from '@/features/file-upload/types';
-import { validateFiles } from '@/utils/file-validation';
-import { useToast } from '@/hooks/ui/use-toast';
-import { fileAdapter } from '@/utils/file-adapter';
+import { useState, useCallback } from 'react';
+import { useFileUploadContext } from '@/contexts/file-upload-context';
+import { FileState, FileItem } from '@/features/file-upload/types';
 
-export interface UseFileUploadHandlersProps {
-  files: FileState;
-  setFiles: (files: FileState) => void;
-  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
+export interface UploadHandlersResult {
+  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveFile: (fileId: string) => void;
+  uploadFile: (file: File, metadata?: Record<string, any>) => Promise<any>;
+  uploadFiles: (files: FileList | File[], metadata?: Record<string, any>) => Promise<any[]>;
 }
 
-/**
- * Hook for handling file upload operations like adding and removing files
- */
-const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploadHandlersProps) => {
-  const { toast } = useToast();
+export const useFileUploadHandlers = (): UploadHandlersResult => {
+  const { files, handleFileChange: contextHandleFileChange, onRemoveFile: contextRemoveFile } = useFileUploadContext();
+  const [activeUploads, setActiveUploads] = useState<Record<string, boolean>>({});
 
-  /**
-   * Handle file input change
-   * @param fileType - Type of file being uploaded (logo, images, videos, documents)
-   * @param event - File input change event or File array
-   */
-  const handleFileChange = (
-    fileType: keyof FileState,
-    event: ChangeEvent<HTMLInputElement> | readonly File[]
-  ) => {
-    let selectedFiles: File[] = [];
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     
-    // Handle both File array and input change event
-    if (Array.isArray(event)) {
-      selectedFiles = [...event];
+    // Use the file input event directly with the context
+    contextHandleFileChange('images', e);
+    
+    // Reset the input value to allow uploading the same file again
+    e.target.value = '';
+  }, [contextHandleFileChange]);
+
+  const uploadFile = useCallback(async (file: File, metadata?: Record<string, any>): Promise<any> => {
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    
+    // Add file to tracked uploads
+    setActiveUploads(prev => ({ ...prev, [fileId]: true }));
+    
+    try {
+      // Simulate upload progress
+      await simulateFileUpload();
+      
+      return { id: fileId, file, status: 'uploaded' };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { id: fileId, file, status: 'error', error: errorMessage };
+    } finally {
+      setActiveUploads(prev => {
+        const newState = { ...prev };
+        delete newState[fileId];
+        return newState;
+      });
+    }
+  }, []);
+
+  const uploadFiles = useCallback(async (files: FileList | File[], metadata?: Record<string, any>): Promise<any[]> => {
+    const fileArray = Array.from(files);
+    const promises = fileArray.map(file => uploadFile(file, metadata));
+    return Promise.all(promises);
+  }, [uploadFile]);
+
+  const onRemoveFile = useCallback((fileId: string) => {
+    // Convert fileId to keyof FileState or number
+    if (fileId === 'logo' || fileId === 'images' || fileId === 'videos' || fileId === 'documents' || 
+        fileId === 'identity' || fileId === 'business' || fileId === 'additional') {
+      // It's a file type
+      contextRemoveFile(fileId as keyof FileState);
     } else {
-      // TypeScript type narrowing - at this point event must be a ChangeEvent
-      const inputEvent = event as ChangeEvent<HTMLInputElement>;
-      const files = inputEvent.target.files;
-      if (files) {
-        selectedFiles = Array.from(files);
+      // Try to handle as an index
+      const index = parseInt(fileId, 10);
+      if (!isNaN(index)) {
+        // Need to know which collection - assume images as default
+        contextRemoveFile('images', index);
       }
     }
-    
-    if (selectedFiles.length === 0) return;
-    
-    // Validate file types
-    const { validFiles, hasInvalidFiles } = validateFiles(selectedFiles, fileAdapter.fileTypeToString(fileType));
-    
-    if (hasInvalidFiles) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: `Some files were not added because they are not supported for ${fileType}.`,
-      });
-    }
-    
-    // Special handling for logo (single file)
-    if (fileType === 'logo') {
-      if (validFiles.length > 0) {
-        const logoFile = validFiles[0];
-        setFiles({ ...files, logo: logoFile });
-      }
-      return;
-    }
-    
-    // Handle multiple files (images, videos, documents)
-    setFiles({
-      ...files,
-      [fileType]: [...files[fileType], ...validFiles],
-    });
-  };
-  
-  const onRemoveFile = (fileType: keyof FileState, index?: number) => {
-    // Handle logo (single file)
-    if (fileType === 'logo') {
-      setFiles({ ...files, logo: null });
-      return;
-    }
-    
-    // Handle arrays of files (images, videos, documents)
-    if (typeof index === 'number' && Array.isArray(files[fileType])) {
-      const updatedFiles = [...files[fileType]];
-      updatedFiles.splice(index, 1);
-      setFiles({
-        ...files,
-        [fileType]: updatedFiles,
-      });
-    }
-  };
-  
+  }, [contextRemoveFile]);
+
   return {
     handleFileChange,
     onRemoveFile,
+    uploadFile,
+    uploadFiles
   };
 };
 
-export default useFileUploadHandlers;
+// Helper function to simulate file upload
+const simulateFileUpload = (): Promise<void> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, 500);
+  });
+};

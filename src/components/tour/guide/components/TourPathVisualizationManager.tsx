@@ -4,6 +4,17 @@ import { useTour } from "@/contexts/tour";
 import { TourPathVisualization } from "../TourPathVisualization";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 
+// Extended path options interface to include missing properties
+interface ExtendedPathOptions {
+  enabled: boolean;
+  targetElementId: string; 
+  style?: string;
+  waypoints?: any[];
+  color?: string;
+  animationDuration?: number;
+  showArrow?: boolean;
+}
+
 interface TourPathVisualizationManagerProps {
   targetElement: HTMLElement | null;
 }
@@ -23,8 +34,8 @@ export const TourPathVisualizationManager: React.FC<TourPathVisualizationManager
     
     // Handle path property which could be a string or an object
     const pathObj = typeof currentStepData.path === 'string' ? 
-      { enabled: true, targetElementId: currentStepData.path, style: 'solid' } : 
-      currentStepData.path;
+      { enabled: true, targetElementId: currentStepData.path, style: 'solid' } as ExtendedPathOptions : 
+      currentStepData.path as ExtendedPathOptions;
     
     // Check if path is enabled
     if (!pathObj.enabled) {
@@ -54,10 +65,10 @@ export const TourPathVisualizationManager: React.FC<TourPathVisualizationManager
   
   // Convert the path options from the step data
   const pathObj = typeof currentStepData.path === 'string' ? 
-    { enabled: true, targetElementId: currentStepData.path, style: 'solid' } : 
-    currentStepData.path;
+    { enabled: true, targetElementId: currentStepData.path, style: 'solid' } as ExtendedPathOptions : 
+    currentStepData.path as ExtendedPathOptions;
     
-  // Convert the path options from the step data
+  // Convert the path options from the step data with defaults for missing properties
   const pathOptions = {
     style: pathObj.style || 'solid',
     color: pathObj.color || '#4f46e5',
