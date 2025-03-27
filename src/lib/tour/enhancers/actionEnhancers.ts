@@ -1,12 +1,13 @@
+import { TourStep } from '@/contexts/tour/types';
 
-import { TourStep } from "@/contexts/tour-context";
-
-// Define StepTrigger interface
+// Define the StepTrigger type
 export interface StepTrigger {
+  id: string;
   event: string;
-  element?: string;
-  condition?: () => boolean;
-  action: () => void;
+  selector: string;
+  action: 'next' | 'prev' | 'skip' | 'go-to' | 'custom';
+  targetStep?: number;
+  customAction?: () => void;
 }
 
 /**
@@ -72,3 +73,19 @@ export function prioritizedStep(
     };
   };
 }
+
+/**
+ * Enhancer to add triggers that cause the tour to advance
+ */
+export const withStepTriggers = (triggers: StepTrigger[]): ((step: TourStep) => Partial<TourStep>) => {
+  return (step: TourStep) => {
+    // Convert triggers to strings or objects as needed for compatibility
+    const triggerIds = triggers.map(trigger => trigger.id);
+    
+    return {
+      // Type assertion to string[] to satisfy TypeScript
+      triggers: triggerIds as string[],
+      triggerData: triggers
+    };
+  };
+};

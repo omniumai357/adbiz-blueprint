@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileState } from './useFileUpload';
+import { FileState, FileItem } from '@/features/file-upload/types';
 import { validateFiles } from '@/utils/file-validation';
 
 export interface UseFileUploadHandlersProps {
@@ -31,9 +31,12 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     
     if (newFiles.length === 0) return;
 
+    // Convert fileType to string to satisfy type constraints
+    const fileTypeStr = String(fileType);
+
     // For logo, we only keep one file
     if (fileType === 'logo') {
-      const { validFiles, hasInvalidFiles } = validateFiles([newFiles[0]], fileType);
+      const { validFiles, hasInvalidFiles } = validateFiles([newFiles[0]], fileTypeStr);
       
       if (hasInvalidFiles) {
         setUploadError(`Invalid file type. Please use a supported format.`);
@@ -48,7 +51,7 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     }
     
     // For other file types, we append to existing files
-    const { validFiles, hasInvalidFiles } = validateFiles(newFiles, fileType);
+    const { validFiles, hasInvalidFiles } = validateFiles(newFiles, fileTypeStr);
     
     if (hasInvalidFiles) {
       setUploadError(`Some files have invalid types. Only supported formats were added.`);
@@ -57,7 +60,7 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     if (validFiles.length > 0) {
       setFiles(prev => ({
         ...prev,
-        [fileType]: [...prev[fileType], ...validFiles]
+        [fileType]: [...(prev[fileType] as FileItem[] || []), ...validFiles]
       }));
     }
   };
@@ -71,10 +74,10 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
       return;
     }
     
-    if (index !== undefined) {
+    if (index !== undefined && Array.isArray(files[fileType])) {
       setFiles(prev => ({
         ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
+        [fileType]: (prev[fileType] as FileItem[]).filter((_, i) => i !== index)
       }));
     }
   };

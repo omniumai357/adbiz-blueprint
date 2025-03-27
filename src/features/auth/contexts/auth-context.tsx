@@ -56,12 +56,16 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
   // Fixed return type to Promise<void>
   const logout = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
-    } else {
-      setUser(null);
-      setSession(null);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      } else {
+        setUser(null);
+        setSession(null);
+      }
+    } catch (error) {
+      console.error('Error during logout:', error);
     }
     // No return value
   };

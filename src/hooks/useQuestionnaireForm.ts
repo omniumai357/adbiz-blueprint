@@ -1,3 +1,4 @@
+
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useQuestionnaireSubmit } from "@/hooks/useQuestionnaireSubmit";
@@ -9,6 +10,7 @@ import {
   validateContactInfoStep,
   validateMarketingGoalsStep
 } from "@/utils/questionnaire-validation";
+import { FileState } from "@/features/file-upload/types";
 
 // Define the form schema for validation
 const formSchema = z.object({
@@ -121,6 +123,7 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   };
   
   const onSubmit = async (data: QuestionnaireFormValues) => {
+    // Create a FileState object with the required missing properties
     const compatibleFiles: FileState = {
       ...files,
       identity: [],

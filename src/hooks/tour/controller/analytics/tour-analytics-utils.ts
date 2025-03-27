@@ -1,6 +1,6 @@
 
 import { TourStep, TourPath } from '@/contexts/tour/types';
-import type { TourStepData } from './types';
+import { TourStepData } from './types';
 
 // Add a trackStepInteraction function that can be used by other components
 export const trackStepInteraction = (

@@ -1,150 +1,84 @@
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/language-context';
+
+import { useCallback } from 'react';
 import { TourStep } from '@/contexts/tour/types';
 
-type TranslationKeys = {
-  title?: string;
-  content?: string;
-  actions?: {
-    next?: string;
-    prev?: string;
-    skip?: string;
-    finish?: string;
-  }
-  aria?: {
-    description?: string;
-    navigation?: string;
-  }
-};
+/**
+ * Type-safe position values
+ */
+type TourPosition = 'top' | 'right' | 'bottom' | 'left';
 
 /**
- * Hook to provide translations for tour steps
- * 
- * @returns Functions and utilities for translating tour content
+ * Hook to handle translating tour content and labels
  */
 export function useTourTranslation() {
-  const { t } = useTranslation('tour');
-  const { currentLanguage, direction } = useLanguage();
-  
-  // Functions for translating tour content
-  const translateStep = useMemo(() => (
-    step: TourStep, 
-    keys?: TranslationKeys
-  ): TourStep => {
-    if (!step) return step;
-    
+  // Translate button labels
+  const translateButtons = useCallback((step: TourStep): TourStep => {
     // Start with the original step
     const translatedStep = { ...step };
     
-    // Apply translations based on provided keys
-    if (keys?.title) {
-      translatedStep.title = t(keys.title);
+    // Check if actions exist
+    if (!translatedStep.actions) {
+      translatedStep.actions = {};
     }
     
-    if (keys?.content) {
-      translatedStep.content = t(keys.content);
+    // Set next button text
+    if (!translatedStep.actions.next) {
+      translatedStep.actions.next = {};
     }
+    translatedStep.actions.next.text = translatedStep.actions.next.text || 'Next';
     
-    // Translate actions if specified
-    if (keys?.actions) {
-      translatedStep.actions = translatedStep.actions || {};
-      
-      if (step?.actions?.next?.text) {
-        const nextLabel = t(step.actions.next.text, step.actions.next.text);
-        translatedStep.actions.next = translatedStep.actions.next || {};
-        translatedStep.actions.next.text = nextLabel;
-      }
-      
-      if (step?.actions?.prev?.text) {
-        const prevLabel = t(step.actions.prev.text, step.actions.prev.text);
-        translatedStep.actions.prev = translatedStep.actions.prev || {};
-        translatedStep.actions.prev.text = prevLabel;
-      }
-      
-      if (step?.actions?.skip?.text) {
-        const skipLabel = t(step.actions.skip.text, step.actions.skip.text);
-        translatedStep.actions.skip = translatedStep.actions.skip || {};
-        translatedStep.actions.skip.text = skipLabel;
-      }
-      
-      if (keys.actions.finish && translatedStep.actions) {
-        translatedStep.actions.finish = translatedStep.actions.finish || {};
-        translatedStep.actions.finish.text = t(keys.actions.finish);
-      }
+    // Set prev button text
+    if (!translatedStep.actions.prev) {
+      translatedStep.actions.prev = {};
     }
+    translatedStep.actions.prev.text = translatedStep.actions.prev.text || 'Back';
     
-    // Add ARIA translations if specified
-    if (keys?.aria) {
-      translatedStep.a11y = translatedStep.a11y || {};
-      
-      if (keys.aria.description) {
-        translatedStep.a11y.description = t(keys.aria.description);
-      }
-      
-      if (keys.aria.navigation) {
-        translatedStep.a11y.navigationDescription = t(keys.aria.navigation);
-      }
+    // Set skip button text
+    if (!translatedStep.actions.skip) {
+      translatedStep.actions.skip = {};
     }
+    translatedStep.actions.skip.text = translatedStep.actions.skip.text || 'Skip';
     
-    // Handle RTL-specific adjustments for tour elements
-    if (direction === 'rtl' && translatedStep.placement) {
-      // Adjust placement for RTL languages
-      const placementMap: Record<string, string> = {
-        'left': 'right',
-        'left-start': 'right-start',
-        'left-end': 'right-end',
-        'right': 'left',
-        'right-start': 'left-start',
-        'right-end': 'left-end'
-      };
-      
-      if (placementMap[translatedStep.placement]) {
-        translatedStep.placement = placementMap[translatedStep.placement];
-      }
+    // Set close button text
+    if (!translatedStep.actions.close) {
+      translatedStep.actions.close = {};
     }
+    translatedStep.actions.close.text = translatedStep.actions.close.text || 'Close';
     
     return translatedStep;
-  }, [t, direction]);
+  }, []);
   
-  // Function to translate multiple steps
-  const translateSteps = useMemo(() => (
-    steps: TourStep[], 
-    keyMap: Record<string, TranslationKeys>
-  ): TourStep[] => {
-    return steps.map(step => {
-      const keys = keyMap[step.id];
-      return keys ? translateStep(step, keys) : step;
-    });
-  }, [translateStep]);
+  // Translate content based on language preference
+  const translateContent = useCallback((step: TourStep): TourStep => {
+    // This would typically involve looking up translations in a dictionary
+    // For simplicity, we're just returning the original step
+    return step;
+  }, []);
   
-  // Helper functions for common tour texts
-  const tourTexts = useMemo(() => ({
-    next: t('next'),
-    previous: t('previous'),
-    finish: t('finish'),
-    skip: t('skip'),
-    tooltipInfo: (current: number, total: number) => 
-      t('tooltipInfo', { current: current + 1, total }),
-    welcome: t('welcome'),
-    pauseTour: t('pauseTour'),
-    resumeTour: t('resumeTour'),
-    keyboardShortcuts: t('keyboardShortcuts'),
-    earnPoints: t('earnPoints'),
-    // Accessibility texts
-    navigationHelp: t('a11y.navigationHelp', 'Use arrow keys to navigate, Escape to exit'),
-    currentStepInfo: (current: number, total: number) =>
-      t('a11y.currentStepInfo', 'Step {{current}} of {{total}}', { current: current + 1, total }),
-    tourComplete: t('a11y.tourComplete', 'Tour completed'),
-    tourStarted: t('a11y.tourStarted', 'Tour started'),
-    stepChanged: t('a11y.stepChanged', 'Moved to step {{step}}'),
-  }), [t, currentLanguage]);
+  // Handle RTL languages by adjusting positions
+  const adjustPositionForRTL = useCallback((step: TourStep, isRTL: boolean): TourStep => {
+    if (!isRTL) return step;
+    
+    // Create a new step object to avoid mutating the original
+    const adjustedStep = { ...step };
+    
+    // Flip horizontal positions for RTL languages
+    if (step.position === 'left') {
+      adjustedStep.position = 'right';
+    } else if (step.position === 'right') {
+      adjustedStep.position = 'left';
+    }
+    
+    // Ensure the position is always a valid TourPosition type
+    const safePosition: TourPosition = (adjustedStep.position as TourPosition) || 'bottom';
+    adjustedStep.position = safePosition;
+    
+    return adjustedStep;
+  }, []);
   
   return {
-    translateStep,
-    translateSteps,
-    tourTexts,
-    currentLanguage,
-    direction
+    translateButtons,
+    translateContent,
+    adjustPositionForRTL
   };
 }

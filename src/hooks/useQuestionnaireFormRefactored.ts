@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
@@ -11,7 +12,7 @@ import {
 import { useFileUploadContext } from "@/contexts/file-upload-context";
 import { useFileUploadService } from "@/hooks/file-upload/useFileUploadService";
 import { fileAdapter } from "@/utils/file-adapter";
-import { FileItem } from "@/features/file-upload/types";
+import { FileItem, FileState } from "@/features/file-upload/types";
 
 // Define the form schema for validation
 const formSchema = z.object({

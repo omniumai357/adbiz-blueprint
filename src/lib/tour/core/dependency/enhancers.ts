@@ -1,4 +1,4 @@
-import { TourStep } from "@/contexts/tour-context";
+import { TourStep } from '@/contexts/tour/types';
 
 /**
  * Creates a step that depends on another step being completed
@@ -79,3 +79,34 @@ export function branchingStep(
     };
   };
 }
+
+/**
+ * Create enhancer to set button labels
+ */
+export const withButtonLabels = (options: {
+  next?: string;
+  prev?: string;
+  skip?: string;
+  close?: string;
+}) => {
+  return (step: TourStep): Partial<TourStep> => {
+    const { next, prev, skip, close } = options;
+    
+    // Create the actions object if it doesn't exist
+    const actions = step.actions || {};
+    
+    // Initialize objects if they don't exist
+    if (!actions.next) actions.next = {};
+    if (!actions.prev) actions.prev = {};
+    if (!actions.skip) actions.skip = {};
+    if (!actions.close) actions.close = {};
+    
+    // Use text property instead of label
+    if (next) actions.next.text = next;
+    if (prev) actions.prev.text = prev;
+    if (skip) actions.skip.text = skip;
+    if (close) actions.close.text = close;
+    
+    return { actions };
+  };
+};
