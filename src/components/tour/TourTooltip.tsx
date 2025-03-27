@@ -44,6 +44,8 @@ interface TourTooltipProps {
   totalSteps: number;
   showKeyboardShortcuts?: () => void;
   tooltipRef?: React.RefObject<HTMLDivElement>;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
 export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
@@ -66,7 +68,9 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
   currentStep,
   totalSteps,
   showKeyboardShortcuts,
-  tooltipRef
+  tooltipRef,
+  isRTL = false,
+  direction = 'ltr'
 }, ref) => {
   // Use the provided ref or our own internal ref
   const divRef = tooltipRef || ref;
@@ -114,6 +118,8 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
       arrowClassNames={arrowClassNames}
       currentStep={currentStep}
       totalSteps={totalSteps}
+      isRTL={isRTL}
+      direction={direction}
     >
       <TourTooltipContent
         title={title}
@@ -138,6 +144,7 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
         showKeyboardShortcuts={showKeyboardShortcuts}
         currentStep={currentStep}
         totalSteps={totalSteps}
+        isRTL={isRTL}
       />
     </TourTooltipContainer>
   );

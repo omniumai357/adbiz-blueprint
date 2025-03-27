@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, KeyRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TourTooltipActionsProps {
@@ -14,8 +14,9 @@ interface TourTooltipActionsProps {
   skipLabel?: string;
   stepInfo: string;
   showKeyboardShortcuts?: () => void;
-  currentStep?: number;
-  totalSteps?: number;
+  currentStep: number;
+  totalSteps: number;
+  isRTL?: boolean;
 }
 
 export const TourTooltipActions: React.FC<TourTooltipActionsProps> = ({
@@ -23,103 +24,82 @@ export const TourTooltipActions: React.FC<TourTooltipActionsProps> = ({
   onNext,
   onClose,
   isLastStep,
-  nextLabel,
-  prevLabel,
-  skipLabel,
+  nextLabel = "Next",
+  prevLabel = "Back",
+  skipLabel = "Skip",
   stepInfo,
   showKeyboardShortcuts,
-  currentStep = 0,
-  totalSteps = 1
+  currentStep,
+  totalSteps,
+  isRTL = false
 }) => {
-  const buttonBaseClasses = "text-xs transition-all focus-visible:ring-2 focus-visible:ring-[color:var(--tour-accent-blue)] focus-visible:ring-offset-2";
-  
+  // Swap chevron icons for RTL
+  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
+  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
+
   return (
-    <div 
-      className="flex items-center justify-between mt-3"
-      role="group"
-      aria-label="Tour navigation"
-    >
-      <div className="flex items-center gap-2">
-        {/* Skip button or keyboard shortcut button */}
-        {onPrev ? (
+    <div className="mt-4 space-y-3">
+      {/* Step indicator */}
+      <div className="flex items-center justify-between text-sm text-[color:var(--tour-tooltip-text-secondary)]">
+        <span>{stepInfo}</span>
+        
+        {showKeyboardShortcuts && (
           <Button
             variant="ghost"
             size="sm"
-            onClick={onPrev}
-            className={cn(
-              buttonBaseClasses,
-              "px-2 h-8 text-[color:var(--tour-text-secondary)] hover:bg-[color:var(--tour-button-secondary-hover-bg)] hover:text-[color:var(--tour-text-primary)]"
-            )}
-            aria-label={`Previous step: ${prevLabel || "Previous"}`}
-            data-tour-action="previous"
-            data-autofocus={currentStep > 0 ? "true" : undefined}
-            title="Previous (Keyboard: Left Arrow or P)"
-          >
-            <ChevronLeft className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-            {prevLabel || "Previous"}
-          </Button>
-        ) : showKeyboardShortcuts ? (
-          <Button
-            variant="ghost"
-            size="sm"
+            className="h-6 px-2 text-xs"
             onClick={showKeyboardShortcuts}
-            className={cn(
-              buttonBaseClasses,
-              "px-2 h-8 text-[color:var(--tour-text-secondary)] hover:bg-[color:var(--tour-button-secondary-hover-bg)] hover:text-[color:var(--tour-text-primary)]"
-            )}
-            title="Show keyboard shortcuts (Shift+?)"
-            aria-label="Show keyboard shortcuts"
-            data-tour-action="shortcuts"
+            data-tour-action="show-shortcuts"
           >
-            <KeyRound className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
-            Shortcuts
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className={cn(
-              buttonBaseClasses,
-              "px-2 h-8 text-[color:var(--tour-text-secondary)] hover:bg-[color:var(--tour-button-secondary-hover-bg)] hover:text-[color:var(--tour-text-primary)]"
-            )}
-            aria-label={`Skip tour: ${skipLabel || "Skip"}`}
-            data-tour-action="skip"
-            title="Skip tour (Keyboard: Escape)"
-          >
-            {skipLabel || "Skip"}
+            <Keyboard className="h-3 w-3 mr-1" />
+            <span>Shortcuts</span>
           </Button>
         )}
       </div>
-
-      <div className="flex items-center gap-2">
-        {/* Step info */}
-        <span 
-          className="text-xs text-[color:var(--tour-text-tertiary)] mr-2"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {stepInfo}
-        </span>
-
-        {/* Next or Done button */}
-        <Button
-          variant="default"
-          size="sm"
-          onClick={onNext}
-          className={cn(
-            buttonBaseClasses,
-            "px-3 h-8 bg-[color:var(--tour-button-primary-bg)] text-[color:var(--tour-button-primary-text)] hover:bg-[color:var(--tour-button-primary-hover-bg)]"
+      
+      {/* Action buttons */}
+      <div className={cn(
+        "flex items-center",
+        onPrev ? "justify-between" : "justify-end"
+      )}>
+        {/* Previous button - only shown if not on first step */}
+        {onPrev && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onPrev}
+            className="text-[color:var(--tour-tooltip-text)] border-[color:var(--tour-tooltip-border)]"
+            data-tour-action="prev"
+          >
+            <PrevIcon className="h-4 w-4 mr-1" />
+            <span>{prevLabel}</span>
+          </Button>
+        )}
+        
+        <div className="flex items-center space-x-2">
+          {!isLastStep && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="text-[color:var(--tour-tooltip-text)] border-[color:var(--tour-tooltip-border)]"
+              data-tour-action="skip"
+            >
+              {skipLabel}
+            </Button>
           )}
-          aria-label={isLastStep ? `Finish tour: Done` : `Next step: ${nextLabel || "Next"}`}
-          data-tour-action={isLastStep ? "finish" : "next"}
-          data-tour-next="true"
-          data-autofocus={currentStep === 0 || isLastStep ? "true" : undefined}
-          title={isLastStep ? "Finish tour (Keyboard: Enter)" : "Next step (Keyboard: Right Arrow or N)"}
-        >
-          {isLastStep ? "Done" : nextLabel || "Next"}
-          {!isLastStep && <ChevronRight className="h-3.5 w-3.5 ml-1" aria-hidden="true" />}
-        </Button>
+          
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onNext}
+            className="bg-[color:var(--tour-tooltip-accent)] hover:bg-[color:var(--tour-tooltip-accent-hover)]"
+            data-tour-action="next"
+          >
+            <span>{isLastStep ? "Finish" : nextLabel}</span>
+            {!isLastStep && <NextIcon className="h-4 w-4 ml-1" />}
+          </Button>
+        </div>
       </div>
     </div>
   );

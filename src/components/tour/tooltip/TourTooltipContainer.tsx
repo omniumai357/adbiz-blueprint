@@ -3,7 +3,6 @@ import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/language-context";
 
 interface TourTooltipContainerProps {
   children: React.ReactNode;
@@ -18,6 +17,8 @@ interface TourTooltipContainerProps {
   arrowClassNames: string;
   currentStep: number;
   totalSteps: number;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
 export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContainerProps>(({
@@ -32,10 +33,10 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
   arrowStyles,
   arrowClassNames,
   currentStep,
-  totalSteps
+  totalSteps,
+  isRTL = false,
+  direction = 'ltr'
 }, ref) => {
-  const { direction, isRTL } = useLanguage();
-  
   return (
     <div 
       className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" 
@@ -100,7 +101,7 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
           variant="ghost" 
           size="icon" 
           className={cn(
-            "absolute top-2 h-6 w-6 hover:bg-[color:var(--tour-bg-tertiary)] focus-visible:ring-2 focus-visible:ring-[color:var(--tour-accent-blue)] focus-visible:ring-offset-2",
+            "absolute top-2 h-6 w-6 hover:bg-[color:var(--tour-tooltip-bg-tertiary)] focus-visible:ring-2 focus-visible:ring-[color:var(--tour-tooltip-accent)] focus-visible:ring-offset-2",
             isRTL ? "left-2" : "right-2"
           )} 
           onClick={onClose}

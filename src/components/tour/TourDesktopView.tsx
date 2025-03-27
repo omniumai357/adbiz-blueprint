@@ -43,6 +43,8 @@ export interface TourDesktopViewProps {
   showKeyboardShortcuts?: () => void;
   tooltipRef?: React.RefObject<HTMLDivElement>;
   hasTouchCapability?: boolean;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
 export const TourDesktopView = forwardRef<TourDesktopViewHandle, TourDesktopViewProps>(
