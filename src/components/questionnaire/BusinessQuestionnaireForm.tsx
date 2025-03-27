@@ -52,6 +52,11 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     }
   };
   
+  // Helper function to extract File objects from FileItems
+  const extractFilesFromFileItems = (items: FileItem[]): File[] => {
+    return items.map(item => item.file);
+  };
+  
   // Create a properly structured FileState object for adaptation
   const fileState: FileState = {
     identity: [],
@@ -87,12 +92,12 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   // Adapt files for the ReviewSection component which expects plain File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
   
-  // Create a proper type for ReviewSection
+  // Extract File objects for ReviewSection (fixes type issues)
   const reviewFiles = {
     logo: adaptedFiles.logo as File | null,
-    images: adaptedFiles.images as File[],
-    videos: adaptedFiles.videos as File[],
-    documents: adaptedFiles.documents as File[]
+    images: Array.isArray(fileState.images) ? extractFilesFromFileItems(fileState.images as FileItem[]) : [],
+    videos: Array.isArray(fileState.videos) ? extractFilesFromFileItems(fileState.videos as FileItem[]) : [],
+    documents: Array.isArray(fileState.documents) ? extractFilesFromFileItems(fileState.documents as FileItem[]) : []
   };
   
   return (
