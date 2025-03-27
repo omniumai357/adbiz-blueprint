@@ -60,7 +60,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Fixed logout function to properly return Promise<void>
   const logout = async (): Promise<void> => {
     try {
-      await signOut();
+      const result = await signOut();
       // Reset user and session state
       setUser(null);
       setSession(null);
