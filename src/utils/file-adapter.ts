@@ -22,8 +22,13 @@ export const fileAdapter = {
     // Convert FileItem arrays to File arrays
     Object.entries(fileState).forEach(([key, value]) => {
       if (key !== 'logo' && Array.isArray(value)) {
-        // Cast FileItem[] to File[]
-        result[key] = (value as FileItem[]).map(item => item.file);
+        if (value.length > 0 && 'file' in value[0]) {
+          // Handle FileItem[] arrays
+          result[key] = (value as FileItem[]).map(item => item.file);
+        } else {
+          // Handle direct File[] arrays
+          result[key] = value as File[];
+        }
       }
     });
     
