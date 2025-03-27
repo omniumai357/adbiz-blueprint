@@ -1,3 +1,4 @@
+
 import { TourPath } from '@/contexts/tour/types';
 
 // Keep track of loaded tour paths for caching
@@ -43,7 +44,15 @@ export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> 
         Object.keys(module).forEach(key => {
           if (key.includes('TourPath') || key.includes('tourPath')) {
             if (module[key] && typeof module[key] === 'object') {
-              paths.push(module[key]);
+              // Ensure each step has a target property (use elementId if target is missing)
+              const normalizedPath = {
+                ...module[key],
+                steps: module[key].steps.map((step: any) => ({
+                  ...step,
+                  target: step.target || step.elementId || '',
+                }))
+              };
+              paths.push(normalizedPath as TourPath);
             }
           }
         });
@@ -57,7 +66,14 @@ export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> 
       try {
         const defaultModule = await import('@/lib/tour/default-tour');
         if (defaultModule.defaultTourPath) {
-          paths.push(defaultModule.defaultTourPath);
+          const normalizedDefaultPath = {
+            ...defaultModule.defaultTourPath,
+            steps: defaultModule.defaultTourPath.steps.map((step: any) => ({
+              ...step,
+              target: step.target || step.elementId || '',
+            }))
+          };
+          paths.push(normalizedDefaultPath as TourPath);
         }
       } catch (err) {
         console.warn('Failed to load default tour path', err);

@@ -14,12 +14,19 @@ export const TourPathManager: React.FC<TourPathManagerProps> = ({
   onPathTargetChange
 }) => {
   useEffect(() => {
-    if (
-      isActive && 
-      currentStepData?.path?.enabled && 
-      currentStepData?.path?.targetElementId
-    ) {
-      const targetId = currentStepData.path.targetElementId;
+    if (!isActive || !currentStepData?.path) {
+      onPathTargetChange(null);
+      return;
+    }
+
+    // Handle path property which could be a string or an object
+    const pathData = typeof currentStepData.path === 'string' 
+      ? { enabled: true, targetElementId: currentStepData.path } 
+      : currentStepData.path;
+    
+    // Check if the path is enabled and has a target element
+    if (pathData.enabled && pathData.targetElementId) {
+      const targetId = pathData.targetElementId;
       const element = document.getElementById(targetId);
       
       if (element) {

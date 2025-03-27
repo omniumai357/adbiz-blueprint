@@ -62,7 +62,9 @@ export function useTourDiscovery() {
       // Update view count for this tour
       setTourHistory(prev => {
         const viewCounts = { ...(prev.viewCounts || {}) };
-        viewCounts[currentPath] = (viewCounts[currentPath] || 0) + 1;
+        // Fix: Use string key for viewCounts instead of path object
+        const pathKey = typeof currentPath === 'string' ? currentPath : currentPath.id;
+        viewCounts[pathKey] = (viewCounts[pathKey] || 0) + 1;
         
         return {
           ...prev,

@@ -1,78 +1,38 @@
-
 import { useCallback } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
- * Hook that handles analytics tracking for tour navigation
+ * Custom hook for tracking tour analytics events
  */
-export function useTourAnalyticsTracking(
-  trackStepInteraction: (
-    pathData: TourPath,
-    stepData: TourStep,
-    stepIndex: number,
-    interactionType: string,
-    userId?: string,
-    userType?: string
-  ) => void
-) {
-  // Track completion of a step
-  const trackStepCompletion = useCallback((
-    pathData: TourPath,
-    stepData: TourStep,
-    stepIndex: number,
-    userId?: string,
-    userType?: string
-  ) => {
-    trackStepInteraction(
-      pathData, 
-      stepData, 
-      stepIndex, 
-      'completed',
-      userId,
-      userType
-    );
-  }, [trackStepInteraction]);
+export const useTourAnalyticsTracking = (
+  currentPathData: TourPath | undefined,
+  currentStepData: TourStep | null,
+  currentStep: number,
+  userId?: string,
+  userType?: string
+) => {
+  /**
+   * Track navigation interactions for analytics
+   */
+  const trackNavigation = useCallback((interactionType: string) => {
+    if (!currentPathData || !currentStepData) return;
+    
+    try {
+      // Log the interaction for analytics or debugging
+      console.log(`Tour interaction: ${interactionType}`, {
+        tourId: currentPathData.id,
+        stepId: currentStepData.id,
+        stepIndex: currentStep,
+        userId,
+        userType
+      });
+      
+      // Here you would typically send this data to your analytics service
+      // This is a placeholder for actual analytics implementation
+    } catch (error) {
+      console.error('Error tracking tour navigation:', error);
+    }
+  }, [currentPathData, currentStepData, currentStep, userId, userType]);
   
-  // Track going back to previous step
-  const trackStepGoBack = useCallback((
-    pathData: TourPath,
-    stepData: TourStep,
-    stepIndex: number,
-    userId?: string,
-    userType?: string
-  ) => {
-    trackStepInteraction(
-      pathData, 
-      stepData, 
-      stepIndex, 
-      'go_back',
-      userId,
-      userType
-    );
-  }, [trackStepInteraction]);
-  
-  // Track jumping to a specific step
-  const trackStepJump = useCallback((
-    pathData: TourPath,
-    stepData: TourStep,
-    fromStepIndex: number,
-    toStepIndex: number,
-    userId?: string,
-    userType?: string
-  ) => {
-    trackStepInteraction(
-      pathData, 
-      stepData, 
-      fromStepIndex, 
-      `jump_to_step_${toStepIndex}`,
-      userId,
-      userType
-    );
-  }, [trackStepInteraction]);
-  
-  return {
-    trackStepCompletion,
-    trackStepGoBack,
-    trackStepJump
-  };
-}
+  return trackNavigation;
+};

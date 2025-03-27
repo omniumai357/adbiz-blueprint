@@ -24,7 +24,7 @@ export const PageWithTour: React.FC<PageWithTourProps> = ({
   const location = useLocation();
   const [showModal, setShowModal] = useState(false);
   const { 
-    hasSeenTour, 
+    hasSeenAnyTour, 
     hasCompletedCurrentPageTour, 
     startAppropriatePageTour 
   } = useTourDiscovery();
@@ -49,10 +49,10 @@ export const PageWithTour: React.FC<PageWithTourProps> = ({
     }
     
     // Determine if we should show the welcome modal
-    if (showWelcomeModal && !hasSeenTour && !hasCompletedThisTour) {
+    if (showWelcomeModal && !hasSeenAnyTour && !hasCompletedThisTour) {
       setShowModal(true);
     }
-  }, [location.pathname, hasSeenTour, autoStart, tourId, disableAutoScroll, showWelcomeModal, startAppropriatePageTour, hasCompletedCurrentPageTour]);
+  }, [location.pathname, hasSeenAnyTour, autoStart, tourId, disableAutoScroll, showWelcomeModal, startAppropriatePageTour, hasCompletedCurrentPageTour]);
   
   return (
     <TourProvider currentPathname={location.pathname}>

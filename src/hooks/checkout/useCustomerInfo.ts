@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/features/auth';
 import { useProfile } from '@/hooks/data/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { CustomerInfo } from '@/types/checkout';

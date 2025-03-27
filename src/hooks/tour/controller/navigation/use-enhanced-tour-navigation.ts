@@ -8,14 +8,6 @@ import { useTourAnalyticsTracking } from './use-tour-analytics-tracking';
 /**
  * Enhanced tour navigation hook that combines keyboard, gesture, and button navigation
  * with analytics tracking
- * 
- * @param isActive Whether the tour is active
- * @param currentPath Current tour path ID
- * @param currentStep Current step index
- * @param availablePaths Available tour paths
- * @param totalSteps Total steps in the current path
- * @param handlers Navigation handler functions (next, prev, goto, end)
- * @param userContext Optional user context for analytics
  */
 export const useEnhancedTourNavigation = (
   isActive: boolean,

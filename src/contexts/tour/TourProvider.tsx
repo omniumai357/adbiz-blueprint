@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTourController } from '@/hooks/tour/useTourController';
 import { useAuthUser } from '@/hooks/queries/useAuthUser';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/features/auth';
 import { TourContext } from './TourContext';
 import { TourAnnouncer } from './TourAnnouncer';
 import { TourThemeName } from '@/lib/tour/types/theme';
