@@ -1,6 +1,5 @@
 
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,6 +12,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useAppForm } from "@/hooks/forms/useAppForm";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/auth-context";
 
 const signUpSchema = z.object({

@@ -9,13 +9,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Sparkles, BadgePercent, ChevronRight } from "lucide-react";
 
-// Import from the new feature folder
+// Import consistently from the features/auth module
 import { 
   AuthMessage, 
   AuthContainer, 
   SignInForm, 
   SignUpForm, 
-  WelcomeCoupon 
+  WelcomeCoupon,
+  useAuth 
 } from "@/features/auth";
 
 const Auth = () => {
