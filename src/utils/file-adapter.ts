@@ -22,6 +22,24 @@ export const fileAdapter = {
   },
 
   /**
+   * Convert File objects to FileItem objects
+   * @param files Array of File objects
+   * @returns Array of FileItem objects
+   */
+  createFileItems(files: File[]): FileItem[] {
+    try {
+      return files.map(file => ({
+        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        file,
+        progress: 0
+      }));
+    } catch (error) {
+      logger.error("Error creating FileItems:", error);
+      return [];
+    }
+  },
+
+  /**
    * Converts a FileState object to a format with plain File objects
    * that can be consumed by UI components
    */
@@ -52,6 +70,40 @@ export const fileAdapter = {
         images: [],
         videos: [],
         documents: []
+      };
+    }
+  },
+
+  /**
+   * Converts UI file objects to a complete FileState
+   */
+  adaptUIFilesToFileState(files: {
+    logo: File | null;
+    images: File[];
+    videos: File[];
+    documents: File[];
+  }): FileState {
+    try {
+      return {
+        logo: files.logo,
+        images: this.createFileItems(files.images),
+        videos: this.createFileItems(files.videos),
+        documents: this.createFileItems(files.documents),
+        identity: [],
+        business: [],
+        additional: []
+      };
+    } catch (error) {
+      logger.error("Error adapting UI files to FileState:", error);
+      // Return empty state if there's an error
+      return {
+        logo: null,
+        images: [],
+        videos: [],
+        documents: [],
+        identity: [],
+        business: [],
+        additional: []
       };
     }
   },

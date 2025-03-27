@@ -1,3 +1,4 @@
+
 import { TourStep } from '@/contexts/tour/types';
 
 // Define the StepTrigger type
@@ -79,12 +80,12 @@ export function prioritizedStep(
  */
 export const withStepTriggers = (triggers: StepTrigger[]): ((step: TourStep) => Partial<TourStep>) => {
   return (step: TourStep) => {
-    // Convert triggers to strings or objects as needed for compatibility
+    // Convert triggers to strings to make TypeScript happy
     const triggerIds = triggers.map(trigger => trigger.id);
     
     return {
-      // Type assertion to string[] to satisfy TypeScript
-      triggers: triggerIds as string[],
+      // Explicitly specify return type as strings
+      triggers: triggerIds,
       triggerData: triggers
     };
   };

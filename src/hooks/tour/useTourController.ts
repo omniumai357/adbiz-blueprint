@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
 import { useTourState } from './controller/tour-controller/use-tour-state';
@@ -152,7 +151,10 @@ export function useTourController(
   // Handle keyboard navigation
   const { handleKeyNavigation } = useTourKeyboard(
     isActive,
-    interactions.handleNavigationAction,
+    (event: React.KeyboardEvent<Element> | KeyboardEvent, action?: any) => {
+      if (!action) return;
+      interactions.handleNavigationAction(action);
+    },
     {
       enableHomeEndKeys: true,
       enablePageKeys: true,

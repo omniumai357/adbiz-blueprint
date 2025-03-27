@@ -39,7 +39,13 @@ export function useTourTranslation() {
     }
     translatedStep.actions.skip.text = translatedStep.actions.skip.text || 'Skip';
     
-    // Set close button text
+    // Set finish button text
+    if (!translatedStep.actions.finish) {
+      translatedStep.actions.finish = {};
+    }
+    translatedStep.actions.finish.text = translatedStep.actions.finish.text || 'Finish';
+    
+    // Initialize close button if needed
     if (!translatedStep.actions.close) {
       translatedStep.actions.close = {};
     }
@@ -47,38 +53,20 @@ export function useTourTranslation() {
     
     return translatedStep;
   }, []);
-  
-  // Translate content based on language preference
-  const translateContent = useCallback((step: TourStep): TourStep => {
-    // This would typically involve looking up translations in a dictionary
-    // For simplicity, we're just returning the original step
-    return step;
-  }, []);
-  
-  // Handle RTL languages by adjusting positions
-  const adjustPositionForRTL = useCallback((step: TourStep, isRTL: boolean): TourStep => {
-    if (!isRTL) return step;
+
+  // Helper function to parse position
+  const parsePosition = useCallback((position: string | undefined): TourPosition => {
+    const validPositions: TourPosition[] = ['top', 'right', 'bottom', 'left'];
     
-    // Create a new step object to avoid mutating the original
-    const adjustedStep = { ...step };
-    
-    // Flip horizontal positions for RTL languages
-    if (step.position === 'left') {
-      adjustedStep.position = 'right';
-    } else if (step.position === 'right') {
-      adjustedStep.position = 'left';
+    if (!position || !validPositions.includes(position as TourPosition)) {
+      return 'bottom';
     }
     
-    // Ensure the position is always a valid TourPosition type
-    const safePosition: TourPosition = (adjustedStep.position as TourPosition) || 'bottom';
-    adjustedStep.position = safePosition;
-    
-    return adjustedStep;
+    return position as TourPosition;
   }, []);
-  
+
   return {
     translateButtons,
-    translateContent,
-    adjustPositionForRTL
+    parsePosition
   };
 }

@@ -110,3 +110,53 @@ export const withButtonLabels = (options: {
     return { actions };
   };
 };
+
+/**
+ * Create enhancer to set custom buttons
+ */
+export const withCustomButtons = (customButtons: {
+  next?: { text: string; callback?: () => void; hidden?: boolean };
+  prev?: { text: string; callback?: () => void; hidden?: boolean };
+  skip?: { text: string; callback?: () => void; hidden?: boolean };
+  close?: { text: string; callback?: () => void; hidden?: boolean };
+}): TourStepEnhancer => {
+  return step => {
+    if (!step.actions) {
+      step.actions = {};
+    }
+
+    if (customButtons.next) {
+      step.actions.next = {
+        text: customButtons.next.text,
+        callback: customButtons.next.callback,
+        hidden: customButtons.next.hidden
+      };
+    }
+
+    if (customButtons.prev) {
+      step.actions.prev = {
+        text: customButtons.prev.text,
+        callback: customButtons.prev.callback,
+        hidden: customButtons.prev.hidden
+      };
+    }
+
+    if (customButtons.skip) {
+      step.actions.skip = {
+        text: customButtons.skip.text,
+        callback: customButtons.skip.callback,
+        hidden: customButtons.skip.hidden
+      };
+    }
+    
+    if (customButtons.close) {
+      step.actions.close = {
+        text: customButtons.close.text,
+        callback: customButtons.close.callback,
+        hidden: customButtons.close.hidden
+      };
+    }
+
+    return step;
+  };
+};

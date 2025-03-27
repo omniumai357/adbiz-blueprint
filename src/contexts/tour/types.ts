@@ -1,14 +1,10 @@
-
 // Tour context and component types
 export interface TourStep {
   id: string;
   target: string;
   title: string;
   content: string;
-  position: "top" | "right" | "bottom" | "left";
-  placement?: "top" | "right" | "bottom" | "left";
-  animation?: string;
-  elementId?: string;
+  position?: "top" | "right" | "bottom" | "left";
   actions?: {
     next?: {
       text?: string;
@@ -30,7 +26,28 @@ export interface TourStep {
       hidden?: boolean;
       callback?: () => void;
     };
+    close?: {
+      text?: string;
+      hidden?: boolean;
+      callback?: () => void;
+    };
   };
+  condition?: (state: any) => boolean;
+  priority?: number;
+  triggers?: string[];
+  triggerData?: any[];
+  pathVisualization?: {
+    enabled: boolean;
+    targetElementId: string;
+    style?: string;
+    waypoints?: any[];
+    color?: string;
+    animationDuration?: number;
+    showArrow?: boolean;
+  };
+  animation?: string;
+  elementId?: string;
+  placement?: "top" | "right" | "bottom" | "left";
   transition?: string;
   a11y?: {
     title?: string;
@@ -42,15 +59,16 @@ export interface TourStep {
   };
   dependency?: string | string[];
   dependencies?: string | string[];
-  condition?: (state: any) => boolean;
   isOptional?: boolean;
   userRoles?: string[];
   isHidden?: boolean;
   order?: number;
-  priority?: number;
-  triggers?: string[];
-  floatingUIOptions?: any;
-  // Add missing properties used in the tour components
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
   path?: string | {
     enabled: boolean;
     targetElementId: string;
@@ -58,12 +76,6 @@ export interface TourStep {
     waypoints?: any[];
   };
   metadata?: Record<string, any>;
-  media?: {
-    type: "image" | "video" | "gif";
-    url: string;
-    alt?: string;
-    animation?: string;
-  };
 }
 
 export interface TourPath {

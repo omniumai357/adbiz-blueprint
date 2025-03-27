@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useQuestionnaireSteps } from "@/hooks/useQuestionnaireSteps";
@@ -14,7 +13,6 @@ import { useFileUploadService } from "@/hooks/file-upload/useFileUploadService";
 import { fileAdapter } from "@/utils/file-adapter";
 import { FileItem, FileState } from "@/features/file-upload/types";
 
-// Define the form schema for validation
 const formSchema = z.object({
   businessName: z.string().min(1, "Business name is required"),
   industry: z.string().min(1, "Industry is required"),
@@ -71,22 +69,14 @@ export const marketingGoalOptions = [
   { value: "rebrand", label: "Rebrand business" },
 ];
 
-/**
- * Main hook for the questionnaire form functionality
- * Refactored to better separate concerns
- */
 export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void) {
-  // Navigation and steps
   const { step, showReview, nextStep, prevStep, onShowReview } = useQuestionnaireSteps(1);
   
-  // File uploads
   const { files, uploading } = useFileUploadContext();
   const { uploadFile, isUploading } = useFileUploadService();
   
-  // Form submission
   const { submitting, submitQuestionnaire } = useQuestionnaireSubmit();
   
-  // Form state
   const form = useAppForm(formSchema, {
     defaultValues: {
       marketingGoals: [],
@@ -96,7 +86,6 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
   
   const hasLogo = form.watch("hasLogo");
 
-  // Step validation handlers
   const handleBusinessInfoNext = (validateOnly = false) => {
     if (validateBusinessInfoStep(form)) {
       if (!validateOnly) nextStep();
@@ -125,21 +114,17 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
     nextStep();
   };
   
-  // Form submission
   const onSubmit = async (data: QuestionnaireFormValues) => {
     const businessId = generateUniqueId('business');
     
-    // Handle file uploads manually since we don't have uploadAllFiles method
     let filesUploaded = true;
     
     try {
-      // Upload logo if exists
       if (files.logo) {
         const logoUrl = await uploadFile(files.logo, `${businessId}/logo`);
         if (!logoUrl) filesUploaded = false;
       }
       
-      // Upload images with adapter to convert FileItem to File
       if (Array.isArray(files.images)) {
         for (const fileItem of files.images as FileItem[]) {
           const imageUrl = await uploadFile(fileItem.file, `${businessId}/images`);
@@ -147,7 +132,6 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
         }
       }
       
-      // Upload videos with adapter to convert FileItem to File
       if (Array.isArray(files.videos)) {
         for (const fileItem of files.videos as FileItem[]) {
           const videoUrl = await uploadFile(fileItem.file, `${businessId}/videos`);
@@ -155,7 +139,6 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
         }
       }
       
-      // Upload documents with adapter to convert FileItem to File
       if (Array.isArray(files.documents)) {
         for (const fileItem of files.documents as FileItem[]) {
           const docUrl = await uploadFile(fileItem.file, `${businessId}/documents`);
@@ -171,18 +154,10 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
       return false;
     }
     
-    // Convert files to the expected format for the questionnaire submit function
     const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
     
-    // Add the missing properties to make the adaptedFiles compatible with FileState
-    const compatibleFiles: FileState = {
-      ...adaptedFiles,
-      identity: [],
-      business: [],
-      additional: []
-    };
+    const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedFiles);
     
-    // Then submit questionnaire data
     const uploadFilesPromise = () => Promise.resolve(filesUploaded);
     const success = await submitQuestionnaire(data, compatibleFiles, uploadFilesPromise);
     

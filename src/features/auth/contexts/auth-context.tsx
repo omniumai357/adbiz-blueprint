@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +56,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Fixed return type to Promise<void>
   const logout = async (): Promise<void> => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await signOut();
       if (error) {
         console.error('Error signing out:', error);
       } else {
@@ -67,7 +66,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error('Error during logout:', error);
     }
-    // No return value
+    // No return value for void Promise
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FileState, FileItem } from '@/features/file-upload/types';
 import { validateFiles } from '@/utils/file-validation';
+import { fileAdapter } from '@/utils/file-adapter';
 
 export interface UseFileUploadHandlersProps {
   files: FileState;
@@ -32,7 +33,7 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     if (newFiles.length === 0) return;
 
     // Convert fileType to string to satisfy type constraints
-    const fileTypeStr = String(fileType);
+    const fileTypeStr = fileAdapter.fileTypeToString(fileType);
 
     // For logo, we only keep one file
     if (fileType === 'logo') {
@@ -58,10 +59,15 @@ const useFileUploadHandlers = (props: UseFileUploadHandlersProps): UseFileUpload
     }
     
     if (validFiles.length > 0) {
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: [...(prev[fileType] as FileItem[] || []), ...validFiles]
-      }));
+      setFiles(prev => {
+        // Create FileItem objects from valid Files
+        const newFileItems = fileAdapter.createFileItems(validFiles);
+        
+        return {
+          ...prev,
+          [fileType]: [...(prev[fileType] as FileItem[] || []), ...newFileItems]
+        };
+      });
     }
   };
 
