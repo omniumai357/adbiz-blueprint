@@ -32,6 +32,7 @@ export interface TourStep {
   content: string;
   target?: string;
   elementId?: string;
+  selector?: string;
   placement?: "top" | "right" | "bottom" | "left";
   actions?: TourStepActions;
   condition?: (state: any) => boolean;
@@ -39,6 +40,7 @@ export interface TourStep {
   triggers?: string[];
   triggerData?: any[];
   pathVisualization?: TourPathVisualization;
+  metadata?: Record<string, any>;
   
   // Additional properties needed by various components
   animation?: string;
@@ -57,7 +59,6 @@ export interface TourStep {
     showArrow?: boolean;
     waypoints?: Array<{x: number, y: number}>;
   };
-  metadata?: Record<string, any>;
   dependencies?: string[];
   isHidden?: boolean;
   order?: number;
@@ -71,6 +72,16 @@ export interface TourStep {
   };
   floatingUIOptions?: any;
   userRoles?: string[];
+  highlightClass?: string;
+  effects3D?: {
+    enable?: boolean;
+    intensity?: number;
+  };
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
 }
 
 export interface TourPath {

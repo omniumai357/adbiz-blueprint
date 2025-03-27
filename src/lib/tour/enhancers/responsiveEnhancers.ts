@@ -19,7 +19,10 @@ export function responsiveContentEnhancedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      responsiveContent: content,
+      metadata: {
+        ...(step.metadata || {}),
+        responsiveContent: content
+      },
       // Keep original content as default
       content: content.default
     };
@@ -43,7 +46,10 @@ export function responsivePositionEnhancedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      responsivePosition: positions,
+      metadata: {
+        ...(step.metadata || {}),
+        responsivePosition: positions
+      },
       // Keep original position as default
       position: positions.default
     };
@@ -67,7 +73,10 @@ export function responsiveSelectorEnhancedStep(
   return (step: TourStep): TourStep => {
     return {
       ...step,
-      responsiveSelector: selectors,
+      metadata: {
+        ...(step.metadata || {}),
+        responsiveSelector: selectors
+      },
       // Keep original selector as default
       selector: selectors.default
     };
