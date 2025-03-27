@@ -1,139 +1,109 @@
 
-import { useState, useEffect } from "react";
-import { apiClient } from "@/services/api/api-client";
-import { UserMilestone as ApiUserMilestone } from "@/types/api";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/ui/use-toast';
 
-// Define a unified UserMilestone type
+// Define the UserMilestone type that matches the database structure
 export interface UserMilestone {
   id: string;
   user_id: string;
   milestone_id: string;
   milestone_name: string;
-  current_points: number;
-  points_target: number;
+  description?: string;
   is_completed: boolean;
   reward_claimed: boolean;
-  reward_type: string;
+  reward_type: 'discount_percentage' | 'discount_fixed' | 'bonus_feature';
   reward_value: number;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string;
-  claimed_at?: string;
-  milestone_description?: string;
-  icon?: string;
-  milestone?: {
-    points_required: number;
-    name?: string;
-    icon?: string;
-  };
+  current_points: number;
+  points_target: number;
+  claimed_at?: string | null;
+  milestone_type?: string;
 }
 
-/**
- * Hook to manage milestone rewards for a user.
- * Fetches available milestones and handles reward application.
- * 
- * @param userId The current user's ID
- * @returns Object containing milestone state and handlers
- */
-export function useMilestones(userId: string | undefined | null) {
+// Define a common milestone data type for sharing between components
+export interface CommonMilestoneData {
+  id: string;
+  milestone_id: string;
+  milestone_name: string;
+  reward_type: 'discount_percentage' | 'discount_fixed' | 'bonus_feature';
+  reward_value: number;
+}
+
+// Hook for managing user milestones
+export function useMilestones(userId: string | null) {
   const [availableRewards, setAvailableRewards] = useState<UserMilestone[]>([]);
-  const [milestones, setMilestones] = useState<UserMilestone[]>([]);
-  const [completedMilestones, setCompletedMilestones] = useState<UserMilestone[]>([]);
-  const [totalPoints, setTotalPoints] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-  
-  // Fetch user milestones and rewards
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch available rewards when userId changes
   useEffect(() => {
-    const fetchMilestonesData = async () => {
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
+    const fetchRewards = async () => {
+      if (!userId) return;
       
       setIsLoading(true);
+      
       try {
-        // Fetch milestones
-        const milestonesData = await apiClient.milestones.getUserMilestones(userId);
-        setMilestones(milestonesData as unknown as UserMilestone[]);
+        const { data, error } = await supabase
+          .from('user_milestones')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_completed', true)
+          .eq('reward_claimed', false);
         
-        // Calculate completed milestones
-        const completed = milestonesData.filter(
-          (milestone: any) => milestone.is_completed
-        );
-        setCompletedMilestones(completed as unknown as UserMilestone[]);
+        if (error) throw error;
         
-        // Fetch available rewards
-        const rewards = await apiClient.milestones.getAvailableRewards(userId);
-        setAvailableRewards(rewards as unknown as UserMilestone[]);
-        
-        // Get total points
-        const points = await apiClient.milestones.calculateTotalPoints(userId);
-        setTotalPoints(points || 0);
-      } catch (err) {
-        console.error("Error fetching milestones:", err);
-        setError(err instanceof Error ? err : new Error(String(err)));
+        setAvailableRewards(data as UserMilestone[]);
+      } catch (error) {
+        console.error('Error fetching milestones:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to load rewards',
+          description: 'Could not retrieve your available rewards'
+        });
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchMilestonesData();
-  }, [userId]);
+    
+    fetchRewards();
+  }, [userId, toast]);
 
   // Claim a reward
   const claimReward = async (milestoneId: string) => {
     if (!userId) return false;
     
     try {
-      const result = await apiClient.milestones.claimReward(userId, milestoneId);
+      const { error } = await supabase
+        .from('user_milestones')
+        .update({
+          reward_claimed: true,
+          claimed_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('milestone_id', milestoneId);
       
-      // Refresh data after claiming
-      const rewards = await apiClient.milestones.getAvailableRewards(userId);
-      setAvailableRewards(rewards as unknown as UserMilestone[]);
+      if (error) throw error;
       
-      return result;
+      // Update the local state
+      setAvailableRewards(prev => 
+        prev.filter(reward => reward.milestone_id !== milestoneId)
+      );
+      
+      return true;
     } catch (error) {
-      console.error("Error claiming reward:", error);
+      console.error('Error claiming reward:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to claim reward',
+        description: 'An error occurred while claiming your reward'
+      });
       return false;
     }
   };
 
-  // Refresh all data
-  const refreshData = async () => {
-    if (!userId) return;
-    
-    setIsLoading(true);
-    try {
-      const milestonesData = await apiClient.milestones.getUserMilestones(userId);
-      setMilestones(milestonesData as unknown as UserMilestone[]);
-      
-      const completed = milestonesData.filter(
-        (milestone: any) => milestone.is_completed
-      );
-      setCompletedMilestones(completed as unknown as UserMilestone[]);
-      
-      const rewards = await apiClient.milestones.getAvailableRewards(userId);
-      setAvailableRewards(rewards as unknown as UserMilestone[]);
-      
-      const points = await apiClient.milestones.calculateTotalPoints(userId);
-      setTotalPoints(points || 0);
-    } catch (err) {
-      console.error("Error refreshing milestone data:", err);
-      setError(err instanceof Error ? err : new Error(String(err)));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return {
-    milestones,
-    totalPoints,
-    completedMilestones,
     availableRewards,
     isLoading,
-    error,
-    claimReward,
-    refreshData
+    claimReward
   };
 }

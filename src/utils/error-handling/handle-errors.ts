@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { logger, formatErrorDetails } from "@/utils/logger";
+import { logger, formatErrorDetails } from "@/lib/utils/logging";
 
 /**
  * Generic error handler that provides consistent error handling behavior

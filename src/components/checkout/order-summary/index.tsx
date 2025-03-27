@@ -1,9 +1,8 @@
-
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OrderSummaryHeader from "./order-summary-header";
 import PackageSection from "./package-section";
-import DiscountsSection from "./discounts-section";
+import { DiscountsSection } from "./discounts-section"; 
 import OrderTotal from "./order-total";
 import { useDevice } from "@/hooks/use-device";
 import { logger } from "@/utils/logger";
@@ -64,9 +63,11 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   
   logger.debug('Rendering OrderSummary component', {
     context: 'OrderSummary',
-    packageName,
-    totalDiscount: totalDiscountAmount,
-    deviceType: isMobile ? 'mobile' : isDesktop ? 'desktop' : 'tablet'
+    data: {
+      packageName,
+      totalDiscount: totalDiscountAmount,
+      deviceType: isMobile ? 'mobile' : isDesktop ? 'desktop' : 'tablet'
+    }
   });
 
   if (isLoading) {
@@ -80,7 +81,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     );
   }
 
-  // Calculate if there are any discounts applied
   const hasAnyDiscount = bundleDiscountAmount > 0 || 
                         tieredDiscountAmount > 0 || 
                         loyaltyBonusAmount > 0 || 
@@ -88,16 +88,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         couponDiscountAmount > 0 || 
                         milestoneRewardAmount > 0;
 
-  // Calculate total add-ons price
   const addOnsTotal = selectedAddOns.reduce((sum, addon) => sum + addon.price, 0);
   
-  // Calculate subtotal (package + add-ons)
   const subtotal = packagePrice + addOnsTotal;
   
-  // Calculate final total after all discounts
   const total = Math.max(0, subtotal - (totalDiscountAmount || 0));
   
-  // Calculate savings percentage for the header
   const savingsPercentage = subtotal > 0 
     ? Math.round((totalDiscountAmount / subtotal) * 100) 
     : 0;
@@ -120,19 +116,15 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         {hasAnyDiscount && (
           <DiscountsSection 
             showDiscounts={hasAnyDiscount}
-            appliedDiscount={appliedDiscount || undefined}
-            bundleDiscountAmount={bundleDiscountAmount}
-            tieredDiscount={tieredDiscount || undefined}
-            isFirstPurchase={isFirstPurchase}
-            tieredDiscountAmount={tieredDiscountAmount}
-            loyaltyBonusAmount={loyaltyBonusAmount}
-            isLoyaltyProgramEnabled={isLoyaltyProgramEnabled}
+            bundleDiscount={appliedDiscount || undefined}
+            couponDiscount={appliedCoupon || undefined}
             limitedTimeOffer={limitedTimeOffer || undefined}
-            offerDiscountAmount={offerDiscountAmount}
-            appliedCoupon={appliedCoupon || undefined}
-            couponDiscountAmount={couponDiscountAmount}
-            appliedMilestoneReward={appliedMilestoneReward || undefined}
-            milestoneRewardAmount={milestoneRewardAmount}
+            milestoneReward={appliedMilestoneReward || undefined}
+            tieredDiscount={tieredDiscount ? {
+              threshold: tieredDiscount.discountAmount,
+              discountPercent: tieredDiscount.discountAmount,
+              applied: !!tieredDiscountAmount && tieredDiscountAmount > 0
+            } : undefined}
           />
         )}
         

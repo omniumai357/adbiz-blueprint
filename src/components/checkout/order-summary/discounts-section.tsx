@@ -1,11 +1,9 @@
 
 import React from 'react';
-import { BundleDiscount } from '../bundle-discount';
-import { LimitedTimeOffer } from '../limited-time-offer';
-import { TieredDiscount } from '../tiered-discount';
-import { MilestoneRewards } from '../milestone-rewards';
-import { BundleDiscountInfo } from '@/hooks/checkout/useBundleDiscount';
-import { LimitedTimeOfferInfo } from '@/hooks/checkout/useLimitedTimeOffers';
+import type { BundleDiscountInfo } from '../bundle-discount';
+import type { LimitedTimeOfferInfo } from '../limited-time-offer';
+import TieredDiscount from '../tiered-discount';
+import MilestoneRewards from '../milestone-rewards';
 import { UserMilestone } from '@/hooks/rewards/useMilestones';
 
 interface DiscountsSectionProps {
@@ -23,6 +21,7 @@ interface DiscountsSectionProps {
     discountPercent: number;
     applied: boolean;
   } | null;
+  showDiscounts?: boolean;
 }
 
 export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
@@ -31,6 +30,7 @@ export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
   limitedTimeOffer,
   milestoneReward,
   tieredDiscount,
+  showDiscounts = true,
 }) => {
   const hasAnyDiscount = 
     bundleDiscount || 
@@ -39,8 +39,8 @@ export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
     milestoneReward || 
     tieredDiscount?.applied;
 
-  // If no discounts are applied, don't render the section
-  if (!hasAnyDiscount) {
+  // If no discounts are applied and showDiscounts is false, don't render the section
+  if (!hasAnyDiscount && !showDiscounts) {
     return null;
   }
 
@@ -101,7 +101,7 @@ export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
               Milestone: {getMilestoneName(milestoneReward)}
             </span>
             <span className="font-medium">
-              -${milestoneReward.discount_amount ? milestoneReward.discount_amount.toFixed(2) : '0.00'}
+              -${milestoneReward.reward_value ? milestoneReward.reward_value.toFixed(2) : '0.00'}
             </span>
           </li>
         )}

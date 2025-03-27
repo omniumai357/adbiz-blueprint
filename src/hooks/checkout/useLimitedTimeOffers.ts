@@ -1,17 +1,23 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 
-// Extend the LimitedTimeOfferInfo to include endTime
-interface TimeOffer extends LimitedTimeOfferInfo {
+// Define the expected interface for LimitedTimeOfferInfo
+export interface LimitedTimeOfferInfo {
+  id: string;
+  name: string;
+  description: string;
+  discountAmount: number;
+  discountType: "percentage" | "fixed";
+  active: boolean;
   expiresAt: string;
-  endTime: Date;
+  // Custom property used internally
+  endTime?: Date;
 }
 
 export function useLimitedTimeOffers(subtotal: number) {
-  const [activeOffers, setActiveOffers] = useState<TimeOffer[]>([]);
-  const [availableOffer, setAvailableOffer] = useState<TimeOffer | null>(null);
+  const [activeOffers, setActiveOffers] = useState<LimitedTimeOfferInfo[]>([]);
+  const [availableOffer, setAvailableOffer] = useState<LimitedTimeOfferInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [offerDiscountAmount, setOfferDiscountAmount] = useState<number>(0);
 
@@ -30,7 +36,7 @@ export function useLimitedTimeOffers(subtotal: number) {
         const endTime = new Date(now.getTime() + (randomMinutes * 60 * 1000));
         const expiresAt = endTime.toISOString();
         
-        const demoOffer: TimeOffer = {
+        const demoOffer: LimitedTimeOfferInfo = {
           id: "flash-sale-1",
           name: "Flash Sale",
           description: "Limited time offer - act fast!",
@@ -72,7 +78,7 @@ export function useLimitedTimeOffers(subtotal: number) {
       setActiveOffers(prevOffers => {
         const now = new Date();
         const updatedOffers = prevOffers.filter(offer => 
-          offer.endTime.getTime() > now.getTime()
+          offer.endTime && offer.endTime.getTime() > now.getTime()
         );
         
         if (updatedOffers.length !== prevOffers.length) {
