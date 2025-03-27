@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
+import { useState, useEffect } from "react";
+import { apiClient } from "@/services/api/api-client";
+import { UserMilestone as ApiUserMilestone } from "@/types/api";
+
+// Define a unified UserMilestone type
 export interface UserMilestone {
   id: string;
   user_id: string;
@@ -15,8 +18,14 @@ export interface UserMilestone {
   created_at: string;
   updated_at: string;
   completed_at?: string;
-  name?: string; // For backward compatibility
-  discount?: number; // For backward compatibility
+  claimed_at?: string;
+  milestone_description?: string;
+  icon?: string;
+  milestone?: {
+    points_required: number;
+    name?: string;
+    icon?: string;
+  };
 }
 
 /**
@@ -24,71 +33,107 @@ export interface UserMilestone {
  * Fetches available milestones and handles reward application.
  * 
  * @param userId The current user's ID
- * @param total The current order total
  * @returns Object containing milestone state and handlers
  */
-export function useMilestoneRewards(userId: string | undefined, total: number) {
-  const [availableMilestones, setAvailableMilestones] = useState<UserMilestone[]>([]);
-  const [appliedMilestoneReward, setAppliedMilestoneReward] = useState<UserMilestone | null>(null);
-  const [milestoneRewardAmount, setMilestoneRewardAmount] = useState<number>(0);
-
-  // Fetch available milestones for the user
+export function useMilestones(userId: string | undefined | null) {
+  const [availableRewards, setAvailableRewards] = useState<UserMilestone[]>([]);
+  const [milestones, setMilestones] = useState<UserMilestone[]>([]);
+  const [completedMilestones, setCompletedMilestones] = useState<UserMilestone[]>([]);
+  const [totalPoints, setTotalPoints] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  // Fetch user milestones and rewards
   useEffect(() => {
-    const fetchMilestones = async () => {
-      if (!userId) return;
-
+    const fetchMilestonesData = async () => {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from<UserMilestone>('user_milestones')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('is_completed', true)
-          .eq('reward_claimed', false);
-
-        if (error) {
-          console.error("Error fetching milestones:", error);
-          return;
-        }
-
-        setAvailableMilestones(data || []);
-      } catch (error) {
-        console.error("Error fetching milestones:", error);
+        // Fetch milestones
+        const milestonesData = await apiClient.milestones.getUserMilestones(userId);
+        setMilestones(milestonesData as unknown as UserMilestone[]);
+        
+        // Calculate completed milestones
+        const completed = milestonesData.filter(
+          (milestone: any) => milestone.is_completed
+        );
+        setCompletedMilestones(completed as unknown as UserMilestone[]);
+        
+        // Fetch available rewards
+        const rewards = await apiClient.milestones.getAvailableRewards(userId);
+        setAvailableRewards(rewards as unknown as UserMilestone[]);
+        
+        // Get total points
+        const points = await apiClient.milestones.calculateTotalPoints(userId);
+        setTotalPoints(points || 0);
+      } catch (err) {
+        console.error("Error fetching milestones:", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchMilestones();
+    fetchMilestonesData();
   }, [userId]);
 
-  // Apply a milestone reward
-  const handleMilestoneRewardApplied = (reward: UserMilestone) => {
-    setAppliedMilestoneReward(reward);
-  };
-
-  // Calculate milestone reward amount
-  const calculateMilestoneRewardAmount = (subtotal: number) => {
-    if (appliedMilestoneReward) {
-      return subtotal * (appliedMilestoneReward.reward_value / 100);
-    }
-    return 0;
-  };
-
-  // Award milestone points
-  const awardMilestonePoints = async (orderId: string, orderTotal: number) => {
-    if (!userId) return;
-
+  // Claim a reward
+  const claimReward = async (milestoneId: string) => {
+    if (!userId) return false;
+    
     try {
-      // Simulate awarding points (replace with actual logic)
-      console.log(`Awarding ${orderTotal} points to user ${userId} for order ${orderId}`);
+      const result = await apiClient.milestones.claimReward(userId, milestoneId);
+      
+      // Refresh data after claiming
+      const rewards = await apiClient.milestones.getAvailableRewards(userId);
+      setAvailableRewards(rewards as unknown as UserMilestone[]);
+      
+      return result;
     } catch (error) {
-      console.error("Error awarding milestone points:", error);
+      console.error("Error claiming reward:", error);
+      return false;
+    }
+  };
+
+  // Refresh all data
+  const refreshData = async () => {
+    if (!userId) return;
+    
+    setIsLoading(true);
+    try {
+      const milestonesData = await apiClient.milestones.getUserMilestones(userId);
+      setMilestones(milestonesData as unknown as UserMilestone[]);
+      
+      const completed = milestonesData.filter(
+        (milestone: any) => milestone.is_completed
+      );
+      setCompletedMilestones(completed as unknown as UserMilestone[]);
+      
+      const rewards = await apiClient.milestones.getAvailableRewards(userId);
+      setAvailableRewards(rewards as unknown as UserMilestone[]);
+      
+      const points = await apiClient.milestones.calculateTotalPoints(userId);
+      setTotalPoints(points || 0);
+    } catch (err) {
+      console.error("Error refreshing milestone data:", err);
+      setError(err instanceof Error ? err : new Error(String(err)));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
-    availableMilestones,
-    appliedMilestoneReward,
-    handleMilestoneRewardApplied,
-    calculateMilestoneRewardAmount,
-    awardMilestonePoints,
+    milestones,
+    totalPoints,
+    completedMilestones,
+    availableRewards,
+    isLoading,
+    error,
+    claimReward,
+    refreshData
   };
 }

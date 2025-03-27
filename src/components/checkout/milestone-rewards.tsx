@@ -5,8 +5,8 @@ import { useToast } from "@/hooks/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Award, Check, ChevronRight } from "lucide-react";
-import { CommonMilestoneData, UserMilestone } from "@/types/api";
-import { useMilestones } from "@/hooks/rewards/useMilestones";
+import { CommonMilestoneData, UserMilestone as ApiUserMilestone } from "@/types/api";
+import { useMilestones, UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface MilestoneRewardsProps {
   userId: string | null;
@@ -30,7 +30,7 @@ const MilestoneRewards = ({
       return;
     }
 
-    onRewardApplied(reward);
+    onRewardApplied(reward as UserMilestone);
     
     toast({
       title: "Reward Applied!",

@@ -1,160 +1,65 @@
 
-/**
- * Unified error handling utilities with standardized logging, formatting,
- * and user feedback
- */
 import { toast } from "sonner";
-import { logger, formatErrorDetails } from '../logger';
-import { formatErrorMessage } from './format-errors';
-import { isRetryableError } from './network-errors';
-
-type ErrorContext = {
-  component?: string;
-  operation?: string;
-  data?: Record<string, any>;
-};
+import { logger, formatErrorDetails } from "@/utils/logger";
 
 /**
- * Handle errors with consistent pattern using Sonner toast and centralized logging
- * 
- * @param error The error that occurred
- * @param context Additional context information
- * @param options Configuration options for error handling
- * @returns Formatted error message
+ * Generic error handler that provides consistent error handling behavior
+ * for the application
+ *
+ * @param error The error to handle
+ * @param context A string describing where the error happened
+ * @param showToast Whether to show a toast notification to the user
  */
-export const handleError = (
-  error: unknown, 
-  context: string | ErrorContext = '', 
-  options: {
-    showToast?: boolean;
-    logLevel?: 'error' | 'warn' | 'debug';
-    toastDuration?: number;
-    allowRetry?: boolean;
-  } = {}
-): string => {
-  const {
-    showToast = true,
-    logLevel = 'error',
-    toastDuration = 5000,
-    allowRetry = true
-  } = options;
+export function handleError(error: unknown, context = "Application", showToast = true) {
+  // Log the error
+  const errorMessage = error instanceof Error ? error.message : String(error);
   
-  // Normalize context
-  const errorContext = typeof context === 'string' 
-    ? { component: context } 
-    : context;
-  
-  // Format for display
-  const message = formatErrorMessage(error);
-  
-  // Log error with detailed information
-  const logData = {
-    context: errorContext.component,
-    data: {
-      ...formatErrorDetails(error),
-      ...errorContext.data,
-      operation: errorContext.operation
-    }
-  };
-  
-  // Log at appropriate level
-  if (logLevel === 'warn') {
-    logger.warn(`Error in ${errorContext.operation || 'operation'}: ${message}`, logData);
-  } else if (logLevel === 'debug') {
-    logger.debug(`Error in ${errorContext.operation || 'operation'}: ${message}`, logData);
-  } else {
-    logger.error(`Error in ${errorContext.operation || 'operation'}: ${message}`, logData);
-  }
-  
-  // Show toast if requested
+  logger.error(`Error in ${context}: ${errorMessage}`, {
+    context,
+    data: formatErrorDetails(error)
+  });
+
+  // Show a toast notification if requested
   if (showToast) {
-    const isNetworkRetryable = allowRetry && isRetryableError(error);
+    let displayMessage = "An unexpected error occurred";
     
+    // Customize message based on error type
+    if (error instanceof Error) {
+      if (error.name === "AuthenticationError") {
+        displayMessage = "Authentication error. Please sign in again.";
+      } else if (error.name === "ValidationError") {
+        displayMessage = "Please check your input and try again.";
+      } else if (error.name === "NetworkError") {
+        displayMessage = "Network error. Please check your connection.";
+      } else if (error.message.includes("permission denied")) {
+        displayMessage = "You don't have permission to perform this action.";
+      } else {
+        // Use the error message but prevent exposing sensitive info
+        const safeMessage = getSafeErrorMessage(error.message);
+        displayMessage = safeMessage;
+      }
+    }
+
     toast.error("Error", {
-      description: message,
-      duration: toastDuration,
-      action: isNetworkRetryable ? {
-        label: "Retry",
-        onClick: () => window.location.reload()
-      } : undefined
+      description: displayMessage
     });
+  }
+
+  // Return the error for chaining
+  return error;
+}
+
+/**
+ * Process an error message to make it safe to display to users
+ * by removing sensitive information
+ */
+function getSafeErrorMessage(message: string): string {
+  // Remove any potential sensitive data from error messages
+  if (message.includes("APIKEY") || 
+      message.includes("Bearer ") || 
+      message.includes("password")) {
+    return "An error occurred. Please try again.";
   }
   
   return message;
-};
-
-/**
- * Wrap async functions with error handling
- * 
- * @param fn The async function to wrap
- * @param context Context information for error reporting
- * @param options Error handling options
- * @returns Wrapped function with error handling
- */
-export const withErrorHandling = <T, Args extends any[]>(
-  fn: (...args: Args) => Promise<T>,
-  context: string | ErrorContext = '',
-  options: {
-    showToast?: boolean;
-    logLevel?: 'error' | 'warn' | 'debug';
-    rethrow?: boolean;
-  } = {}
-) => {
-  const { showToast = true, logLevel = 'error', rethrow = false } = options;
-  
-  return async (...args: Args): Promise<T | null> => {
-    try {
-      return await fn(...args);
-    } catch (error) {
-      handleError(error, context, { showToast, logLevel });
-      
-      if (rethrow) {
-        throw error;
-      }
-      
-      return null;
-    }
-  };
-};
-
-/**
- * Create an error handler with predefined context
- * 
- * @param defaultContext Default context to use for all error handling
- * @returns Error handler functions with predefined context
- */
-export const createErrorHandler = (defaultContext: string | ErrorContext) => {
-  return {
-    handleError: (
-      error: unknown, 
-      additionalContext?: string | ErrorContext,
-      options?: Parameters<typeof handleError>[2]
-    ) => {
-      const mergedContext = typeof defaultContext === 'string' && typeof additionalContext === 'string'
-        ? additionalContext || defaultContext
-        : {
-            ...((typeof defaultContext === 'object' ? defaultContext : { component: defaultContext }) as ErrorContext),
-            ...(typeof additionalContext === 'object' ? additionalContext : 
-               additionalContext ? { operation: additionalContext } : {})
-          };
-      
-      return handleError(error, mergedContext, options);
-    },
-    
-    withErrorHandling: <T, Args extends any[]>(
-      fn: (...args: Args) => Promise<T>,
-      additionalContext?: string | ErrorContext,
-      options?: Parameters<typeof withErrorHandling>[2]
-    ) => {
-      const mergedContext = typeof defaultContext === 'string' && typeof additionalContext === 'string'
-        ? additionalContext || defaultContext
-        : {
-            ...((typeof defaultContext === 'object' ? defaultContext : { component: defaultContext }) as ErrorContext),
-            ...(typeof additionalContext === 'object' ? additionalContext : 
-               additionalContext ? { operation: additionalContext } : {})
-          };
-      
-      return withErrorHandling(fn, mergedContext, options);
-    }
-  };
-};
+}

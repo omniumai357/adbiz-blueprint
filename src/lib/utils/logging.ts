@@ -1,94 +1,86 @@
 
 /**
- * Enhanced logging utility that extends the base logger with additional features
- * for component-specific logging, performance tracking, and structured formats.
+ * Centralized logging utility with structured logging capabilities
  */
-import { logger, LogLevel } from '@/utils/logger';
 
-/**
- * Component-specific logger that prefixes all logs with component name
- * 
- * @param componentName Name of the component for context
- * @returns Logger functions with component context
- */
-export const createComponentLogger = (componentName: string) => {
-  return {
-    error: (message: string, ...args: any[]) => 
-      logger.error(message, componentName, ...args),
-    warn: (message: string, ...args: any[]) => 
-      logger.warn(message, componentName, ...args),
-    info: (message: string, ...args: any[]) => 
-      logger.info(message, componentName, ...args),
-    debug: (message: string, ...args: any[]) => 
-      logger.debug(message, componentName, ...args)
-  };
-};
+export interface LogData {
+  context?: string;
+  data?: any;
+}
 
-/**
- * Performance tracking logger to measure execution time
- * 
- * @param operationName Name of the operation being timed
- * @param context Optional context identifier (component, function, etc.)
- * @returns Object with start and end methods for timing
- */
-export const createPerformanceLogger = (operationName: string, context?: string) => {
-  let startTime: number;
-  
-  return {
-    start: () => {
-      startTime = performance.now();
-      logger.debug(`⏱️ Starting ${operationName}`, context);
-    },
-    end: () => {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      logger.debug(`⏱️ ${operationName} completed in ${duration.toFixed(2)}ms`, context);
-      return duration;
+// Define a logger class with methods for different log levels
+export class Logger {
+  debug(message: string, data?: LogData): void {
+    this.log('debug', message, data);
+  }
+
+  info(message: string, data?: LogData): void {
+    this.log('info', message, data);
+  }
+
+  warn(message: string, data?: LogData): void {
+    this.log('warn', message, data);
+  }
+
+  error(message: string, data?: LogData): void {
+    this.log('error', message, data);
+  }
+
+  // Internal method to handle logging with consistent format
+  private log(level: 'debug' | 'info' | 'warn' | 'error', message: string, data?: LogData): void {
+    const timestamp = new Date().toISOString();
+    const context = data?.context || 'App';
+    const logData = data?.data || {};
+    
+    // In development, use console methods directly
+    if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+      const logFn = console[level] || console.log;
+      logFn(`[${timestamp}] [${level.toUpperCase()}] [${context}] ${message}`, logData);
+    } else {
+      // In production, we might want to send logs to a service
+      // For now, we'll just use console with a simpler format
+      console[level](`[${level.toUpperCase()}] [${context}] ${message}`, logData);
     }
-  };
-};
+  }
+}
+
+// Create a singleton instance of the logger
+export const logger = new Logger();
 
 /**
- * User action logger for tracking UI interactions
+ * Create a component-specific logger to simplify logging context
  * 
- * @param area Application area where actions occur
- * @returns Methods for logging different types of user actions
+ * @param componentName Name of the component for logging context
+ * @returns Logger methods that automatically include the component context
  */
-export const createUserActionLogger = (area: string) => {
+export function createComponentLogger(componentName: string) {
   return {
-    click: (element: string, details?: any) => {
-      logger.info(`👆 Click: ${element}`, area, details);
+    debug: (message: string, data?: any) => {
+      logger.debug(message, { context: componentName, data });
     },
-    input: (field: string, details?: any) => {
-      logger.debug(`✏️ Input: ${field}`, area, details);
+    info: (message: string, data?: any) => {
+      logger.info(message, { context: componentName, data });
     },
-    navigation: (from: string, to: string) => {
-      logger.info(`🔄 Navigation: ${from} → ${to}`, area);
+    warn: (message: string, data?: any) => {
+      logger.warn(message, { context: componentName, data });
     },
-    complete: (action: string, details?: any) => {
-      logger.info(`✅ Completed: ${action}`, area, details);
-    }
+    error: (message: string, data?: any) => {
+      logger.error(message, { context: componentName, data });
+    },
   };
-};
+}
 
 /**
- * Error details formatter for structured error logging
- * 
- * @param error Error object to format
- * @returns Formatted error details
+ * Format error details into a structured object for logging
  */
-export const formatErrorDetails = (error: unknown): Record<string, any> => {
+export function formatErrorDetails(error: unknown): Record<string, any> {
   if (error instanceof Error) {
     return {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      ...(error as any).code && { code: (error as any).code },
-      ...(error as any).statusCode && { statusCode: (error as any).statusCode },
     };
   }
   
-  return { raw: String(error) };
-};
-
-export { logger, LogLevel };
+  return { rawError: String(error) };
+}

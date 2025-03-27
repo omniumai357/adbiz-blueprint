@@ -14,32 +14,45 @@ import {
  * @param context Optional context name for the log
  */
 export function logError(error: unknown, context = 'ErrorHandler') {
+  // Default log data
+  const logData: LogData = { context };
+  
   // Map error types to appropriate logging methods
   if (error instanceof APIError) {
-    logger.error(`API Error: ${error.message}`, { 
-      context, 
-      statusCode: error.statusCode, 
-      endpoint: error.endpoint 
+    logger.error(`API Error: ${error.message}`, {
+      context,
+      data: { 
+        statusCode: error.statusCode
+      }
     });
   } else if (error instanceof ValidationError) {
     logger.warn(`Validation Error: ${error.message}`, { 
-      context, 
-      fieldErrors: error.fieldErrors 
+      context,
+      data: { 
+        validationErrors: error.errors 
+      }
     });
   } else if (error instanceof AuthenticationError) {
     logger.error(`Auth Error: ${error.message}`, { 
-      context, 
-      authAction: error.action 
+      context,
+      data: { 
+        method: error.method 
+      }
     });
   } else if (error instanceof NetworkError) {
     logger.error(`Network Error: ${error.message}`, { 
-      context, 
-      requestInfo: error.requestInfo 
+      context,
+      data: { 
+        url: error.url,
+        status: error.status
+      }
     });
   } else if (error instanceof Error) {
     logger.error(`Error: ${error.message}`, { 
       context, 
-      stack: error.stack 
+      data: {
+        stack: error.stack
+      }
     });
   } else {
     // Handle non-Error objects
@@ -54,13 +67,15 @@ export function logError(error: unknown, context = 'ErrorHandler') {
 export function logRequestError(error: unknown, method: string, url: string, context = 'API') {
   const data: LogData = {
     context,
-    method,
-    url
+    data: {
+      method,
+      url
+    }
   };
   
   if (error instanceof Error) {
-    data.errorType = error.constructor.name;
-    data.stack = error.stack;
+    data.data.errorType = error.constructor.name;
+    data.data.stack = error.stack;
   }
   
   logger.error(`Request failed: ${method} ${url}`, data);
@@ -72,8 +87,10 @@ export function logRequestError(error: unknown, method: string, url: string, con
 export function logSlowResponse(responseTime: number, threshold: number, endpoint: string) {
   logger.warn(`Slow response detected: ${responseTime}ms (threshold: ${threshold}ms)`, {
     context: 'Performance',
-    responseTime,
-    threshold,
-    endpoint
+    data: {
+      responseTime,
+      threshold,
+      endpoint
+    }
   });
 }

@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
 import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
+import { UserMilestone as ApiUserMilestone } from "@/types/api";
 
 /**
  * Checkout Page Component
@@ -111,11 +112,11 @@ const Checkout = () => {
             totalDiscountAmount={checkout.discounts.total}
             invoiceNumber={checkout.invoiceNumber}
             isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
-            limitedTimeOffer={checkout.discounts.offers.available as LimitedTimeOfferInfo}
+            limitedTimeOffer={checkout.discounts.offers.available as unknown as LimitedTimeOfferInfo}
             offerDiscountAmount={checkout.discounts.offers.amount}
             appliedCoupon={checkout.discounts.coupons.applied}
             couponDiscountAmount={checkout.discounts.coupons.amount}
-            appliedMilestoneReward={checkout.discounts.rewards.applied as UserMilestone}
+            appliedMilestoneReward={checkout.discounts.rewards.applied as unknown as UserMilestone}
             milestoneRewardAmount={checkout.discounts.rewards.amount}
           />
           

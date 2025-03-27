@@ -7,6 +7,7 @@ import PaymentSection from "@/components/checkout/form/payment-section";
 import PaymentMethodSelector from "@/components/checkout/form/payment-method-selector";
 import AddOnsSelector from "@/components/checkout/form/add-ons-selector";
 import DiscountDisplay from "@/components/checkout/form/discount-display";
+import { UserMilestone } from "@/hooks/rewards/useMilestones";
 
 interface CheckoutFormProps {
   checkout: ReturnType<typeof import("@/hooks/checkout/useCheckoutConsolidated").useCheckoutConsolidated>;
@@ -77,7 +78,7 @@ const CheckoutForm = ({
         couponDiscountAmount={discounts.coupons.amount}
         appliedCoupon={discounts.coupons.applied}
         milestoneRewardAmount={discounts.rewards.amount}
-        appliedMilestoneReward={discounts.rewards.applied}
+        appliedMilestoneReward={discounts.rewards.applied as unknown as UserMilestone}
         totalDiscountAmount={discounts.total}
       />
       
@@ -100,8 +101,8 @@ const CheckoutForm = ({
         isCheckingCoupon={discounts.coupons.isChecking}
         applyCoupon={discounts.coupons.apply}
         removeCoupon={discounts.coupons.remove}
-        onMilestoneRewardApplied={discounts.rewards.applyReward}
-        appliedMilestoneReward={discounts.rewards.applied}
+        onMilestoneRewardApplied={(reward) => discounts.rewards.applyReward(reward as any)}
+        appliedMilestoneReward={discounts.rewards.applied as unknown as UserMilestone}
       />
       
       {/* Payment method selection */}
