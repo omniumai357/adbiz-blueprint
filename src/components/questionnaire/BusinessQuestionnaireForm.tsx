@@ -63,24 +63,10 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     business: [],
     additional: [],
     logo: files.logo,
-    // Handle images properly, ensuring they are FileItems
-    images: Array.isArray(files.images) 
-      ? (files.images as any[]).every(item => item && 'file' in item) 
-        ? files.images as FileItem[]
-        : fileAdapter.createFileItems(files.images as File[])
-      : [],
-    // Handle videos properly, ensuring they are FileItems
-    videos: Array.isArray(files.videos) 
-      ? (files.videos as any[]).every(item => item && 'file' in item) 
-        ? files.videos as FileItem[]
-        : fileAdapter.createFileItems(files.videos as File[])
-      : [],
-    // Handle documents properly, ensuring they are FileItems
-    documents: Array.isArray(files.documents) 
-      ? (files.documents as any[]).every(item => item && 'file' in item) 
-        ? files.documents as FileItem[]
-        : fileAdapter.createFileItems(files.documents as File[])
-      : []
+    // Handle empty arrays or undefined values
+    images: Array.isArray(files.images) ? files.images : [],
+    videos: Array.isArray(files.videos) ? files.videos : [],
+    documents: Array.isArray(files.documents) ? files.documents : []
   };
   
   // Log file state transformations at debug level
