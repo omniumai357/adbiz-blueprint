@@ -1,6 +1,6 @@
 
 import { createTourPath } from './core/paths/createTourPath';
-import { TourStep } from './types';
+import { TourStep } from '@/contexts/tour/types';
 
 // Import step groups but convert them to the right type
 import {

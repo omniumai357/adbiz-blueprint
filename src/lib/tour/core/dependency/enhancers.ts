@@ -90,8 +90,8 @@ export const withButtonLabels = (options: {
   prev?: string;
   skip?: string;
   close?: string;
-}) => {
-  return (step: TourStep): Partial<TourStep> => {
+}): TourStepEnhancer => {
+  return (step: TourStep): TourStep => {
     const { next, prev, skip, close } = options;
     
     // Create the actions object if it doesn't exist
@@ -109,7 +109,10 @@ export const withButtonLabels = (options: {
     if (skip) actions.skip.text = skip;
     if (close) actions.close.text = close;
     
-    return { actions };
+    return {
+      ...step,
+      actions
+    };
   };
 };
 
@@ -123,12 +126,14 @@ export const withCustomButtons = (customButtons: {
   close?: { text: string; callback?: () => void; hidden?: boolean };
 }): TourStepEnhancer => {
   return step => {
-    if (!step.actions) {
-      step.actions = {};
+    const newStep = { ...step };
+    
+    if (!newStep.actions) {
+      newStep.actions = {};
     }
 
     if (customButtons.next) {
-      step.actions.next = {
+      newStep.actions.next = {
         text: customButtons.next.text,
         callback: customButtons.next.callback,
         hidden: customButtons.next.hidden
@@ -136,7 +141,7 @@ export const withCustomButtons = (customButtons: {
     }
 
     if (customButtons.prev) {
-      step.actions.prev = {
+      newStep.actions.prev = {
         text: customButtons.prev.text,
         callback: customButtons.prev.callback,
         hidden: customButtons.prev.hidden
@@ -144,7 +149,7 @@ export const withCustomButtons = (customButtons: {
     }
 
     if (customButtons.skip) {
-      step.actions.skip = {
+      newStep.actions.skip = {
         text: customButtons.skip.text,
         callback: customButtons.skip.callback,
         hidden: customButtons.skip.hidden
@@ -152,21 +157,21 @@ export const withCustomButtons = (customButtons: {
     }
     
     if (customButtons.close) {
-      step.actions.close = {
+      newStep.actions.close = {
         text: customButtons.close.text,
         callback: customButtons.close.callback,
         hidden: customButtons.close.hidden
       };
     }
 
-    return step;
+    return newStep;
   };
 };
 
 /**
  * Adds custom next button text to a tour step
  */
-export function withNextButtonText(text: string): TourStepEnhancer {
+export const withNextButtonText = (text: string): TourStepEnhancer => {
   return (step: TourStep): TourStep => {
     return {
       ...step,
@@ -179,10 +184,10 @@ export function withNextButtonText(text: string): TourStepEnhancer {
       }
     };
   };
-}
+};
 
 // Export other enhancers for use elsewhere
-export const tourStepEnhancers: Record<string, TourStepEnhancer> = {
+export const tourStepEnhancers = {
   dependentStep,
   reEntryPoint,
   sectionStep,

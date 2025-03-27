@@ -75,7 +75,12 @@ export const TourGuideControllerInner: React.FC = () => {
         targetElement={targetElement}
         isRTL={isRTL}
         direction={direction}
-      />
+      >
+        {/* Add children here as required by the component */}
+        <div className="tour-content">
+          {/* This content will be shown inside the tour container */}
+        </div>
+      </TourViewContainer>
     </>
   );
 };

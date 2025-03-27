@@ -1,7 +1,12 @@
 
 import { TourStep } from "@/contexts/tour/types";
 
-// Define TourStepEnhancer type which was missing
+// Export TourStep & add TourStepEnhancer type
+export type { TourStep } from "@/contexts/tour/types";
+export type { TourPath } from "@/contexts/tour/types";
+export type { TourStepGroup } from "@/contexts/tour/types";
+
+// Define and export TourStepEnhancer type
 export type TourStepEnhancer = (step: TourStep) => TourStep;
 
 // Define TourStepAction interface to include label property

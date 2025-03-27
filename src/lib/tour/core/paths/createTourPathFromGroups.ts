@@ -1,6 +1,13 @@
 
-import { TourPath, TourStepGroup, TourStep } from '../../types';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 import { createNamedTourPath } from './createTourPath';
+
+// Define TourStepGroup interface if not already defined
+interface TourStepGroup {
+  id: string;
+  name: string;
+  steps: TourStep[];
+}
 
 /**
  * Creates a tour path from an array of step groups

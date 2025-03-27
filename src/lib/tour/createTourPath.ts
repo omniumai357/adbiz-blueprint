@@ -1,5 +1,5 @@
 
-import { TourStep, TourPath } from './types';
+import { TourStep, TourPath } from '@/contexts/tour/types';
 
 /**
  * Creates a simple tour path from an array of steps
