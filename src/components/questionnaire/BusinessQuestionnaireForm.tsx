@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import QuestionnaireProgress from "./QuestionnaireProgress";
@@ -57,14 +56,22 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     business: [],
     additional: [],
     logo: files.logo,
-    // Use fileAdapter to create FileItems from Files
-    images: fileAdapter.createFileItems(files.images || []),
-    videos: fileAdapter.createFileItems(files.videos || []),
-    documents: fileAdapter.createFileItems(files.documents || [])
+    // Convert File[] to FileItem[] using fileAdapter
+    images: Array.isArray(files.images) ? fileAdapter.createFileItems(files.images) : [],
+    videos: Array.isArray(files.videos) ? fileAdapter.createFileItems(files.videos) : [],
+    documents: Array.isArray(files.documents) ? fileAdapter.createFileItems(files.documents) : []
   };
   
   // Adapt files for the ReviewSection component which expects plain File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
+  
+  // Create a proper type for ReviewSection
+  const reviewFiles = {
+    logo: adaptedFiles.logo as File | null,
+    images: adaptedFiles.images as File[],
+    videos: adaptedFiles.videos as File[],
+    documents: adaptedFiles.documents as File[]
+  };
   
   return (
     <div className="bg-card rounded-lg shadow-sm border p-6 max-w-4xl mx-auto">
@@ -127,7 +134,7 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                 <>
                   <ReviewSection
                     formData={form.getValues()}
-                    files={adaptedFiles}
+                    files={reviewFiles}
                     onShowReview={onShowReview}
                   />
                   

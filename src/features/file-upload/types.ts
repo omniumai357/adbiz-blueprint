@@ -1,48 +1,56 @@
 
-// Define the basic types for file uploads
+/**
+ * File Upload Types
+ * 
+ * Core types for the file upload feature
+ */
+
+// Basic file item interface
 export interface FileItem {
   id: string;
   file: File;
   progress: number;
-  error?: string;
-  url?: string;
 }
 
-// Update the FileState interface to include all required properties
+// File state management interface
 export interface FileState {
+  logo: File | null;
   identity: FileItem[];
   business: FileItem[];
   additional: FileItem[];
-  logo: File | null;
   images: FileItem[];
   videos: FileItem[];
   documents: FileItem[];
   [key: string]: FileItem[] | File | null;
 }
 
+// Upload progress tracking interface
 export interface UploadProgressItem {
   fileName: string;
   progress: number;
 }
 
-// More specific types for different upload contexts
+// Upload result interface
 export interface UploadResult {
   success: boolean;
-  fileUrl?: string;
+  url?: string;
   error?: string;
 }
 
+// Complete file upload hook interface
 export interface FileUploadHook {
   files: FileState;
   uploadProgress: Record<string, UploadProgressItem>;
   uploadError: string | null;
   uploading: boolean;
+  hasError: boolean;
+  isUploading: boolean;
   handleFileChange: (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => void;
   onRemoveFile: (fileType: keyof FileState, index?: number) => void;
-  updateProgress: (key: string, name: string, progress: number) => void;
-  resetProgress: (key?: string) => void;
-  resetFileUpload: () => void;
   uploadFiles: (businessId: string) => Promise<boolean>;
+  resetFileUpload: () => void;
+  selectedFiles: File[];
+  setSelectedFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  uploadFile: (file: File, path: string) => Promise<string>;
+  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
 }
-
-// Add other file upload related types here as needed

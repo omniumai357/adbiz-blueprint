@@ -2,7 +2,7 @@
 import { FC } from "react";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import LogoUpload from "./LogoUpload";
-import FileUploadCategory from "@/features/file-upload/components/FileUploadCategory";
+import { FileUploadCategory } from "@/features/file-upload/components";
 import UploadTips from "./UploadTips";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
 import { FileState } from "@/features/file-upload/types";
@@ -46,7 +46,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
       {/* Logo Upload */}
       {hasLogo && (
         <LogoUpload 
-          logo={adaptedFiles.logo}
+          logo={adaptedFiles.logo as File | null}
           onFileChange={onFileChange}
         />
       )}
@@ -56,7 +56,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Business Photos"
         description="Upload photos of your business, team, services, or products (JPG, PNG, GIF, WEBP formats)"
         fileType="images"
-        files={adaptedFiles.images}
+        files={adaptedFiles.images as File[]}
         acceptFormats=".jpg,.jpeg,.png,.gif,.webp"
         onFileChange={onFileChange}
       />
@@ -66,7 +66,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Video Content"
         description="Upload any video content you'd like to include (MP4, MOV, WEBM formats)"
         fileType="videos"
-        files={adaptedFiles.videos}
+        files={adaptedFiles.videos as File[]}
         acceptFormats=".mp4,.mov,.webm"
         onFileChange={onFileChange}
       />
@@ -76,7 +76,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Business Documents"
         description="Upload any business documents that might be helpful (PDF, DOC, DOCX formats)"
         fileType="documents"
-        files={adaptedFiles.documents}
+        files={adaptedFiles.documents as File[]}
         acceptFormats=".pdf,.doc,.docx"
         onFileChange={onFileChange}
       />

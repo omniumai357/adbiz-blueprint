@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import QuestionnaireProgress from "./QuestionnaireProgress";
@@ -51,6 +50,14 @@ const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnai
   
   // Adapt files for the ReviewSection component which expects plain File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+  
+  // Create a proper type for ReviewSection
+  const reviewFiles = {
+    logo: adaptedFiles.logo as File | null,
+    images: adaptedFiles.images as File[],
+    videos: adaptedFiles.videos as File[],
+    documents: adaptedFiles.documents as File[]
+  };
   
   return (
     <div className="bg-card rounded-lg shadow-sm border p-6 max-w-4xl mx-auto">
@@ -113,7 +120,7 @@ const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnai
                 <>
                   <ReviewSection
                     formData={form.getValues()}
-                    files={adaptedFiles}
+                    files={reviewFiles}
                     onShowReview={onShowReview}
                   />
                   

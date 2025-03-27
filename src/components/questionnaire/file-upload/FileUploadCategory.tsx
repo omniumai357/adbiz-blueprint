@@ -1,7 +1,7 @@
 
 import { FC } from "react";
 import { FileState } from "@/features/file-upload/types";
-import { FileUploadCategory as FeatureFileUploadCategory } from "@/features/file-upload/components/FileUploadCategory";
+import { FileUploadCategory as FeatureFileUploadCategory } from "@/features/file-upload/components";
 
 interface FileUploadCategoryProps {
   title: string;

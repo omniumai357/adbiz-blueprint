@@ -1,16 +1,18 @@
-import { useState, useCallback, useEffect } from 'react';
-import { FileState, FileItem, UploadProgressItem } from '../types';
+
+import { useCallback, useState, useEffect } from 'react';
+import { FileState, FileItem, UploadProgressItem, FileUploadHook } from '../types';
 import { useFileUploadProgress } from './useFileUploadProgress';
 import { useFileUploadState } from './useFileUploadState';
 import { fileAdapter } from '@/utils/file-adapter';
+import { logger } from '@/utils/logger';
 
 /**
- * Main hook for managing file uploads
+ * Main hook for file upload functionality
  * 
- * Provides a comprehensive API for handling file selection, 
- * upload tracking, and state management
+ * This hook combines state management and file upload handling in one place
  */
-export const useFileUpload = () => {
+export const useFileUpload = (): FileUploadHook => {
+  // Use the specialized hooks internally
   const {
     files,
     updateFiles,
@@ -22,10 +24,10 @@ export const useFileUpload = () => {
   const {
     uploadProgress,
     updateProgress,
-    resetProgress,
-    completeProgress
+    resetProgress
   } = useFileUploadProgress();
   
+  // Local state
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -87,7 +89,7 @@ export const useFileUpload = () => {
         const fileToRemove = currentFiles[index];
         
         // Remove from progress tracking if needed
-        if (fileToRemove.id) {
+        if (fileToRemove && fileToRemove.id) {
           resetProgress(fileToRemove.id);
         }
         
@@ -101,14 +103,16 @@ export const useFileUpload = () => {
   const uploadFiles = useCallback(async (businessId: string): Promise<boolean> => {
     setUploading(true);
     setUploadError(null);
+    logger.debug('Starting file upload process for business ID:', businessId);
     
     try {
-      // For now, just return true - actual upload implementation will be added later
+      // For now, just simulate an upload process
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      logger.debug('Upload completed successfully');
       return true;
     } catch (error) {
-      console.error('Error uploading files:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      logger.error('File upload failed:', errorMessage);
       setUploadError('Failed to upload files');
       return false;
     } finally {
@@ -122,6 +126,7 @@ export const useFileUpload = () => {
     resetProgress();
     setUploadError(null);
     setSelectedFiles([]);
+    logger.debug('File upload state reset');
   }, [clearFiles, resetProgress]);
   
   return {
@@ -131,12 +136,17 @@ export const useFileUpload = () => {
     uploading,
     handleFileChange,
     onRemoveFile,
-    updateProgress,
-    resetProgress,
-    resetFileUpload,
     uploadFiles,
+    resetFileUpload,
+    setUploadError,
     selectedFiles,
     setSelectedFiles,
-    setUploadError
+    uploadFile: async (file: File, path: string) => {
+      // Simulate upload
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return `https://example.com/uploads/${path}/${file.name}`;
+    },
+    hasError: !!uploadError,
+    isUploading: uploading
   };
 };
