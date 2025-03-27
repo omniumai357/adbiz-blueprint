@@ -1,59 +1,36 @@
 
-import { TourStep } from '@/contexts/tour/types';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
- * Create a new tour step
- * 
- * @param id Unique identifier for the step
- * @param elementId ID of the element to attach the tour to
- * @param title Title of the tour step
- * @param content Content/body of the tour step
- * @param placement Placement of the tour tooltip
- * @returns A new tour step object
+ * Create a new tour step with given properties
  */
-export function createStep(
-  id: string,
-  elementId: string,
-  title: string,
-  content: string,
-  placement: "top" | "right" | "bottom" | "left" = "bottom"
-): TourStep {
+export function createTourStep(props: Partial<TourStep> & { id: string; target: string; title: string; content: string }): TourStep {
   return {
-    id,
-    elementId,
-    target: elementId, // Set target to the same as elementId
-    title,
-    content,
-    placement
+    id: props.id,
+    target: props.target,
+    title: props.title,
+    content: props.content,
+    position: props.position || 'bottom',
+    placement: props.placement || props.position || 'bottom',
+    elementId: props.elementId,
+    // Add other properties with defaults
+    ...props
   };
 }
 
 /**
- * Enhance a step with additional properties or transformations
- * 
- * @param step The tour step to enhance
- * @param enhancer A function that applies enhancements to the step
- * @returns The enhanced tour step
+ * Create a new tour path with given properties and steps
  */
-export function enhanceStep<T extends TourStep>(
-  step: T,
-  enhancer: (step: T) => T
-): T {
-  return enhancer(step);
-}
-
-/**
- * Create steps for each core path component
- */
-export function createSteps() {
-  // Implementation placeholder
-  return [];
-}
-
-/**
- * Core path builder
- */
-export function createTourPath() {
-  // Implementation placeholder
-  return {};
+export function createTourPath(props: Partial<TourPath> & { id: string; name: string; steps: TourStep[] }): TourPath {
+  return {
+    id: props.id,
+    name: props.name,
+    steps: props.steps,
+    route: props.route,
+    description: props.description,
+    config: props.config,
+    allowSkip: props.allowSkip,
+    showProgress: props.showProgress,
+    autoStart: props.autoStart
+  };
 }

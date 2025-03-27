@@ -1,74 +1,44 @@
 
 import { useState, useCallback } from 'react';
 import { useFileUploadContext } from '@/contexts/file-upload-context';
-import { FileState } from '@/contexts/file-upload-context';
+import { FileState } from '@/features/file-upload/types';
 
 export interface UploadHandlersResult {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveFile: (fileId: string) => void;
-  uploadFile: (file: File, metadata?: Record<string, any>) => Promise<FileState>;
-  uploadFiles: (files: FileList | File[], metadata?: Record<string, any>) => Promise<FileState[]>;
+  uploadFile: (file: File, metadata?: Record<string, any>) => Promise<any>;
+  uploadFiles: (files: FileList | File[], metadata?: Record<string, any>) => Promise<any[]>;
 }
 
 export const useFileUploadHandlers = (): UploadHandlersResult => {
-  const { addFile, removeFile, updateFileStatus } = useFileUploadContext();
+  const { files, handleFileChange: contextHandleFileChange, onRemoveFile: contextRemoveFile } = useFileUploadContext();
   const [activeUploads, setActiveUploads] = useState<Record<string, boolean>>({});
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    Array.from(files).forEach(file => {
-      uploadFile(file);
-    });
+    // Use the file input event directly with the context
+    contextHandleFileChange('images', e);
     
     // Reset the input value to allow uploading the same file again
     e.target.value = '';
-  }, []);
+  }, [contextHandleFileChange]);
 
-  const uploadFile = useCallback(async (file: File, metadata?: Record<string, any>): Promise<FileState> => {
-    const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const uploadFile = useCallback(async (file: File, metadata?: Record<string, any>): Promise<any> => {
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     
-    // Add file to context
-    const fileState = addFile({
-      id: fileId,
-      file,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      status: 'uploading',
-      progress: 0,
-      metadata: metadata || {}
-    });
-    
+    // Add file to tracked uploads
     setActiveUploads(prev => ({ ...prev, [fileId]: true }));
     
     try {
       // Simulate upload progress
-      const updateProgress = (progress: number) => {
-        updateFileStatus(fileId, { 
-          progress, 
-          status: progress === 100 ? 'uploaded' : 'uploading' 
-        });
-      };
+      await simulateFileUpload();
       
-      await simulateFileUpload(updateProgress);
-      
-      // Update file status to uploaded
-      const updatedFileState = updateFileStatus(fileId, { 
-        status: 'uploaded', 
-        progress: 100,
-        url: URL.createObjectURL(file) 
-      });
-      
-      return updatedFileState;
+      return { id: fileId, file, status: 'uploaded' };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const errorFileState = updateFileStatus(fileId, { 
-        status: 'error', 
-        error: errorMessage 
-      });
-      return errorFileState;
+      return { id: fileId, file, status: 'error', error: errorMessage };
     } finally {
       setActiveUploads(prev => {
         const newState = { ...prev };
@@ -76,17 +46,24 @@ export const useFileUploadHandlers = (): UploadHandlersResult => {
         return newState;
       });
     }
-  }, [addFile, updateFileStatus]);
+  }, []);
 
-  const uploadFiles = useCallback(async (files: FileList | File[], metadata?: Record<string, any>): Promise<FileState[]> => {
+  const uploadFiles = useCallback(async (files: FileList | File[], metadata?: Record<string, any>): Promise<any[]> => {
     const fileArray = Array.from(files);
     const promises = fileArray.map(file => uploadFile(file, metadata));
     return Promise.all(promises);
   }, [uploadFile]);
 
   const onRemoveFile = useCallback((fileId: string) => {
-    removeFile(fileId);
-  }, [removeFile]);
+    // Use context's remove file function with a numeric index
+    const index = parseInt(fileId, 10);
+    if (!isNaN(index)) {
+      contextRemoveFile('images', index);
+    } else {
+      // Try to handle as a direct file type if it's a string
+      contextRemoveFile(fileId as keyof FileState);
+    }
+  }, [contextRemoveFile]);
 
   return {
     handleFileChange,
@@ -97,16 +74,10 @@ export const useFileUploadHandlers = (): UploadHandlersResult => {
 };
 
 // Helper function to simulate file upload
-const simulateFileUpload = (progressCallback: (progress: number) => void): Promise<void> => {
+const simulateFileUpload = (): Promise<void> => {
   return new Promise((resolve) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      progressCallback(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, 200);
+    setTimeout(() => {
+      resolve();
+    }, 500);
   });
 };

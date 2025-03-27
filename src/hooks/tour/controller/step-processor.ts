@@ -48,3 +48,45 @@ export function getVisibleSteps(steps: TourStep[], state: any = {}): TourStep[] 
     return 0;
   });
 }
+
+/**
+ * Process dynamic content in steps
+ */
+export function processDynamicContent(step: TourStep, dynamicData: Record<string, any>): TourStep {
+  if (!step || !dynamicData) return step;
+  
+  // Create a copy of the step to avoid mutating the original
+  const processedStep = { ...step };
+  
+  // Process title
+  if (step.title) {
+    processedStep.title = replaceTokens(step.title, dynamicData);
+  }
+  
+  // Process content
+  if (step.content) {
+    processedStep.content = replaceTokens(step.content, dynamicData);
+  }
+  
+  return processedStep;
+}
+
+/**
+ * Update step content with dynamic data
+ */
+export function updateStepContent(step: TourStep, content: string): TourStep {
+  return {
+    ...step,
+    content
+  };
+}
+
+/**
+ * Helper function to replace tokens in text
+ */
+function replaceTokens(text: string, data: Record<string, any>): string {
+  return text.replace(/\{\{(.*?)\}\}/g, (match, token) => {
+    const key = token.trim();
+    return data[key] !== undefined ? String(data[key]) : match;
+  });
+}

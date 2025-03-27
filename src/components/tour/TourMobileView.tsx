@@ -1,164 +1,102 @@
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerFooter } from "@/components/ui/drawer";
-import { TourOverlay } from "./TourOverlay";
-import { cn } from "@/lib/utils";
-import { useTourGestures } from "@/hooks/tour/useTourGestures";
-import { TourMobileProgress } from "./mobile/TourMobileProgress";
-import { TourMobileMedia } from "./mobile/TourMobileMedia";
-import { TourMobileSwipeHint } from "./mobile/TourMobileSwipeHint";
-import { TourMobileActions } from "./mobile/TourMobileActions";
-import { useTooltipAnimation } from "./tooltip/useTooltipAnimation";
-import { useDevice } from "@/hooks/use-mobile";
-import { TourStep } from "@/contexts/tour/types";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TourStep } from '@/contexts/tour/types';
 
-import { TourMobileCompactView } from "./mobile/TourMobileCompactView";
-import { TourMobileDrawerView } from "./mobile/TourMobileDrawerView";
-
-interface TourMobileViewProps {
-  currentStepData: TourStep;
-  content: string;
-  targetElement: HTMLElement | null;
-  currentStep: number;
-  totalSteps: number;
+export interface TourMobileViewProps {
+  step: TourStep;
+  stepInfo: string;
   onNext: () => void;
   onPrev: () => void;
   onClose: () => void;
-  highlightAnimation: string;
-  transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "up" | "down" | "left" | "right";
-    duration?: number;
-  };
-  spotlight?: {
-    intensity?: "low" | "medium" | "high";
-    color?: string;
-    pulseEffect?: boolean;
-    fadeBackground?: boolean;
-  };
-  onShowKeyboardShortcuts?: () => void;
-  deviceType?: "mobile" | "tablet" | "desktop";
+  isLastStep: boolean;
+  currentStep: number;
+  totalSteps: number;
+  targetElement: HTMLElement | null;
+  isRTL: boolean;
+  direction: 'ltr' | 'rtl';
 }
 
 export const TourMobileView: React.FC<TourMobileViewProps> = ({
-  currentStepData,
-  content,
-  targetElement,
-  currentStep,
-  totalSteps,
+  step,
+  stepInfo,
   onNext,
   onPrev,
   onClose,
-  highlightAnimation,
-  transition,
-  spotlight,
-  onShowKeyboardShortcuts,
-  deviceType = "mobile"
+  isLastStep,
+  currentStep,
+  totalSteps,
+  targetElement,
+  isRTL,
+  direction,
 }) => {
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const { deviceType: detectedDeviceType, hasTouchCapability } = useDevice();
-  const actualDeviceType = deviceType || detectedDeviceType;
+  // Extract necessary data from step
+  const { title, content } = step;
   
-  const { touchHandlers } = useTourGestures({
-    onSwipeLeft: !isAnimating ? onNext : undefined,
-    onSwipeRight: !isAnimating && currentStep > 0 ? onPrev : undefined,
-    preventDefaultOnSwipe: true,
-  });
+  // Determine animation class
+  const animationClass = step.animation ? `animate-${step.animation}` : 'animate-fade-in';
   
-  // Extract entry animation based on the animation type
-  const entryAnimation = typeof currentStepData.animation === 'object' && currentStepData.animation?.entry 
-    ? currentStepData.animation.entry 
-    : typeof currentStepData.animation === 'string' 
-      ? currentStepData.animation 
-      : "fade-in";
+  // Determine next/prev button labels
+  const nextLabel = step.actions?.next?.text || 'Next';
+  const prevLabel = step.actions?.prev?.text || 'Back';
+  const showPrevButton = currentStep > 0 && !(step.actions?.prev?.hidden);
   
-  const { animationClass } = useTooltipAnimation(
-    entryAnimation,
-    transition
-  );
+  // Build classnames for the container
+  const containerClassNames = [
+    'fixed bottom-0 left-0 right-0 z-50',
+    'bg-background border-t border-border shadow-lg',
+    'p-4 sm:p-6 transition-all duration-300',
+    animationClass,
+  ].join(' ');
   
-  useEffect(() => {
-    setIsAnimating(true);
-    const timeout = setTimeout(() => {
-      setIsAnimating(false);
-    }, transition?.duration || 300);
-    
-    return () => clearTimeout(timeout);
-  }, [currentStep, transition]);
-  
-  useEffect(() => {
-    if (targetElement && targetElement.scrollIntoView) {
-      setIsScrolling(true);
-      const timeout = setTimeout(() => {
-        targetElement.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center'
-        });
-        setTimeout(() => setIsScrolling(false), 500);
-      }, 100);
-      return () => clearTimeout(timeout);
-    }
-  }, [targetElement, currentStep]);
-
-  const useCompactView = useMediaQuery("(max-height: 500px) and (orientation: landscape)") || 
-                         (actualDeviceType === "tablet" && useMediaQuery("(orientation: landscape)"));
-
   return (
-    <>
-      <TourOverlay 
-        targetElement={targetElement} 
-        animation={highlightAnimation}
-        spotlight={spotlight}
-        transition={transition}
-      />
+    <div className={containerClassNames} dir={direction}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{stepInfo}</span>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8"
+            onClick={onClose}
+            aria-label="Close tour"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
       
-      {useCompactView ? (
-        <TourMobileCompactView 
-          title={currentStepData.title}
-          content={content}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          onNext={onNext}
-          onPrev={onPrev}
-          onClose={onClose}
-          nextLabel={currentStepData.actions?.next?.label}
-          prevLabel={currentStepData.actions?.prev?.label}
-        />
-      ) : (
-        <TourMobileDrawerView
-          currentStepData={currentStepData}
-          content={content}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          onNext={onNext}
-          onPrev={onPrev}
-          onClose={onClose}
-          animationClass={animationClass}
-          touchHandlers={touchHandlers}
-          deviceType={actualDeviceType as "mobile" | "tablet" | "desktop"}
-        />
-      )}
-    </>
+      <div className="mb-6 prose-sm prose-slate dark:prose-invert max-w-none">
+        <div dangerouslySetInnerHTML={{ __html: content }} />
+      </div>
+      
+      <div className="flex justify-between">
+        <div>
+          {showPrevButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onPrev}
+              className="gap-1"
+            >
+              {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              {prevLabel}
+            </Button>
+          )}
+        </div>
+        
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onNext}
+          className="gap-1"
+        >
+          {isLastStep ? 'Finish' : nextLabel}
+          {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+      </div>
+    </div>
   );
 };
-
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(query);
-    setMatches(mediaQuery.matches);
-
-    const handler = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
-
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, [query]);
-
-  return matches;
-}

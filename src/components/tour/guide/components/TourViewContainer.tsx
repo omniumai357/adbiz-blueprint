@@ -1,95 +1,87 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { useTour } from "@/contexts/tour";
-import { TourDesktopView } from "../../TourDesktopView";
-import { TourMobileView } from "../../TourMobileView";
-import { useKeyboardShortcuts } from "@/contexts/tour/KeyboardShortcutsContext";
-import { useDevice } from "@/hooks/use-mobile";
+import React, { useEffect, useRef } from 'react';
+import { useTour } from '@/contexts/tour';
+import { useTourElementFinder } from '@/hooks/tour/useTourElementFinder';
+import { useTourPosition } from '@/hooks/tour/useTourPosition';
+import { TourMobileView } from '../../TourMobileView';
+import { TourDesktopView } from '../../TourDesktopView';
+import { useMediaQuery } from '@/hooks/ui/useMediaQuery';
+import { TourStep } from '@/contexts/tour/types';
 
-interface TourViewContainerProps {
-  targetElement: HTMLElement | null;
-  isRTL?: boolean;
-  direction?: 'ltr' | 'rtl';
-}
-
-export const TourViewContainer: React.FC<TourViewContainerProps> = ({ 
-  targetElement, 
-  isRTL = false,
-  direction = 'ltr'
-}) => {
+export const TourViewContainer: React.FC = () => {
   const {
-    currentStep,
-    totalSteps,
+    isActive,
+    currentStepData,
     nextStep,
     prevStep,
     endTour,
-    currentStepData,
-    currentPathData,
+    currentStep,
+    totalSteps,
   } = useTour();
   
-  const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
-  const { isMobile, hasTouchCapability } = useDevice();
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const { targetElement, targetRect } = useTourElementFinder(currentStepData?.target || '');
+  const { position, arrowPosition } = useTourPosition(targetRect, currentStepData?.position || 'bottom');
   
-  const [tooltipPosition, setTooltipPosition] = useState<"top" | "right" | "bottom" | "left">("bottom");
-  const desktopViewRef = useRef(null);
+  // Tracking the first render
+  const firstRenderRef = useRef(true);
   
-  // Determine position based on step data and screen size
+  // Determine the current direction based on the language
+  const isRTL = document.documentElement.dir === 'rtl';
+  const direction = isRTL ? 'rtl' : 'ltr';
+  
+  // Scroll into view if needed
   useEffect(() => {
-    if (currentStepData && currentPathData) {
-      // Default position to bottom if not specified
-      const position = currentStepData.position || "bottom";
-      setTooltipPosition(position as "top" | "right" | "bottom" | "left");
+    if (isActive && targetElement && !firstRenderRef.current) {
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
-  }, [currentStepData, currentPathData]);
-
-  if (!targetElement || !currentStepData) {
+    
+    firstRenderRef.current = false;
+  }, [isActive, targetElement, currentStep]);
+  
+  // Don't render if not active or no step data
+  if (!isActive || !currentStepData) {
     return null;
   }
-
-  // Create step info text
-  const stepInfo = `Step ${currentStep + 1} of ${totalSteps}`;
   
-  // Determine if current step is the last one
   const isLastStep = currentStep === totalSteps - 1;
   
-  // Choose between mobile and desktop view
+  // Generate step info text
+  const stepInfo = `${currentStep + 1} / ${totalSteps}`;
+  
   if (isMobile) {
     return (
       <TourMobileView
-        currentStepData={currentStepData}
-        content={currentStepData.content || ""}
-        targetElement={targetElement}
+        step={currentStepData}
+        stepInfo={stepInfo}
+        onNext={nextStep}
+        onPrev={prevStep}
+        onClose={endTour}
+        isLastStep={isLastStep}
         currentStep={currentStep}
         totalSteps={totalSteps}
-        onNext={nextStep}
-        onPrev={currentStep > 0 ? prevStep : undefined}
-        onClose={endTour}
-        highlightAnimation={typeof currentStepData.animation === 'string' ? currentStepData.animation : 'fade-in'}
-        transition={currentStepData.transition}
-        spotlight={currentStepData.spotlight}
-        onShowKeyboardShortcuts={showKeyboardShortcutsHelp}
-        deviceType="mobile"
+        targetElement={targetElement}
+        isRTL={isRTL}
+        direction={direction}
       />
     );
   }
   
   return (
     <TourDesktopView
-      ref={desktopViewRef}
-      targetElement={targetElement}
-      position={tooltipPosition}
-      title={currentStepData.title || "Tour"}
-      content={currentStepData.content || ""}
+      step={currentStepData}
+      position={position}
+      arrowPosition={arrowPosition}
       stepInfo={stepInfo}
       onNext={nextStep}
-      onPrev={currentStep > 0 ? prevStep : undefined}
+      onPrev={prevStep}
       onClose={endTour}
       isLastStep={isLastStep}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-      showKeyboardShortcuts={showKeyboardShortcutsHelp}
-      hasTouchCapability={hasTouchCapability}
       isRTL={isRTL}
+      targetElement={targetElement}
       direction={direction}
     />
   );

@@ -1,5 +1,5 @@
 
-import { TourContextType } from './types';
+import { TourContextType, TourPath, TourStep } from './types';
 
 export const defaultContext: TourContextType = {
   isActive: false,

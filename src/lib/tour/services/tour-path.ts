@@ -1,54 +1,51 @@
 
-import { TourPath } from '@/contexts/tour/types';
-import { createStep } from '@/lib/tour/core/tourPathFactory';
-import { mediaEnhancedStep, spotlightStep } from '@/lib/tour/enhancers/visualEnhancers';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
- * Tour path for the services page
+ * Create a tour path for the services page
  */
-export const servicesTourPath: TourPath = {
-  id: 'services-tour',
-  name: 'Services Page Tour',
-  steps: [
-    // Welcome to services
+export const createServicesPageTour = (): TourPath => {
+  const steps: TourStep[] = [
     {
-      id: 'services-welcome',
-      elementId: 'services-header',
-      target: 'services-header',
-      title: 'Welcome to Our Services',
-      content: 'This tour will show you the various services we offer.',
+      id: 'services-intro',
+      elementId: 'services-heading',
+      target: '#services-heading',
+      title: 'Our Services',
+      content: 'Explore our wide range of services tailored to your business needs.',
+      position: 'bottom',
       placement: 'bottom',
       animation: 'fade-in'
     },
-    
-    // Service categories
     {
-      id: 'service-categories',
-      elementId: 'service-categories-section',
-      target: 'service-categories-section',
+      id: 'services-categories',
+      elementId: 'service-categories',
+      target: '#service-categories',
       title: 'Service Categories',
-      content: 'Browse through our different service categories.',
+      content: 'Browse services by category to find what you need.',
+      position: 'bottom',
+      placement: 'bottom',
+      animation: 'fade-in'
+    },
+    {
+      id: 'service-details',
+      elementId: 'service-details',
+      target: '#service-details',
+      title: 'Service Details',
+      content: 'Click on any service to view detailed information and pricing.',
+      position: 'right',
       placement: 'right',
       animation: 'slide-in'
-    },
-    
-    // Service pricing
-    {
-      id: 'service-pricing',
-      elementId: 'pricing-section',
-      target: 'pricing-section',
-      title: 'Pricing Plans',
-      content: 'Compare our different pricing plans to find what suits you best.',
-      placement: 'left',
-      animation: 'fade-in'
     }
-  ],
-  allowSkip: true,
-  showProgress: true,
-  route: '/services',
-  config: {
-    metadata: {
-      route: '/services'
-    }
-  }
+  ];
+  
+  return {
+    id: 'services-tour',
+    name: 'Services Tour',
+    description: 'A guided tour of our services page',
+    steps,
+    route: '/services',
+    allowSkip: true,
+    showProgress: true,
+    autoStart: false
+  };
 };
