@@ -101,5 +101,60 @@ export const responseHandler = {
       logger.error('Failed to parse API response', { context, error });
       throw new Error('Failed to parse API response');
     }
+  },
+
+  /**
+   * Handle a Supabase query response with standardized error handling and transformation
+   */
+  handle<T>(
+    query: Promise<any>, 
+    options: {
+      context?: string;
+      transform?: (response: any) => T;
+      showErrorToast?: boolean;
+      showSuccessToast?: boolean;
+      successMessage?: string;
+    } = {}
+  ): Promise<T> {
+    const { 
+      context = 'API',
+      transform = (response) => response.data as T,
+      showErrorToast = false,
+      showSuccessToast = false,
+      successMessage = 'Operation successful'
+    } = options;
+
+    return query
+      .then((response) => {
+        if (response.error) {
+          throw new APIError(
+            response.error.message || 'An error occurred',
+            response.status || 500,
+            context
+          );
+        }
+        
+        // If success toast is requested, we would show it here
+        if (showSuccessToast) {
+          // Placeholder for toast notification
+          console.info(successMessage);
+        }
+
+        return transform(response);
+      })
+      .catch((error) => {
+        logger.error(`API Error in ${context}:`, { 
+          context,
+          data: { error: error instanceof Error ? error.message : String(error) }
+        });
+        
+        // If error toast is requested, we would show it here
+        if (showErrorToast) {
+          // Placeholder for toast notification
+          console.error(error.message || 'An unexpected error occurred');
+        }
+        
+        throw error;
+      });
   }
 };
