@@ -1,52 +1,81 @@
 
 import { useState, useCallback } from 'react';
 import { UploadProgressItem } from '../types';
+import { logger } from '@/utils/logger';
 
 /**
- * Hook for managing file upload progress
- * 
- * Tracks and updates progress for multiple file uploads
- * 
- * @returns Object with progress state and helper functions
+ * Hook for tracking and managing file upload progress
  */
 export const useFileUploadProgress = () => {
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
 
-  const updateProgress = useCallback((key: string, name: string, progress: number) => {
+  /**
+   * Update progress for a specific file
+   */
+  const updateProgress = useCallback((fileId: string, fileName: string, progress: number) => {
+    logger.debug(`Updating progress for ${fileName}: ${progress}%`);
+    
     setUploadProgress(prev => ({
       ...prev,
-      [key]: { fileName: name, progress } // Fixed to use fileName instead of name
+      [fileId]: { fileName, progress }
     }));
   }, []);
 
-  const resetProgress = useCallback((key?: string) => {
-    if (key) {
+  /**
+   * Reset progress for a specific file or all files
+   */
+  const resetProgress = useCallback((fileId?: string) => {
+    if (fileId) {
+      logger.debug(`Resetting progress for file ID: ${fileId}`);
+      
       setUploadProgress(prev => {
         const newProgress = { ...prev };
-        delete newProgress[key];
+        delete newProgress[fileId];
         return newProgress;
       });
     } else {
+      logger.debug('Resetting all progress');
       setUploadProgress({});
     }
   }, []);
 
-  const completeProgress = useCallback((key: string) => {
+  /**
+   * Mark a file upload as complete
+   */
+  const completeProgress = useCallback((fileId: string) => {
+    logger.debug(`Marking file ID ${fileId} as complete`);
+    
     setUploadProgress(prev => {
-      if (prev[key]) {
+      if (prev[fileId]) {
         return {
           ...prev,
-          [key]: { ...prev[key], progress: 100 }
+          [fileId]: { ...prev[fileId], progress: 100 }
         };
       }
       return prev;
     });
   }, []);
 
+  /**
+   * Calculate overall progress across all files
+   */
+  const calculateOverallProgress = useCallback((): number => {
+    const progressEntries = Object.values(uploadProgress);
+    
+    if (progressEntries.length === 0) {
+      return 0;
+    }
+    
+    const totalProgress = progressEntries.reduce((sum, item) => sum + item.progress, 0);
+    return Math.round(totalProgress / progressEntries.length);
+  }, [uploadProgress]);
+
   return {
     uploadProgress,
     updateProgress,
     resetProgress,
-    completeProgress
+    completeProgress,
+    calculateOverallProgress,
+    isComplete: calculateOverallProgress() === 100
   };
 };

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,7 @@ import { useProfile } from "@/hooks/data/useProfile";
 import { useAdminStatus } from "@/hooks/data/useAdminStatus";
 import { useAuthActions } from "../hooks/use-auth-actions";
 import { AuthContextType, User, UserProfile } from "../types";
+import { logger } from "@/utils/logger";
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,6 +24,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        logger.debug(`Auth state changed: ${event}`);
         setSession(currentSession);
         // Type assertion to cast the user to our extended User type
         setUser(currentSession?.user as User | null ?? null);
@@ -32,12 +35,13 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     const initializeAuth = async () => {
       setIsLoading(true);
       try {
+        logger.debug('Initializing auth session');
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
         // Type assertion to cast the user to our extended User type
         setUser(currentSession?.user as User | null ?? null);
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        logger.error("Error initializing auth:", error);
       } finally {
         setIsLoading(false);
       }
@@ -56,15 +60,16 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Fixed return type to Promise<void>
   const logout = async (): Promise<void> => {
     try {
-      const { error } = await signOut();
-      if (error) {
-        console.error('Error signing out:', error);
+      const result = await signOut();
+      // Type guard to check if result has error property
+      if ('error' in result && result.error) {
+        logger.error('Error signing out:', result.error);
       } else {
         setUser(null);
         setSession(null);
       }
     } catch (error) {
-      console.error('Error during logout:', error);
+      logger.error('Error during logout:', error);
     }
     // No return value for void Promise
   };

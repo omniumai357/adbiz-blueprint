@@ -123,8 +123,10 @@ export function useQuestionnaireForm(onComplete?: (data: any) => void) {
   };
   
   const onSubmit = async (data: QuestionnaireFormValues) => {
-    // Create a FileState object with the required fields
+    // Get UI-friendly files
     const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+    
+    // Convert back to the full FileState format with identity, business, additional arrays
     const compatibleFiles = fileAdapter.adaptUIFilesToFileState(adaptedFiles);
     
     const success = await submitQuestionnaire(data, compatibleFiles, uploadFiles);
