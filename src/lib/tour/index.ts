@@ -1,28 +1,15 @@
 
-// Export core functionality
-export * from './core/paths/createTourPath';
-// Rename the export to avoid conflict
-export { createTourPathFromGroups } from './core/paths';
-export * from './core/tourPathFactory';
-export * from './core/tourStepGroups';
-
-// Export enhancers
-export * from './enhancers/visualEnhancers';
-export * from './enhancers/actionEnhancers';
-export * from './enhancers/contentEnhancers';
-export * from './enhancers/dependencyEnhancers';
-export * from './enhancers/interactivityEnhancers';
-export * from './enhancers/pathEnhancers';
-export * from './enhancers/roleEnhancers';
-
-// Export utilities and helpers
-export * from './utils/tour-composer/createCustomTour';
-export * from './utils/tour-composer/createFeatureTour';
-export * from './utils/tour-composer/createOnboardingTour';
-
-// Core building blocks
-export { createStep, enhanceStep } from './core/tourPathFactory';
-export { conditionalStep, stepInGroup } from './core/tourStepGroups';
-
-// Utility types
+export * from './core/registry';
+export * from './core/steps';
+export { createTourPath } from './core/paths';
+export { createTourPathFromGroups } from './core/paths/createTourPathFromGroups';
+export * from './core/dependency';
 export * from './types';
+
+// Renamed to avoid naming conflict
+export { default as tourPathCreator } from './createTourPath';
+export * from './default-tour';
+export * from './home-tour';
+export * from './services-tour';
+export * from './contact-tour';
+export * from './checkout-tour';

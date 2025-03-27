@@ -30,3 +30,6 @@ export interface LanguageContextType {
 // Storage keys
 export const LANGUAGE_STORAGE_KEY = 'userLanguagePreference';
 export const LANGUAGE_TIMESTAMP_KEY = 'userLanguageTimestamp';
+
+// Preference expiration (30 days in milliseconds)
+export const PREFERENCE_EXPIRATION = 30 * 24 * 60 * 60 * 1000;

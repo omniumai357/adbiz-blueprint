@@ -2,17 +2,24 @@
 import React from 'react';
 import { FooterLanguageSelector as FooterVariant } from './variants/FooterLanguageSelector';
 import { cn } from '@/lib/utils';
+import { LanguageSelectorProps } from './hooks/useLanguageSelector';
 
-interface FooterLanguageSelectorProps {
+interface FooterLanguageSelectorWrapperProps extends LanguageSelectorProps {
   className?: string;
-  showNativeNames?: boolean;
 }
 
-export const FooterLanguageSelector: React.FC<FooterLanguageSelectorProps> = ({
+export const FooterLanguageSelector: React.FC<FooterLanguageSelectorWrapperProps> = ({
   className,
-  showNativeNames = true
+  showNativeNames = true,
+  ...rest
 }) => {
-  return <FooterVariant className={cn("mt-4", className)} showNativeNames={showNativeNames} />;
+  return (
+    <FooterVariant 
+      className={cn("mt-4", className)} 
+      showNativeNames={showNativeNames} 
+      {...rest} 
+    />
+  );
 };
 
 export default FooterLanguageSelector;

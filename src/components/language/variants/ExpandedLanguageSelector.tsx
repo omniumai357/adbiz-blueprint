@@ -1,41 +1,30 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useLanguageSelector, LanguageSelectorProps } from '../hooks/useLanguageSelector';
 
-interface ExpandedLanguageSelectorProps {
-  className?: string;
-  showNativeNames?: boolean;
-  showFlags?: boolean;
-}
-
-export const ExpandedLanguageSelector: React.FC<ExpandedLanguageSelectorProps> = ({ 
+export const ExpandedLanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   className = '',
   showNativeNames = false,
   showFlags = true
 }) => {
-  const { t } = useTranslation('language');
-  const { 
-    currentLanguage, 
-    changeLanguage, 
-    languages, 
-    isChangingLanguage 
-  } = useLanguage();
-
-  const handleLanguageChange = async (langCode: string) => {
-    if (isChangingLanguage || langCode === currentLanguage) return;
-    await changeLanguage(langCode);
-  };
+  const {
+    currentLanguage,
+    languages,
+    isChangingLanguage,
+    handleLanguageChange,
+    showFlags: shouldShowFlags,
+    ariaLabels
+  } = useLanguageSelector({ showNativeNames, showFlags });
 
   return (
     <div 
       className={cn("flex flex-col space-y-2", className)} 
       role="region" 
-      aria-label={t('selectLanguage')}
+      aria-label={ariaLabels.button}
     >
-      <label className="text-sm font-medium text-muted-foreground">{t('selectLanguage')}</label>
+      <label className="text-sm font-medium text-muted-foreground">{ariaLabels.button}</label>
       <div className="flex flex-wrap gap-2">
         {languages.map((lang) => (
           <Button
@@ -52,7 +41,7 @@ export const ExpandedLanguageSelector: React.FC<ExpandedLanguageSelectorProps> =
             aria-pressed={currentLanguage === lang.code}
             lang={lang.code}
           >
-            {showFlags && <span className="locale-flag mr-1">{lang.flag}</span>}
+            {shouldShowFlags && <span className="locale-flag mr-1">{lang.flag}</span>}
             <span className={currentLanguage === lang.code ? "language-selected" : ""}>
               {showNativeNames ? lang.nativeName : lang.name}
             </span>

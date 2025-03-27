@@ -4,17 +4,32 @@ import MinimalLanguageSelector from './variants/MinimalLanguageSelector';
 import ExpandedLanguageSelector from './variants/ExpandedLanguageSelector';
 import FooterLanguageSelector from './variants/FooterLanguageSelector';
 import DefaultLanguageSelector from './variants/DefaultLanguageSelector';
+import { LanguageSelectorProps } from './hooks/useLanguageSelector';
 
-interface LanguageSelectorProps {
+interface LanguageSelectorComponentProps extends LanguageSelectorProps {
   variant?: 'default' | 'minimal' | 'expanded' | 'footer';
-  className?: string;
-  showNativeNames?: boolean;
-  showFlags?: boolean;
-  align?: 'start' | 'center' | 'end';
-  side?: 'top' | 'right' | 'bottom' | 'left';
 }
 
-export const LanguageSelector: React.FC<LanguageSelectorProps> = (props) => {
+/**
+ * Language selector component with different presentation variants
+ * 
+ * @example
+ * // Default dropdown selector
+ * <LanguageSelector />
+ * 
+ * @example
+ * // Minimal icon-only selector
+ * <LanguageSelector variant="minimal" />
+ * 
+ * @example
+ * // Expanded buttons selector
+ * <LanguageSelector variant="expanded" showNativeNames={true} />
+ * 
+ * @example
+ * // Footer simple text links
+ * <LanguageSelector variant="footer" />
+ */
+export const LanguageSelector: React.FC<LanguageSelectorComponentProps> = (props) => {
   const { variant = 'default' } = props;
 
   // Render the appropriate variant based on the prop

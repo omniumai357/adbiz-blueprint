@@ -1,40 +1,30 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/language-context';
 import { cn } from '@/lib/utils';
+import { useLanguageSelector, LanguageSelectorProps } from '../hooks/useLanguageSelector';
 
-interface FooterVariantProps {
-  className?: string;
-  showNativeNames?: boolean;
-  showFlags?: boolean;
-}
-
-export const FooterLanguageSelector: React.FC<FooterVariantProps> = ({ 
+export const FooterLanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   className = '',
   showNativeNames = true,
   showFlags = true
 }) => {
-  const { t } = useTranslation('language');
-  const { 
-    currentLanguage, 
-    changeLanguage, 
-    languages, 
-    isChangingLanguage 
-  } = useLanguage();
-
-  const handleLanguageChange = async (langCode: string) => {
-    if (isChangingLanguage || langCode === currentLanguage) return;
-    await changeLanguage(langCode);
-  };
+  const {
+    currentLanguage,
+    languages,
+    isChangingLanguage,
+    handleLanguageChange,
+    showFlags: shouldShowFlags,
+    ariaLabels,
+    t
+  } = useLanguageSelector({ showNativeNames, showFlags });
 
   return (
     <div 
       className={cn("flex flex-col space-y-2", className)} 
       role="region" 
-      aria-label={t('selectLanguage')}
+      aria-label={ariaLabels.button}
     >
-      <p className="text-sm font-medium text-muted-foreground mb-1">{t('selectLanguage')}</p>
+      <p className="text-sm font-medium text-muted-foreground mb-1">{ariaLabels.button}</p>
       <div className="flex flex-wrap gap-2">
         {languages.map((lang) => (
           <button
@@ -50,7 +40,7 @@ export const FooterLanguageSelector: React.FC<FooterVariantProps> = ({
             aria-pressed={currentLanguage === lang.code}
             lang={lang.code}
           >
-            {showFlags && <span className="locale-flag">{lang.flag}</span>}
+            {shouldShowFlags && <span className="locale-flag">{lang.flag}</span>}
             <span className={currentLanguage === lang.code ? "language-selected" : ""}>
               {showNativeNames ? lang.nativeName : lang.name}
             </span>

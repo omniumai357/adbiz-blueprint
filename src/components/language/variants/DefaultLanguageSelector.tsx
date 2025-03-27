@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -13,46 +11,30 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguageSelector, LanguageSelectorProps } from '../hooks/useLanguageSelector';
 
-interface DefaultLanguageSelectorProps {
-  className?: string;
-  showNativeNames?: boolean;
-  showFlags?: boolean;
-  align?: 'start' | 'center' | 'end';
-  side?: 'top' | 'right' | 'bottom' | 'left';
-}
-
-export const DefaultLanguageSelector: React.FC<DefaultLanguageSelectorProps> = ({ 
+export const DefaultLanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   className = '',
   showNativeNames = false,
   showFlags = true,
   align = 'end',
   side = 'bottom'
 }) => {
-  const { t } = useTranslation('language');
-  const { 
-    currentLanguage, 
-    changeLanguage, 
-    languages, 
-    isChangingLanguage, 
-    direction 
-  } = useLanguage();
+  const {
+    currentLanguage,
+    languages,
+    isChangingLanguage,
+    direction,
+    handleLanguageChange,
+    getCurrentLanguage,
+    getLanguageDisplayName,
+    showFlags: shouldShowFlags,
+    ariaLabels
+  } = useLanguageSelector({ showNativeNames, showFlags });
 
-  const handleLanguageChange = async (langCode: string) => {
-    if (isChangingLanguage || langCode === currentLanguage) return;
-    await changeLanguage(langCode);
-  };
-
-  // Get current language display name
-  const currentLangInfo = languages.find(lang => lang.code === currentLanguage) || languages[0];
-  const currentLangName = showNativeNames ? currentLangInfo.nativeName : currentLangInfo.name;
-
-  // ARIA labels for accessibility
-  const ariaLabels = {
-    button: t('selectLanguage'),
-    dropdown: t('availableLanguages', 'Available languages'),
-    selected: t('currentLanguage', 'Current language: {{language}}', { language: currentLangName })
-  };
+  // Get current language display info
+  const currentLangInfo = getCurrentLanguage();
+  const currentLangName = getLanguageDisplayName(currentLangInfo);
 
   return (
     <DropdownMenu>
@@ -73,7 +55,7 @@ export const DefaultLanguageSelector: React.FC<DefaultLanguageSelectorProps> = (
           ) : (
             <Globe className="h-4 w-4" />
           )}
-          {showFlags && <span className="locale-flag">{currentLangInfo.flag}</span>}
+          {shouldShowFlags && <span className="locale-flag">{currentLangInfo.flag}</span>}
           <span>{currentLangName}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -83,7 +65,7 @@ export const DefaultLanguageSelector: React.FC<DefaultLanguageSelectorProps> = (
         aria-label={ariaLabels.dropdown}
         className="language-switch-enter"
       >
-        <DropdownMenuLabel>{t('selectLanguage')}</DropdownMenuLabel>
+        <DropdownMenuLabel>{ariaLabels.button}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {languages.map((lang) => (
           <DropdownMenuItem
@@ -99,7 +81,7 @@ export const DefaultLanguageSelector: React.FC<DefaultLanguageSelectorProps> = (
             lang={lang.code}
             aria-current={currentLanguage === lang.code ? 'true' : 'false'}
           >
-            {showFlags && <span className="locale-flag">{lang.flag}</span>}
+            {shouldShowFlags && <span className="locale-flag">{lang.flag}</span>}
             <span className={cn(
               "relative",
               currentLanguage === lang.code && "language-selected"

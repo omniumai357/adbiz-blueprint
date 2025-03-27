@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -11,40 +9,24 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguageSelector, LanguageSelectorProps } from '../hooks/useLanguageSelector';
 
-interface MinimalLanguageSelectorProps {
-  className?: string;
-  showNativeNames?: boolean;
-  showFlags?: boolean;
-  align?: 'start' | 'center' | 'end';
-  side?: 'top' | 'right' | 'bottom' | 'left';
-}
-
-export const MinimalLanguageSelector: React.FC<MinimalLanguageSelectorProps> = ({ 
+export const MinimalLanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   className = '',
   showNativeNames = false,
   showFlags = true,
   align = 'end',
   side = 'bottom'
 }) => {
-  const { t } = useTranslation('language');
-  const { 
-    currentLanguage, 
-    changeLanguage, 
-    languages, 
-    isChangingLanguage, 
-    direction 
-  } = useLanguage();
-
-  const handleLanguageChange = async (langCode: string) => {
-    if (isChangingLanguage || langCode === currentLanguage) return;
-    await changeLanguage(langCode);
-  };
-
-  const ariaLabels = {
-    button: t('selectLanguage'),
-    dropdown: t('availableLanguages', 'Available languages')
-  };
+  const {
+    currentLanguage,
+    languages,
+    isChangingLanguage,
+    direction,
+    handleLanguageChange,
+    showFlags: shouldShowFlags,
+    ariaLabels
+  } = useLanguageSelector({ showNativeNames, showFlags });
 
   return (
     <DropdownMenu>
@@ -65,7 +47,7 @@ export const MinimalLanguageSelector: React.FC<MinimalLanguageSelectorProps> = (
           ) : (
             <Globe className="h-4 w-4" />
           )}
-          <span className="sr-only">{t('selectLanguage')}</span>
+          <span className="sr-only">{ariaLabels.button}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
@@ -87,7 +69,7 @@ export const MinimalLanguageSelector: React.FC<MinimalLanguageSelectorProps> = (
             disabled={isChangingLanguage}
             aria-current={currentLanguage === lang.code ? 'true' : 'false'}
           >
-            {showFlags && <span className="locale-flag">{lang.flag}</span>}
+            {shouldShowFlags && <span className="locale-flag">{lang.flag}</span>}
             <span className={cn(
               currentLanguage === lang.code && "language-selected",
               "relative"
