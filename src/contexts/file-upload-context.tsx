@@ -31,7 +31,7 @@ export const FileUploadProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (Array.isArray(event)) {
       // Handle direct array of files
       selectedFiles = [...event];
-    } else if (event.target.files) {
+    } else if ('target' in event && event.target.files) {
       // Handle event from file input
       selectedFiles = Array.from(event.target.files);
     }

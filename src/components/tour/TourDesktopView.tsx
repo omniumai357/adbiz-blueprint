@@ -10,8 +10,14 @@ export interface TourDesktopViewHandle {
 export interface TourDesktopViewProps {
   targetElement: HTMLElement;
   position?: "top" | "right" | "bottom" | "left";
-  title: string;
-  content: string;
+  arrowPosition?: {
+    top?: string | number;
+    left?: string | number;
+    right?: string | number;
+    bottom?: string | number;
+  };
+  title?: string;
+  content?: string;
   stepInfo: string;
   onPrev?: () => void;
   onNext: () => void;

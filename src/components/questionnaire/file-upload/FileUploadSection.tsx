@@ -5,7 +5,8 @@ import LogoUpload from "./LogoUpload";
 import FileUploadCategory from "./FileUploadCategory";
 import UploadTips from "./UploadTips";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
-import { FileState } from "@/hooks/useFileUpload";
+import { FileState } from "@/features/file-upload/types";
+import { fileAdapter } from "@/utils/file-adapter";
 
 interface FileUploadSectionProps {
   hasLogo: boolean;
@@ -18,6 +19,9 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
     uploadProgress, 
     uploadError 
   } = useFileUploadContext();
+
+  // Adapt FileState to be used with UI components expecting File objects
+  const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
 
   const onFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -42,7 +46,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
       {/* Logo Upload */}
       {hasLogo && (
         <LogoUpload 
-          logo={files.logo}
+          logo={adaptedFiles.logo}
           onFileChange={onFileChange}
         />
       )}
@@ -52,7 +56,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Business Photos"
         description="Upload photos of your business, team, services, or products (JPG, PNG, GIF, WEBP formats)"
         fileType="images"
-        files={files.images}
+        files={adaptedFiles.images}
         acceptFormats=".jpg,.jpeg,.png,.gif,.webp"
         onFileChange={onFileChange}
       />
@@ -62,7 +66,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Video Content"
         description="Upload any video content you'd like to include (MP4, MOV, WEBM formats)"
         fileType="videos"
-        files={files.videos}
+        files={adaptedFiles.videos}
         acceptFormats=".mp4,.mov,.webm"
         onFileChange={onFileChange}
       />
@@ -72,7 +76,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
         title="Business Documents"
         description="Upload any business documents that might be helpful (PDF, DOC, DOCX formats)"
         fileType="documents"
-        files={files.documents}
+        files={adaptedFiles.documents}
         acceptFormats=".pdf,.doc,.docx"
         onFileChange={onFileChange}
       />

@@ -11,6 +11,8 @@ import {
 } from "@/utils/questionnaire-validation";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
 import { useFileUploadService } from "@/hooks/file-upload/useFileUploadService";
+import { fileAdapter } from "@/utils/file-adapter";
+import { FileItem } from "@/features/file-upload/types";
 
 // Define the form schema for validation
 const formSchema = z.object({
@@ -137,22 +139,28 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
         if (!logoUrl) filesUploaded = false;
       }
       
-      // Upload images
-      for (const image of files.images) {
-        const imageUrl = await uploadFile(image, `${businessId}/images`);
-        if (!imageUrl) filesUploaded = false;
+      // Upload images with adapter to convert FileItem to File
+      if (Array.isArray(files.images)) {
+        for (const fileItem of files.images as FileItem[]) {
+          const imageUrl = await uploadFile(fileItem.file, `${businessId}/images`);
+          if (!imageUrl) filesUploaded = false;
+        }
       }
       
-      // Upload videos
-      for (const video of files.videos) {
-        const videoUrl = await uploadFile(video, `${businessId}/videos`);
-        if (!videoUrl) filesUploaded = false;
+      // Upload videos with adapter to convert FileItem to File
+      if (Array.isArray(files.videos)) {
+        for (const fileItem of files.videos as FileItem[]) {
+          const videoUrl = await uploadFile(fileItem.file, `${businessId}/videos`);
+          if (!videoUrl) filesUploaded = false;
+        }
       }
       
-      // Upload documents
-      for (const document of files.documents) {
-        const docUrl = await uploadFile(document, `${businessId}/documents`);
-        if (!docUrl) filesUploaded = false;
+      // Upload documents with adapter to convert FileItem to File
+      if (Array.isArray(files.documents)) {
+        for (const fileItem of files.documents as FileItem[]) {
+          const docUrl = await uploadFile(fileItem.file, `${businessId}/documents`);
+          if (!docUrl) filesUploaded = false;
+        }
       }
     } catch (error) {
       console.error("Error uploading files:", error);
@@ -163,16 +171,19 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
       return false;
     }
     
+    // Convert files to the expected format for the questionnaire submit function
+    const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+    
     // Then submit questionnaire data
     // Modified to use a function that returns a Promise<boolean> instead of a boolean directly
     const uploadFilesPromise = () => Promise.resolve(filesUploaded);
-    const success = await submitQuestionnaire(data, files, uploadFilesPromise);
+    const success = await submitQuestionnaire(data, adaptedFiles, uploadFilesPromise);
     
     if (success && onComplete) {
       onComplete({
         businessId,
         data,
-        files,
+        files: adaptedFiles,
       });
     }
     
@@ -187,7 +198,7 @@ export function useQuestionnaireFormRefactored(onComplete?: (data: any) => void)
     prevStep,
     onShowReview,
     files,
-    uploading: uploading || isUploading,
+    uploading,
     submitting,
     hasLogo,
     handleBusinessInfoNext,

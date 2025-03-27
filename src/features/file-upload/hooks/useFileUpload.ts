@@ -30,7 +30,7 @@ export const useFileUpload = () => {
     if (Array.isArray(e)) {
       // Handle case when e is an array of files (e.g., from drag and drop)
       selectedFiles = [...e];
-    } else if (e.target.files) {
+    } else if ('target' in e && e.target.files) {
       // Handle case when e is an event from file input
       selectedFiles = Array.from(e.target.files);
     }
@@ -161,17 +161,19 @@ export const useFileUpload = () => {
               updateProgress(file.id, file.file.name, progress);
             };
             
-            // Upload to Supabase storage
+            // Upload to Supabase storage - removing onUploadProgress which isn't supported in this version
             const { error } = await supabase.storage
               .from('business-docs')
               .upload(filePath, file.file, {
-                upsert: true,
-                onUploadProgress: ({ percent }) => progressCallback(Math.round(percent))
+                upsert: true
               });
               
             if (error) {
               throw new Error(`Error uploading ${file.file.name}: ${error.message}`);
             }
+            
+            // Manually set progress to 100% since we don't have onUploadProgress
+            progressCallback(100);
           }
         }
       }

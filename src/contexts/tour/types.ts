@@ -13,14 +13,22 @@ export interface TourStep {
     next?: {
       text?: string;
       hidden?: boolean;
+      callback?: () => void;
     };
     prev?: {
       text?: string;
       hidden?: boolean;
+      callback?: () => void;
     };
     skip?: {
       text?: string;
       hidden?: boolean;
+      callback?: () => void;
+    };
+    finish?: {
+      text?: string;
+      hidden?: boolean;
+      callback?: () => void;
     };
   };
   transition?: string;
@@ -30,6 +38,7 @@ export interface TourStep {
     nextLabel?: string;
     prevLabel?: string;
     closeLabel?: string;
+    navigationDescription?: string;
   };
   dependency?: string | string[];
   dependencies?: string | string[];
@@ -41,6 +50,20 @@ export interface TourStep {
   priority?: number;
   triggers?: string[];
   floatingUIOptions?: any;
+  // Add missing properties used in the tour components
+  path?: string | {
+    enabled: boolean;
+    targetElementId: string;
+    style?: string;
+    waypoints?: any[];
+  };
+  metadata?: Record<string, any>;
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
 }
 
 export interface TourPath {

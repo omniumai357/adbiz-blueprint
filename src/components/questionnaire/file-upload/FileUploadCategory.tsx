@@ -3,10 +3,11 @@ import { ChangeEvent, FC } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
-import { FileState } from "@/hooks/useFileUpload";
+import { FileState } from "@/features/file-upload/types";
 import FilePreviewGrid from "./FilePreviewGrid";
 import { getReadableFileFormats } from "@/utils/file-validation";
 import { useFileValidation } from "@/hooks/file-upload/useFileValidation";
+import { fileAdapter } from "@/utils/file-adapter";
 
 interface FileUploadCategoryProps {
   title: string;
@@ -26,8 +27,8 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   onFileChange,
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
-  const maxFileSize = getMaxFileSize(fileType);
-  const readableFormats = getReadableFileFormats(fileType);
+  const maxFileSize = getMaxFileSize(fileAdapter.fileTypeToString(fileType));
+  const readableFormats = getReadableFileFormats(fileAdapter.fileTypeToString(fileType));
   
   return (
     <div className="space-y-4">
@@ -43,12 +44,12 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
               type="button"
               variant="outline"
               className="relative"
-              onClick={() => document.getElementById(`${fileType}-upload`)?.click()}
+              onClick={() => document.getElementById(`${fileAdapter.fileTypeToString(fileType)}-upload`)?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
               Select {title}
               <input
-                id={`${fileType}-upload`}
+                id={`${fileAdapter.fileTypeToString(fileType)}-upload`}
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 accept={acceptFormats}
@@ -71,7 +72,7 @@ const FileUploadCategory: FC<FileUploadCategoryProps> = ({
           <FilePreviewGrid
             files={files}
             fileType={fileType}
-            emptyMessage={`No ${fileType} uploaded yet`}
+            emptyMessage={`No ${fileAdapter.fileTypeToString(fileType)} uploaded yet`}
           />
         )}
       </div>

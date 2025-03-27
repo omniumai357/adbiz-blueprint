@@ -11,6 +11,7 @@ import { useQuestionnaireForm } from "@/hooks/useQuestionnaireForm";
 import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
 import { FileUploadProvider } from "@/contexts/file-upload-context";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
+import { fileAdapter } from "@/utils/file-adapter";
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
@@ -48,6 +49,9 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
         return true;
     }
   };
+  
+  // Adapt files for the ReviewSection component which expects plain File objects
+  const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
   
   return (
     <div className="bg-card rounded-lg shadow-sm border p-6 max-w-4xl mx-auto">
@@ -110,7 +114,7 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
                 <>
                   <ReviewSection
                     formData={form.getValues()}
-                    files={files}
+                    files={adaptedFiles}
                     onShowReview={onShowReview}
                   />
                   

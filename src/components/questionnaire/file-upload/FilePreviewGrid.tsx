@@ -1,8 +1,9 @@
 
 import { FC } from "react";
-import { FileState } from "@/hooks/useFileUpload";
+import { FileState } from "@/features/file-upload/types";
 import FileItem from "./FileItem";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
+import { fileAdapter } from "@/utils/file-adapter";
 
 interface FilePreviewGridProps {
   files: File[];
@@ -18,6 +19,7 @@ const FilePreviewGrid: FC<FilePreviewGridProps> = ({
   className = ""
 }) => {
   const { onRemoveFile } = useFileUploadContext();
+  const fileTypeString = fileAdapter.fileTypeToString(fileType);
 
   if (files.length === 0) {
     return (
@@ -33,9 +35,9 @@ const FilePreviewGrid: FC<FilePreviewGridProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {files.map((file, index) => (
           <FileItem 
-            key={`${fileType}-${index}-${file.name}`}
+            key={`${fileTypeString}-${index}-${file.name}`}
             file={file}
-            fileType={fileType}
+            fileType={fileTypeString}
             index={index}
             onRemove={() => onRemoveFile(fileType, index)}
           />

@@ -2,6 +2,7 @@
 import { useFileUploadContext } from '@/contexts/file-upload-context';
 import { FileState, FileItem } from '@/features/file-upload/types';
 import { useEffect, useState } from 'react';
+import { fileAdapter } from '@/utils/file-adapter';
 
 // Re-export types from the features module for backward compatibility
 export type { FileState, FileItem };
@@ -9,7 +10,7 @@ export type { FileState, FileItem };
 export const useFileUpload = (options = {}) => {
   const { 
     files, 
-    isUploading,
+    uploading: isUploading,
     uploadError: contextUploadError,
     uploadProgress
   } = useFileUploadContext();
@@ -54,8 +55,11 @@ export const useFileUpload = (options = {}) => {
     return `https://example.com/uploads/${path}/${file.name}`;
   };
   
+  // Convert FileItems to Files for compatibility with components that expect File[]
+  const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
+  
   return {
-    files,
+    files: adaptedFiles,
     isUploading: isUploading || uploading,
     hasError,
     uploadProgress,

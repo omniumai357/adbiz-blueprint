@@ -3,6 +3,7 @@ import { ChangeEvent } from 'react';
 import { FileState } from '@/features/file-upload/types';
 import { validateFiles } from '@/utils/file-validation';
 import { useToast } from '@/hooks/ui/use-toast';
+import { fileAdapter } from '@/utils/file-adapter';
 
 export interface UseFileUploadHandlersProps {
   files: FileState;
@@ -42,7 +43,7 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     if (selectedFiles.length === 0) return;
     
     // Validate file types
-    const { validFiles, hasInvalidFiles } = validateFiles(selectedFiles, fileType);
+    const { validFiles, hasInvalidFiles } = validateFiles(selectedFiles, fileAdapter.fileTypeToString(fileType));
     
     if (hasInvalidFiles) {
       toast({
@@ -76,7 +77,7 @@ const useFileUploadHandlers = ({ files, setFiles, setUploadError }: UseFileUploa
     }
     
     // Handle arrays of files (images, videos, documents)
-    if (typeof index === 'number') {
+    if (typeof index === 'number' && Array.isArray(files[fileType])) {
       const updatedFiles = [...files[fileType]];
       updatedFiles.splice(index, 1);
       setFiles({
