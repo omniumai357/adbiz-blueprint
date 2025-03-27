@@ -6,7 +6,7 @@
  * types, and utilities for handling file uploads across the application.
  */
 
-// Export types directly to avoid ambiguity
+// Export types 
 export type { FileState, FileItem, UploadProgressItem, FileUploadHook, UploadResult } from './types';
 
 // Core file upload functionality
@@ -17,3 +17,4 @@ export * from './components';
 
 // Utilities
 export * from './utils';
+
