@@ -1,172 +1,127 @@
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour/types';
-import { useTourAnalytics } from '../../useTourAnalytics';
-import { useTourDependencies } from '../dependency/use-tour-dependencies';
-import { useTourDependencyNavigation } from './use-tour-dependency-navigation';
+import { NavigationAction } from './types';
+import { handleNavigationAction, parseNavigationAction } from './navigation-actions';
 import { useTourAnalyticsTracking } from './use-tour-analytics-tracking';
 
 /**
- * Enhanced hook for tour navigation with dependency support
+ * Enhanced tour navigation hook that combines keyboard, gesture, and button navigation
+ * with analytics tracking
+ * 
+ * @param isActive Whether the tour is active
+ * @param currentPath Current tour path ID
+ * @param currentStep Current step index
+ * @param availablePaths Available tour paths
+ * @param totalSteps Total steps in the current path
+ * @param handlers Navigation handler functions (next, prev, goto, end)
+ * @param userContext Optional user context for analytics
  */
-export function useEnhancedTourNavigation(
-  currentStep: number,
+export const useEnhancedTourNavigation = (
+  isActive: boolean,
   currentPath: string | null,
-  visibleSteps: TourStep[],
+  currentStep: number,
   availablePaths: TourPath[],
-  completedStepIds: string[],
-  setCurrentStep: (step: number) => void,
-  userId?: string,
-  userType?: string
-) {
-  const analytics = useTourAnalytics();
+  totalSteps: number,
+  handlers: {
+    nextStep: () => void;
+    prevStep: () => void;
+    goToStep: (step: number) => void;
+    endTour: () => void;
+  },
+  userContext?: {
+    userId?: string;
+    userType?: string;
+  }
+) => {
+  const { nextStep, prevStep, goToStep, endTour } = handlers;
   
-  // Get current path data
-  const currentPathData = availablePaths.find(path => path.id === currentPath) || null;
-  
-  // Use the dependencies hook
-  const {
-    canAccessStep,
-    resolveNextStep,
-    availableNextSteps
-  } = useTourDependencies(currentPath, availablePaths, visibleSteps, completedStepIds);
-  
-  // Get the current step data
-  const currentStepData = visibleSteps[currentStep] || null;
-  
-  // Use the dependency navigation hook
-  const {
-    findNextAccessibleStep,
-    findPrevAccessibleStep,
-    tryNavigateToBranch
-  } = useTourDependencyNavigation(
-    visibleSteps, 
-    currentStep, 
-    canAccessStep, 
-    resolveNextStep, 
-    setCurrentStep
+  // Get the current path data and step data
+  const currentPathData = useMemo(() => 
+    availablePaths.find(path => path.id === currentPath),
+    [availablePaths, currentPath]
   );
   
-  // Use the analytics tracking hook
-  const {
-    trackStepCompletion,
-    trackStepGoBack,
-    trackStepJump
-  } = useTourAnalyticsTracking(analytics.trackStepInteraction);
+  const currentStepData = useMemo(() => 
+    currentPathData?.steps[currentStep] || null,
+    [currentPathData, currentStep]
+  );
   
-  // Navigate to the next step with dependency awareness
-  const nextStep = useCallback(() => {
-    if (!currentStepData || !currentPathData) return;
-    
-    // Track the current step interaction as "completed"
-    trackStepCompletion(
-      currentPathData,
-      currentStepData,
-      currentStep,
-      userId,
-      userType
-    );
-    
-    // Check if this step has branching logic
-    if (tryNavigateToBranch(currentStepData.id)) {
-      return; // Navigation handled by tryNavigateToBranch
-    }
-    
-    // Find the next accessible step
-    const nextStepIndex = findNextAccessibleStep();
-    
-    // If we found an accessible step, go to it
-    if (nextStepIndex >= 0) {
-      setCurrentStep(nextStepIndex);
-    }
-  }, [
-    currentStepData,
-    currentPathData,
-    currentStep,
-    trackStepCompletion,
-    tryNavigateToBranch,
-    findNextAccessibleStep,
-    setCurrentStep,
-    userId,
-    userType
-  ]);
-  
-  // Navigate to the previous step with dependency awareness
-  const prevStep = useCallback(() => {
-    if (!currentStepData || !currentPathData) return;
-    
-    // Track going back
-    trackStepGoBack(
-      currentPathData,
-      currentStepData,
-      currentStep,
-      userId,
-      userType
-    );
-    
-    // Find the previous accessible step
-    const prevStepIndex = findPrevAccessibleStep();
-    
-    // If we found an accessible step, go to it
-    if (prevStepIndex >= 0) {
-      setCurrentStep(prevStepIndex);
-    }
-  }, [
-    currentStepData,
-    currentPathData,
-    currentStep,
-    trackStepGoBack,
-    findPrevAccessibleStep,
-    setCurrentStep,
-    userId,
-    userType
-  ]);
-  
-  // Go to a specific step with dependency check
-  const goToStep = useCallback((stepIndex: number) => {
-    if (
-      !currentPathData || 
-      !currentStepData ||
-      stepIndex < 0 || 
-      stepIndex >= visibleSteps.length || 
-      !canAccessStep(visibleSteps[stepIndex].id)
-    ) {
-      return;
-    }
-    
-    // Track jumping to a specific step
-    trackStepJump(
-      currentPathData,
-      currentStepData,
-      currentStep,
-      stepIndex,
-      userId,
-      userType
-    );
-    
-    setCurrentStep(stepIndex);
-  }, [
-    currentPathData,
+  // Set up analytics tracking
+  const trackNavigation = useTourAnalyticsTracking(
+    currentPathData, 
     currentStepData,
     currentStep,
-    visibleSteps,
-    canAccessStep,
-    trackStepJump,
-    setCurrentStep,
-    userId,
-    userType
-  ]);
+    userContext?.userId,
+    userContext?.userType
+  );
   
-  // Get suggested next steps based on dependencies
-  const getSuggestedNextSteps = useCallback(() => {
-    return availableNextSteps.slice(0, 3); // Limit to top 3 suggestions
-  }, [availableNextSteps]);
+  // Handle keyboard navigation
+  const handleKeyNavigation = useCallback((
+    event: React.KeyboardEvent | KeyboardEvent,
+    action: NavigationAction | null
+  ) => {
+    if (!isActive || !action) return;
+    
+    event.preventDefault();
+    
+    // Handle navigation based on the action
+    handleNavigationAction(action, {
+      goToNext: () => {
+        trackNavigation('keyboard_next');
+        nextStep();
+      },
+      goToPrevious: () => {
+        trackNavigation('keyboard_previous');
+        prevStep();
+      },
+      close: () => {
+        trackNavigation('keyboard_close');
+        endTour();
+      },
+      goToFirst: () => {
+        trackNavigation('keyboard_first');
+        goToStep(0);
+      },
+      goToLast: () => {
+        trackNavigation('keyboard_last');
+        goToStep(totalSteps - 1);
+      },
+      jumpForward: (steps: number) => {
+        trackNavigation('keyboard_jump_forward');
+        goToStep(Math.min(currentStep + steps, totalSteps - 1));
+      },
+      jumpBackward: (steps: number) => {
+        trackNavigation('keyboard_jump_backward');
+        goToStep(Math.max(currentStep - steps, 0));
+      },
+      showShortcuts: () => {
+        trackNavigation('show_shortcuts');
+        // This would be handled by the component using this hook
+      }
+    });
+  }, [isActive, nextStep, prevStep, endTour, goToStep, currentStep, totalSteps, trackNavigation]);
   
-  return {
-    nextStep,
-    prevStep,
-    goToStep,
-    getSuggestedNextSteps,
-    canAccessStep
-  };
-}
+  // Navigation handlers with tracking
+  const navigationHandlers = useMemo(() => ({
+    handleNext: () => {
+      trackNavigation('button_next');
+      nextStep();
+    },
+    handlePrevious: () => {
+      trackNavigation('button_previous');
+      prevStep();
+    },
+    handleClose: () => {
+      trackNavigation('button_close');
+      endTour();
+    },
+    handleGoTo: (step: number) => {
+      trackNavigation('button_goto');
+      goToStep(step);
+    },
+    handleKeyNavigation
+  }), [nextStep, prevStep, endTour, goToStep, trackNavigation, handleKeyNavigation]);
+  
+  return navigationHandlers;
+};

@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
         navigate("/");
       }
     }
-  }, [isAuthenticated, isLoading, isAdmin, navigate, requireAdmin]);
+  }, [isAuthenticated, isLoading, isAdmin, navigate, requireAdmin, toast]);
 
   if (isLoading) {
     return (

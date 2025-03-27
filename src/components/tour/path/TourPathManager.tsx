@@ -1,9 +1,10 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { TourStep } from "@/contexts/tour/types";
 
 interface TourPathManagerProps {
   isActive: boolean;
-  currentStepData: any | null;
+  currentStepData: TourStep | null;
   onPathTargetChange: (element: HTMLElement | null) => void;
 }
 
@@ -30,9 +31,12 @@ export const TourPathManager: React.FC<TourPathManagerProps> = ({
           );
           if (potentialElement instanceof HTMLElement) {
             onPathTargetChange(potentialElement);
+          } else {
+            console.warn(`Path target element not found: ${targetId}`);
+            onPathTargetChange(null);
           }
         } catch (e) {
-          console.warn(`Path target element not found: ${targetId}`);
+          console.warn(`Error finding path target element: ${targetId}`, e);
           onPathTargetChange(null);
         }
       }

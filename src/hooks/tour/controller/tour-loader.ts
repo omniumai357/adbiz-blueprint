@@ -1,6 +1,7 @@
+import { TourPath } from '@/contexts/tour/types';
 
-import { TourStep, TourPath } from '@/contexts/tour/types';
-import { getTourPathsByRoute } from '@/lib/tour/core/registry';
+// Keep track of loaded tour paths for caching
+const cachedPaths: Record<string, TourPath[]> = {};
 
 /**
  * Load tour paths based on the current route
@@ -10,60 +11,61 @@ import { getTourPathsByRoute } from '@/lib/tour/core/registry';
  */
 export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> {
   try {
-    // First check if paths are registered in the registry
-    const registeredPaths = getTourPathsByRoute(route);
-    if (registeredPaths.length > 0) {
-      return registeredPaths;
+    // First check cache to avoid unnecessary dynamic imports
+    if (cachedPaths[route]) {
+      return cachedPaths[route];
     }
+    
+    // Normalize the route for matching
+    const normalizedRoute = route.endsWith('/') ? route : `${route}/`;
+    const paths: TourPath[] = [];
 
-    // Dynamically load tour paths based on route
-    let paths: TourPath[] = [];
+    // Map routes to their respective tour path modules
+    const routeToModuleMap: Record<string, string> = {
+      '/': '@/lib/tour/home/tour-path',
+      '/home': '@/lib/tour/home/tour-path',
+      '/checkout': '@/lib/tour/checkout/tour-path',
+      '/services': '@/lib/tour/services/tour-path',
+      '/contact': '@/lib/tour/contact-tour',
+      // Add more routes as needed
+    };
 
-    // Home page tours
-    if (route === '/' || route === '/home') {
+    // Find the appropriate module to load
+    const moduleToLoad = Object.keys(routeToModuleMap).find(r => 
+      normalizedRoute.startsWith(r === '/' ? r : `${r}/`)
+    );
+
+    if (moduleToLoad) {
       try {
-        const homeModule = await import('@/lib/tour/home/tour-path');
-        if (homeModule.homeWelcomeTourPath) {
-          paths.push(homeModule.homeWelcomeTourPath);
-        }
-        if (homeModule.homeFeaturesPath) {
-          paths.push(homeModule.homeFeaturesPath);
-        }
+        const module = await import(routeToModuleMap[moduleToLoad]);
+        
+        // Extract tour paths from the module
+        Object.keys(module).forEach(key => {
+          if (key.includes('TourPath') || key.includes('tourPath')) {
+            if (module[key] && typeof module[key] === 'object') {
+              paths.push(module[key]);
+            }
+          }
+        });
       } catch (err) {
-        console.warn('Failed to load home tour paths', err);
+        console.warn(`Failed to load tour paths for route: ${route}`, err);
       }
     }
 
-    // Checkout page tours
-    if (route.includes('/checkout')) {
+    // Fallback to a generic tour path for routes without specific tours
+    if (paths.length === 0) {
       try {
-        const checkoutModule = await import('@/lib/tour/checkout/tour-path');
-        if (checkoutModule.checkoutTourPath) {
-          paths.push(checkoutModule.checkoutTourPath);
+        const defaultModule = await import('@/lib/tour/default-tour');
+        if (defaultModule.defaultTourPath) {
+          paths.push(defaultModule.defaultTourPath);
         }
       } catch (err) {
-        console.warn('Failed to load checkout tour paths', err);
+        console.warn('Failed to load default tour path', err);
       }
     }
 
-    // Services page tours
-    if (route.includes('/services')) {
-      try {
-        const servicesModule = await import('@/lib/tour/services/tour-path');
-        if (servicesModule.servicesTourPath) {
-          paths.push(servicesModule.servicesTourPath);
-        }
-      } catch (err) {
-        console.warn('Failed to load services tour paths', err);
-      }
-    }
-
-    // Enhance paths with common properties
-    paths = paths.map(path => ({
-      ...path,
-      steps: path.steps.map(step => enhanceStep(step))
-    }));
-
+    // Cache the loaded paths
+    cachedPaths[route] = paths;
     return paths;
   } catch (error) {
     console.error('Error loading tour paths', error);
@@ -72,17 +74,27 @@ export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> 
 }
 
 /**
- * Enhance a step with default properties if needed
+ * Preload tour paths for a set of routes
+ * 
+ * @param routes Array of routes to preload tour paths for
  */
-function enhanceStep(step: TourStep): TourStep {
-  // Ensure path property has the correct structure if it's a string
-  if (typeof step.path === 'string') {
-    step.path = {
-      enabled: true,
-      targetElementId: step.path,
-      style: 'solid'
-    };
+export async function preloadTourPaths(routes: string[]): Promise<void> {
+  try {
+    await Promise.all(routes.map(route => loadTourPathsForRoute(route)));
+  } catch (error) {
+    console.error('Error preloading tour paths', error);
   }
-  
-  return step;
+}
+
+/**
+ * Clear the tour path cache
+ * 
+ * @param route Optional route to clear, if not provided all routes will be cleared
+ */
+export function clearTourPathCache(route?: string): void {
+  if (route) {
+    delete cachedPaths[route];
+  } else {
+    Object.keys(cachedPaths).forEach(key => delete cachedPaths[key]);
+  }
 }
