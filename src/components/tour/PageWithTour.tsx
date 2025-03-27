@@ -52,7 +52,8 @@ export const PageWithTour: React.FC<PageWithTourProps> = ({
     if (showWelcomeModal && !hasSeenAnyTour && !hasCompletedThisTour) {
       setShowModal(true);
     }
-  }, [location.pathname, hasSeenAnyTour, autoStart, tourId, disableAutoScroll, showWelcomeModal, startAppropriatePageTour, hasCompletedCurrentPageTour]);
+  }, [location.pathname, hasSeenAnyTour, autoStart, tourId, disableAutoScroll, 
+      showWelcomeModal, startAppropriatePageTour, hasCompletedCurrentPageTour]);
   
   return (
     <TourProvider currentPathname={location.pathname}>

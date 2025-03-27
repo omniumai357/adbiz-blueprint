@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useState,
@@ -161,8 +162,8 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     goToStep,
     nextStep,
     prevStep,
-    registerTour,
-    unregisterTour,
+    registerTour: registerTour,
+    unregisterTour: unregisterTour,
     setTourPaths,
     setVisibleSteps
   }), [

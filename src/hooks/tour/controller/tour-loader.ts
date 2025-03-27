@@ -54,7 +54,7 @@ const normalizeTourPath = (path: any): TourPath => {
 export const loadTourPath = async (pathId: string, options: any = {}): Promise<TourPath | null> => {
   // For demonstration, creating a sample tour path
   if (pathId === 'demo-tour') {
-    const demoPath = {
+    const demoPath: TourPath = {
       id: 'demo-tour',
       name: 'Demo Tour',
       steps: [
@@ -63,7 +63,8 @@ export const loadTourPath = async (pathId: string, options: any = {}): Promise<T
           elementId: 'welcome-element',
           title: 'Welcome to the Tour',
           content: 'This is a demonstration of our guided tour feature.',
-          position: 'bottom'
+          position: 'bottom',
+          target: 'welcome-element' // Add target property to satisfy type requirements
         }
       ]
     };
@@ -94,4 +95,18 @@ export const registerTourPath = (path: any): boolean => {
   // In a real app, you would store this path for later use
   console.log(`Registered tour path: ${normalizedPath.id}`);
   return true;
+};
+
+/**
+ * Load tour paths for a given route
+ * @param route Current route path
+ * @returns Promise resolving to tour paths for the route
+ */
+export const loadTourPathsForRoute = async (route: string): Promise<TourPath[]> => {
+  // For now, we'll simply try to load a path based on the route name
+  const pathId = `${route.replace(/\//g, '-')}-tour`.replace(/^-/, '');
+  const path = await loadTourPath(pathId);
+  
+  // Return an array of paths (for now just the one we found, or empty array)
+  return path ? [path] : [];
 };

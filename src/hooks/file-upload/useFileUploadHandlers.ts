@@ -1,4 +1,6 @@
-import { FileState } from '@/contexts/file-upload-context';
+
+import { useState } from 'react';
+import { FileState } from '@/features/file-upload/types';
 import { validateFiles } from '@/utils/file-validation';
 
 export interface UseFileUploadHandlersProps {
@@ -61,7 +63,7 @@ export const useFileUploadHandlers = ({
     if (validFiles.length > 0) {
       setFiles(prev => ({
         ...prev,
-        [fileType]: [...prev[fileType], ...validFiles]
+        [fileType]: [...prev[fileType as keyof typeof prev], ...validFiles]
       }));
     }
   };
@@ -78,7 +80,7 @@ export const useFileUploadHandlers = ({
     if (index !== undefined) {
       setFiles(prev => ({
         ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
+        [fileType]: prev[fileType as keyof typeof prev].filter((_, i) => i !== index)
       }));
     }
   };

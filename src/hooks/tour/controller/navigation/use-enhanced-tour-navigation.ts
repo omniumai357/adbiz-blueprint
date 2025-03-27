@@ -11,23 +11,24 @@ export const useEnhancedTourNavigation = () => {
   const { 
     isActive,
     currentStepData,
-    currentPathData,
+    currentPath,
     currentStep,
     totalSteps,
     nextStep,
     prevStep,
     goToStep,
-    endTour
+    endTour,
+    availablePaths
   } = useTour();
   
+  // Get the current path data from availablePaths
+  const currentPathData = currentPath ? availablePaths.find(path => 
+    typeof currentPath === 'string' ? path.id === currentPath : path.id === currentPath.id
+  ) : null;
+  
   const { user } = useAuth();
-  const { trackNavigation, tourAnalytics } = useTourAnalyticsTracking(
-    currentPathData,
-    currentStepData,
-    currentStep,
-    user?.id,
-    user?.user_metadata?.user_type
-  );
+  const { trackNavigation, trackStepCompletion, trackStepGoBack, trackStepJump, 
+    trackTourSkip, trackTourComplete } = useTourAnalyticsTracking();
   
   // Keep track of the previous step for analytics
   const prevStepRef = useRef(currentStep);
@@ -42,7 +43,7 @@ export const useEnhancedTourNavigation = () => {
     if (prevStepIndex !== currentStep && prevStepIndex !== -1) {
       if (currentStep > prevStepIndex) {
         // Forward navigation
-        tourAnalytics.trackStepCompletion(
+        trackStepCompletion(
           currentPathData, 
           currentStepData, 
           currentStep,
@@ -51,7 +52,7 @@ export const useEnhancedTourNavigation = () => {
         );
       } else {
         // Backward navigation
-        tourAnalytics.trackStepGoBack(
+        trackStepGoBack(
           currentPathData, 
           currentStepData, 
           currentStep,
@@ -62,7 +63,8 @@ export const useEnhancedTourNavigation = () => {
     }
     
     prevStepRef.current = currentStep;
-  }, [currentStep, isActive, currentPathData, currentStepData, user?.id, user?.user_metadata?.user_type, tourAnalytics]);
+  }, [currentStep, isActive, currentPathData, currentStepData, user?.id, user?.user_metadata?.user_type, 
+      trackStepCompletion, trackStepGoBack]);
   
   // Enhanced navigation methods with analytics
   const handleNext = useCallback(() => {
@@ -77,7 +79,7 @@ export const useEnhancedTourNavigation = () => {
   
   const handleSkip = useCallback(() => {
     if (currentPathData && currentStepData) {
-      tourAnalytics.trackTourSkip(
+      trackTourSkip(
         currentPathData,
         currentStepData,
         currentStep,
@@ -87,11 +89,12 @@ export const useEnhancedTourNavigation = () => {
     }
     trackNavigation('skip');
     endTour();
-  }, [endTour, currentPathData, currentStepData, currentStep, user?.id, user?.user_metadata?.user_type, trackNavigation, tourAnalytics]);
+  }, [endTour, currentPathData, currentStepData, currentStep, user?.id, user?.user_metadata?.user_type, 
+      trackNavigation, trackTourSkip]);
   
   const handleJumpToStep = useCallback((step: number) => {
     if (currentPathData && currentStepData) {
-      tourAnalytics.trackStepJump(
+      trackStepJump(
         currentPathData,
         currentStepData,
         currentStep,
@@ -102,11 +105,12 @@ export const useEnhancedTourNavigation = () => {
     }
     trackNavigation(`jump_to_${step}`);
     goToStep(step);
-  }, [goToStep, currentPathData, currentStepData, currentStep, user?.id, user?.user_metadata?.user_type, trackNavigation, tourAnalytics]);
+  }, [goToStep, currentPathData, currentStepData, currentStep, user?.id, user?.user_metadata?.user_type, 
+      trackNavigation, trackStepJump]);
   
   const handleComplete = useCallback(() => {
     if (currentPathData) {
-      tourAnalytics.trackTourComplete(
+      trackTourComplete(
         currentPathData,
         user?.id,
         user?.user_metadata?.user_type
@@ -114,7 +118,8 @@ export const useEnhancedTourNavigation = () => {
     }
     trackNavigation('complete');
     endTour();
-  }, [endTour, currentPathData, user?.id, user?.user_metadata?.user_type, trackNavigation, tourAnalytics]);
+  }, [endTour, currentPathData, user?.id, user?.user_metadata?.user_type, 
+      trackNavigation, trackTourComplete]);
   
   return {
     handleNext,

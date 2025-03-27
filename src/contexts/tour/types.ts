@@ -110,6 +110,7 @@ export interface TourPath {
   showProgress?: boolean;
   autoStart?: boolean;
   route?: string;
+  routePattern?: string;
   getStep?: (index: number) => TourStep | null;
   getStepById?: (id: string) => TourStep | null;
   getStepIndex?: (id: string) => number;
@@ -121,6 +122,7 @@ export interface TourPath {
     completionCallback?: () => void;
     metadata?: {
       route?: string;
+      routePattern?: string;
       tags?: string[];
       userRoles?: string[];
       [key: string]: any;
@@ -139,7 +141,7 @@ export interface TourContextType {
   currentStep: number;
   totalSteps: number;
   currentStepData: TourStep | null;
-  currentPath: TourPath | null | string;
+  currentPath: string | null;
   availablePaths: TourPath[];
   
   // Tour navigation

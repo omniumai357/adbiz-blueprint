@@ -2,7 +2,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTour } from '@/contexts/tour';
-import { TourPath } from '@/contexts/tour/types';
 
 interface TourDiscoveryState {
   hasSeenAnyTour: boolean;
@@ -18,7 +17,7 @@ interface TourDiscoveryState {
  */
 export const useTourDiscovery = () => {
   const location = useLocation();
-  const { startTour, currentPathData, tourPaths } = useTour();
+  const { startTour, availablePaths } = useTour();
   const [state, setState] = useState<TourDiscoveryState>({
     hasSeenAnyTour: false,
     hasStartedTour: false,
@@ -76,14 +75,14 @@ export const useTourDiscovery = () => {
     const currentPath = location.pathname;
     
     // First look for exact route match
-    for (const path of tourPaths) {
+    for (const path of availablePaths) {
       if (path.route === currentPath || path.config?.metadata?.route === currentPath) {
         return path.id;
       }
     }
     
     // Then try pattern matching
-    for (const path of tourPaths) {
+    for (const path of availablePaths) {
       const pathPattern = path.routePattern || path.config?.metadata?.routePattern;
       if (pathPattern && new RegExp(pathPattern).test(currentPath)) {
         return path.id;
@@ -92,7 +91,7 @@ export const useTourDiscovery = () => {
     
     // Default to page-specific tour ID
     return `${currentPath.replace(/\//g, '-')}-tour`.replace(/^-/, '');
-  }, [location.pathname, tourPaths]);
+  }, [location.pathname, availablePaths]);
 
   // Start the appropriate tour for the current page
   const startAppropriatePageTour = useCallback(() => {
