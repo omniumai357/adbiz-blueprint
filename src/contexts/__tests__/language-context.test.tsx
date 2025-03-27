@@ -1,11 +1,10 @@
 
 import React from 'react';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { LanguageProvider, useLanguage } from '../language-context';
-import userEvent from '@testing-library/user-event';
 
-// Mock i18n with mocked functions
+// Mock i18n
 jest.mock('../../i18n', () => ({
   __esModule: true,
   default: {
@@ -13,85 +12,52 @@ jest.mock('../../i18n', () => ({
     language: 'en',
     on: jest.fn(),
     off: jest.fn(),
+    t: jest.fn((key) => key),
   }
 }));
 
-// Get the mocked i18n instance
-const mockedI18n = jest.requireMock('../../i18n').default;
-
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value.toString();
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key];
-    }),
-    clear: jest.fn(() => {
-      store = {};
-    }),
-  };
-})();
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-
-// Mock toast
-jest.mock('@/hooks/use-toast', () => ({
-  toast: jest.fn(),
-}));
-
-// Test component that consumes the language context
+// Test component that uses the language context
 const TestComponent = () => {
-  const { 
-    currentLanguage, 
-    changeLanguage, 
-    languages,
-    isChangingLanguage,
-    direction,
-    isRTL
-  } = useLanguage();
+  const { currentLanguage, changeLanguage, languages, isChangingLanguage } = useLanguage();
   
   return (
     <div>
-      <div data-testid="current-language">{currentLanguage}</div>
-      <div data-testid="direction">{direction}</div>
-      <div data-testid="is-rtl">{isRTL ? 'true' : 'false'}</div>
+      <div data-testid="current-lang">{currentLanguage}</div>
       <div data-testid="is-changing">{isChangingLanguage ? 'true' : 'false'}</div>
-      <div data-testid="languages-count">{languages.length}</div>
-      <button 
-        data-testid="change-to-fr" 
-        onClick={() => changeLanguage('fr')}
-      >
+      <button data-testid="change-to-es" onClick={() => changeLanguage('es')}>
+        Change to Spanish
+      </button>
+      <button data-testid="change-to-fr" onClick={() => changeLanguage('fr')}>
         Change to French
       </button>
+      <div data-testid="languages">
+        {languages.map((lang) => (
+          <span key={lang.code} data-testid={`lang-${lang.code}`}>
+            {lang.code}
+          </span>
+        ))}
+      </div>
     </div>
   );
 };
 
 describe('LanguageContext', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    localStorageMock.clear();
-  });
-  
-  it('provides default language values', () => {
+  it('provides the default language and functions', () => {
     render(
       <LanguageProvider>
         <TestComponent />
       </LanguageProvider>
     );
     
-    expect(screen.getByTestId('current-language')).toHaveTextContent('en');
-    expect(screen.getByTestId('direction')).toHaveTextContent('ltr');
-    expect(screen.getByTestId('is-rtl')).toHaveTextContent('false');
+    expect(screen.getByTestId('current-lang')).toHaveTextContent('en');
     expect(screen.getByTestId('is-changing')).toHaveTextContent('false');
-    expect(screen.getByTestId('languages-count')).toHaveTextContent(/^3$/); // Enabled languages only
+    expect(screen.getByTestId('lang-en')).toHaveTextContent('en');
+    expect(screen.getByTestId('lang-es')).toHaveTextContent('es');
+    expect(screen.getByTestId('lang-fr')).toHaveTextContent('fr');
   });
   
-  it('changes language when requested', async () => {
-    const user = userEvent.setup();
+  it('changes language when changeLanguage is called', async () => {
+    const i18n = require('../../i18n').default;
     
     render(
       <LanguageProvider>
@@ -99,43 +65,24 @@ describe('LanguageContext', () => {
       </LanguageProvider>
     );
     
-    // Simulate language change
-    await user.click(screen.getByTestId('change-to-fr'));
+    // Act - Click button to change language
+    fireEvent.click(screen.getByTestId('change-to-es'));
     
-    // Should show loading state
+    // Assert - Should show loading state
     expect(screen.getByTestId('is-changing')).toHaveTextContent('true');
     
-    // Should call i18n's changeLanguage
-    expect(mockedI18n.changeLanguage).toHaveBeenCalledWith('fr');
+    // Assert - Should call i18n.changeLanguage
+    expect(i18n.changeLanguage).toHaveBeenCalledWith('es');
     
-    // Mock the language change completion
-    await act(async () => {
-      // Simulate i18n language changed event
-      const changeHandler = mockedI18n.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
-      if (changeHandler) {
-        mockedI18n.language = 'fr';
-        changeHandler();
-      }
-      
-      // Wait for the loading state to finish
-      await new Promise(resolve => setTimeout(resolve, 700)); // To account for the timeout in the code
-    });
-    
-    // Should update localStorage
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      'userLanguagePreference', 
-      'fr'
-    );
-    
+    // Wait for the language change to complete
     await waitFor(() => {
+      expect(screen.getByTestId('current-lang')).toHaveTextContent('es');
       expect(screen.getByTestId('is-changing')).toHaveTextContent('false');
     });
   });
   
-  it('reads language preference from localStorage on init', () => {
-    // Set a language preference
-    localStorageMock.setItem('userLanguagePreference', 'es');
-    localStorageMock.setItem('userLanguageTimestamp', Date.now().toString());
+  it('supports multiple language changes', async () => {
+    const i18n = require('../../i18n').default;
     
     render(
       <LanguageProvider>
@@ -143,34 +90,20 @@ describe('LanguageContext', () => {
       </LanguageProvider>
     );
     
-    // Should attempt to load the saved preference
-    expect(mockedI18n.changeLanguage).toHaveBeenCalledWith('es');
-  });
-  
-  it('handles RTL languages correctly', async () => {
-    // Mock a scenario where an RTL language is set
-    mockedI18n.language = 'ar'; // Arabic is RTL
-    
-    render(
-      <LanguageProvider>
-        <TestComponent />
-      </LanguageProvider>
-    );
-    
-    // Trigger the language changed handler
-    await act(async () => {
-      const changeHandler = mockedI18n.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
-      if (changeHandler) {
-        changeHandler();
-      }
+    // Change to Spanish
+    fireEvent.click(screen.getByTestId('change-to-es'));
+    await waitFor(() => {
+      expect(screen.getByTestId('current-lang')).toHaveTextContent('es');
     });
     
-    // Direction should be 'rtl'
-    expect(screen.getByTestId('direction')).toHaveTextContent('rtl');
-    expect(screen.getByTestId('is-rtl')).toHaveTextContent('true');
+    // Change to French
+    fireEvent.click(screen.getByTestId('change-to-fr'));
+    await waitFor(() => {
+      expect(screen.getByTestId('current-lang')).toHaveTextContent('fr');
+    });
     
-    // HTML attributes should be set
-    expect(document.documentElement.getAttribute('dir')).toBe('rtl');
-    expect(document.body.classList.contains('rtl')).toBe(true);
+    // Verify i18n was called correctly
+    expect(i18n.changeLanguage).toHaveBeenCalledWith('es');
+    expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
   });
 });

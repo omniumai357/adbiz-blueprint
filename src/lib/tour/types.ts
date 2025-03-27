@@ -1,81 +1,140 @@
 
-import { TourThemeName } from './types/theme';
+/**
+ * Represents a dependency relationship between steps
+ */
+export interface StepDependency {
+  sourceStepId: string;
+  targetStepId: string;
+  type: 'hard' | 'soft'; // hard = must complete, soft = should complete
+  condition?: () => boolean;
+}
 
-// Re-export existing types from contexts
-export type { TourStep, TourPath, TourContextType } from '@/contexts/tour/types';
+/**
+ * Represents a node in the dependency graph
+ */
+export interface DependencyNode {
+  stepId: string;
+  dependencies: string[]; // IDs of steps this step depends on
+  dependents: string[]; // IDs of steps that depend on this step
+}
 
-// Add TourStepGroup type definition that was missing
+/**
+ * Represents a branch condition for step navigation
+ */
+export interface BranchCondition {
+  condition: () => boolean;
+  targetStepId: string;
+  label?: string;
+}
+
+export interface TourStep {
+  id: string;
+  title: string;
+  content: string;
+  target: string;
+  elementId?: string;
+  position?: "top" | "right" | "bottom" | "left" | "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  placement?: string;
+  a11y?: {
+    description?: string;
+    navigationDescription?: string;
+  };
+  actions?: {
+    next?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    prev?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    skip?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+    finish?: {
+      label?: string;
+      callback?: () => void;
+      onClick?: () => void;
+    };
+  };
+  condition?: () => boolean | Promise<boolean>;
+  onBeforeStep?: () => Promise<boolean> | boolean;
+  onAfterStep?: () => void;
+  delay?: number;
+  animation?: string | {
+    entry?: string;
+    highlight?: string;
+    exit?: string;
+  };
+  media?: {
+    type: "image" | "video" | "gif";
+    url: string;
+    alt?: string;
+    animation?: string;
+  };
+  disableOverlay?: boolean;
+  disableScrolling?: boolean;
+  disableCloseOnEsc?: boolean;
+  disableCloseOnClickOutside?: boolean;
+  disableKeyboardNavigation?: boolean;
+  spotlightPadding?: number;
+  isOptional?: boolean;
+  showProgress?: boolean;
+  floatingUIOptions?: any;
+  highlightClass?: string;
+  effects3D?: {
+    enable?: boolean;
+    intensity?: number;
+  };
+  metadata?: Record<string, any>;
+  dependencies?: string[];
+  triggers?: {
+    event: string;
+    element?: string;
+    condition?: () => boolean;
+    action: () => void;
+  }[];
+  priority?: number;
+  userRoles?: string[];
+  path?: string | {
+    enabled: boolean;
+    targetElementId: string;
+    style: string;
+    color?: string;
+    animationDuration?: number;
+    showArrow?: boolean;
+    waypoints?: Array<{x: number, y: number}>;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high"; 
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  keyboardShortcuts?: Record<string, string>;
+  waypoints?: Array<{x: number, y: number}>;
+  enabled?: boolean;
+  targetElementId?: string;
+  style?: string;
+  color?: string;
+  animationDuration?: number;
+  showArrow?: boolean;
+}
+
+// Add the TourStepGroup interface
 export interface TourStepGroup {
   id: string;
-  name: string;
+  title: string;
   description?: string;
   steps: TourStep[];
-}
-
-// Common tour properties
-export interface TourConfig {
-  allowSkip?: boolean;
-  showProgress?: boolean;
-  theme?: TourThemeName;
-  showStepIndicators?: boolean;
-  enableKeyboardNavigation?: boolean;
-  enableScreenReaderAnnouncements?: boolean;
-  autoScrollToTarget?: boolean;
-  scrollOptions?: {
-    behavior?: ScrollBehavior;
-    block?: ScrollLogicalPosition;
-    inline?: ScrollLogicalPosition;
-    offset?: number;
-  };
-}
-
-// Tour analytics event data
-export interface TourAnalyticsEventData {
-  tourId: string;
-  stepId: string;
-  stepIndex: number;
-  totalSteps: number;
-  timestamp: number;
-  userId?: string;
-  userRole?: string;
-  interactionType?: string;
-  metadata?: Record<string, any>;
-}
-
-// Tour element querying strategies
-export interface ElementQueryStrategy {
-  type: 'id' | 'class' | 'selector' | 'xpath' | 'element';
-  value: string;
-  fallback?: string;
-  retryTimeout?: number;
-  maxRetries?: number;
-}
-
-// Tour path dependency rules
-export interface TourDependencyRule {
-  stepId: string;
-  type: 'visited' | 'completed' | 'skipped' | 'custom';
-  value?: any;
-  operator?: 'equals' | 'not-equals' | 'contains' | 'greater-than' | 'less-than';
-  customCheck?: (stepData: any) => boolean;
-}
-
-// Function that returns dynamic content for a tour step
-export type DynamicContentProvider = () => string | Promise<string>;
-
-// Tour path theme
-export interface TourTheme {
-  name: TourThemeName;
-  primaryColor: string;
-  secondaryColor: string;
-  textColor: string;
-  backgroundColor: string;
-  buttonColor: string;
-  buttonTextColor: string;
-  overlayColor: string;
-  overlayOpacity: number;
-  borderRadius: string;
-  boxShadow: string;
-  fontFamily: string;
-  css?: string;
+  condition?: () => boolean;
 }
