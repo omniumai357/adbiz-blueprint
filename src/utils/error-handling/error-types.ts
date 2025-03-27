@@ -8,11 +8,13 @@
  */
 export class APIError extends Error {
   statusCode: number;
+  endpoint?: string;
   
-  constructor(message: string, statusCode: number = 500) {
+  constructor(message: string, statusCode: number = 500, endpoint?: string) {
     super(message);
     this.name = 'APIError';
     this.statusCode = statusCode;
+    this.endpoint = endpoint;
   }
 }
 
@@ -20,9 +22,14 @@ export class APIError extends Error {
  * Error thrown when user authentication is required
  */
 export class AuthenticationError extends Error {
-  constructor(message: string = 'You must be logged in to perform this action') {
+  method?: string;
+  action?: string;
+  
+  constructor(message: string = 'You must be logged in to perform this action', method?: string, action?: string) {
     super(message);
     this.name = 'AuthenticationError';
+    this.method = method;
+    this.action = action;
   }
 }
 
@@ -31,11 +38,13 @@ export class AuthenticationError extends Error {
  */
 export class ValidationError extends Error {
   fields?: Record<string, string>;
+  errors?: Record<string, string>;
   
   constructor(message: string, fields?: Record<string, string>) {
     super(message);
     this.name = 'ValidationError';
     this.fields = fields;
+    this.errors = fields; // For compatibility
   }
 }
 
@@ -57,10 +66,15 @@ export class PaymentError extends Error {
  */
 export class NetworkError extends Error {
   retryable: boolean;
+  url?: string;
+  status?: number;
+  requestInfo?: any;
   
-  constructor(message: string, retryable: boolean = true) {
+  constructor(message: string, retryable: boolean = true, url?: string, status?: number) {
     super(message);
     this.name = 'NetworkError';
     this.retryable = retryable;
+    this.url = url;
+    this.status = status;
   }
 }

@@ -68,7 +68,8 @@ const logSymbols = {
 
 // Flexible data object type for logging
 export interface LogData {
-  [key: string]: any;
+  context?: string;
+  data?: any;
 }
 
 /**
@@ -93,7 +94,7 @@ const formatLogMessage = (level: LogLevel, message: string, context?: string): s
 /**
  * Generic logging function with context and data support
  */
-export function log(level: LogLevel, message: string, data?: LogData | string | Error) {
+export function log(level: LogLevel, message: string, data?: LogData) {
   if (logLevelPriority[level] > logLevelPriority[config.minLevel] || !config.enabled) {
     return;
   }
@@ -103,24 +104,17 @@ export function log(level: LogLevel, message: string, data?: LogData | string | 
     return;
   }
 
-  // Handle different data types
-  if (typeof data === 'string') {
-    logMethods[level](formatLogMessage(level, message), data);
-  } else if (data instanceof Error) {
-    logMethods[level](formatLogMessage(level, message), data);
+  // Extract context from data object if it exists
+  const { context, ...restData } = data as LogData;
+  const formattedMessage = formatLogMessage(level, message, context);
+  
+  // If there are other data properties, log them
+  const hasData = Object.keys(restData).length > 0;
+  
+  if (hasData) {
+    logMethods[level](formattedMessage, restData);
   } else {
-    // Extract context from data object if it exists
-    const { context, ...restData } = data as LogData & { context?: string };
-    const formattedMessage = formatLogMessage(level, message, context);
-    
-    // If there are other data properties, log them
-    const hasData = Object.keys(restData).length > 0;
-    
-    if (hasData) {
-      logMethods[level](formattedMessage, restData);
-    } else {
-      logMethods[level](formattedMessage);
-    }
+    logMethods[level](formattedMessage);
   }
 }
 
@@ -128,10 +122,10 @@ export function log(level: LogLevel, message: string, data?: LogData | string | 
  * Main logger object with methods for different log levels
  */
 export const logger = {
-  error: (message: string, data?: LogData | string | Error) => log(LogLevel.ERROR, message, data),
-  warn: (message: string, data?: LogData | string | Error) => log(LogLevel.WARN, message, data),
-  info: (message: string, data?: LogData | string | Error) => log(LogLevel.INFO, message, data),
-  debug: (message: string, data?: LogData | string | Error) => log(LogLevel.DEBUG, message, data),
+  error: (message: string, data?: LogData) => log(LogLevel.ERROR, message, data),
+  warn: (message: string, data?: LogData) => log(LogLevel.WARN, message, data),
+  info: (message: string, data?: LogData) => log(LogLevel.INFO, message, data),
+  debug: (message: string, data?: LogData) => log(LogLevel.DEBUG, message, data),
   
   /**
    * Create a context-specific logger
@@ -148,6 +142,21 @@ export const logger = {
   }),
 };
 
+/**
+ * Format error details into a structured object for logging
+ */
+export function formatErrorDetails(error: unknown): Record<string, any> {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+  
+  return { rawError: String(error) };
+}
+
 // Utility for performance logging
 export function logPerformance(operationName: string, fn: () => any) {
   const start = performance.now();
@@ -155,8 +164,10 @@ export function logPerformance(operationName: string, fn: () => any) {
   const duration = performance.now() - start;
   logger.debug(`Operation "${operationName}" took ${duration.toFixed(2)}ms`, { 
     context: 'Performance', 
-    duration, 
-    operation: operationName 
+    data: {
+      duration, 
+      operation: operationName 
+    }
   });
   return result;
 }

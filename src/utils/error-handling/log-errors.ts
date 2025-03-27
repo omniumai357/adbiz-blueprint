@@ -22,21 +22,23 @@ export function logError(error: unknown, context = 'ErrorHandler') {
     logger.error(`API Error: ${error.message}`, {
       context,
       data: { 
-        statusCode: error.statusCode
+        statusCode: error.statusCode,
+        endpoint: error.endpoint
       }
     });
   } else if (error instanceof ValidationError) {
     logger.warn(`Validation Error: ${error.message}`, { 
       context,
       data: { 
-        validationErrors: error.errors 
+        validationErrors: error.errors || error.fields 
       }
     });
   } else if (error instanceof AuthenticationError) {
     logger.error(`Auth Error: ${error.message}`, { 
       context,
       data: { 
-        method: error.method 
+        method: error.method,
+        action: error.action
       }
     });
   } else if (error instanceof NetworkError) {
@@ -44,7 +46,9 @@ export function logError(error: unknown, context = 'ErrorHandler') {
       context,
       data: { 
         url: error.url,
-        status: error.status
+        status: error.status,
+        retryable: error.retryable,
+        requestInfo: error.requestInfo
       }
     });
   } else if (error instanceof Error) {

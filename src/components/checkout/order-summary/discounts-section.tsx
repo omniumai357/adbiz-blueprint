@@ -1,135 +1,123 @@
 
-import React from "react";
-import { Separator } from "@/components/ui/separator";
-import { Award, BadgePercent, DollarSign, Sparkles } from "lucide-react";
-import { formatCurrency } from "@/lib/utils/format-utils";
-import { Badge } from "@/components/ui/badge";
-import { BundleDiscountInfo } from "../bundle-discount";
-import { LimitedTimeOfferInfo } from "../limited-time-offer";
-import { UserMilestone } from "@/hooks/rewards/useMilestones";
+import React from 'react';
+import { BundleDiscount } from '../bundle-discount';
+import { LimitedTimeOffer } from '../limited-time-offer';
+import { TieredDiscount } from '../tiered-discount';
+import { MilestoneRewards } from '../milestone-rewards';
+import { BundleDiscountInfo } from '@/hooks/checkout/useBundleDiscount';
+import { LimitedTimeOfferInfo } from '@/hooks/checkout/useLimitedTimeOffers';
+import { UserMilestone } from '@/hooks/rewards/useMilestones';
 
 interface DiscountsSectionProps {
-  showDiscounts: boolean;
-  limitedTimeOffer?: LimitedTimeOfferInfo;
-  offerDiscountAmount?: number;
-  appliedCoupon?: {
-    code: string;
-    discount?: number;
-    description?: string;
-  };
-  couponDiscountAmount?: number;
-  appliedDiscount?: BundleDiscountInfo;
-  bundleDiscountAmount?: number;
-  tieredDiscount?: {
+  bundleDiscount?: BundleDiscountInfo | null;
+  couponDiscount?: {
     id: string;
     name: string;
-    discountAmount?: number;
+    discountAmount: number;
     firstPurchaseBonus?: number;
   } | null;
-  isFirstPurchase?: boolean;
-  tieredDiscountAmount?: number;
-  isLoyaltyProgramEnabled?: boolean;
-  loyaltyBonusAmount?: number;
-  appliedMilestoneReward?: UserMilestone | null;
-  milestoneRewardAmount?: number;
+  limitedTimeOffer?: LimitedTimeOfferInfo | null;
+  milestoneReward?: UserMilestone | null;
+  tieredDiscount?: {
+    threshold: number;
+    discountPercent: number;
+    applied: boolean;
+  } | null;
 }
 
-const DiscountsSection = ({
-  showDiscounts,
+export const DiscountsSection: React.FC<DiscountsSectionProps> = ({
+  bundleDiscount,
+  couponDiscount,
   limitedTimeOffer,
-  offerDiscountAmount = 0,
-  appliedCoupon,
-  couponDiscountAmount = 0,
-  appliedDiscount,
-  bundleDiscountAmount = 0,
+  milestoneReward,
   tieredDiscount,
-  isFirstPurchase,
-  tieredDiscountAmount = 0,
-  isLoyaltyProgramEnabled,
-  loyaltyBonusAmount = 0,
-  appliedMilestoneReward,
-  milestoneRewardAmount = 0
-}: DiscountsSectionProps) => {
-  if (!showDiscounts) return null;
+}) => {
+  const hasAnyDiscount = 
+    bundleDiscount || 
+    couponDiscount || 
+    limitedTimeOffer || 
+    milestoneReward || 
+    tieredDiscount?.applied;
+
+  // If no discounts are applied, don't render the section
+  if (!hasAnyDiscount) {
+    return null;
+  }
+
+  // Helper function to render milestone milestone_name if available
+  const getMilestoneName = (milestone: UserMilestone) => {
+    return milestone.milestone_name || `Milestone Reward ${milestone.id}`;
+  };
 
   return (
-    <div>
-      <Separator className="my-4" />
-      <h4 className="font-medium mb-3">Discounts & Savings</h4>
-      <div className="space-y-2">
-        {limitedTimeOffer && offerDiscountAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <BadgePercent className="h-4 w-4 text-orange-500" />
-              <span>{limitedTimeOffer.name}</span>
-              <Badge variant="outline" className="text-xs bg-orange-50 border-orange-200 text-orange-700">
-                Limited time
-              </Badge>
-            </div>
-            <span className="text-rose-600">-{formatCurrency(offerDiscountAmount)}</span>
-          </div>
+    <div className="space-y-3 py-2 border-t border-gray-200">
+      <div className="text-sm font-medium text-gray-700">Applied Discounts</div>
+      
+      <ul className="space-y-2 text-sm">
+        {/* Bundle discount */}
+        {bundleDiscount && (
+          <li className="flex justify-between">
+            <span className="text-gray-600">
+              Bundle Discount: {bundleDiscount.name}
+            </span>
+            <span className="font-medium">
+              -{bundleDiscount.discountType === 'percentage' 
+                ? `${bundleDiscount.discountAmount}%` 
+                : `$${bundleDiscount.discountAmount.toFixed(2)}`}
+            </span>
+          </li>
         )}
-
-        {appliedCoupon && couponDiscountAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-cyan-500" />
-              <span>Coupon: {appliedCoupon.code}</span>
-            </div>
-            <span className="text-rose-600">-{formatCurrency(couponDiscountAmount)}</span>
-          </div>
+        
+        {/* Coupon discount */}
+        {couponDiscount && (
+          <li className="flex justify-between">
+            <span className="text-gray-600">
+              Coupon: {couponDiscount.name}
+            </span>
+            <span className="font-medium">
+              -${couponDiscount.discountAmount.toFixed(2)}
+            </span>
+          </li>
         )}
-
-        {appliedDiscount && bundleDiscountAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <BadgePercent className="h-4 w-4 text-primary" />
-              <span>{appliedDiscount.name}</span>
-            </div>
-            <span className="text-rose-600">-{formatCurrency(bundleDiscountAmount)}</span>
-          </div>
+        
+        {/* Limited time offer */}
+        {limitedTimeOffer && (
+          <li className="flex justify-between">
+            <span className="text-gray-600">
+              {limitedTimeOffer.name}
+            </span>
+            <span className="font-medium">
+              -{limitedTimeOffer.discountType === 'percentage' 
+                ? `${limitedTimeOffer.discountAmount}%` 
+                : `$${limitedTimeOffer.discountAmount.toFixed(2)}`}
+            </span>
+          </li>
         )}
-
-        {tieredDiscount && tieredDiscountAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4 text-purple-500" />
-              <span>{tieredDiscount.name}</span>
-              {isFirstPurchase && tieredDiscount.firstPurchaseBonus && (
-                <Badge variant="outline" className="text-xs bg-purple-50 border-purple-200 text-purple-700">
-                  First purchase
-                </Badge>
-              )}
-            </div>
-            <span className="text-rose-600">-{formatCurrency(tieredDiscountAmount)}</span>
-          </div>
+        
+        {/* Milestone reward */}
+        {milestoneReward && (
+          <li className="flex justify-between">
+            <span className="text-gray-600">
+              Milestone: {getMilestoneName(milestoneReward)}
+            </span>
+            <span className="font-medium">
+              -${milestoneReward.discount_amount ? milestoneReward.discount_amount.toFixed(2) : '0.00'}
+            </span>
+          </li>
         )}
-
-        {isLoyaltyProgramEnabled && loyaltyBonusAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4 text-amber-500" />
-              <span>Loyalty Program Bonus</span>
-            </div>
-            <span className="text-rose-600">-{formatCurrency(loyaltyBonusAmount)}</span>
-          </div>
+        
+        {/* Tiered discount */}
+        {tieredDiscount?.applied && (
+          <li className="flex justify-between">
+            <span className="text-gray-600">
+              Volume Discount (orders over ${tieredDiscount.threshold})
+            </span>
+            <span className="font-medium">
+              -{tieredDiscount.discountPercent}%
+            </span>
+          </li>
         )}
-
-        {appliedMilestoneReward && milestoneRewardAmount > 0 && (
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span>{appliedMilestoneReward.milestone_name || appliedMilestoneReward.name} Reward</span>
-              <Badge variant="default" className="text-xs">
-                Milestone
-              </Badge>
-            </div>
-            <span className="text-rose-600">-{formatCurrency(milestoneRewardAmount)}</span>
-          </div>
-        )}
-      </div>
+      </ul>
     </div>
   );
 };
-
-export default DiscountsSection;

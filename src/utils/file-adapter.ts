@@ -90,6 +90,7 @@ export const fileAdapter = {
       type: file.type,
       uploaded: false,
       uploadProgress: 0,
+      progress: 0, // Add progress property to match FileItem interface
       error: null
     }));
   },

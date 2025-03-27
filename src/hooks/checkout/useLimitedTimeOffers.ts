@@ -3,8 +3,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 
-// Ensure we're using the correct interface definition
+// Extend the LimitedTimeOfferInfo to include endTime
 interface TimeOffer extends LimitedTimeOfferInfo {
+  expiresAt: string;
   endTime: Date;
 }
 
@@ -27,6 +28,7 @@ export function useLimitedTimeOffers(subtotal: number) {
         // Create a demo offer that expires in a random time between 10 minutes and 4 hours
         const randomMinutes = 10 + Math.floor(Math.random() * 230); // 10 min to 4 hours
         const endTime = new Date(now.getTime() + (randomMinutes * 60 * 1000));
+        const expiresAt = endTime.toISOString();
         
         const demoOffer: TimeOffer = {
           id: "flash-sale-1",
@@ -35,7 +37,8 @@ export function useLimitedTimeOffers(subtotal: number) {
           discountAmount: 15,
           discountType: "percentage",
           active: true,
-          endTime
+          expiresAt: expiresAt,
+          endTime: endTime
         };
         
         setActiveOffers([demoOffer]);

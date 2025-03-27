@@ -12,6 +12,7 @@
 export * from './format-utils';
 export * from './validation-utils';
 export * from './dom-utils';
+export * from './logging';
 
 // Re-export the cn utility which has been moved here from the parent utils.ts
 export { cn } from '../utils';
