@@ -138,3 +138,38 @@ export interface TourStepGroup {
   steps: TourStep[];
   condition?: () => boolean;
 }
+
+/**
+ * Represents a complete tour path with steps and configuration
+ */
+export interface TourPath {
+  id: string;
+  name?: string;
+  steps: TourStep[];
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  route?: string;
+  getStep?: (index: number) => TourStep | null;
+  getStepById?: (id: string) => TourStep | null;
+  getStepIndex?: (id: string) => number;
+  getAllSteps?: () => TourStep[];
+  config?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    autoStart?: boolean;
+    completionCallback?: () => void;
+    metadata?: {
+      route?: string;
+      tags?: string[];
+      userRoles?: string[];
+      [key: string]: any;
+    };
+    accessibility?: {
+      announceSteps?: boolean;
+      keyboardNavigation?: boolean;
+      restoreFocus?: boolean;
+      focusTrap?: boolean;
+    };
+  };
+}
