@@ -16,7 +16,8 @@ export function useUserContext() {
     // Use the auth context if available
     const { user, profile } = useAuth();
     userId = user?.id;
-    userType = profile?.role || 'anonymous';
+    // Use the profile role or user type, or default to anonymous
+    userType = profile?.role || user?.type || 'anonymous';
   } catch (error) {
     // Fallback to useAuthUser if auth context isn't available
     const { data: authData } = useAuthUser();

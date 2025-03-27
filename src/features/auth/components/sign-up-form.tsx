@@ -50,7 +50,7 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
       last_name: data.lastName,
     });
     
-    if (result?.error) {
+    if (result && !result.success) {
       form.setSubmitError(result.error.message);
     } else {
       // Redirect to auth page with registrationSuccess flag

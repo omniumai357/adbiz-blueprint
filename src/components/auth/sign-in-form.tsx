@@ -35,7 +35,7 @@ export function SignInForm({ onTabChange }: SignInFormProps) {
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
     const result = await signIn(data.email, data.password);
-    if (result?.error) {
+    if (result && !result.success) {
       form.setSubmitError(result.error.message);
     }
   };

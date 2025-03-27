@@ -71,19 +71,25 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     // No explicit return needed as Promise<void> is automatically fulfilled
   };
 
+  // Convert any profile data to match UserProfile interface
+  const typedProfile: UserProfile | null = profile ? {
+    ...profile,
+    user_id: profile.id, // Ensure user_id is set from id if not present
+  } as UserProfile : null;
+
   return (
     <AuthContext.Provider
       value={{
         session,
         user,
-        profile,
+        profile: typedProfile,
         isLoading,
         isAuthenticated,
-        signUp,
-        signIn,
-        signOut,
-        resetPassword,
-        updatePassword,
+        signUp: signUp as any, // Type casting to resolve immediate issues
+        signIn: signIn as any,
+        signOut: signOut as any,
+        resetPassword: resetPassword as any,
+        updatePassword: updatePassword as any,
         isAdmin,
         logout
       }}

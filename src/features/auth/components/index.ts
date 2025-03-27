@@ -9,6 +9,9 @@
 // Export form components
 export { SignInForm } from './sign-in-form';
 export { SignUpForm } from './sign-up-form';
+export { AuthMessage } from './auth-message';
+export { AuthContainer } from './auth-container';
+export { WelcomeCoupon } from './welcome-coupon';
 
 // In the future, we can add more components like:
 // export { ResetPasswordForm } from './reset-password-form';

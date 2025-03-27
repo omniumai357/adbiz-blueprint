@@ -14,7 +14,7 @@ const Header: React.FC = () => {
   
   const { user, signOut } = useAuth();
 
-  // Safe access to user properties without using user_metadata
+  // Safe access to user properties - using profile data or fallbacks
   const userImage = user?.avatar_url || '';
   const userName = user?.name || user?.email?.split('@')[0] || '';
 

@@ -5,7 +5,10 @@ import { Session, User as SupabaseUser } from "@supabase/supabase-js";
  * Extended User type that includes custom user properties
  */
 export interface User extends SupabaseUser {
-  // Add any custom user properties here
+  // Add custom user properties
+  name?: string;
+  avatar_url?: string;
+  type?: string;
 }
 
 /**
@@ -17,6 +20,7 @@ export interface UserProfile {
   first_name?: string;
   last_name?: string;
   avatar_url?: string;
+  role?: string;
   created_at?: string;
   updated_at?: string;
 }

@@ -2,13 +2,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/ui/use-toast";
 import { logger } from "@/utils/logger";
+import { AuthResult } from "../types";
 
 /**
  * Hook providing core authentication actions with standardized error handling and user feedback.
  */
 export const useAuthActions = () => {
   // Helper function for consistent error handling
-  const handleAuthError = (error: any, action: string) => {
+  const handleAuthError = (error: any, action: string): AuthResult => {
     logger.error(`Auth error during ${action}:`, error);
     
     const errorMessage = error?.message || `An error occurred during ${action}.`;
@@ -27,13 +28,19 @@ export const useAuthActions = () => {
       variant: "destructive",
     });
     
-    return { error };
+    return { 
+      success: false, 
+      error: { 
+        message: friendlyMessage,
+        code: error?.code
+      }
+    };
   };
 
   /**
    * Register a new user
    */
-  const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
+  const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }): Promise<AuthResult> => {
     try {
       logger.info("Attempting user signup", { email });
       
@@ -65,7 +72,7 @@ export const useAuthActions = () => {
   /**
    * Sign in an existing user
    */
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthResult> => {
     try {
       logger.info("Attempting user signin", { email });
       
@@ -94,7 +101,7 @@ export const useAuthActions = () => {
   /**
    * Sign out the current user
    */
-  const signOut = async () => {
+  const signOut = async (): Promise<AuthResult> => {
     try {
       logger.info("Attempting user signout");
       
@@ -120,7 +127,7 @@ export const useAuthActions = () => {
   /**
    * Send a password reset email
    */
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): Promise<AuthResult> => {
     try {
       logger.info("Attempting password reset", { email });
       
@@ -151,7 +158,7 @@ export const useAuthActions = () => {
   /**
    * Update the current user's password
    */
-  const updatePassword = async (newPassword: string) => {
+  const updatePassword = async (newPassword: string): Promise<AuthResult> => {
     try {
       logger.info("Attempting password update");
       
