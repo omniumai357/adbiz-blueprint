@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { useAuthActions } from "./useAuthActions";
+import { useAuthActions } from "@/features/auth/hooks/use-auth-actions";
 import { AuthResult } from "@/features/auth/types";
 
 export const useAuthNavigation = () => {

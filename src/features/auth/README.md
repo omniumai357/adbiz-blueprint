@@ -1,60 +1,85 @@
 
 # Authentication Feature
 
-This module provides a complete authentication solution for the application, including:
+This directory contains the authentication-related functionality for the application. It follows a feature-based organization pattern to encapsulate all authentication-related components, hooks, and utilities.
 
-- User sign-up and sign-in forms
-- Password reset functionality
-- Authentication context and hooks
-- Welcome coupon for new users
+## Structure
 
-## Components
-
-- `AuthContainer`: Wrapper component with consistent styling for auth forms
-- `AuthMessage`: Displays authentication-related messages and notifications
-- `SignInForm`: Form for user login
-- `SignUpForm`: Form for new user registration
-- `WelcomeCoupon`: Displays special discounts for new users
-
-## Hooks
-
-- `useAuth`: Main hook for accessing authentication context
-- `useAuthActions`: Provides authentication actions (sign in, sign up, etc.)
-- `useAuthNavigation`: Navigation-related auth actions with redirect handling
-- `useAuthData`: Access to user authentication data
+- `/components` - React components related to authentication
+- `/contexts` - Context providers for auth state management
+- `/hooks` - Custom hooks for auth operations
+- `/types.ts` - TypeScript types for auth-related data
+- `/utils.ts` - Utility functions for auth
 
 ## Usage
 
-```tsx
-import { useAuth, SignInForm } from '@/features/auth';
+### Basic Authentication
 
-function MyAuthComponent() {
-  const { user, isAuthenticated } = useAuth();
+To access authentication state and methods:
+
+```tsx
+import { useAuth } from "@/features/auth";
+
+function MyComponent() {
+  const { user, isAuthenticated, signIn, signOut } = useAuth();
   
+  // Use auth state and methods
+}
+```
+
+### Auth Navigation
+
+For authentication with navigation handling:
+
+```tsx
+import { useAuthNavigation } from "@/hooks/auth";
+
+function LoginForm() {
+  const { handleSignIn } = useAuthNavigation();
+  
+  const onSubmit = async (data) => {
+    await handleSignIn(data.email, data.password);
+    // Navigation handled automatically
+  };
+}
+```
+
+### Components
+
+Ready-to-use authentication components:
+
+```tsx
+import { SignInForm, SignUpForm } from "@/features/auth";
+
+function AuthPage() {
   return (
     <div>
-      {isAuthenticated ? (
-        <p>Welcome, {user.email}!</p>
-      ) : (
-        <SignInForm onTabChange={() => {}} />
-      )}
+      <SignInForm onTabChange={handleTabChange} />
+      {/* or */}
+      <SignUpForm onTabChange={handleTabChange} />
     </div>
   );
 }
 ```
 
-## Context
+## Auth Result Pattern
 
-The `AuthContextProvider` should be placed near the root of your application:
+All authentication operations return a standardized `AuthResult` type:
+
+```ts
+type AuthResult = 
+  | { success: true; data?: any; message?: string; }
+  | { success: false; error: { message: string; code?: string }; };
+```
+
+This allows for consistent error handling:
 
 ```tsx
-import { AuthContextProvider } from '@/features/auth';
+const result = await signIn(email, password);
 
-function App() {
-  return (
-    <AuthContextProvider>
-      {/* Your app components */}
-    </AuthContextProvider>
-  );
+if (result.success) {
+  // Success handling
+} else {
+  // Error handling with result.error.message
 }
 ```
