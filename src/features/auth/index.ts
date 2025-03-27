@@ -1,28 +1,20 @@
 
-/**
- * Authentication Feature Module
- * 
- * This file serves as the main entry point for the authentication feature.
- * It re-exports all public-facing components, hooks, and utilities from the auth feature.
- */
+// Re-export all auth-related components, hooks, and types
+// This makes imports cleaner for consuming components
 
-// Export the main context providers and hooks
-export { AuthContextProvider, useAuth } from './contexts/auth-context';
+// Components
+export * from './components/sign-in-form';
+export * from './components/sign-up-form';
 
-// Export all auth hooks through a centralized location
-export * from './hooks';
+// Contexts
+export * from './contexts/auth-context';
 
-// Export auth components
-export * from './components';
+// Hooks
+export * from './hooks/use-auth-actions';
+export * from './hooks/use-auth-navigation';
 
-// Export auth types
+// Types
 export * from './types';
 
-/**
- * This module provides the following functionality:
- * 
- * 1. Authentication Context - For managing auth state across the application
- * 2. Auth Hooks - For accessing and manipulating auth state
- * 3. Auth Components - Ready-to-use UI components for auth flows
- * 4. Auth Types - TypeScript types for auth-related data structures
- */
+// Utils
+// export * from './utils';  // Uncomment if you have utils to export
