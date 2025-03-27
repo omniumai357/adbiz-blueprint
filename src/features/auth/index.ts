@@ -7,9 +7,7 @@ export { SignUpForm } from './components/sign-up-form';
 export { WelcomeCoupon } from './components/welcome-coupon';
 
 // Hooks
-export { useAuthActions } from './hooks/use-auth-actions';
-export { useAuthNavigation } from './hooks/use-auth-navigation';
-export { useAuthData } from './hooks/use-auth-data';
+export { useAuthActions, useAuthNavigation, useAuthData } from './hooks';
 
 // Context
 export { useAuth, AuthContext, AuthContextProvider } from './contexts/auth-context';

@@ -1,3 +1,4 @@
+
 /**
  * Keyboard navigation handler for tour
  * Processes keyboard events and converts them to navigation actions

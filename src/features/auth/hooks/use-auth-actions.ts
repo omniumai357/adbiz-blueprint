@@ -1,10 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/ui/use-toast";
+import { toast } from "@/hooks/ui/use-toast";
 
+/**
+ * Hook providing core authentication actions with standardized error handling and user feedback.
+ */
 export const useAuthActions = () => {
-  const { toast } = useToast();
-  
   // Helper function for consistent error handling
   const handleAuthError = (error: any, action: string) => {
     console.error(`Auth error during ${action}:`, error);
@@ -28,6 +29,9 @@ export const useAuthActions = () => {
     return { error };
   };
 
+  /**
+   * Register a new user
+   */
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -53,11 +57,14 @@ export const useAuthActions = () => {
     }
   };
 
+  /**
+   * Sign in an existing user
+   */
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (error) {
@@ -65,74 +72,83 @@ export const useAuthActions = () => {
       }
 
       toast({
-        title: "Successfully signed in",
-        description: "Welcome back!",
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
       });
-
-      return { success: true, user: data.user };
+      
+      return { success: true };
     } catch (error: any) {
-      return handleAuthError(error, "sign in");
+      return handleAuthError(error, "signin");
     }
   };
 
+  /**
+   * Sign out the current user
+   */
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-
+      
       if (error) {
         throw error;
       }
-
+      
       toast({
         title: "Signed out",
-        description: "You have been successfully logged out.",
+        description: "You have been signed out successfully.",
       });
-
+      
       return { success: true };
     } catch (error: any) {
-      return handleAuthError(error, "sign out");
+      return handleAuthError(error, "signout");
     }
   };
 
+  /**
+   * Send a password reset email
+   */
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       toast({
         title: "Password reset email sent",
-        description: "Please check your email for the reset link.",
+        description: "Please check your email for the password reset link.",
       });
-
+      
       return { 
         success: true, 
-        message: "We've sent you an email with instructions to reset your password." 
+        message: "Please check your email for the password reset link." 
       };
     } catch (error: any) {
       return handleAuthError(error, "password reset");
     }
   };
 
+  /**
+   * Update the current user's password
+   */
   const updatePassword = async (newPassword: string) => {
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
-
+      
       if (error) {
         throw error;
       }
-
+      
       toast({
         title: "Password updated",
         description: "Your password has been successfully updated.",
       });
-
+      
       return { success: true };
     } catch (error: any) {
       return handleAuthError(error, "password update");
