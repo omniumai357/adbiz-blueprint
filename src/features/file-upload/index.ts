@@ -6,9 +6,11 @@
  * types, and utilities for handling file uploads across the application.
  */
 
+// Export types first to avoid ambiguity in subsequent exports
+export * from './types';
+
 // Core file upload functionality
 export * from './hooks';
-export * from './types';
 
 // Components and UI elements
 export * from './components';
