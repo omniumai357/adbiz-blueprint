@@ -1,139 +1,88 @@
 
-import { useCallback } from 'react';
-import { logger } from '@/utils/logger';
-
-interface ValidationOptions {
-  maxSizeBytes?: number;
-  allowedTypes?: string[];
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errorMessage?: string;
-}
+import { useState, useCallback } from 'react';
+import { getAllowedFileTypes, getReadableFileFormats, formatFileSize } from '@/utils/file-validation';
 
 /**
- * Hook for validating files before upload
+ * Hook for validating files against type and size constraints
  */
 export const useFileValidator = () => {
+  const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
+  
   /**
-   * Format file size for display
+   * Check if a file type is valid for the given category
    */
-  const formatFileSize = useCallback((bytes: number): string => {
-    if (bytes < 1024) {
-      return bytes + ' B';
-    } else if (bytes < 1024 * 1024) {
-      return (bytes / 1024).toFixed(1) + ' KB';
-    } else {
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    }
+  const isFileTypeValid = useCallback((file: File, fileCategory: string): boolean => {
+    const allowedTypes = getAllowedFileTypes(fileCategory);
+    return allowedTypes.length === 0 || allowedTypes.includes(file.type);
   }, []);
-
+  
   /**
-   * Get validation options based on file type
+   * Check if a file size is valid for the given category
    */
-  const getValidationOptions = useCallback((fileType: string): ValidationOptions => {
-    // Default validation options by file type
-    const options: Record<string, ValidationOptions> = {
-      logo: {
-        maxSizeBytes: 5 * 1024 * 1024, // 5 MB
-        allowedTypes: ['image/jpeg', 'image/png', 'image/svg+xml']
-      },
-      images: {
-        maxSizeBytes: 10 * 1024 * 1024, // 10 MB
-        allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-      },
-      videos: {
-        maxSizeBytes: 50 * 1024 * 1024, // 50 MB
-        allowedTypes: ['video/mp4', 'video/quicktime', 'video/webm']
-      },
-      documents: {
-        maxSizeBytes: 15 * 1024 * 1024, // 15 MB
-        allowedTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-      },
-      // Default options for any other file type
-      default: {
-        maxSizeBytes: 5 * 1024 * 1024, // 5 MB
-        allowedTypes: []
-      }
-    };
-
-    return options[fileType] || options.default;
+  const isFileSizeValid = useCallback((file: File, maxSizeBytes: number): boolean => {
+    return file.size <= maxSizeBytes;
   }, []);
-
+  
   /**
-   * Validate a single file
+   * Validate a batch of files against type and size constraints
    */
-  const validateFile = useCallback((file: File, fileType: string): ValidationResult => {
-    const options = getValidationOptions(fileType);
-    
-    // Check file size
-    if (options.maxSizeBytes && file.size > options.maxSizeBytes) {
-      const errorMessage = `File "${file.name}" exceeds maximum size of ${formatFileSize(options.maxSizeBytes)}`;
-      logger.warn(errorMessage, {
-        fileSize: formatFileSize(file.size),
-        maxSize: formatFileSize(options.maxSizeBytes)
-      });
-      
-      return {
-        isValid: false,
-        errorMessage
-      };
-    }
-    
-    // Check file type
-    if (options.allowedTypes && options.allowedTypes.length > 0) {
-      const isValidType = options.allowedTypes.includes(file.type);
-      
-      if (!isValidType) {
-        const errorMessage = `File "${file.name}" has invalid type. Allowed types: ${options.allowedTypes.join(', ')}`;
-        logger.warn(errorMessage, {
-          actualType: file.type,
-          allowedTypes: options.allowedTypes.join(', ')
-        });
-        
-        return {
-          isValid: false,
-          errorMessage
-        };
-      }
-    }
-    
-    return { isValid: true };
-  }, [getValidationOptions, formatFileSize]);
-
-  /**
-   * Validate multiple files
-   */
-  const validateFiles = useCallback((files: File[], fileType: string): { 
-    validFiles: File[];
-    invalidFiles: File[];
-    errors: string[];
-  } => {
+  const validateFiles = useCallback((
+    files: File[],
+    fileCategory: string,
+    maxSizeBytes: number
+  ): { validFiles: File[]; invalidFiles: { file: File; reason: string }[] } => {
     const validFiles: File[] = [];
-    const invalidFiles: File[] = [];
+    const invalidFiles: { file: File; reason: string }[] = [];
     const errors: string[] = [];
     
     files.forEach(file => {
-      const result = validateFile(file, fileType);
-      
-      if (result.isValid) {
-        validFiles.push(file);
+      if (!isFileTypeValid(file, fileCategory)) {
+        invalidFiles.push({ 
+          file, 
+          reason: `Invalid file type. Accepted formats: ${getReadableFileFormats(fileCategory)}` 
+        });
+        errors.push(`"${file.name}" has an invalid file type`);
+      } else if (!isFileSizeValid(file, maxSizeBytes)) {
+        invalidFiles.push({ 
+          file, 
+          reason: `File size exceeds limit of ${formatFileSize(maxSizeBytes)}` 
+        });
+        errors.push(`"${file.name}" exceeds the maximum file size of ${formatFileSize(maxSizeBytes)}`);
       } else {
-        invalidFiles.push(file);
-        if (result.errorMessage) {
-          errors.push(result.errorMessage);
-        }
+        validFiles.push(file);
       }
     });
     
-    return { validFiles, invalidFiles, errors };
-  }, [validateFile]);
-
+    if (errors.length > 0) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [fileCategory]: errors
+      }));
+    }
+    
+    return { validFiles, invalidFiles };
+  }, [isFileTypeValid, isFileSizeValid]);
+  
+  /**
+   * Clear validation errors for a specific category or all categories
+   */
+  const clearValidationErrors = useCallback((fileCategory?: string) => {
+    if (fileCategory) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fileCategory];
+        return newErrors;
+      });
+    } else {
+      setValidationErrors({});
+    }
+  }, []);
+  
   return {
-    formatFileSize,
-    validateFile,
+    validationErrors,
+    isFileTypeValid,
+    isFileSizeValid,
     validateFiles,
-    getValidationOptions
+    clearValidationErrors
   };
 };
