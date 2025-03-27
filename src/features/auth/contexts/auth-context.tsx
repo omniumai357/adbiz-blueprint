@@ -60,15 +60,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   // Fixed logout function to properly return Promise<void>
   const logout = async (): Promise<void> => {
     try {
-      const result = await signOut();
+      await signOut();
       // Reset user and session state
       setUser(null);
       setSession(null);
-      // Don't return any value from this Promise
-      return; 
     } catch (error) {
       logger.error('Error during logout:', error);
-      // Just log the error but don't throw - ensure void return
     }
   };
 

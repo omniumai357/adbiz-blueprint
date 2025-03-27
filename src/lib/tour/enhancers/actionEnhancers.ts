@@ -84,7 +84,7 @@ export const withStepTriggers = (triggers: StepTrigger[]): ((step: TourStep) => 
     const triggerIds = triggers.map(trigger => trigger.id);
     
     return {
-      // Convert StepTrigger[] to string[] by explicitly mapping IDs
+      // Return the trigger IDs as strings to match the expected type
       triggers: triggerIds
     };
   };
