@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
 import { useQuestionnaireData } from "@/hooks/data/useQuestionnaireData";
 import { supabase } from "@/integrations/supabase/client";
-import { FileState } from "./useFileUpload";
+import { FileState } from "@/features/file-upload/types";
 
 export function useQuestionnaireSubmit() {
   const [submitting, setSubmitting] = useState(false);

@@ -23,6 +23,8 @@ export interface LogData {
   error?: any;
   currentStep?: string | number;
   packageName?: string;
+  milestoneId?: string;
+  milestoneName?: string;
 }
 
 // Define a logger class with methods for different log levels

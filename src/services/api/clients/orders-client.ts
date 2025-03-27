@@ -2,7 +2,7 @@
 import { supabaseClient } from "../supabase-client";
 import { Order, CustomerInfo, CompanyInfo } from "@/types/api";
 import { Json } from "@/integrations/supabase/types";
-import { apiResponseHandler } from "../response-handler";
+import { responseHandler } from "../response-handler";
 
 /**
  * Orders API Client
@@ -14,7 +14,7 @@ export const ordersClient = {
   getUserOrders: async (userId: string): Promise<Order[]> => {
     if (!userId) return [];
     
-    return apiResponseHandler.handle(
+    return responseHandler.handle(
       supabaseClient
         .from('orders')
         .select('*')
@@ -53,7 +53,7 @@ export const ordersClient = {
     paymentMethod: string;
     paymentId?: string;
   }): Promise<Order> => {
-    return apiResponseHandler.handle(
+    return responseHandler.handle(
       supabaseClient
         .from('orders')
         .insert({

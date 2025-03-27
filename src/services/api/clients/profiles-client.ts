@@ -1,7 +1,7 @@
 
 import { supabaseClient } from "../supabase-client";
 import { Profile } from "@/types/api";
-import { apiResponseHandler } from "../response-handler";
+import { responseHandler } from "../response-handler";
 
 /**
  * User profiles API Client
@@ -18,7 +18,7 @@ export const profilesClient = {
   getProfile: async (userId: string): Promise<Profile | null> => {
     if (!userId) throw new Error("User ID is required");
     
-    return apiResponseHandler.handle(
+    return responseHandler.handle(
       supabaseClient
         .from('profiles')
         .select('*')
@@ -43,7 +43,7 @@ export const profilesClient = {
   updateProfile: async (userId: string, profileData: Partial<Profile>): Promise<Profile> => {
     if (!userId) throw new Error("User ID is required");
     
-    return apiResponseHandler.handle(
+    return responseHandler.handle(
       supabaseClient
         .from('profiles')
         .update(profileData)
