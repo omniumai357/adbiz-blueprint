@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { MilestoneCard } from "./MilestoneCard";
 import RewardCard from "./RewardCard";
@@ -10,6 +10,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useRewardActions } from "@/hooks/rewards/useRewardActions";
 import MilestoneProgressCard from "./MilestoneProgressCard";
+import { createComponentLogger } from "@/lib/utils/logging";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+const logger = createComponentLogger('MilestonesDashboard');
 
 interface MilestonesDashboardProps {
   userId: string | undefined;
@@ -17,6 +21,8 @@ interface MilestonesDashboardProps {
 
 const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   const { t } = useTranslation();
+  const isTabletOrMobile = useMediaQuery("(max-width: 1023px)");
+  
   const {
     milestones,
     completedMilestones,
@@ -32,20 +38,33 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   
   // State for error tracking
   const [localError, setLocalError] = useState<Error | null>(null);
+  
+  // Log performance metrics
+  useEffect(() => {
+    logger.debug('Milestones dashboard loaded', { 
+      totalMilestones: milestones.length,
+      completedMilestones: completedMilestones.length,
+      availableRewards: availableRewards.length 
+    });
+    
+    return () => {
+      logger.debug('Milestones dashboard unmounted');
+    };
+  }, [milestones.length, completedMilestones.length, availableRewards.length]);
 
   const MilestonesSkeleton = () => (
     <div className="space-y-6">
-      <Skeleton className="h-[150px] w-full rounded-lg" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Skeleton className="h-[220px] rounded-lg" />
-        <Skeleton className="h-[220px] rounded-lg" />
-        <Skeleton className="h-[220px] rounded-lg" />
+      <Skeleton className="h-[120px] md:h-[150px] w-full rounded-lg" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
+        <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
+        <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
       </div>
     </div>
   );
 
   const EmptyMilestones = () => (
-    <div className="p-6 text-center border rounded-lg">
+    <div className="p-4 md:p-6 text-center border rounded-lg">
       <h3 className="text-lg font-medium mb-2">{t('rewards.noMilestones')}</h3>
       <p className="text-muted-foreground">
         {t('rewards.startEarning')}
@@ -64,12 +83,12 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
     >
       <div className="space-y-6">
         {/* Progress Overview */}
-        <div className="bg-gradient-to-r from-slate-50 to-white p-6 rounded-lg border shadow-sm">
+        <div className="bg-gradient-to-r from-slate-50 to-white p-4 md:p-6 rounded-lg border shadow-sm">
           <h2 className="text-xl font-semibold mb-2">{t('rewards.yourProgress')}</h2>
           <p className="text-muted-foreground mb-4">
             {t('rewards.pointsEarned', { points: totalPoints })}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('rewards.availableRewards')}</h3>
               <p className="text-2xl font-bold">{availableRewards.length}</p>
@@ -82,7 +101,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
         </div>
         
         {/* Milestones & Rewards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Display available rewards */}
           {availableRewards.map((reward) => (
             <RewardCard
@@ -105,7 +124,13 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
               isCompleted={milestone.is_completed}
               rewardClaimed={milestone.reward_claimed}
               onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
-                () => claimReward(milestone.milestone_id) : undefined}
+                () => {
+                  logger.info('User claiming reward', {
+                    milestoneId: milestone.milestone_id,
+                    milestoneName: milestone.milestone_name
+                  });
+                  return claimReward(milestone.milestone_id);
+                } : undefined}
               isClaimingReward={isProcessing}
             />
           ))}
