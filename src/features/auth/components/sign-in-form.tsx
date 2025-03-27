@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/form";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useAuth } from "../contexts/auth-context";
+import { AuthResult } from "../types";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -35,8 +36,8 @@ export function SignInForm({ onTabChange }: SignInFormProps) {
 
   const onSubmit = async (data: z.infer<typeof signInSchema>) => {
     const result = await signIn(data.email, data.password);
-    if (result && !result.success) {
-      // Only access error when success is false
+    // Properly narrow the type by checking success property first
+    if (result && result.success === false) {
       form.setSubmitError(result.error.message);
     }
   };

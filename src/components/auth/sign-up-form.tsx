@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { useAppForm } from "@/hooks/forms/useAppForm";
 import { useNavigate } from "react-router-dom";
+import { AuthResult } from "@/features/auth/types";
 
 const signUpSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -50,8 +51,8 @@ export function SignUpForm({ onTabChange }: SignUpFormProps) {
       last_name: data.lastName,
     });
     
-    if (result && !result.success) {
-      // Only access error when success is false
+    // Properly narrow the type by checking success property first
+    if (result && result.success === false) {
       form.setSubmitError(result.error.message);
     } else {
       // Redirect to auth page with registrationSuccess flag

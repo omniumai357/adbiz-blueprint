@@ -1,10 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/ui/use-toast";
+import { AuthResult } from "@/features/auth/types";
 
 export const useAuthActions = () => {
   // Helper function for consistent error handling
-  const handleAuthError = (error: any, action: string) => {
+  const handleAuthError = (error: any, action: string): AuthResult => {
     console.error(`Auth error during ${action}:`, error);
     
     const errorMessage = error?.message || `An error occurred during ${action}.`;
@@ -23,10 +24,16 @@ export const useAuthActions = () => {
       variant: "destructive",
     });
     
-    return { error };
+    return { 
+      success: false, 
+      error: { 
+        message: friendlyMessage,
+        code: error?.code
+      }
+    };
   };
 
-  const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }) => {
+  const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }): Promise<AuthResult> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -51,7 +58,7 @@ export const useAuthActions = () => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -73,7 +80,7 @@ export const useAuthActions = () => {
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<AuthResult> => {
     try {
       const { error } = await supabase.auth.signOut();
       
@@ -92,7 +99,7 @@ export const useAuthActions = () => {
     }
   };
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string): Promise<AuthResult> => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?reset=true`,
@@ -116,7 +123,7 @@ export const useAuthActions = () => {
     }
   };
 
-  const updatePassword = async (newPassword: string) => {
+  const updatePassword = async (newPassword: string): Promise<AuthResult> => {
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
