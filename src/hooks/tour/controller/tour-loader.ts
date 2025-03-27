@@ -1,116 +1,97 @@
 
-import { TourPath } from '@/contexts/tour/types';
-
-// Keep track of loaded tour paths for caching
-const cachedPaths: Record<string, TourPath[]> = {};
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 /**
- * Load tour paths based on the current route
- * 
- * @param route Current route path
- * @returns Array of tour paths applicable for the route
+ * Validates a tour path to ensure all required properties are present
+ * @param path Tour path configuration to validate
+ * @returns Boolean indicating if the path is valid
  */
-export async function loadTourPathsForRoute(route: string): Promise<TourPath[]> {
-  try {
-    // First check cache to avoid unnecessary dynamic imports
-    if (cachedPaths[route]) {
-      return cachedPaths[route];
+const validateTourPath = (path: any): boolean => {
+  if (!path || typeof path !== 'object') return false;
+  if (!path.id || !path.name || !Array.isArray(path.steps)) return false;
+  
+  // Check if all steps have required properties
+  return path.steps.every((step: any) => {
+    return step.id && (step.elementId || step.target || step.targetId);
+  });
+};
+
+/**
+ * Normalizes a tour path to ensure all properties follow the expected format
+ * @param path Tour path to normalize
+ * @returns Normalized tour path object
+ */
+const normalizeTourPath = (path: any): TourPath => {
+  // Ensure steps have the required target property
+  const normalizedSteps = path.steps.map((step: any): TourStep => {
+    const normalizedStep: any = { ...step };
+    
+    // Set target if not present (use elementId as fallback)
+    if (!normalizedStep.target) {
+      normalizedStep.target = normalizedStep.elementId || normalizedStep.targetId;
     }
     
-    // Normalize the route for matching
-    const normalizedRoute = route.endsWith('/') ? route : `${route}/`;
-    const paths: TourPath[] = [];
-
-    // Map routes to their respective tour path modules
-    const routeToModuleMap: Record<string, string> = {
-      '/': '@/lib/tour/home/tour-path',
-      '/home': '@/lib/tour/home/tour-path',
-      '/checkout': '@/lib/tour/checkout/tour-path',
-      '/services': '@/lib/tour/services/tour-path',
-      '/contact': '@/lib/tour/contact-tour',
-      // Add more routes as needed
-    };
-
-    // Find the appropriate module to load
-    const moduleToLoad = Object.keys(routeToModuleMap).find(r => 
-      normalizedRoute.startsWith(r === '/' ? r : `${r}/`)
-    );
-
-    if (moduleToLoad) {
-      try {
-        const module = await import(routeToModuleMap[moduleToLoad]);
-        
-        // Extract tour paths from the module
-        Object.keys(module).forEach(key => {
-          if (key.includes('TourPath') || key.includes('tourPath')) {
-            if (module[key] && typeof module[key] === 'object') {
-              // Ensure each step has a target property (use elementId if target is missing)
-              const normalizedPath = {
-                ...module[key],
-                steps: module[key].steps.map((step: any) => ({
-                  ...step,
-                  target: step.target || step.elementId || '',
-                }))
-              };
-              paths.push(normalizedPath as TourPath);
-            }
-          }
-        });
-      } catch (err) {
-        console.warn(`Failed to load tour paths for route: ${route}`, err);
-      }
+    // Set position to bottom if not present
+    if (!normalizedStep.position) {
+      normalizedStep.position = "bottom";
     }
+    
+    return normalizedStep;
+  });
+  
+  return {
+    ...path,
+    steps: normalizedSteps
+  };
+};
 
-    // Fallback to a generic tour path for routes without specific tours
-    if (paths.length === 0) {
-      try {
-        const defaultModule = await import('@/lib/tour/default-tour');
-        if (defaultModule.defaultTourPath) {
-          const normalizedDefaultPath = {
-            ...defaultModule.defaultTourPath,
-            steps: defaultModule.defaultTourPath.steps.map((step: any) => ({
-              ...step,
-              target: step.target || step.elementId || '',
-            }))
-          };
-          paths.push(normalizedDefaultPath as TourPath);
+/**
+ * Loads a tour path from various sources (local, remote, etc.)
+ * @param pathId ID of the tour path to load
+ * @param options Options for loading the tour
+ * @returns Promise resolving to the loaded tour path
+ */
+export const loadTourPath = async (pathId: string, options: any = {}): Promise<TourPath | null> => {
+  // For demonstration, creating a sample tour path
+  if (pathId === 'demo-tour') {
+    const demoPath = {
+      id: 'demo-tour',
+      name: 'Demo Tour',
+      steps: [
+        {
+          id: 'welcome',
+          elementId: 'welcome-element',
+          title: 'Welcome to the Tour',
+          content: 'This is a demonstration of our guided tour feature.',
+          position: 'bottom'
         }
-      } catch (err) {
-        console.warn('Failed to load default tour path', err);
-      }
+      ]
+    };
+    
+    if (validateTourPath(demoPath)) {
+      return normalizeTourPath(demoPath);
     }
-
-    // Cache the loaded paths
-    cachedPaths[route] = paths;
-    return paths;
-  } catch (error) {
-    console.error('Error loading tour paths', error);
-    return [];
   }
-}
+  
+  // In a real app, you would fetch the tour path from an API or local storage
+  console.warn(`Tour path "${pathId}" not found`);
+  return null;
+};
 
 /**
- * Preload tour paths for a set of routes
- * 
- * @param routes Array of routes to preload tour paths for
+ * Registers a new tour path in the system
+ * @param path Tour path to register
+ * @returns Boolean indicating success
  */
-export async function preloadTourPaths(routes: string[]): Promise<void> {
-  try {
-    await Promise.all(routes.map(route => loadTourPathsForRoute(route)));
-  } catch (error) {
-    console.error('Error preloading tour paths', error);
+export const registerTourPath = (path: any): boolean => {
+  if (!validateTourPath(path)) {
+    console.error('Invalid tour path provided');
+    return false;
   }
-}
-
-/**
- * Clear the tour path cache
- * 
- * @param route Optional route to clear, if not provided all routes will be cleared
- */
-export function clearTourPathCache(route?: string): void {
-  if (route) {
-    delete cachedPaths[route];
-  } else {
-    Object.keys(cachedPaths).forEach(key => delete cachedPaths[key]);
-  }
-}
+  
+  const normalizedPath = normalizeTourPath(path);
+  
+  // In a real app, you would store this path for later use
+  console.log(`Registered tour path: ${normalizedPath.id}`);
+  return true;
+};

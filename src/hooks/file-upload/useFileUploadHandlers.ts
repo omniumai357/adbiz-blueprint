@@ -1,8 +1,5 @@
-
-import { useState, useCallback, ChangeEvent } from "react";
-import { toast } from "sonner";
-import { FileState } from "@/hooks/useFileUpload";
-import { validateFiles } from "@/utils/file-validation";
+import { FileState } from '@/contexts/file-upload-context';
+import { validateFiles } from '@/utils/file-validation';
 
 export interface UseFileUploadHandlersProps {
   files: FileState;
@@ -10,94 +7,84 @@ export interface UseFileUploadHandlersProps {
   setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
+export interface UseFileUploadHandlersResult {
+  handleFileChange: (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => void;
+  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
+}
+
 /**
- * Hook for handling file upload interactions
+ * Custom hook for handling file upload interactions
+ * Provides functions to add and remove files from different categories
  */
-export function useFileUploadHandlers({
+export const useFileUploadHandlers = ({
   files,
-  setFiles, 
+  setFiles,
   setUploadError
-}: UseFileUploadHandlersProps) {
-  /**
-   * Handle file input change
-   * @param fileType Type of file being uploaded
-   * @param event File input change event
-   */
-  const handleFileChange = useCallback((
-    fileType: keyof FileState,
-    event: ChangeEvent<HTMLInputElement>
-  ) => {
-    if (!event.target.files || event.target.files.length === 0) return;
+}: UseFileUploadHandlersProps): UseFileUploadHandlersResult => {
+  const handleFileChange = (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
+    let newFiles: File[] = [];
     
-    const newFiles = Array.from(event.target.files);
-    setUploadError(null);
+    // Handle event input
+    if ('target' in e && e.target.files) {
+      newFiles = Array.from(e.target.files);
+    } 
+    // Handle direct array of files
+    else if (Array.isArray(e)) {
+      newFiles = Array.from(e);
+    }
     
-    // Validate files
+    if (newFiles.length === 0) return;
+
+    // For logo, we only keep one file
+    if (fileType === 'logo') {
+      const { validFiles, hasInvalidFiles } = validateFiles([newFiles[0]], fileType);
+      
+      if (hasInvalidFiles) {
+        setUploadError(`Invalid file type. Please use a supported format.`);
+        return;
+      }
+      
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: validFiles[0]
+      }));
+      return;
+    }
+    
+    // For other file types, we append to existing files
     const { validFiles, hasInvalidFiles } = validateFiles(newFiles, fileType);
     
     if (hasInvalidFiles) {
-      toast.error(`Some files have invalid types. Only supported formats for ${fileType} were added.`);
+      setUploadError(`Some files have invalid types. Only supported formats were added.`);
     }
     
-    if (validFiles.length === 0) return;
+    if (validFiles.length > 0) {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: [...prev[fileType], ...validFiles]
+      }));
+    }
+  };
+
+  const onRemoveFile = (fileType: keyof FileState, index?: number) => {
+    if (fileType === 'logo') {
+      setFiles(prev => ({
+        ...prev,
+        logo: null
+      }));
+      return;
+    }
     
-    // Process valid files
-    setFiles(prevFiles => {
-      // For logo, replace the existing one (only one logo allowed)
-      if (fileType === "logo") {
-        return {
-          ...prevFiles,
-          logo: validFiles[0]
-        };
-      }
-      
-      // For other file types, append to existing array
-      const existingFiles = prevFiles[fileType] as File[];
-      
-      return {
-        ...prevFiles,
-        [fileType]: [...existingFiles, ...validFiles]
-      };
-    });
-    
-    // Reset the file input
-    event.target.value = "";
-  }, [setFiles, setUploadError]);
-  
-  /**
-   * Remove a file from the state
-   * @param fileType Type of file to remove
-   * @param indexOrFile Index of file to remove, or the file object itself for logo
-   */
-  const onRemoveFile = useCallback((fileType: keyof FileState, indexOrFile?: number | File) => {
-    setFiles(prevFiles => {
-      // For logo, set to null
-      if (fileType === "logo") {
-        return {
-          ...prevFiles,
-          logo: null
-        };
-      }
-      
-      // For other file types, remove by index
-      if (typeof indexOrFile === "number") {
-        const existingFiles = prevFiles[fileType] as File[];
-        
-        const updatedFiles = [...existingFiles];
-        updatedFiles.splice(indexOrFile, 1);
-        
-        return {
-          ...prevFiles,
-          [fileType]: updatedFiles
-        };
-      }
-      
-      return prevFiles;
-    });
-  }, [setFiles]);
-  
+    if (index !== undefined) {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: prev[fileType].filter((_, i) => i !== index)
+      }));
+    }
+  };
+
   return {
     handleFileChange,
     onRemoveFile
   };
-}
+};

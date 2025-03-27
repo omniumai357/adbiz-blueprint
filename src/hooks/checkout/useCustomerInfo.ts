@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth';
 import { useProfile } from '@/hooks/data/useProfile';
@@ -23,7 +22,6 @@ export const useCustomerInfo = () => {
     lastName: '',
   });
   
-  // Update customer info when profile data loads
   useEffect(() => {
     if (profile) {
       setCustomerInfo(prevInfo => ({
@@ -31,12 +29,10 @@ export const useCustomerInfo = () => {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
         company: profile.company || '',
-        // Don't try to use fields that don't exist on the profile
       }));
     }
   }, [profile]);
   
-  // Handle errors from profile loading
   useEffect(() => {
     if (error) {
       toast({
@@ -54,7 +50,6 @@ export const useCustomerInfo = () => {
       [field]: value
     }));
     
-    // Clear validation error when field is updated
     if (validationErrors[field as keyof typeof validationErrors]) {
       setValidationErrors(prev => ({
         ...prev,

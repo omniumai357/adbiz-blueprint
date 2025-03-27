@@ -25,7 +25,7 @@ export const TourPathManager: React.FC<TourPathManagerProps> = ({
       : currentStepData.path;
     
     // Check if the path is enabled and has a target element
-    if (pathData.enabled && pathData.targetElementId) {
+    if (pathData && 'targetElementId' in pathData && pathData.targetElementId) {
       const targetId = pathData.targetElementId;
       const element = document.getElementById(targetId);
       

@@ -1,140 +1,208 @@
-
-import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
-import { useTourController } from '@/hooks/tour/useTourController';
-import { useAuthUser } from '@/hooks/queries/useAuthUser';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+// Update import to use the correct path
 import { useAuth } from '@/features/auth';
-import { TourContext } from './TourContext';
-import { TourAnnouncer } from './TourAnnouncer';
-import { TourThemeName } from '@/lib/tour/types/theme';
-import { defaultContext } from './defaults';
-import { TourContextType, TourPath } from './types';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { TourPath, TourStep } from './types';
+import { loadTourPath } from '@/hooks/tour/controller/tour-loader';
+
+export interface TourContextProps {
+  isActive: boolean;
+  currentStep: number;
+  currentPath: string | null;
+  currentPathData: TourPath | undefined;
+  currentStepData: TourStep | null;
+  totalSteps: number;
+  visibleSteps: TourStep[];
+  tourPaths: TourPath[];
+  startTour: (pathId: string) => void;
+  endTour: () => void;
+  goToStep: (stepIndex: number) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  registerTour: (path: TourPath) => void;
+  unregisterTour: (pathId: string) => void;
+  setTourPaths: React.Dispatch<React.SetStateAction<TourPath[]>>;
+  setVisibleSteps: React.Dispatch<React.SetStateAction<TourStep[]>>;
+}
+
+const TourContext = createContext<TourContextProps | undefined>(undefined);
 
 interface TourProviderProps {
   children: React.ReactNode;
   currentPathname?: string;
-  theme?: TourThemeName;
 }
 
-export const TourProvider: React.FC<TourProviderProps> = ({ 
+export const TourProvider: React.FC<TourProviderProps> = ({
   children,
-  currentPathname,
-  theme = "default"
+  currentPathname
 }) => {
+  const [isActive, setIsActive] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [currentPath, setCurrentPath] = useState<string | null>(null);
+  const [tourPaths, setTourPaths] = useState<TourPath[]>([]);
+  const [visibleSteps, setVisibleSteps] = useState<TourStep[]>([]);
+  const navigate = useNavigate();
   const location = useLocation();
-  const pathname = currentPathname || location.pathname;
-  const isMobile = useMediaQuery('(max-width: 640px)');
-  
-  let userId: string | undefined;
-  let userType: string | undefined;
-  
-  try {
-    const { user, profile } = useAuth();
-    userId = user?.id;
-    userType = profile?.role || 'anonymous';
-  } catch (error) {
-    const { data: authData } = useAuthUser();
-    userId = authData?.user?.id;
-    userType = 'anonymous';
-  }
+  const { user } = useAuth();
 
-  // Add a custom config state for theme handling
-  const [customConfig, setCustomConfig] = useState({
-    theme: theme || "default",
-    isMobile
-  });
-  
-  // Update custom config when mobile status changes
+  // Load tour paths on component mount
   useEffect(() => {
-    setCustomConfig(prev => ({
-      ...prev,
-      isMobile
-    }));
-  }, [isMobile]);
-  
-  const tourController = useTourController([], pathname, userId, userType);
-  
-  // Set initial theme if provided
-  useEffect(() => {
-    if (theme !== "default") {
-      document.documentElement.classList.add(`tour-theme-${theme}`);
-      
-      // Update the theme in custom config
-      setCustomConfig(prev => ({
-        ...prev,
-        theme
-      }));
-    }
-    
-    // Cleanup theme classes on unmount
-    return () => {
-      document.documentElement.classList.remove(
-        "tour-theme-blue",
-        "tour-theme-purple", 
-        "tour-theme-green",
-        "tour-theme-amber"
-      );
-    };
-  }, [theme]);
-  
-  // Memoized handler for setting dynamic content
-  const handleSetDynamicContent = useCallback((content: string) => {
-    if (typeof tourController.setDynamicContent === 'function') {
-      if (tourController.currentStepData) {
-        tourController.setDynamicContent(tourController.currentStepData.id, content);
-      } else {
-        // If no current step, use a default empty string for the stepId
-        tourController.setDynamicContent("", content);
+    const loadInitialTours = async () => {
+      // Example: Load a tour based on the current pathname
+      if (currentPathname) {
+        const pathId = `${currentPathname.replace(/\//g, '-')}-tour`.replace(/^-/, '');
+        const loadedPath = await loadTourPath(pathId);
+        if (loadedPath) {
+          setTourPaths(prev => [...prev, loadedPath]);
+        }
       }
-    }
-  }, [tourController]);
-  
-  // Create a wrapper for handleKeyNavigation that converts DOM KeyboardEvent to React.KeyboardEvent
-  const handleKeyNavigationWrapper = useCallback((event: KeyboardEvent) => {
-    if (typeof tourController.handleKeyNavigation === 'function') {
-      // Create a basic adapter for the DOM KeyboardEvent to satisfy React.KeyboardEvent requirements
-      const adaptedEvent = {
-        ...event,
-        nativeEvent: event,
-        isDefaultPrevented: () => false,
-        isPropagationStopped: () => false,
-        persist: () => {},
-        locale: '',
-        // Add any other required properties
-      };
       
-      tourController.handleKeyNavigation(adaptedEvent as any);
+      // Example: Load a default demo tour
+      const demoTour = await loadTourPath('demo-tour');
+      if (demoTour) {
+        setTourPaths(prev => [...prev, demoTour]);
+      }
+    };
+    
+    loadInitialTours();
+  }, [currentPathname]);
+
+  // Find current path data
+  const currentPathData = useMemo(() => {
+    return tourPaths.find(path => path.id === currentPath) || undefined;
+  }, [currentPath, tourPaths]);
+
+  // Find current step data
+  const currentStepData = useMemo(() => {
+    return visibleSteps[currentStep] || null;
+  }, [currentStep, visibleSteps]);
+
+  const totalSteps = useMemo(() => {
+    return visibleSteps.length;
+  }, [visibleSteps]);
+
+  // Start tour function
+  const startTour = useCallback((pathId: string) => {
+    const path = tourPaths.find(p => p.id === pathId);
+    if (!path) {
+      console.warn(`Tour path with id "${pathId}" not found.`);
+      return;
     }
-  }, [tourController.handleKeyNavigation]);
+
+    setIsActive(true);
+    setCurrentPath(pathId);
+    setCurrentStep(0);
+    setVisibleSteps(path.steps);
+    
+    // Navigate to the tour route if it exists
+    if (path.route) {
+      navigate(path.route);
+    }
+  }, [tourPaths, navigate]);
+
+  // End tour function
+  const endTour = useCallback(() => {
+    setIsActive(false);
+    setCurrentStep(0);
+    setCurrentPath(null);
+    setVisibleSteps([]);
+  }, []);
+
+  // Go to step function
+  const goToStep = useCallback((stepIndex: number) => {
+    if (stepIndex >= 0 && stepIndex < totalSteps) {
+      setCurrentStep(stepIndex);
+    }
+  }, [totalSteps]);
+
+  // Next step function
+  const nextStep = useCallback(() => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      endTour();
+    }
+  }, [currentStep, totalSteps, endTour]);
+
+  // Previous step function
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  }, [currentStep]);
   
-  // Adapt the tour controller to match the TourContextType
-  const adaptedController: TourContextType = {
-    ...defaultContext,
-    ...tourController,
-    customConfig,
-    setCustomConfig,
-    // Make sure currentPath is a TourPath object
-    currentPath: tourController.currentPath ? 
-      (typeof tourController.currentPath === 'string' ? 
-        tourController.availablePaths.find(p => p.id === tourController.currentPath) || null : 
-        tourController.currentPath) : 
-      null,
-    // Make sure setDynamicContent has the correct signature
-    setDynamicContent: handleSetDynamicContent,
-    // Use the wrapper for handleKeyNavigation to fix the type issue
-    handleKeyNavigation: handleKeyNavigationWrapper
-  };
+  // Register tour function
+  const registerTour = useCallback((path: TourPath) => {
+    setTourPaths(prev => [...prev, path]);
+  }, []);
   
+  // Unregister tour function
+  const unregisterTour = useCallback((pathId: string) => {
+    setTourPaths(prev => prev.filter(path => path.id !== pathId));
+  }, []);
+
+  const value = useMemo(() => ({
+    isActive,
+    currentStep,
+    currentPath,
+    currentPathData,
+    currentStepData,
+    totalSteps,
+    visibleSteps,
+    tourPaths,
+    startTour,
+    endTour,
+    goToStep,
+    nextStep,
+    prevStep,
+    registerTour,
+    unregisterTour,
+    setTourPaths,
+    setVisibleSteps
+  }), [
+    isActive,
+    currentStep,
+    currentPath,
+    currentPathData,
+    currentStepData,
+    totalSteps,
+    visibleSteps,
+    tourPaths,
+    startTour,
+    endTour,
+    goToStep,
+    nextStep,
+    prevStep,
+    registerTour,
+    unregisterTour,
+    setTourPaths,
+    setVisibleSteps
+  ]);
+
+  // Reset tour when location changes
+  useEffect(() => {
+    if (isActive && currentPathData?.route !== location.pathname) {
+      endTour();
+    }
+  }, [location.pathname, isActive, endTour, currentPathData?.route]);
+
   return (
-    <TourContext.Provider value={adaptedController}>
-      <TourAnnouncer 
-        isActive={tourController.isActive}
-        currentStepData={tourController.currentStepData}
-        currentStep={tourController.currentStep}
-        totalSteps={tourController.totalSteps}
-      />
+    <TourContext.Provider value={value}>
       {children}
     </TourContext.Provider>
   );
+};
+
+export const useTour = () => {
+  const context = React.useContext(TourContext);
+  if (context === undefined) {
+    throw new Error("useTour must be used within a TourProvider");
+  }
+  return context;
 };
