@@ -1,5 +1,5 @@
 
-import { TourPath, TourStepGroup } from '../../types';
+import { TourPath, TourStepGroup, TourStep } from '../../types';
 import { createNamedTourPath } from './createTourPath';
 
 /**

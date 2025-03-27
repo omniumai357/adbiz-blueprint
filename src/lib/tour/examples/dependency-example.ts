@@ -1,5 +1,5 @@
 
-import { createTourPath } from '../core/paths';
+import { createTourPath } from '../core/paths/createTourPath';
 import { TourStep } from '../types';
 
 const steps: TourStep[] = [
