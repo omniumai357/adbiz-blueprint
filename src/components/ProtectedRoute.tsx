@@ -1,8 +1,8 @@
 
 import { ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/auth-context";
-import { toast } from "@/hooks/ui/use-toast";
+import { useAuth } from "@/features/auth";
+import { useToast } from "@/hooks/ui/use-toast";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -12,6 +12,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isLoading) {

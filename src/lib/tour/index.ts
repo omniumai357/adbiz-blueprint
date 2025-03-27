@@ -2,7 +2,7 @@
 // Export core functionality
 export * from './core/paths/createTourPath';
 // Export custom path creators - already renamed in core/paths/index.ts to avoid conflicts
-export { createTourPathFromGroups } from './core/paths/createTourPathFromGroups';
+export { createTourPathFromGroups } from './core/paths';
 export * from './core/tourPathFactory';
 export * from './core/tourStepGroups';
 
