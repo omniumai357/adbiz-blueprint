@@ -94,13 +94,22 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   // Adapt files for the ReviewSection component which expects plain File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);
   
-  // Extract File objects for ReviewSection (fixes type issues)
+  // Type safety: ensure we're working with proper FileItem arrays before extraction
+  const imagesAsFileItems = Array.isArray(fileState.images) ? 
+    fileState.images as FileItem[] : [];
+    
+  const videosAsFileItems = Array.isArray(fileState.videos) ?
+    fileState.videos as FileItem[] : [];
+    
+  const documentsAsFileItems = Array.isArray(fileState.documents) ?
+    fileState.documents as FileItem[] : [];
+  
+  // Extract File objects for ReviewSection with strict typing
   const reviewFiles = {
     logo: adaptedFiles.logo as File | null,
-    // Explicitly cast arrays and extract File objects to resolve type issues
-    images: extractFilesFromFileItems(fileState.images as FileItem[]),
-    videos: extractFilesFromFileItems(fileState.videos as FileItem[]),
-    documents: extractFilesFromFileItems(fileState.documents as FileItem[])
+    images: extractFilesFromFileItems(imagesAsFileItems),
+    videos: extractFilesFromFileItems(videosAsFileItems),
+    documents: extractFilesFromFileItems(documentsAsFileItems)
   };
   
   return (
