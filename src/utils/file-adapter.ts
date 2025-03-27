@@ -8,11 +8,12 @@ import { logger } from "./logger";
 export const fileAdapter = {
   /**
    * Extract actual File objects from FileItem objects
-   * @param fileItems Array of FileItem objects
+   * @param fileItems Array of FileItem objects or undefined
    * @returns Array of File objects
    */
-  getFilesFromFileItems(fileItems: FileItem[]): File[] {
+  getFilesFromFileItems(fileItems: FileItem[] | undefined): File[] {
     try {
+      if (!fileItems || !Array.isArray(fileItems)) return [];
       return fileItems.map(item => item.file);
     } catch (error) {
       logger.error("Error extracting files from FileItems:", error);
@@ -34,13 +35,13 @@ export const fileAdapter = {
       return {
         logo: fileState.logo,
         images: Array.isArray(fileState.images) 
-          ? fileState.images.map(item => item.file) 
+          ? this.getFilesFromFileItems(fileState.images)
           : [],
         videos: Array.isArray(fileState.videos) 
-          ? fileState.videos.map(item => item.file) 
+          ? this.getFilesFromFileItems(fileState.videos)
           : [],
         documents: Array.isArray(fileState.documents) 
-          ? fileState.documents.map(item => item.file) 
+          ? this.getFilesFromFileItems(fileState.documents)
           : []
       };
     } catch (error) {
@@ -56,9 +57,9 @@ export const fileAdapter = {
   },
 
   /**
-   * Converts a keyof FileState to a string to fix type errors when using it as props
+   * Safely convert keyof FileState to string
    */
   fileTypeToString(fileType: keyof FileState): string {
-    return fileType as string;
+    return String(fileType);
   }
 };

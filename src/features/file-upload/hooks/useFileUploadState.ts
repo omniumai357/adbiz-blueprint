@@ -1,16 +1,16 @@
 
 import { useState, useCallback } from 'react';
-import { FileState } from '../types';
+import { FileState, FileItem } from '../types';
 
 /**
  * Hook for managing file upload state
- * 
- * Provides state and functions for managing uploaded files
- * 
- * @returns Object with file state and helper functions for managing files
  */
 export const useFileUploadState = () => {
+  // Fix the initial state to match the FileState interface
   const [files, setFiles] = useState<FileState>({
+    identity: [],
+    business: [],
+    additional: [],
     logo: null,
     images: [],
     videos: [],
@@ -29,9 +29,16 @@ export const useFileUploadState = () => {
       if (type === 'logo') {
         return { ...prev, [type]: file };
       } else {
+        // Create a proper FileItem for array types
+        const newFileItem: FileItem = {
+          id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          file,
+          progress: 0
+        };
+        
         return { 
           ...prev, 
-          [type]: [...(prev[type] as File[]), file] 
+          [type]: [...(prev[type] as FileItem[]), newFileItem] 
         };
       }
     });
@@ -42,7 +49,7 @@ export const useFileUploadState = () => {
       if (type === 'logo') {
         return { ...prev, [type]: null };
       } else if (index !== undefined) {
-        const newFiles = [...(prev[type] as File[])];
+        const newFiles = [...(prev[type] as FileItem[])];
         newFiles.splice(index, 1);
         return { ...prev, [type]: newFiles };
       }
@@ -52,6 +59,9 @@ export const useFileUploadState = () => {
 
   const clearFiles = useCallback(() => {
     setFiles({
+      identity: [],
+      business: [],
+      additional: [],
       logo: null,
       images: [],
       videos: [],

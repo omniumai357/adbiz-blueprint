@@ -77,10 +77,17 @@ export const TourDesktopView = forwardRef<TourDesktopViewHandle, TourDesktopView
       }
     }));
 
+    // Ensure required title and content properties are set with defaults if not provided
+    const tooltipProps = {
+      ...props,
+      title: props.title || "Tour Guide",
+      content: props.content || "",
+    };
+
     return (
       <TourTooltip
         ref={tooltipRef}
-        {...props}
+        {...tooltipProps}
       />
     );
   }

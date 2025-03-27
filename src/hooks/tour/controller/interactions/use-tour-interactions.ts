@@ -1,4 +1,3 @@
-
 import { useCallback } from "react";
 import { TourPath, TourStep } from "@/contexts/tour-context";
 import { useTourAnalytics } from "../../useTourAnalytics";
@@ -35,14 +34,33 @@ export function useTourInteractions(
   // Get the current path data
   const pathData = availablePaths.find(path => path.id === currentPath);
   
-  // Use the button interactions hook
+  // Create a fallback trackStepInteraction function if it doesn't exist in analytics
+  const trackStepInteraction = analytics.trackStepInteraction || 
+    ((pathData, stepData, stepIndex, interactionType, userId, userType) => {
+      // Fallback to using trackCustomEvent if available
+      if (analytics.trackCustomEvent) {
+        analytics.trackCustomEvent('step_interaction', {
+          pathId: pathData?.id,
+          tourId: pathData?.id,
+          tourName: pathData?.name,
+          stepId: stepData?.id,
+          stepIndex,
+          interactionType,
+          userId: userId || 'anonymous',
+          userType: userType || 'guest'
+        });
+      }
+      return true;
+    });
+  
+  // Use the button interactions hook with our safe trackStepInteraction
   const buttonInteractions = useButtonInteractions(
     currentStepData,
     pathData,
     currentStep,
     userId,
     userType,
-    analytics.trackStepInteraction,
+    trackStepInteraction,
     { nextStep, prevStep, endTour }
   );
   

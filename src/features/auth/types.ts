@@ -1,17 +1,11 @@
-
-import { User as SupabaseUser } from '@supabase/supabase-js';
-
-// Extend the Supabase User type with custom properties
-export interface User extends Omit<SupabaseUser, 'user_metadata'> {
-  // Add custom properties that might be accessed in the application
-  user_metadata?: {
-    name?: string;
-    full_name?: string;
-    avatar_url?: string;
-    image?: string;
-    type?: string; // Add the type property that is used in tour components
-    [key: string]: any;
-  };
+// Add or extend the User type to include the 'type' property
+export interface User {
+  id: string;
+  email?: string;
+  name?: string;
+  avatar_url?: string;
+  type?: string;  // Add this property to fix the errors
+  // Include other properties as needed
 }
 
 export interface UserProfile {

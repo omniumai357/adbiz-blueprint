@@ -60,17 +60,22 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
     );
   }
   
+  // Ensure we're passing all required properties to TourDesktopView
   return (
     <TourDesktopView
       position={position}
       arrowPosition={arrowPosition}
+      title={currentStepData.title || "Tour Guide"}
+      content={currentStepData.content || ""}
       stepInfo={stepInfo}
       onNext={nextStep}
       onPrev={prevStep}
       onClose={endTour}
       isLastStep={isLastStep}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
       isRTL={isRTL}
-      targetElement={targetElement}
+      targetElement={targetElement || document.body}
       direction={direction}
     />
   );
