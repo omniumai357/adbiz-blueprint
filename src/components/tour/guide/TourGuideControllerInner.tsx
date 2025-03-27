@@ -83,7 +83,7 @@ export const TourGuideControllerInner: React.FC = () => {
       
       {/* Render the appropriate view (mobile or desktop) */}
       <TourViewContainer 
-        targetElement={targetElement} 
+        targetElement={targetElement}
         isRTL={isRTL}
         direction={direction}
       />

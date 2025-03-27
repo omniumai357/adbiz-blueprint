@@ -93,10 +93,10 @@ export function useTourKeyboardNavigation(
           navigationAction = 'show_shortcuts_help';
         } else {
           // Use the parseNavigationAction utility for other keys
-          const parsedAction = parseNavigationAction(event, isFormElement);
-          if (parsedAction) {
-            navigationAction = parsedAction;
-            
+          // Fixed: We now use the parsed string value, not the event directly
+          navigationAction = parseNavigationAction(event, isFormElement);
+          
+          if (navigationAction) {
             // Prevent default for navigation actions
             if (navigationAction !== 'next_from_element') {
               event.preventDefault();
@@ -114,7 +114,9 @@ export function useTourKeyboardNavigation(
         }
         
         // Pass the event and the navigation action to the handler
-        handler(event, navigationAction);
+        if (navigationAction) {
+          handler(event, navigationAction);
+        }
       }
     };
     

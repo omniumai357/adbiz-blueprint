@@ -12,9 +12,15 @@ import { TourPath } from "@/contexts/tour/types";
 
 interface TourViewContainerProps {
   targetElement: HTMLElement | null;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
-export const TourViewContainer: React.FC<TourViewContainerProps> = ({ targetElement }) => {
+export const TourViewContainer: React.FC<TourViewContainerProps> = ({ 
+  targetElement, 
+  isRTL = false,
+  direction = 'ltr'
+}) => {
   const {
     currentStepData,
     currentStep,

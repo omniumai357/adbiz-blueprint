@@ -2,7 +2,8 @@
 import { useCallback, useEffect } from 'react';
 import { TourPath, TourStep } from '@/contexts/tour-context';
 import { useTourAnalytics } from '../../useTourAnalytics';
-import { handleKeyNavigation, NavigationHandler } from '../key-navigation';
+import { handleKeyNavigation } from '../navigation/keyboard-handler';
+import { NavigationHandler } from '../navigation/types';
 
 /**
  * Hook to integrate analytics into tour
@@ -116,20 +117,20 @@ export function useTourAnalyticsIntegration(
       prevStep,
       endTour,
       goToStep,
-      trackInteraction: (pathId, stepId, stepIndex, interactionType) => {
+      trackInteraction: (pathData, currentStepData, stepIndex, interactionType, userId, userType) => {
         // Adapt to new API signature
-        if (!pathId || !stepId) return;
+        if (!pathData || !currentStepData) return;
         
-        const pathData = typeof pathId === 'string' ? 
-          tourPaths.find(p => p.id === pathId) : pathId;
+        const pathObj = typeof pathData === 'string' ? 
+          tourPaths.find(p => p.id === pathData) : pathData;
         
-        if (!pathData) return;
+        if (!pathObj) return;
         
         analytics.trackInteraction(interactionType, {
-          pathId: pathData.id,
-          tourId: pathData.id,
-          tourName: pathData.name || '',
-          stepId: typeof stepId === 'string' ? stepId : stepId.id, // Fix here: Convert TourStep to string if needed
+          pathId: pathObj.id,
+          tourId: pathObj.id,
+          tourName: pathObj.name || '',
+          stepId: typeof currentStepData === 'string' ? currentStepData : currentStepData.id,
           stepIndex,
           totalSteps: visibleSteps.length,
           userId: userId || '',
@@ -139,8 +140,8 @@ export function useTourAnalyticsIntegration(
       showKeyboardShortcutsHelp
     };
 
-    // Call handleKeyNavigation with the correct parameter types
-    handleKeyNavigation(event, undefined, {
+    // Fixed: Removed the third argument which was causing the error
+    handleKeyNavigation(event, {
       isActive,
       currentPath,
       tourPaths,

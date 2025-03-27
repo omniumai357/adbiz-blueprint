@@ -6,13 +6,93 @@ import { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { NavigationAction, NavigationHandler, KeyboardHandlerOptions } from './types';
 
 /**
+ * Parse a keyboard event into a navigation action string
+ * 
+ * @param event The keyboard event to parse
+ * @param isFormElement Whether the event target is a form element
+ * @returns A navigation action string, or undefined if no action should be taken
+ */
+export const parseNavigationAction = (
+  event: KeyboardEvent | ReactKeyboardEvent,
+  isFormElement: boolean
+): string | undefined => {
+  // Don't handle events from form elements
+  if (isFormElement) {
+    return undefined;
+  }
+
+  const { key, ctrlKey, metaKey, shiftKey } = event;
+
+  // Enhanced keyboard shortcuts based on various keys
+  switch (key) {
+    // Basic navigation
+    case 'ArrowRight':
+    case 'ArrowDown':
+      return 'next_keyboard_shortcut';
+    
+    case 'ArrowLeft':
+    case 'ArrowUp':
+      return 'previous_keyboard_shortcut';
+
+    // Additional navigation options
+    case 'Enter':
+    case ' ': // Space
+      return 'next_keyboard_shortcut';
+      
+    case 'Escape':
+      return 'escape';
+      
+    case 'End':
+      return 'last_step';
+      
+    case 'Home':
+      return 'first_step';
+      
+    case 'PageDown':
+      return 'jump_forward';
+      
+    case 'PageUp':
+      return 'jump_back';
+      
+    // Help shortcut
+    case '?':
+      if (shiftKey) {
+        return 'show_shortcuts_help';
+      }
+      return undefined;
+      
+    // Additional keyboard shortcuts
+    case 'n':
+      if (!ctrlKey && !metaKey) {
+        return 'next_keyboard_shortcut';
+      }
+      return undefined;
+      
+    case 'p':
+      if (!ctrlKey && !metaKey) {
+        return 'previous_keyboard_shortcut';
+      }
+      return undefined;
+      
+    case 's':
+      if (!ctrlKey && !metaKey) {
+        return 'skip_keyboard_shortcut';
+      }
+      return undefined;
+      
+    default:
+      return undefined;
+  }
+};
+
+/**
  * Parse a navigation action string into a function call on the navigation handler
  * 
  * @param action The navigation action to parse
  * @param options The keyboard handler options containing handler functions and state
  * @returns Whether the action was handled successfully
  */
-export const parseNavigationAction = (
+export const parseNavigationAction2 = (
   action: NavigationAction,
   options: KeyboardHandlerOptions
 ): boolean => {
@@ -136,5 +216,5 @@ export const handleNavigationAction = (
   }
 
   // Parse and execute the action
-  return parseNavigationAction(action, options);
+  return parseNavigationAction2(action, options);
 };
