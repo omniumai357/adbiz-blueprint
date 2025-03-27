@@ -26,6 +26,7 @@ import { AuthContextProvider } from '@/features/auth';
 import { initializeServices } from './services/registry/init';
 import { ReactQueryProvider } from './providers/ReactQueryProvider';
 import { useLanguageA11y } from './hooks/useLanguageA11y';
+import { FileUploadProvider } from './contexts/file-upload-context';
 
 // Language observer component for accessibility
 const LanguageObserver = () => {
@@ -33,7 +34,7 @@ const LanguageObserver = () => {
   return null;
 };
 
-const App: React.FC = () => {
+const App = () => {
   useEffect(() => {
     initializeServices();
   }, []);
@@ -45,26 +46,28 @@ const App: React.FC = () => {
           <LanguageObserver />
           <ErrorProvider>
             <AuthContextProvider>
-              <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
-                  <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
-                  <Route path="/receipts" element={<Receipts />} />
-                  <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
-                  <Route path="/rewards" element={<Rewards />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/login" element={<Auth />} />
-                  <Route path="/signup" element={<Auth />} />
-                  <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
-                </Routes>
-                <Toaster />
-                <Sonner />
-                <TourGuide />
-                <TourHeaderButton />
-                <WelcomeTourModal />
-              </ErrorBoundary>
+              <FileUploadProvider>
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/" element={<PageWithTour><Home /></PageWithTour>} />
+                    <Route path="/checkout" element={<PageWithTour><Checkout /></PageWithTour>} />
+                    <Route path="/receipts" element={<Receipts />} />
+                    <Route path="/services" element={<PageWithTour><Services /></PageWithTour>} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<PageWithTour><Contact /></PageWithTour>} />
+                    <Route path="/rewards" element={<Rewards />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/login" element={<Auth />} />
+                    <Route path="/signup" element={<Auth />} />
+                    <Route path="/business-questionnaire" element={<BusinessQuestionnairePage />} />
+                  </Routes>
+                  <Toaster />
+                  <Sonner />
+                  <TourGuide />
+                  <TourHeaderButton />
+                  <WelcomeTourModal />
+                </ErrorBoundary>
+              </FileUploadProvider>
             </AuthContextProvider>
           </ErrorProvider>
         </LanguageProvider>

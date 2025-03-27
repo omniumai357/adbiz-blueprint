@@ -43,3 +43,5 @@ export interface FileUploadHook {
   resetFileUpload: () => void;
   uploadFiles: (businessId: string) => Promise<boolean>;
 }
+
+// Add other file upload related types here as needed

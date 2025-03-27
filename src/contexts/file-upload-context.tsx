@@ -1,71 +1,154 @@
 
-import { createContext, useContext, ReactNode } from 'react';
-import { 
-  FileState, 
-  UploadProgressItem 
-} from '@/features/file-upload/types';
-import { useFileUpload } from '@/features/file-upload/hooks/useFileUpload';
+import React, { createContext, useContext, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { FileState, FileItem, UploadProgressItem, FileUploadHook } from '@/features/file-upload/types';
 
-// Define the context value type
-interface FileUploadContextType {
-  files: FileState;
-  uploadProgress: Record<string, UploadProgressItem>;
-  uploadError: string | null;
-  uploading: boolean;
-  isUploading: boolean;
-  hasError: boolean;
-  handleFileChange: (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => void;
-  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
-  updateProgress: (key: string, name: string, progress: number) => void;
-  resetProgress: (key?: string) => void;
-  resetFileUpload: () => void;
-  uploadFiles: (businessId: string) => Promise<boolean>;
-  addFile: (fileProps: any) => any;
-  removeFile: (fileId: string) => void;
-  updateFileStatus: (fileId: string, updates: any) => any;
-}
+interface FileUploadContextType extends FileUploadHook {}
 
-// Create the context with a default value
 const FileUploadContext = createContext<FileUploadContextType | undefined>(undefined);
 
-// Provider component
-export const FileUploadProvider = ({ children }: { children: ReactNode }) => {
-  const fileUpload = useFileUpload();
-  
-  // Mock implementations for methods that were causing errors
-  const mockAddFile = (fileProps: any) => {
-    console.log('Add file', fileProps);
-    return {};
+// Initial state with empty arrays for file collections
+const initialState: FileState = {
+  identity: [],
+  business: [],
+  additional: [],
+  logo: null,
+  images: [],
+  videos: [],
+  documents: []
+};
+
+export const FileUploadProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [files, setFiles] = useState<FileState>(initialState);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Handle file changes from input
+  const handleFileChange = (fileType: keyof FileState, event: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
+    let selectedFiles: File[] = [];
+    
+    if (Array.isArray(event)) {
+      // Handle direct array of files
+      selectedFiles = [...event];
+    } else if (event.target.files) {
+      // Handle event from file input
+      selectedFiles = Array.from(event.target.files);
+    }
+
+    if (selectedFiles.length === 0) return;
+
+    if (fileType === 'logo' && selectedFiles.length > 0) {
+      // Logo is a special case - single file only
+      setFiles(prev => ({
+        ...prev,
+        logo: selectedFiles[0]
+      }));
+      return;
+    }
+
+    // For arrays, create FileItems with IDs and add to the correct array
+    const newFileItems: FileItem[] = selectedFiles.map(file => ({
+      id: uuidv4(),
+      file,
+      progress: 0
+    }));
+
+    setFiles(prev => ({
+      ...prev,
+      [fileType]: [...(prev[fileType] as FileItem[]), ...newFileItems]
+    }));
   };
 
-  const mockRemoveFile = (fileId: string) => {
-    console.log('Remove file', fileId);
+  // Remove a file from the collection
+  const onRemoveFile = (fileType: keyof FileState, index?: number) => {
+    if (fileType === 'logo') {
+      setFiles(prev => ({
+        ...prev,
+        logo: null
+      }));
+      return;
+    }
+
+    if (index !== undefined) {
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: (prev[fileType] as FileItem[]).filter((_, i) => i !== index)
+      }));
+    }
   };
 
-  const mockUpdateFileStatus = (fileId: string, updates: any) => {
-    console.log('Update file status', fileId, updates);
-    return {};
+  // Update progress for a file upload
+  const updateProgress = (key: string, name: string, progress: number) => {
+    setUploadProgress(prev => ({
+      ...prev,
+      [key]: { fileName: name, progress }
+    }));
   };
-  
-  // Combine fileUpload with mock methods
-  const contextValue = {
-    ...fileUpload,
-    isUploading: fileUpload.uploading,
-    hasError: !!fileUpload.uploadError,
-    addFile: mockAddFile,
-    removeFile: mockRemoveFile,
-    updateFileStatus: mockUpdateFileStatus
+
+  // Reset progress for all or a specific file
+  const resetProgress = (key?: string) => {
+    if (key) {
+      setUploadProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[key];
+        return newProgress;
+      });
+    } else {
+      setUploadProgress({});
+    }
   };
-  
+
+  // Reset file upload state
+  const resetFileUpload = () => {
+    setFiles(initialState);
+    setUploadProgress({});
+    setUploadError(null);
+  };
+
+  // Upload all files to storage
+  const uploadFiles = async (businessId: string): Promise<boolean> => {
+    setUploading(true);
+    setUploadError(null);
+    
+    try {
+      // Mock successful upload for now - to be implemented with actual file upload logic
+      console.log(`Uploading files for business: ${businessId}`);
+      
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      return true;
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      setUploadError('Failed to upload files');
+      return false;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const value: FileUploadContextType = {
+    files,
+    uploadProgress,
+    uploadError,
+    uploading,
+    handleFileChange,
+    onRemoveFile,
+    updateProgress,
+    resetProgress,
+    resetFileUpload,
+    uploadFiles
+  };
+
   return (
-    <FileUploadContext.Provider value={contextValue}>
+    <FileUploadContext.Provider value={value}>
       {children}
     </FileUploadContext.Provider>
   );
 };
 
-// Custom hook to use the context
-export const useFileUploadContext = () => {
+export const useFileUploadContext = (): FileUploadContextType => {
   const context = useContext(FileUploadContext);
   if (context === undefined) {
     throw new Error('useFileUploadContext must be used within a FileUploadProvider');

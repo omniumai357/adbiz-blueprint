@@ -1,14 +1,23 @@
 
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useTour } from '@/contexts/tour';
 import { useTourElementFinder } from '@/hooks/tour/useTourElementFinder';
 import { useTourPosition } from '@/hooks/tour/useTourPosition';
 import { TourMobileView } from '../../TourMobileView';
 import { TourDesktopView } from '../../TourDesktopView';
 import { useMediaQuery } from '@/hooks/ui/useMediaQuery';
-import { TourStep } from '@/contexts/tour/types';
 
-export const TourViewContainer: React.FC = () => {
+interface TourViewContainerProps {
+  targetElement: HTMLElement | null;
+  isRTL: boolean;
+  direction: 'ltr' | 'rtl';
+}
+
+export const TourViewContainer: React.FC<TourViewContainerProps> = ({
+  targetElement,
+  isRTL,
+  direction
+}) => {
   const {
     isActive,
     currentStepData,
@@ -20,27 +29,8 @@ export const TourViewContainer: React.FC = () => {
   } = useTour();
   
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const { targetElement, targetRect } = useTourElementFinder(currentStepData?.target || '');
+  const targetRect = targetElement?.getBoundingClientRect();
   const { position, arrowPosition } = useTourPosition(targetRect, currentStepData?.position || 'bottom');
-  
-  // Tracking the first render
-  const firstRenderRef = useRef(true);
-  
-  // Determine the current direction based on the language
-  const isRTL = document.documentElement.dir === 'rtl';
-  const direction = isRTL ? 'rtl' : 'ltr';
-  
-  // Scroll into view if needed
-  useEffect(() => {
-    if (isActive && targetElement && !firstRenderRef.current) {
-      targetElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
-    
-    firstRenderRef.current = false;
-  }, [isActive, targetElement, currentStep]);
   
   // Don't render if not active or no step data
   if (!isActive || !currentStepData) {
@@ -72,7 +62,6 @@ export const TourViewContainer: React.FC = () => {
   
   return (
     <TourDesktopView
-      step={currentStepData}
       position={position}
       arrowPosition={arrowPosition}
       stepInfo={stepInfo}

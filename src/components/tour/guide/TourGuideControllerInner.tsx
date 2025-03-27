@@ -17,15 +17,14 @@ export const TourGuideControllerInner: React.FC = () => {
     isActive,
     currentStepData,
     nextStep,
-    prevStep,
-    goToStep
+    prevStep
   } = useTour();
   
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const { direction, isRTL } = useLanguage();
   
-  const { targetElement } = useTourElementFinder(isActive, currentStepData);
+  const { targetElement } = useTourElementFinder(currentStepData?.target || '');
   
   // Define a handleKeyNavigation function with RTL awareness
   const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent, navigationAction?: string) => {
@@ -47,13 +46,7 @@ export const TourGuideControllerInner: React.FC = () => {
   
   useTourKeyboardNavigation(
     isActive, 
-    handleKeyNavigation,
-    {
-      enableHomeEndKeys: true,
-      enablePageKeys: true,
-      pageKeyJumpSize: 3,
-      enableShortcutsHelp: true
-    }
+    handleKeyNavigation
   );
 
   if (!isActive || !currentStepData) {

@@ -1,11 +1,11 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useAdminStatus } from "@/hooks/data/useAdminStatus";
 import { useAuthActions } from "../hooks/use-auth-actions";
-import { AuthContextType } from "../types";
+import { AuthContextType, User, UserProfile } from "../types";
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,9 +22,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, currentSession) => {
+        setSession(currentSession);
+        // Type assertion to cast the user to our extended User type
+        setUser(currentSession?.user as User | null ?? null);
       }
     );
 
@@ -32,9 +33,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     const initializeAuth = async () => {
       setIsLoading(true);
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        setSession(currentSession);
+        // Type assertion to cast the user to our extended User type
+        setUser(currentSession?.user as User | null ?? null);
       } catch (error) {
         console.error("Error initializing auth:", error);
       } finally {

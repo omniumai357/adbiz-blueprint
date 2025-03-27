@@ -1,33 +1,37 @@
 
-export type UserRole = 'admin' | 'user' | 'guest';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
-export interface User {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role?: UserRole;
-  avatar?: string;
-  type?: string;
+// Extend the Supabase User type with custom properties
+export interface User extends SupabaseUser {
+  // Add custom properties that might be accessed in the application
+  user_metadata?: {
+    name?: string;
+    full_name?: string;
+    avatar_url?: string;
+    image?: string;
+    [key: string]: any;
+  };
 }
 
-export interface AuthState {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
+export interface UserProfile {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  company?: string;
+  avatar_url?: string;
+  [key: string]: any;
 }
 
 export interface AuthContextType {
-  session: any;
+  session: any | null;
   user: User | null;
-  profile: any | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
-  signOut: () => Promise<any>;
+  signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<any>;
-  updatePassword: (newPassword: string) => Promise<any>;
+  updatePassword: (password: string) => Promise<any>;
 }

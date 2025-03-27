@@ -14,8 +14,8 @@ const Header: React.FC = () => {
   
   const { user, signOut } = useAuth();
 
-  // Safe access to user properties that might not exist on the User type
-  const userImage = user?.user_metadata?.image || user?.user_metadata?.avatar_url;
+  // Safe access to user properties with proper type handling
+  const userImage = user?.user_metadata?.image || user?.user_metadata?.avatar_url || '';
   const userName = user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
 
   return (
