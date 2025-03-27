@@ -1,54 +1,45 @@
 
 import { useCallback, useState, useEffect } from 'react';
-import { TourStep } from '@/contexts/tour/types';
 
 /**
  * Hook to find DOM elements targeted by tour steps
  */
-export function useTourElementFinder(isActive: boolean, currentStep: TourStep | null) {
+export function useTourElementFinder(targetSelector: string) {
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [findAttempts, setFindAttempts] = useState(0);
   const MAX_FIND_ATTEMPTS = 10;
   
   // Attempt to find the target element
-  const findTargetElement = useCallback((step: TourStep): HTMLElement | null => {
-    if (!step) return null;
-    
-    // Get target selector
-    const targetSelector = step.target;
-    
-    // If no selector provided, return null
-    if (!targetSelector) return null;
+  const findTargetElement = useCallback((selector: string): HTMLElement | null => {
+    if (!selector) return null;
     
     // Try querySelector first
-    let element = document.querySelector(targetSelector) as HTMLElement | null;
+    let element = document.querySelector(selector) as HTMLElement | null;
     
     // If not found, try getElementById
-    if (!element && targetSelector.charAt(0) !== '#' && targetSelector.charAt(0) !== '.') {
-      element = document.getElementById(targetSelector);
-    }
-    
-    // If still not found and elementId is provided, try that
-    if (!element && step.elementId) {
-      element = document.getElementById(step.elementId);
+    if (!element && selector.charAt(0) !== '#' && selector.charAt(0) !== '.') {
+      element = document.getElementById(selector);
     }
     
     return element;
   }, []);
   
-  // Use effect to find target element when active or step changes
+  // Use effect to find target element and its dimensions
   useEffect(() => {
-    if (!isActive || !currentStep) {
+    if (!targetSelector) {
       setTargetElement(null);
+      setTargetRect(null);
       setFindAttempts(0);
       return;
     }
     
     // Find target element immediately
-    const element = findTargetElement(currentStep);
+    const element = findTargetElement(targetSelector);
     
     if (element) {
       setTargetElement(element);
+      setTargetRect(element.getBoundingClientRect());
       setFindAttempts(0);
       return;
     }
@@ -62,13 +53,31 @@ export function useTourElementFinder(isActive: boolean, currentStep: TourStep | 
       
       return () => clearTimeout(timeoutId);
     } else {
-      console.warn(`Element with selector '${currentStep.target}' or id '${currentStep.elementId}' not found after ${MAX_FIND_ATTEMPTS} attempts.`);
+      console.warn(`Element with selector '${targetSelector}' not found after ${MAX_FIND_ATTEMPTS} attempts.`);
       setFindAttempts(0);
     }
-  }, [isActive, currentStep, findAttempts, findTargetElement]);
+  }, [targetSelector, findAttempts, findTargetElement]);
   
+  // Update rect on window resize
+  useEffect(() => {
+    if (!targetElement) return;
+    
+    const updateRect = () => {
+      setTargetRect(targetElement.getBoundingClientRect());
+    };
+    
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect);
+    
+    return () => {
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect);
+    };
+  }, [targetElement]);
+
   return {
     targetElement,
+    targetRect,
     findTargetElement
   };
 }
