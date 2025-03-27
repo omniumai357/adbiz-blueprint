@@ -92,6 +92,39 @@ Our platform includes a comprehensive focus management system:
   - Cultural considerations
   - Language-specific focus patterns
 
+## Documentation Structure
+
+```
+📁 src/
+│
+├── 📁 docs/
+│   ├── 📄 ADMIN_FEATURES.md         # Administrative features specification
+│   ├── 📄 PROJECT_TIMELINE.md       # Project timeline and roadmap
+│   ├── 📄 SERVICE_PACKAGES.md       # Service packages specification
+│   ├── 📄 SUCCESS_METRICS.md        # Success metrics specification
+│   ├── 📄 TECHNICAL_REQUIREMENTS.md # Technical requirements specification
+│   ├── 📄 UI_REQUIREMENTS.md        # User interface requirements
+│   │
+│   ├── 📁 appendices/
+│   │   ├── 📄 ACCESSIBILITY_GUIDE.md  # Detailed accessibility implementation guide
+│   │   ├── 📄 AI_CHATBOT.md           # AI chatbot implementation details
+│   │   ├── 📄 COMPETITOR_ANALYSIS.md  # Competitor analysis information
+│   │   ├── 📄 MARKET_RESEARCH.md      # Market research findings
+│   │   ├── 📄 TECHNICAL_ARCHITECTURE.md # Technical architecture diagrams
+│   │   └── 📄 UI_UX_MOCKUPS.md        # UI/UX mockups and design specs
+│   │
+│   └── 📁 guides/
+│       ├── 📄 SCREEN_READER_TESTING.md    # Screen reader testing guidelines
+│       └── 📄 SCREEN_READER_TESTING_PLAN.md # Detailed screen reader testing plan
+│
+├── 📄 DIRECTORY_STRUCTURE.md        # Project code organization guide
+├── 📄 PRD.md                        # Main Product Requirements Document
+└── 📄 README.md                     # Project overview and getting started guide
+│
+├── 📁 features/                     # Feature-specific code documentation
+│   └── 📄 README.md                 # Features architecture overview
+```
+
 ## Getting Started
 
 ### Prerequisites
