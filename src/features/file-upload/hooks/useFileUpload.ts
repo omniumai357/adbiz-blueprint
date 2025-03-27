@@ -8,7 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 const initialFileState: FileState = {
   identity: [],
   business: [],
-  additional: []
+  additional: [],
+  logo: null,
+  images: [],
+  videos: [],
+  documents: []
 };
 
 export const useFileUpload = () => {
@@ -33,7 +37,16 @@ export const useFileUpload = () => {
     
     if (selectedFiles.length === 0) return;
     
-    // Create file items with unique IDs
+    // Special handling for logo (single file)
+    if (fileType === 'logo') {
+      setFiles(prev => ({
+        ...prev,
+        logo: selectedFiles[0]
+      }));
+      return;
+    }
+    
+    // Create file items with unique IDs for arrays
     const newFiles = selectedFiles.map(file => ({
       id: uuidv4(),
       file,
@@ -43,26 +56,40 @@ export const useFileUpload = () => {
     // Update file state
     setFiles(prev => ({
       ...prev,
-      [fileType]: [...prev[fileType], ...newFiles]
+      [fileType]: [...(Array.isArray(prev[fileType]) ? prev[fileType] : []), ...newFiles]
     }));
   }, []);
 
   // Remove a file
   const onRemoveFile = useCallback((fileType: keyof FileState, index?: number) => {
-    if (index === undefined) {
-      // Remove all files of the given type if no index is provided
+    // Handle logo (single file)
+    if (fileType === 'logo') {
       setFiles(prev => ({
         ...prev,
-        [fileType]: []
+        logo: null
       }));
-    } else {
-      // Remove only the file at the given index
-      setFiles(prev => ({
-        ...prev,
-        [fileType]: prev[fileType].filter((_, i) => i !== index)
-      }));
+      return;
     }
-  }, []);
+    
+    // Handle arrays of files
+    if (Array.isArray(files[fileType])) {
+      if (index === undefined) {
+        // Remove all files of the given type if no index is provided
+        setFiles(prev => ({
+          ...prev,
+          [fileType]: []
+        }));
+      } else {
+        // Remove only the file at the given index
+        setFiles(prev => ({
+          ...prev,
+          [fileType]: Array.isArray(prev[fileType]) 
+            ? (prev[fileType] as FileItem[]).filter((_, i) => i !== index)
+            : prev[fileType]
+        }));
+      }
+    }
+  }, [files]);
 
   // Update progress for a specific file
   const updateProgress = useCallback((key: string, name: string, progress: number) => {
@@ -104,28 +131,47 @@ export const useFileUpload = () => {
     setUploadError(null);
     
     try {
-      // Example implementation - adjust according to your actual storage structure
-      for (const [fileType, fileItems] of Object.entries(files)) {
-        for (const fileItem of fileItems) {
-          const { id, file } = fileItem;
-          const fileExt = file.name.split('.').pop();
-          const filePath = `${businessId}/${fileType}/${id}.${fileExt}`;
+      // Upload logo if it exists
+      if (files.logo) {
+        const fileExt = files.logo.name.split('.').pop();
+        const filePath = `${businessId}/logo.${fileExt}`;
+        
+        const { error: logoError } = await supabase.storage
+          .from('business-docs')
+          .upload(filePath, files.logo, {
+            upsert: true
+          });
           
-          // Update progress callback
-          const progressCallback = (progress: number) => {
-            updateProgress(id, file.name, progress);
-          };
-          
-          // Upload to Supabase storage
-          const { error } = await supabase.storage
-            .from('business-docs')
-            .upload(filePath, file, {
-              upsert: true,
-              onUploadProgress: ({ percent }) => progressCallback(Math.round(percent))
-            });
+        if (logoError) {
+          throw new Error(`Error uploading logo: ${logoError.message}`);
+        }
+      }
+      
+      // Upload other file types (images, videos, documents)
+      const fileTypes = ['images', 'videos', 'documents'] as const;
+      
+      for (const fileType of fileTypes) {
+        if (Array.isArray(files[fileType]) && files[fileType].length > 0) {
+          for (const file of files[fileType] as FileItem[]) {
+            const fileExt = file.file.name.split('.').pop();
+            const filePath = `${businessId}/${fileType}/${file.id}.${fileExt}`;
             
-          if (error) {
-            throw new Error(`Error uploading ${file.name}: ${error.message}`);
+            // Update progress callback
+            const progressCallback = (progress: number) => {
+              updateProgress(file.id, file.file.name, progress);
+            };
+            
+            // Upload to Supabase storage
+            const { error } = await supabase.storage
+              .from('business-docs')
+              .upload(filePath, file.file, {
+                upsert: true,
+                onUploadProgress: ({ percent }) => progressCallback(Math.round(percent))
+              });
+              
+            if (error) {
+              throw new Error(`Error uploading ${file.file.name}: ${error.message}`);
+            }
           }
         }
       }

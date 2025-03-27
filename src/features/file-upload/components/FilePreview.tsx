@@ -15,7 +15,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 }) => {
   const { files, onRemoveFile, uploadProgress } = useFileUploadContext();
   
-  if (files[fileType].length === 0) {
+  if (!Array.isArray(files[fileType]) || (files[fileType] as any[]).length === 0) {
     return null;
   }
   
@@ -23,7 +23,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     <div className={`mt-4 ${className}`}>
       <h4 className="text-sm font-medium mb-2">Selected Files</h4>
       <ul className="space-y-2">
-        {files[fileType].map((file, index) => {
+        {(files[fileType] as any[]).map((file, index) => {
           const progress = uploadProgress[file.id]?.progress || 0;
           
           return (

@@ -12,7 +12,11 @@ export interface FileState {
   identity: FileItem[];
   business: FileItem[];
   additional: FileItem[];
-  [key: string]: FileItem[];
+  logo: File | null;
+  images: FileItem[];
+  videos: FileItem[];
+  documents: FileItem[];
+  [key: string]: FileItem[] | File | null;
 }
 
 export interface UploadProgressItem {

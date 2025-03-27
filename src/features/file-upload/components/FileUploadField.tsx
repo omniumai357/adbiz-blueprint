@@ -33,8 +33,8 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
             Drag & drop or click to select files
           </p>
           <p className="text-xs text-gray-400">
-            {files[fileType].length > 0 
-              ? `${files[fileType].length} file(s) selected` 
+            {Array.isArray(files[fileType]) && (files[fileType] as any[]).length > 0 
+              ? `${(files[fileType] as any[]).length} file(s) selected` 
               : 'No files selected'}
           </p>
           <input

@@ -1,10 +1,10 @@
 
 import { createContext, useContext, ReactNode } from 'react';
 import { 
-  useFileUpload, 
   FileState, 
   UploadProgressItem 
-} from '@/features/file-upload';
+} from '@/features/file-upload/types';
+import { useFileUpload } from '@/features/file-upload/hooks/useFileUpload';
 
 // Define the context value type
 interface FileUploadContextType {
