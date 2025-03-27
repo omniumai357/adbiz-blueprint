@@ -77,7 +77,7 @@ export const fileAdapter = {
   /**
    * Convert file type key to human-readable string
    */
-  fileTypeToString(fileType: string): string {
+  fileTypeToString(fileType: keyof FileState | string): string {
     const typeMapping: Record<string, string> = {
       logo: 'Logo',
       images: 'Images',
@@ -88,6 +88,6 @@ export const fileAdapter = {
       additional: 'Additional Files',
     };
     
-    return typeMapping[fileType] || fileType;
+    return typeMapping[fileType as string] || String(fileType);
   }
 };

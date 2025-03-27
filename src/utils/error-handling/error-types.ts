@@ -108,7 +108,6 @@ export class BusinessLogicError extends Error {
   }
 }
 
-// Add the missing PaymentError class
 export class PaymentError extends Error {
   paymentId?: string;
   provider?: string;

@@ -1,86 +1,105 @@
 
-import { toast } from 'sonner';
-import { formatErrorMessage, logError, APIError } from '@/utils/error-handling';
-import { ApiResponse } from '@/types/api';
+// Import necessary types and utilities
+import { APIError, ValidationError } from '@/utils/error-handling';
+import { logger } from '@/lib/utils/logging';
 
 /**
- * Configuration options for the API response handler
+ * Handles API responses and errors in a consistent way
  */
-export interface ApiResponseHandlerOptions<T> {
-  context?: string;
-  transform?: (data: any) => T;
-  showErrorToast?: boolean;
-  showSuccessToast?: boolean;
-  successMessage?: string;
-}
-
-/**
- * Standardized API response handler that provides consistent error handling
- * and data transformation for all API client methods.
- */
-export const apiResponseHandler = {
+export const responseHandler = {
   /**
-   * Handle the response from an API call
-   * 
-   * @param responsePromise Promise or Supabase query builder returned by API call
-   * @param options Configuration options
-   * @returns Promise with transformed data or throws a standardized error
+   * Process a successful response
    */
-  async handle<T>(
-    responsePromise: Promise<any> | any,
-    options: ApiResponseHandlerOptions<T> = {}
-  ): Promise<T> {
-    const {
-      context = 'API Request',
-      transform = (data) => data as T,
-      showErrorToast = true,
-      showSuccessToast = false,
-      successMessage
-    } = options;
-
-    try {
-      // Handle both Promise and Supabase query builder
-      const response = await responsePromise;
-      
-      // Transform the response data
-      const transformedData = transform(response);
-      
-      // Show success toast if requested
-      if (showSuccessToast && successMessage) {
-        toast.success(successMessage);
-      }
-      
-      return transformedData;
-    } catch (error) {
-      // Log the error with context
-      logError(error, context);
-      
-      // Format the error message
-      const errorMessage = formatErrorMessage(error);
-      
-      // Show error toast if requested
-      if (showErrorToast) {
-        toast.error("Error", {
-          description: errorMessage,
-          duration: 5000
-        });
-      }
-      
-      // Rethrow as standardized API error
-      throw error instanceof Error 
-        ? error 
-        : new APIError(errorMessage);
-    }
+  success<T>(data: T, status = 200) {
+    return {
+      data,
+      status,
+      success: true,
+      error: null
+    };
   },
-  
+
   /**
-   * Create a standardized API response object
-   * 
-   * @param data The data to include in the response
-   * @param error Optional error to include in the response
-   * @returns A standardized API response object
+   * Process an error response
    */
-  createResponse<T>(data: T | null, error: Error | null = null): ApiResponse<T> {
-    return { data, error };
+  error(error: unknown, context: string = 'API') {
+    logger.error(`API Error: ${error instanceof Error ? error.message : String(error)}`, { 
+      context,
+      data: error instanceof Error ? { stack: error.stack } : {}
+    });
+
+    // Determine error type and create appropriate error response
+    if (error instanceof APIError) {
+      return {
+        data: null,
+        status: error.status,
+        success: false,
+        error: {
+          message: error.message,
+          type: 'api_error',
+          details: { endpoint: error.endpoint }
+        }
+      };
+    }
+
+    if (error instanceof ValidationError) {
+      return {
+        data: null,
+        status: 400,
+        success: false,
+        error: {
+          message: error.message,
+          type: 'validation_error',
+          details: { fields: error.fieldErrors }
+        }
+      };
+    }
+
+    if (error instanceof Error) {
+      return {
+        data: null,
+        status: 500,
+        success: false,
+        error: {
+          message: error.message,
+          type: error.name.toLowerCase().replace('error', '_error'),
+          details: {}
+        }
+      };
+    }
+
+    // Generic error handling
+    return {
+      data: null,
+      status: 500,
+      success: false,
+      error: {
+        message: String(error),
+        type: 'unknown_error',
+        details: {}
+      }
+    };
+  },
+
+  /**
+   * Handle a response from an external API
+   */
+  async handleResponse<T>(response: Response, context: string = 'API'): Promise<T> {
+    if (!response.ok) {
+      // Handle error response
+      const errorData = await response.json().catch(() => ({}));
+      const status = response.status;
+      const message = errorData.message || response.statusText || 'API request failed';
+      
+      throw new APIError(message, status, response.url);
+    }
+    
+    // Handle successful response
+    try {
+      return await response.json();
+    } catch (error) {
+      logger.error('Failed to parse API response', { context, error });
+      throw new Error('Failed to parse API response');
+    }
   }
 };

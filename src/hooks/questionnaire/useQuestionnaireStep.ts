@@ -12,7 +12,10 @@ import { logger } from '@/utils/logger';
 export function useQuestionnaireStep(form: UseFormReturn<QuestionnaireFormValues>) {
   const { step, showReview, nextStep, prevStep, onShowReview } = useQuestionnaireSteps(1);
   
-  logger.debug('Initializing questionnaire step handler', { currentStep: step });
+  logger.debug('Initializing questionnaire step handler', { 
+    context: 'Questionnaire',
+    data: { currentStep: step }
+  });
 
   const handleBusinessInfoNext = (validateOnly = false) => {
     if (validateBusinessInfoStep(form)) {

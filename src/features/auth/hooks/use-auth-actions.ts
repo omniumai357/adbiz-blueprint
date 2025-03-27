@@ -10,7 +10,14 @@ import { AuthResult } from "../types";
 export const useAuthActions = () => {
   // Helper function for consistent error handling
   const handleAuthError = (error: any, action: string): AuthResult => {
-    logger.error(`Auth error during ${action}:`, error);
+    logger.error(`Auth error during ${action}:`, {
+      context: 'Auth',
+      data: {
+        action,
+        errorMessage: error?.message,
+        errorCode: error?.code
+      }
+    });
     
     const errorMessage = error?.message || `An error occurred during ${action}.`;
     
@@ -42,7 +49,10 @@ export const useAuthActions = () => {
    */
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string }): Promise<AuthResult> => {
     try {
-      logger.info("Attempting user signup", { email });
+      logger.info("Attempting user signup", {
+        context: 'Auth',
+        data: { email }
+      });
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -56,7 +66,10 @@ export const useAuthActions = () => {
         throw error;
       }
 
-      logger.info("User signup successful", { email });
+      logger.info("User signup successful", {
+        context: 'Auth',
+        data: { email }
+      });
       
       toast({
         title: "Account created",
@@ -74,7 +87,10 @@ export const useAuthActions = () => {
    */
   const signIn = async (email: string, password: string): Promise<AuthResult> => {
     try {
-      logger.info("Attempting user signin", { email });
+      logger.info("Attempting user signin", {
+        context: 'Auth',
+        data: { email }
+      });
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -85,7 +101,10 @@ export const useAuthActions = () => {
         throw error;
       }
 
-      logger.info("User signin successful", { email });
+      logger.info("User signin successful", {
+        context: 'Auth',
+        data: { email }
+      });
       
       toast({
         title: "Welcome back!",
@@ -103,7 +122,9 @@ export const useAuthActions = () => {
    */
   const signOut = async (): Promise<AuthResult> => {
     try {
-      logger.info("Attempting user signout");
+      logger.info("Attempting user signout", {
+        context: 'Auth'
+      });
       
       const { error } = await supabase.auth.signOut();
       
@@ -111,7 +132,9 @@ export const useAuthActions = () => {
         throw error;
       }
       
-      logger.info("User signout successful");
+      logger.info("User signout successful", {
+        context: 'Auth'
+      });
       
       toast({
         title: "Signed out",
@@ -129,7 +152,10 @@ export const useAuthActions = () => {
    */
   const resetPassword = async (email: string): Promise<AuthResult> => {
     try {
-      logger.info("Attempting password reset", { email });
+      logger.info("Attempting password reset", {
+        context: 'Auth',
+        data: { email }
+      });
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth?reset=true`,
@@ -139,7 +165,10 @@ export const useAuthActions = () => {
         throw error;
       }
       
-      logger.info("Password reset email sent", { email });
+      logger.info("Password reset email sent", {
+        context: 'Auth',
+        data: { email }
+      });
       
       toast({
         title: "Password reset email sent",
@@ -160,7 +189,9 @@ export const useAuthActions = () => {
    */
   const updatePassword = async (newPassword: string): Promise<AuthResult> => {
     try {
-      logger.info("Attempting password update");
+      logger.info("Attempting password update", {
+        context: 'Auth'
+      });
       
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
@@ -170,7 +201,9 @@ export const useAuthActions = () => {
         throw error;
       }
       
-      logger.info("Password updated successfully");
+      logger.info("Password updated successfully", {
+        context: 'Auth'
+      });
       
       toast({
         title: "Password updated",

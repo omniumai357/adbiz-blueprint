@@ -11,8 +11,11 @@ export function useQuestionnaireFileUpload() {
   const { uploadFile, isUploading } = useFileUploadService();
   
   logger.debug('Initializing questionnaire file upload handler', {
-    fileTypes: Object.keys(files),
-    isUploading: uploading
+    context: 'QuestionnaireUpload',
+    data: {
+      fileTypes: Object.keys(files),
+      isUploading: uploading
+    }
   });
 
   const uploadFiles = async (businessId: string) => {
@@ -45,7 +48,12 @@ export function useQuestionnaireFileUpload() {
         }
       }
     } catch (error) {
-      logger.error("Error uploading files:", { error });
+      logger.error("Error uploading files:", { 
+        context: 'QuestionnaireUpload',
+        data: { 
+          error: error instanceof Error ? error.message : String(error)
+        }
+      });
       filesUploaded = false;
     }
     
