@@ -2,19 +2,16 @@
 import React from 'react';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import '@testing-library/jest-dom'; // Add this import for DOM assertions
+import '@testing-library/jest-dom';
 import { LanguageProvider, useLanguage } from '../language-context';
 import i18n from '../../i18n';
 
 // Mock i18n
 jest.mock('../../i18n', () => ({
-  __esModule: true,
-  default: {
-    changeLanguage: jest.fn().mockResolvedValue(undefined),
-    language: 'en',
-    on: jest.fn(),
-    off: jest.fn(),
-  },
+  changeLanguage: jest.fn().mockResolvedValue(undefined),
+  language: 'en',
+  on: jest.fn(),
+  off: jest.fn(),
 }));
 
 // Mock localStorage
@@ -104,14 +101,14 @@ describe('LanguageContext', () => {
     expect(screen.getByTestId('is-changing')).toHaveTextContent('true');
     
     // Should call i18n's changeLanguage
-    expect(i18n.default.changeLanguage).toHaveBeenCalledWith('fr');
+    expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
     
     // Mock the language change completion
     await act(async () => {
       // Simulate i18n language changed event
-      const changeHandler = i18n.default.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
+      const changeHandler = i18n.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
       if (changeHandler) {
-        i18n.default.language = 'fr';
+        i18n.language = 'fr';
         changeHandler();
       }
       
@@ -142,12 +139,12 @@ describe('LanguageContext', () => {
     );
     
     // Should attempt to load the saved preference
-    expect(i18n.default.changeLanguage).toHaveBeenCalledWith('es');
+    expect(i18n.changeLanguage).toHaveBeenCalledWith('es');
   });
   
   it('handles RTL languages correctly', async () => {
     // Mock a scenario where an RTL language is set
-    i18n.default.language = 'ar'; // Arabic is RTL
+    i18n.language = 'ar'; // Arabic is RTL
     
     render(
       <LanguageProvider>
@@ -157,7 +154,7 @@ describe('LanguageContext', () => {
     
     // Trigger the language changed handler
     await act(async () => {
-      const changeHandler = i18n.default.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
+      const changeHandler = i18n.on.mock.calls.find(call => call[0] === 'languageChanged')?.[1];
       if (changeHandler) {
         changeHandler();
       }
