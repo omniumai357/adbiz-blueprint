@@ -3,6 +3,7 @@ import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/language-context";
 
 interface TourTooltipContainerProps {
   children: React.ReactNode;
@@ -33,20 +34,24 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
   currentStep,
   totalSteps
 }, ref) => {
+  const { direction, isRTL } = useLanguage();
+  
   return (
     <div 
       className="fixed inset-0 z-[60] pointer-events-none overflow-hidden" 
       style={{ zIndex: 9999 }}
       role="region"
       aria-label={`Tour step ${currentStep + 1} of ${totalSteps}`}
+      dir={direction}
     >
       <div 
         ref={ref}
         className={cn(
           "absolute tour-tooltip pointer-events-auto z-50",
           "bg-[color:var(--tour-tooltip-bg)] text-[color:var(--tour-tooltip-text)] rounded-lg p-4 w-80 border border-[color:var(--tour-tooltip-border)]",
-          "focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--tour-accent-blue)] focus-within:ring-offset-2",
+          "focus-within:outline-none focus-within:ring-2 focus-within:ring-[color:var(--tour-tooltip-accent)] focus-within:ring-offset-2",
           "shadow-[var(--tour-tooltip-shadow)]",
+          isRTL && "rtl",
           className
         )}
         style={style}
@@ -57,6 +62,7 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         aria-describedby={`${contentId} ${descriptionId}`}
         id={tooltipId}
         aria-live="polite"
+        dir={direction}
       >
         {/* Skip repetitive content link - visually hidden but available to screen readers */}
         <Button
@@ -93,7 +99,10 @@ export const TourTooltipContainer = forwardRef<HTMLDivElement, TourTooltipContai
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-2 right-2 h-6 w-6 hover:bg-[color:var(--tour-bg-tertiary)] focus-visible:ring-2 focus-visible:ring-[color:var(--tour-accent-blue)] focus-visible:ring-offset-2" 
+          className={cn(
+            "absolute top-2 h-6 w-6 hover:bg-[color:var(--tour-bg-tertiary)] focus-visible:ring-2 focus-visible:ring-[color:var(--tour-accent-blue)] focus-visible:ring-offset-2",
+            isRTL ? "left-2" : "right-2"
+          )} 
           onClick={onClose}
           aria-label="Close tour"
           data-tour-action="close"

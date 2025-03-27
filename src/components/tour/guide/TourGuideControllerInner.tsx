@@ -10,6 +10,7 @@ import { TourShortcutsHelp } from "./components/TourShortcutsHelp";
 import { TourEventManager } from "./components/TourEventManager";
 import { TourViewContainer } from "./components/TourViewContainer";
 import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
+import { useLanguage } from "@/contexts/language-context";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {
@@ -22,16 +23,19 @@ export const TourGuideControllerInner: React.FC = () => {
   
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const { direction, isRTL } = useLanguage();
   
   const { targetElement } = useTourElementFinder(isActive, currentStepData);
   
-  // Define a handleKeyNavigation function
+  // Define a handleKeyNavigation function with RTL awareness
   const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent) => {
-    // Simple implementation - can be enhanced
-    if (event.key === 'ArrowRight' || event.key === 'Enter') {
-      nextStep();
+    // RTL-aware arrow key handling
+    if (event.key === 'ArrowRight') {
+      isRTL ? prevStep() : nextStep();
     } else if (event.key === 'ArrowLeft') {
-      prevStep();
+      isRTL ? nextStep() : prevStep();
+    } else if (event.key === 'Enter') {
+      nextStep();
     } else if (event.key === 'Escape') {
       // This would need an endTour function
     } else if (event.key === '?') {
@@ -78,7 +82,11 @@ export const TourGuideControllerInner: React.FC = () => {
       <TourEventManager />
       
       {/* Render the appropriate view (mobile or desktop) */}
-      <TourViewContainer targetElement={targetElement} />
+      <TourViewContainer 
+        targetElement={targetElement} 
+        isRTL={isRTL}
+        direction={direction}
+      />
     </>
   );
 };

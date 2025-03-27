@@ -1,106 +1,140 @@
 
-import { NavigationAction } from './types';
+/**
+ * Utility functions for handling navigation actions in tour
+ */
+import { KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { NavigationAction, NavigationHandler, KeyboardHandlerOptions } from './types';
 
 /**
- * Handle predefined navigation actions
+ * Parse a navigation action string into a function call on the navigation handler
+ * 
+ * @param action The navigation action to parse
+ * @param options The keyboard handler options containing handler functions and state
+ * @returns Whether the action was handled successfully
  */
-export function handleNavigationAction(
-  action: string,
-  currentStep: number,
-  totalSteps: number,
-  goToStep: (stepIndex: number) => void,
-  nextStep: () => void,
-  prevStep: () => void,
-  showKeyboardShortcutsHelp?: () => void
-): void {
-  if (action === 'first_step') {
-    goToStep(0);
-  } else if (action === 'last_step') {
-    goToStep(totalSteps - 1);
-  } else if (action.startsWith('jump_forward_')) {
-    const steps = parseInt(action.split('_')[2], 10);
-    const targetStep = Math.min(currentStep + steps, totalSteps - 1);
-    goToStep(targetStep);
-  } else if (action.startsWith('jump_back_')) {
-    const steps = parseInt(action.split('_')[2], 10);
-    const targetStep = Math.max(currentStep - steps, 0);
-    goToStep(targetStep);
-  } else if (action === 'show_shortcuts_help' && showKeyboardShortcutsHelp) {
-    showKeyboardShortcutsHelp();
-  } else if (action === 'next_from_element' || action === 'next_keyboard_shortcut') {
-    nextStep();
-  } else if (action === 'previous_keyboard_shortcut') {
-    prevStep();
-  } else if (action === 'skip_keyboard_shortcut') {
-    // This should call endTour but we don't have it directly in this function
-    // The caller should handle this action
-  }
-}
+export const parseNavigationAction = (
+  action: NavigationAction,
+  options: KeyboardHandlerOptions
+): boolean => {
+  const { 
+    handlers, 
+    currentStep, 
+    totalSteps, 
+    currentPath,
+    tourPaths, 
+    visibleSteps,
+    userId,
+    userType
+  } = options;
 
-/**
- * Parse a navigation action from keyboard events
- */
-export function parseNavigationAction(
-  event: KeyboardEvent | React.KeyboardEvent,
-  isFormElement: boolean
-): NavigationAction | undefined {
-  // Handle modifier keys for accessibility combinations
-  const hasShiftKey = event.shiftKey;
-  const hasAltKey = event.altKey;
-  
-  // Determine the navigation action based on the key pressed
-  switch (event.key) {
-    case 'Home':
-      return 'first_step';
-    case 'End':
-      return 'last_step';
-    case 'PageUp':
-      return 'jump_back';
-    case 'PageDown':
-      return 'jump_forward';
-    case '?':
-      if (hasShiftKey) {
-        return 'show_shortcuts_help';
+  const jumpSize = 3; // Default jump size for page up/down
+
+  switch (action) {
+    case 'next_keyboard_shortcut':
+    case 'next_from_element':
+      handlers.nextStep();
+      return true;
+
+    case 'previous_keyboard_shortcut':
+      handlers.prevStep();
+      return true;
+
+    case 'skip_keyboard_shortcut':
+    case 'escape':
+      handlers.endTour();
+      return true;
+
+    case 'first_step':
+      if (currentStep !== 0) {
+        handlers.goToStep(0);
+        return true;
       }
-      break;
-    case 'Escape':
-      return 'escape';
-    case ' ':
-    case 'Enter':
-      // Space or Enter can move to next step when focused on appropriate element
-      if ((event.target as HTMLElement)?.getAttribute('data-tour-next') === 'true') {
-        return 'next_from_element';
+      return false;
+
+    case 'last_step':
+      if (currentStep !== totalSteps - 1) {
+        handlers.goToStep(totalSteps - 1);
+        return true;
       }
-      break;
-    case 'n':
-      // 'n' for next (when not in a form field)
-      if (!isFormElement) {
-        return 'next_keyboard_shortcut';
+      return false;
+
+    case 'jump_forward':
+      if (currentStep + jumpSize < totalSteps) {
+        handlers.goToStep(currentStep + jumpSize);
+        return true;
+      } else if (currentStep !== totalSteps - 1) {
+        handlers.goToStep(totalSteps - 1);
+        return true;
       }
-      break;
-    case 'p':
-      // 'p' for previous (when not in a form field)
-      if (!isFormElement) {
-        return 'previous_keyboard_shortcut';
+      return false;
+
+    case 'jump_back':
+      if (currentStep - jumpSize >= 0) {
+        handlers.goToStep(currentStep - jumpSize);
+        return true;
+      } else if (currentStep !== 0) {
+        handlers.goToStep(0);
+        return true;
       }
-      break;
+      return false;
+      
+    case 'show_shortcuts_help':
+      if (handlers.showKeyboardShortcutsHelp) {
+        handlers.showKeyboardShortcutsHelp();
+        return true;
+      }
+      return false;
+
     default:
-      break;
+      return false;
+  }
+};
+
+/**
+ * Handle a navigation action triggered by the user
+ * 
+ * @param event The original event that triggered the action
+ * @param action The navigation action to perform
+ * @param options The keyboard handler options
+ * @returns Whether the action was handled
+ */
+export const handleNavigationAction = (
+  event: ReactKeyboardEvent | KeyboardEvent | null,
+  action: NavigationAction,
+  options: KeyboardHandlerOptions
+): boolean => {
+  // Prevent default browser behavior for keyboard events
+  if (event) {
+    event.preventDefault();
   }
 
-  // For any key command with Alt+Shift for accessibility
-  if (hasAltKey && hasShiftKey) {
-    switch (event.key) {
-      case 'N': // Alt+Shift+N for Next
-        return 'next_keyboard_shortcut';
-      case 'P': // Alt+Shift+P for Previous
-        return 'previous_keyboard_shortcut';
-      case 'S': // Alt+Shift+S for Skip
-        return 'skip_keyboard_shortcut';
-      case 'H': // Alt+Shift+H for Help
-        return 'show_shortcuts_help';
+  // Track the interaction
+  const { 
+    handlers, 
+    currentPath, 
+    tourPaths, 
+    currentStep, 
+    visibleSteps,
+    userId,
+    userType 
+  } = options;
+  
+  if (currentPath && handlers.trackInteraction) {
+    const pathData = tourPaths.find(path => path.id === currentPath);
+    const currentStepData = visibleSteps[currentStep];
+    
+    if (pathData && currentStepData) {
+      handlers.trackInteraction(
+        pathData,
+        currentStepData,
+        currentStep,
+        `navigation_action_${action}`,
+        userId,
+        userType
+      );
     }
   }
-  
-  return undefined;
-}
+
+  // Parse and execute the action
+  return parseNavigationAction(action, options);
+};

@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/language-context";
 
 type Position = "top" | "right" | "bottom" | "left";
 
@@ -20,6 +21,7 @@ export const useTooltipPosition = (
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [arrowPosition, setArrowPosition] = useState<{ top: string | number; left: string | number }>({ top: 0, left: 0 });
   const [visible, setVisible] = useState(false);
+  const { isRTL } = useLanguage();
 
   useEffect(() => {
     // Delay showing the tooltip to allow for animation
@@ -32,6 +34,13 @@ export const useTooltipPosition = (
       
       // Add a small buffer for spacing between tooltip and target
       const buffer = 16;
+
+      // Adjust position based on RTL
+      let adjustedPosition = position;
+      if (isRTL) {
+        if (position === 'left') adjustedPosition = 'right';
+        else if (position === 'right') adjustedPosition = 'left';
+      }
 
       // Base position calculations
       const positions = {
@@ -65,8 +74,8 @@ export const useTooltipPosition = (
         },
       };
 
-      // Position based on specified direction
-      const pos = positions[position];
+      // Position based on adjusted direction
+      const pos = positions[adjustedPosition];
       
       setTooltipPosition({
         top: pos.top,
@@ -90,14 +99,20 @@ export const useTooltipPosition = (
       window.removeEventListener('scroll', calculatePosition);
       clearTimeout(timer);
     };
-  }, [targetElement, position]);
+  }, [targetElement, position, isRTL]);
 
   const tooltipStyles: React.CSSProperties = {
     position: 'absolute',
     top: `${tooltipPosition.top}px`,
     left: `${tooltipPosition.left}px`,
     transform: (() => {
-      switch (position) {
+      let adjustedPosition = position;
+      if (isRTL) {
+        if (position === 'left') adjustedPosition = 'right';
+        else if (position === 'right') adjustedPosition = 'left';
+      }
+      
+      switch (adjustedPosition) {
         case 'top': return 'translate(-50%, -100%)';
         case 'right': return 'translate(0, -50%)';
         case 'bottom': return 'translate(-50%, 0)';
@@ -117,7 +132,13 @@ export const useTooltipPosition = (
   };
 
   const arrowClassNames = (() => {
-    switch (position) {
+    let adjustedPosition = position;
+    if (isRTL) {
+      if (position === 'left') adjustedPosition = 'right';
+      else if (position === 'right') adjustedPosition = 'left';
+    }
+    
+    switch (adjustedPosition) {
       case 'top': return 'border-b border-r';
       case 'right': return 'border-l border-b';
       case 'bottom': return 'border-t border-l';

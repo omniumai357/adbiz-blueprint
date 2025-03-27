@@ -41,4 +41,6 @@ export interface KeyboardHandlerOptions {
   userType?: string;
   handlers: NavigationHandler;
   isMobileDevice?: boolean;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }

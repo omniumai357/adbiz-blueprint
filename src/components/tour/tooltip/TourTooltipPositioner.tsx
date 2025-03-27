@@ -3,6 +3,7 @@ import React, { forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import { useTooltipPosition } from "./useTooltipPosition";
 import { useTooltipAnimation } from "./useTooltipAnimation";
+import { useLanguage } from "@/contexts/language-context";
 
 interface TourTooltipPositionerProps {
   children: React.ReactNode;
@@ -32,6 +33,8 @@ export const TourTooltipPositioner = forwardRef<HTMLDivElement, TourTooltipPosit
   spotlight,
   tooltipRef
 }, ref) => {
+  const { direction, isRTL } = useLanguage();
+  
   // Use our custom hooks for positioning and animations
   const { 
     tooltipStyles, 
@@ -58,12 +61,24 @@ export const TourTooltipPositioner = forwardRef<HTMLDivElement, TourTooltipPosit
   // Use the provided ref or our own internal ref
   const divRef = tooltipRef || ref;
 
+  // For RTL, we need to adjust the position attribute
+  let displayPosition = position;
+  if (isRTL) {
+    if (position === 'left') displayPosition = 'right';
+    else if (position === 'right') displayPosition = 'left';
+  }
+
   return (
     <div 
       ref={divRef}
-      className={cn(animationClass, transitionClass)}
+      className={cn(
+        animationClass, 
+        transitionClass,
+        isRTL && "rtl"
+      )}
       style={combinedStyles}
-      data-tour-tooltip-position={position}
+      data-tour-tooltip-position={displayPosition}
+      dir={direction}
     >
       {/* Render the arrow */}
       <div 
