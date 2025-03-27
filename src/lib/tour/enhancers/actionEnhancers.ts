@@ -81,10 +81,9 @@ export function prioritizedStep(
 export const withStepTriggers = (triggers: StepTrigger[]): ((step: TourStep) => Partial<TourStep>) => {
   return (step: TourStep) => {
     // Extract just the trigger IDs to match the string[] type expectation
-    const triggerIds = triggers.map(trigger => trigger.id);
+    const triggerIds: string[] = triggers.map(trigger => trigger.id);
     
     return {
-      // Return the trigger IDs as strings to match the expected type
       triggers: triggerIds
     };
   };
