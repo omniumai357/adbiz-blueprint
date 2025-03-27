@@ -1,6 +1,6 @@
 
 import { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { TourPath, TourStep } from '@/contexts/tour-context';
+import { TourPath, TourStep } from '@/contexts/tour/types';
 
 export type NavigationHandler = {
   nextStep: () => void;
@@ -32,7 +32,8 @@ export type NavigationAction =
   | 'escape'
   | 'next'
   | 'prev'
-  | 'skip';
+  | 'skip'
+  | 'close';
 
 export interface KeyboardHandlerOptions {
   isActive: boolean;
