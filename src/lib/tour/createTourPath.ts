@@ -9,14 +9,19 @@ import { TourStep, TourPath } from './types';
  */
 const tourPathCreator = (steps: TourStep[]): TourPath => {
   return {
+    id: `path-${Math.random().toString(36).substr(2, 9)}`,
+    name: 'Generated Tour Path',
     steps,
-    length: steps.length,
-    start: () => steps[0] || null,
-    end: () => steps[steps.length - 1] || null,
+    allowSkip: true,
+    showProgress: true,
     getStep: (index: number) => steps[index] || null,
     getStepById: (id: string) => steps.find(step => step.id === id) || null,
     getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
     getAllSteps: () => [...steps],
+    config: {
+      allowSkip: true,
+      showProgress: true
+    }
   };
 };
 

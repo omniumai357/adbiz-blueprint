@@ -4,6 +4,14 @@ import { TourThemeName } from './types/theme';
 // Re-export the types from contexts for consistency
 export type { TourStep, TourPath, TourContextType } from '@/contexts/tour/types';
 
+// Add TourStepGroup type definition
+export interface TourStepGroup {
+  id: string;
+  name: string;
+  description?: string;
+  steps: TourStep[];
+}
+
 // Common tour properties
 export interface TourConfig {
   allowSkip?: boolean;

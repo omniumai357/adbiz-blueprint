@@ -1,16 +1,40 @@
 
-import { TourStep, TourPath } from '@/contexts/tour/types';
+import { TourStep, TourPath } from '../../types';
 
 /**
- * Creates a new tour path
+ * Creates a tour path from an array of steps
  * 
- * @param id Unique identifier for the tour path
- * @param name Display name for the tour path
  * @param steps Array of tour steps
- * @param options Additional configuration options
- * @returns A tour path object
+ * @returns A tour path
  */
-export function createTourPath(
+export const createTourPath = (steps: TourStep[]): TourPath => {
+  return {
+    id: `path-${Math.random().toString(36).substr(2, 9)}`,
+    name: 'Generated Tour Path',
+    steps,
+    allowSkip: true,
+    showProgress: true,
+    getStep: (index: number) => steps[index] || null,
+    getStepById: (id: string) => steps.find(step => step.id === id) || null,
+    getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
+    getAllSteps: () => [...steps],
+    config: {
+      allowSkip: true,
+      showProgress: true
+    }
+  };
+};
+
+/**
+ * Creates a named tour path with configuration options
+ *
+ * @param id Path identifier
+ * @param name Display name
+ * @param steps Array of tour steps
+ * @param options Configuration options
+ * @returns A tour path
+ */
+export const createNamedTourPath = (
   id: string,
   name: string,
   steps: TourStep[],
@@ -18,26 +42,27 @@ export function createTourPath(
     allowSkip?: boolean;
     showProgress?: boolean;
     route?: string;
-    tags?: string[];
     userRoles?: string[];
-    displayCondition?: () => boolean | Promise<boolean>;
+    displayCondition?: () => boolean;
   }
-): TourPath {
+): TourPath => {
   return {
     id,
     name,
     steps,
     allowSkip: options?.allowSkip ?? true,
     showProgress: options?.showProgress ?? true,
-    route: options?.route, // Now allowed by the interface
+    getStep: (index: number) => steps[index] || null,
+    getStepById: (id: string) => steps.find(step => step.id === id) || null,
+    getStepIndex: (id: string) => steps.findIndex(step => step.id === id),
+    getAllSteps: () => [...steps],
     config: {
       allowSkip: options?.allowSkip,
       showProgress: options?.showProgress,
       metadata: {
         route: options?.route,
-        tags: options?.tags || [],
         userRoles: options?.userRoles || []
       }
     }
   };
-}
+};
