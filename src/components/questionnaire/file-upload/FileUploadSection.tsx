@@ -1,8 +1,8 @@
 
-import { ChangeEvent, FC } from "react";
+import { FC } from "react";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import LogoUpload from "./LogoUpload";
-import FileUploadCategory from "./FileUploadCategory";
+import FileUploadCategory from "@/features/file-upload/components/FileUploadCategory";
 import UploadTips from "./UploadTips";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
 import { FileState } from "@/features/file-upload/types";
@@ -23,7 +23,7 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
   // Adapt FileState to be used with UI components expecting File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
 
-  const onFileChange = (e: ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
     handleFileChange(fileType, e);
   };
