@@ -51,9 +51,12 @@ export function triggerEnhancedStep(
   triggers: StepTrigger[]
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
+    // Extract trigger IDs to match expected string[] type
+    const triggerIds = triggers.map(trigger => trigger.id);
+    
     return {
       ...step,
-      triggers
+      triggers: triggerIds
     };
   };
 }
