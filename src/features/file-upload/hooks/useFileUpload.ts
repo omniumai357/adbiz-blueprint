@@ -1,74 +1,155 @@
 
-import { useState } from 'react';
-import { useFileUploadState } from './useFileUploadState';
-import { useFileUploadProgress } from './useFileUploadProgress';
-import useFileUploadHandlers from './useFileUploadHandlers';
-import { FileState } from '../types';
+import { useState, useCallback } from 'react';
+import { FileState, UploadProgressItem, FileItem } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
 
-/**
- * Main hook for file upload functionality
- * This is a composition of more specialized hooks
- */
+// Initialize empty file state
+const initialFileState: FileState = {
+  identity: [],
+  business: [],
+  additional: []
+};
+
 export const useFileUpload = () => {
-  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<FileState>(initialFileState);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
-  
-  // Use specialized sub-hooks
-  const { files, setFiles } = useFileUploadState();
-  const { uploadProgress, updateProgress, resetProgress } = useFileUploadProgress();
-  const { handleFileChange, onRemoveFile } = useFileUploadHandlers({
-    files,
-    setFiles,
-    setUploadError
-  });
+  const [uploading, setUploading] = useState(false);
 
-  /**
-   * Reset all file upload state
-   */
-  const resetFileUpload = () => {
-    setFiles({
-      logo: null,
-      images: [],
-      videos: [],
-      documents: []
-    });
-    resetProgress();
+  // Handle file selection
+  const handleFileChange = useCallback((fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
     setUploadError(null);
-  };
+    
+    let selectedFiles: File[] = [];
+    
+    if (Array.isArray(e)) {
+      // Handle case when e is an array of files (e.g., from drag and drop)
+      selectedFiles = [...e];
+    } else if (e.target.files) {
+      // Handle case when e is an event from file input
+      selectedFiles = Array.from(e.target.files);
+    }
+    
+    if (selectedFiles.length === 0) return;
+    
+    // Create file items with unique IDs
+    const newFiles = selectedFiles.map(file => ({
+      id: uuidv4(),
+      file,
+      progress: 0
+    }));
+    
+    // Update file state
+    setFiles(prev => ({
+      ...prev,
+      [fileType]: [...prev[fileType], ...newFiles]
+    }));
+  }, []);
 
-  /**
-   * Upload files to storage
-   * @param businessId - Unique identifier for the business
-   * @returns Promise<boolean> indicating success or failure
-   */
-  const uploadFiles = async (businessId: string): Promise<boolean> => {
-    // Simple mock implementation for now
+  // Remove a file
+  const onRemoveFile = useCallback((fileType: keyof FileState, index?: number) => {
+    if (index === undefined) {
+      // Remove all files of the given type if no index is provided
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: []
+      }));
+    } else {
+      // Remove only the file at the given index
+      setFiles(prev => ({
+        ...prev,
+        [fileType]: prev[fileType].filter((_, i) => i !== index)
+      }));
+    }
+  }, []);
+
+  // Update progress for a specific file
+  const updateProgress = useCallback((key: string, name: string, progress: number) => {
+    setUploadProgress(prev => ({
+      ...prev,
+      [key]: { fileName: name, progress }
+    }));
+  }, []);
+
+  // Reset progress for a specific file or all files
+  const resetProgress = useCallback((key?: string) => {
+    if (key) {
+      setUploadProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[key];
+        return newProgress;
+      });
+    } else {
+      setUploadProgress({});
+    }
+  }, []);
+
+  // Reset the entire file upload state
+  const resetFileUpload = useCallback(() => {
+    setFiles(initialFileState);
+    setUploadProgress({});
+    setUploadError(null);
+    setUploading(false);
+  }, []);
+
+  // Upload files to Supabase storage
+  const uploadFiles = useCallback(async (businessId: string): Promise<boolean> => {
+    if (!businessId) {
+      setUploadError('Business ID is required for file upload');
+      return false;
+    }
+    
     setUploading(true);
+    setUploadError(null);
+    
     try {
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Example implementation - adjust according to your actual storage structure
+      for (const [fileType, fileItems] of Object.entries(files)) {
+        for (const fileItem of fileItems) {
+          const { id, file } = fileItem;
+          const fileExt = file.name.split('.').pop();
+          const filePath = `${businessId}/${fileType}/${id}.${fileExt}`;
+          
+          // Update progress callback
+          const progressCallback = (progress: number) => {
+            updateProgress(id, file.name, progress);
+          };
+          
+          // Upload to Supabase storage
+          const { error } = await supabase.storage
+            .from('business-docs')
+            .upload(filePath, file, {
+              upsert: true,
+              onUploadProgress: ({ percent }) => progressCallback(Math.round(percent))
+            });
+            
+          if (error) {
+            throw new Error(`Error uploading ${file.name}: ${error.message}`);
+          }
+        }
+      }
+      
+      setUploading(false);
       return true;
     } catch (error) {
-      console.error('Error uploading files:', error);
-      setUploadError('Failed to upload files');
-      return false;
-    } finally {
+      console.error('File upload error:', error);
+      setUploadError(error instanceof Error ? error.message : 'An unknown error occurred during upload');
       setUploading(false);
+      return false;
     }
-  };
+  }, [files, updateProgress]);
 
   return {
     files,
     uploadProgress,
     uploadError,
     uploading,
-    setUploading,
     handleFileChange,
     onRemoveFile,
     updateProgress,
     resetProgress,
     resetFileUpload,
-    setUploadError,
     uploadFiles
   };
 };
