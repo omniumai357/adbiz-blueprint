@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useFileUploadContext } from '@/contexts/file-upload-context';
 import { FileState, FileItem } from '@/features/file-upload/types';

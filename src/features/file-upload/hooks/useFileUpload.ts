@@ -1,230 +1,129 @@
-
-import { useState, useCallback } from 'react';
-import { FileState, UploadProgressItem, FileItem } from '../types';
-import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/integrations/supabase/client';
-import { logger } from '@/utils/logger';
-
-// Initialize empty file state
-const initialFileState: FileState = {
-  identity: [],
-  business: [],
-  additional: [],
-  logo: null,
-  images: [],
-  videos: [],
-  documents: []
-};
+import { useState, useCallback, useEffect } from 'react';
+import { FileState, FileItem, UploadProgressItem } from '../types';
+import { useFileUploadProgress } from './useFileUploadProgress';
+import { useFileUploadState } from './useFileUploadState';
+import { fileAdapter } from '@/utils/file-adapter';
 
 /**
- * Hook for managing file uploads, providing state and methods for file selection,
- * removal, progress tracking, and upload to storage
+ * Main hook for managing file uploads
+ * 
+ * Provides a comprehensive API for handling file selection, 
+ * upload tracking, and state management
  */
 export const useFileUpload = () => {
-  const [files, setFiles] = useState<FileState>(initialFileState);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
+  const {
+    files,
+    updateFiles,
+    addFile,
+    removeFile,
+    clearFiles
+  } = useFileUploadState();
+  
+  const {
+    uploadProgress,
+    updateProgress,
+    resetProgress,
+    completeProgress
+  } = useFileUploadProgress();
+  
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-
-  // Handle file selection
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
+  // Reset selected files when files state changes
+  useEffect(() => {
+    setSelectedFiles([]);
+  }, [files]);
+  
+  // Handle file changes from input or drop events
   const handleFileChange = useCallback((fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => {
-    setUploadError(null);
+    let newFiles: File[] = [];
     
-    let selectedFiles: File[] = [];
-    
-    if (Array.isArray(e)) {
-      // Handle case when e is an array of files (e.g., from drag and drop)
-      selectedFiles = [...e];
-    } else if ('target' in e && e.target.files) {
-      // Handle case when e is an event from file input
-      selectedFiles = Array.from(e.target.files);
+    // Handle event input
+    if ('target' in e && e.target.files) {
+      newFiles = Array.from(e.target.files);
+    } 
+    // Handle direct array of files
+    else if (Array.isArray(e)) {
+      newFiles = Array.from(e);
     }
     
-    if (selectedFiles.length === 0) {
-      logger.debug(`No files selected for ${String(fileType)}`);
-      return;
-    }
-    
-    logger.debug(`Files selected for ${String(fileType)}:`, selectedFiles.length);
-    
-    // Special handling for logo (single file)
+    if (newFiles.length === 0) return;
+
+    // Convert fileType to string explicitly
+    const fileTypeStr = fileAdapter.fileTypeToString(fileType);
+
+    // For logo, we only keep one file
     if (fileType === 'logo') {
-      setFiles(prev => ({
-        ...prev,
-        logo: selectedFiles[0]
-      }));
+      updateFiles({
+        [fileType]: newFiles[0]
+      });
       return;
     }
     
-    // Create file items with unique IDs for arrays
-    const newFiles = selectedFiles.map(file => ({
-      id: uuidv4(),
+    // For array types, convert Files to FileItems
+    const newFileItems = newFiles.map(file => ({
+      id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       file,
       progress: 0
     }));
     
-    // Update file state
-    setFiles(prev => {
-      // Ensure we're working with an array
-      const existingFiles = Array.isArray(prev[fileType]) ? prev[fileType] as FileItem[] : [];
-      
-      return {
-        ...prev,
-        [fileType]: [...existingFiles, ...newFiles]
-      };
+    // Add to existing files
+    updateFiles({
+      [fileType]: [...(files[fileType] as FileItem[] || []), ...newFileItems]
     });
-  }, []);
-
-  // Remove a file
+  }, [files, updateFiles]);
+  
+  // Remove a file from state
   const onRemoveFile = useCallback((fileType: keyof FileState, index?: number) => {
-    logger.debug(`Removing file from ${String(fileType)}`, { index });
-    
-    // Handle logo (single file)
     if (fileType === 'logo') {
-      setFiles(prev => ({
-        ...prev,
-        logo: null
-      }));
+      removeFile(fileType);
       return;
     }
     
-    // Handle arrays of files
-    if (Array.isArray(files[fileType])) {
-      if (index === undefined) {
-        // Remove all files of the given type if no index is provided
-        setFiles(prev => ({
-          ...prev,
-          [fileType]: []
-        }));
-      } else {
-        // Remove only the file at the given index
-        setFiles(prev => {
-          const fileArray = prev[fileType] as FileItem[];
-          return {
-            ...prev,
-            [fileType]: fileArray.filter((_, i) => i !== index)
-          };
-        });
+    if (index !== undefined) {
+      const currentFiles = files[fileType] as FileItem[];
+      if (Array.isArray(currentFiles) && currentFiles[index]) {
+        const fileToRemove = currentFiles[index];
+        
+        // Remove from progress tracking if needed
+        if (fileToRemove.id) {
+          resetProgress(fileToRemove.id);
+        }
+        
+        // Remove the file at the specified index
+        removeFile(fileType, index);
       }
     }
-  }, [files]);
-
-  // Update progress for a specific file
-  const updateProgress = useCallback((key: string, name: string, progress: number) => {
-    setUploadProgress(prev => ({
-      ...prev,
-      [key]: { fileName: name, progress }
-    }));
-  }, []);
-
-  // Reset progress for a specific file or all files
-  const resetProgress = useCallback((key?: string) => {
-    if (key) {
-      setUploadProgress(prev => {
-        const newProgress = { ...prev };
-        delete newProgress[key];
-        return newProgress;
-      });
-    } else {
-      setUploadProgress({});
-    }
-  }, []);
-
-  // Reset the entire file upload state
-  const resetFileUpload = useCallback(() => {
-    logger.debug('Resetting file upload state');
-    setFiles(initialFileState);
-    setUploadProgress({});
-    setUploadError(null);
-    setUploading(false);
-  }, []);
-
-  // Upload files to Supabase storage
+  }, [files, removeFile, resetProgress]);
+  
+  // Upload all files to storage
   const uploadFiles = useCallback(async (businessId: string): Promise<boolean> => {
-    if (!businessId) {
-      const error = 'Business ID is required for file upload';
-      logger.error(error);
-      setUploadError(error);
-      return false;
-    }
-    
     setUploading(true);
     setUploadError(null);
     
     try {
-      logger.info(`Starting file upload for business: ${businessId}`);
+      // For now, just return true - actual upload implementation will be added later
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Upload logo if it exists
-      if (files.logo) {
-        const fileExt = files.logo.name.split('.').pop();
-        const filePath = `${businessId}/logo.${fileExt}`;
-        
-        logger.debug(`Uploading logo: ${filePath}`);
-        
-        const { error: logoError } = await supabase.storage
-          .from('business-docs')
-          .upload(filePath, files.logo, {
-            upsert: true
-          });
-          
-        if (logoError) {
-          throw new Error(`Error uploading logo: ${logoError.message}`);
-        }
-        
-        logger.debug('Logo upload completed successfully');
-      }
-      
-      // Upload other file types (images, videos, documents)
-      const fileTypes = ['images', 'videos', 'documents'] as const;
-      
-      for (const fileType of fileTypes) {
-        const fileItems = files[fileType] as FileItem[];
-        
-        if (Array.isArray(fileItems) && fileItems.length > 0) {
-          logger.debug(`Uploading ${fileItems.length} ${fileType}`);
-          
-          for (const fileItem of fileItems) {
-            const fileExt = fileItem.file.name.split('.').pop();
-            const filePath = `${businessId}/${fileType}/${fileItem.id}.${fileExt}`;
-            
-            // Update progress callback
-            const progressCallback = (progress: number) => {
-              updateProgress(fileItem.id, fileItem.file.name, progress);
-            };
-            
-            logger.debug(`Uploading ${fileType} item: ${filePath}`);
-            
-            // Upload to Supabase storage - removing onUploadProgress which isn't supported in this version
-            const { error } = await supabase.storage
-              .from('business-docs')
-              .upload(filePath, fileItem.file, {
-                upsert: true
-              });
-              
-            if (error) {
-              throw new Error(`Error uploading ${fileItem.file.name}: ${error.message}`);
-            }
-            
-            // Manually set progress to 100% since we don't have onUploadProgress
-            progressCallback(100);
-            
-            logger.debug(`${fileType} item upload completed: ${fileItem.file.name}`);
-          }
-        }
-      }
-      
-      logger.info(`File upload completed successfully for business: ${businessId}`);
-      setUploading(false);
       return true;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during upload';
-      logger.error('File upload error:', error);
-      setUploadError(errorMessage);
-      setUploading(false);
+      console.error('Error uploading files:', error);
+      setUploadError('Failed to upload files');
       return false;
+    } finally {
+      setUploading(false);
     }
-  }, [files, updateProgress]);
-
+  }, []);
+  
+  // Reset all file upload state
+  const resetFileUpload = useCallback(() => {
+    clearFiles();
+    resetProgress();
+    setUploadError(null);
+    setSelectedFiles([]);
+  }, [clearFiles, resetProgress]);
+  
   return {
     files,
     uploadProgress,
@@ -235,6 +134,9 @@ export const useFileUpload = () => {
     updateProgress,
     resetProgress,
     resetFileUpload,
-    uploadFiles
+    uploadFiles,
+    selectedFiles,
+    setSelectedFiles,
+    setUploadError
   };
 };

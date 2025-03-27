@@ -1,50 +1,69 @@
 
 import React from 'react';
+import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
-import { useFileUploadContext } from '@/contexts/file-upload-context';
-import { FileState } from '../types';
+import { Label } from '@/components/ui/label';
+import { getReadableFileFormats } from '@/utils/file-validation';
+import { getMaxFileSize, formatFileSize } from '../utils';
 
 interface FileUploadFieldProps {
-  fileType: keyof FileState;
   label: string;
-  accept?: string;
-  multiple?: boolean;
+  description?: string;
+  fileType: string;
+  acceptedFormats: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
   className?: string;
 }
 
 export const FileUploadField: React.FC<FileUploadFieldProps> = ({
-  fileType,
   label,
-  accept = "image/*,.pdf,.doc,.docx",
-  multiple = true,
-  className = ""
+  description,
+  fileType,
+  acceptedFormats,
+  onChange,
+  disabled = false,
+  className = '',
 }) => {
-  const { handleFileChange, files } = useFileUploadContext();
+  const maxFileSize = getMaxFileSize(fileType);
+  const readableFormats = getReadableFileFormats(fileType);
+  const inputId = `${fileType}-upload-input`;
   
   return (
-    <div className={`flex flex-col gap-2 ${className}`}>
-      <label htmlFor={`file-${fileType}`} className="text-sm font-medium">
+    <div className={`space-y-2 ${className}`}>
+      <Label htmlFor={inputId} className="text-base font-medium">
         {label}
-      </label>
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Upload className="h-6 w-6 text-gray-400" />
-          <p className="text-sm text-gray-500">
-            Drag & drop or click to select files
-          </p>
-          <p className="text-xs text-gray-400">
-            {Array.isArray(files[fileType]) && (files[fileType] as any[]).length > 0 
-              ? `${(files[fileType] as any[]).length} file(s) selected` 
-              : 'No files selected'}
-          </p>
+      </Label>
+      
+      {description && (
+        <p className="text-sm text-muted-foreground mb-2">
+          {description}
+        </p>
+      )}
+      
+      <div className="flex flex-col gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="relative w-fit"
+          onClick={() => !disabled && document.getElementById(inputId)?.click()}
+          disabled={disabled}
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          Select Files
           <input
-            id={`file-${fileType}`}
+            id={inputId}
             type="file"
-            className="sr-only"
-            accept={accept}
-            multiple={multiple}
-            onChange={(e) => handleFileChange(fileType, e)}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            accept={acceptedFormats}
+            onChange={onChange}
+            disabled={disabled}
+            multiple={fileType !== 'logo'}
           />
+        </Button>
+        
+        <div className="text-xs text-muted-foreground">
+          Accepted formats: {readableFormats} • Max size: {formatFileSize(maxFileSize)}
         </div>
       </div>
     </div>
