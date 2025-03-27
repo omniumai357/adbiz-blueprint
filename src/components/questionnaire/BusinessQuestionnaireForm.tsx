@@ -95,9 +95,9 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   // Extract File objects for ReviewSection (fixes type issues)
   const reviewFiles = {
     logo: adaptedFiles.logo as File | null,
-    images: Array.isArray(fileState.images) ? extractFilesFromFileItems(fileState.images as FileItem[]) : [],
-    videos: Array.isArray(fileState.videos) ? extractFilesFromFileItems(fileState.videos as FileItem[]) : [],
-    documents: Array.isArray(fileState.documents) ? extractFilesFromFileItems(fileState.documents as FileItem[]) : []
+    images: extractFilesFromFileItems(fileState.images as FileItem[]),
+    videos: extractFilesFromFileItems(fileState.videos as FileItem[]),
+    documents: extractFilesFromFileItems(fileState.documents as FileItem[])
   };
   
   return (
