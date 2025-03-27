@@ -7,6 +7,7 @@ import UploadTips from "./UploadTips";
 import { useFileUploadContext } from "@/contexts/file-upload-context";
 import { FileState } from "@/features/file-upload/types";
 import { fileAdapter } from "@/utils/file-adapter";
+import { logger } from '@/utils/logger';
 
 interface FileUploadSectionProps {
   hasLogo: boolean;
@@ -20,11 +21,15 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
     uploadError 
   } = useFileUploadContext();
 
+  // Log the file upload section initialization
+  logger.debug('Rendering FileUploadSection', { hasLogo });
+
   // Adapt FileState to be used with UI components expecting File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
+    logger.debug(`File change for ${fileType}`, { count: e.target.files.length });
     handleFileChange(fileType, e);
   };
 

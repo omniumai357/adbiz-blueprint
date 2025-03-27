@@ -13,6 +13,7 @@ import { FileUploadProvider } from "@/contexts/file-upload-context";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
 import { fileAdapter } from "@/utils/file-adapter";
 import { FileState, FileItem } from "@/features/file-upload/types";
+import { logger } from '@/utils/logger';
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
@@ -59,15 +60,29 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
     logo: files.logo,
     // Extract File objects from FileItems
     images: Array.isArray(files.images) 
-      ? (files.images as FileItem[]).map(item => item.file) 
+      ? (files.images as any[]).every(item => 'file' in item) 
+        ? files.images as FileItem[]
+        : fileAdapter.createFileItems(files.images as File[])
       : [],
     videos: Array.isArray(files.videos) 
-      ? (files.videos as FileItem[]).map(item => item.file) 
+      ? (files.videos as any[]).every(item => 'file' in item) 
+        ? files.videos as FileItem[]
+        : fileAdapter.createFileItems(files.videos as File[])
       : [],
     documents: Array.isArray(files.documents) 
-      ? (files.documents as FileItem[]).map(item => item.file) 
+      ? (files.documents as any[]).every(item => 'file' in item) 
+        ? files.documents as FileItem[]
+        : fileAdapter.createFileItems(files.documents as File[])
       : []
   };
+  
+  // Log file state transformations at debug level
+  logger.debug('File state being adapted for UI', { 
+    hasLogo: !!fileState.logo,
+    imagesCount: fileState.images.length,
+    videosCount: fileState.videos.length,
+    documentsCount: fileState.documents.length
+  });
   
   // Adapt files for the ReviewSection component which expects plain File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(fileState);

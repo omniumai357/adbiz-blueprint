@@ -1,3 +1,4 @@
+
 import { Form } from "@/components/ui/form";
 import { FormValidationMessage } from "@/components/ui/form-validation-message";
 import QuestionnaireProgress from "./QuestionnaireProgress";
@@ -11,12 +12,15 @@ import { QuestionnaireProvider } from "@/contexts/questionnaire-context";
 import { FileUploadProvider } from "@/contexts/file-upload-context";
 import QuestionnaireNavigation from "./QuestionnaireNavigation";
 import { fileAdapter } from "@/utils/file-adapter";
+import { logger } from '@/utils/logger';
 
 interface BusinessQuestionnaireFormProps {
   onComplete?: (data: any) => void;
 }
 
 const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnaireFormProps) => {
+  logger.debug('Rendering BusinessQuestionnaireFormRefactored');
+  
   const {
     form,
     step,
@@ -36,6 +40,8 @@ const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnai
   
   // Helper function to validate step by number
   const validateStep = (stepNumber: number) => {
+    logger.debug('Validating step', { step: stepNumber });
+    
     switch (stepNumber) {
       case 1:
         return handleBusinessInfoNext(true);

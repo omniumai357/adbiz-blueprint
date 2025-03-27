@@ -52,6 +52,12 @@ export const useFileUpload = (): FileUploadHook => {
     
     if (newFiles.length === 0) return;
 
+    logger.info('File change detected', { 
+      fileType, 
+      fileCount: newFiles.length,
+      fileTypes: newFiles.map(f => f.type).join(', ')
+    });
+
     // Convert fileType to string explicitly
     const fileTypeStr = fileAdapter.fileTypeToString(fileType);
 
@@ -79,6 +85,7 @@ export const useFileUpload = (): FileUploadHook => {
   // Remove a file from state
   const onRemoveFile = useCallback((fileType: keyof FileState, index?: number) => {
     if (fileType === 'logo') {
+      logger.debug('Removing logo file');
       removeFile(fileType);
       return;
     }
@@ -87,6 +94,12 @@ export const useFileUpload = (): FileUploadHook => {
       const currentFiles = files[fileType] as FileItem[];
       if (Array.isArray(currentFiles) && currentFiles[index]) {
         const fileToRemove = currentFiles[index];
+        
+        logger.debug('Removing file', { 
+          fileType, 
+          index, 
+          fileName: fileToRemove?.file?.name 
+        });
         
         // Remove from progress tracking if needed
         if (fileToRemove && fileToRemove.id) {
@@ -103,16 +116,19 @@ export const useFileUpload = (): FileUploadHook => {
   const uploadFiles = useCallback(async (businessId: string): Promise<boolean> => {
     setUploading(true);
     setUploadError(null);
-    logger.debug('Starting file upload process for business ID:', businessId);
+    logger.info('Starting file upload process', { businessId });
     
     try {
       // For now, just simulate an upload process
       await new Promise(resolve => setTimeout(resolve, 1000));
-      logger.debug('Upload completed successfully');
+      logger.info('Upload completed successfully', { businessId });
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
-      logger.error('File upload failed:', errorMessage);
+      logger.error('File upload failed', { 
+        businessId, 
+        error: errorMessage 
+      });
       setUploadError('Failed to upload files');
       return false;
     } finally {
@@ -122,12 +138,35 @@ export const useFileUpload = (): FileUploadHook => {
   
   // Reset all file upload state
   const resetFileUpload = useCallback(() => {
+    logger.debug('Resetting file upload state');
     clearFiles();
     resetProgress();
     setUploadError(null);
     setSelectedFiles([]);
-    logger.debug('File upload state reset');
   }, [clearFiles, resetProgress]);
+  
+  // Upload a single file (for direct uploads)
+  const uploadFile = useCallback(async (file: File, path: string): Promise<string> => {
+    logger.debug('Uploading single file', { fileName: file.name, path });
+    
+    try {
+      // Simulate upload with delay based on file size
+      const delay = Math.min(Math.floor(file.size / 10000), 2000) + 500;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // Return a simulated URL
+      const url = `https://example.com/uploads/${path}/${file.name}`;
+      logger.debug('Single file upload complete', { url });
+      return url;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
+      logger.error('Single file upload failed', { 
+        fileName: file.name, 
+        error: errorMessage 
+      });
+      throw error;
+    }
+  }, []);
   
   return {
     files,
@@ -141,11 +180,7 @@ export const useFileUpload = (): FileUploadHook => {
     setUploadError,
     selectedFiles,
     setSelectedFiles,
-    uploadFile: async (file: File, path: string) => {
-      // Simulate upload
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return `https://example.com/uploads/${path}/${file.name}`;
-    },
+    uploadFile,
     hasError: !!uploadError,
     isUploading: uploading
   };

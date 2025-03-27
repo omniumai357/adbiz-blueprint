@@ -1,6 +1,7 @@
 
 import { FileState, FileItem } from '@/features/file-upload/types';
 import { createFileItem, createFileItems } from '@/features/file-upload/utils';
+import { logger } from '@/utils/logger';
 
 /**
  * File Adapter Utilities
@@ -14,6 +15,11 @@ export const fileAdapter = {
   adaptFileStateForUI: (fileState: FileState): Record<string, File | File[] | null> => {
     const result: Record<string, File | File[] | null> = {};
     
+    logger.debug('Adapting FileState to UI format', {
+      hasLogo: !!fileState.logo,
+      fieldsPresent: Object.keys(fileState)
+    });
+    
     // Handle logo (special case - single File)
     if ('logo' in fileState) {
       result.logo = fileState.logo;
@@ -22,12 +28,12 @@ export const fileAdapter = {
     // Convert FileItem arrays to File arrays
     Object.entries(fileState).forEach(([key, value]) => {
       if (key !== 'logo' && Array.isArray(value)) {
-        if (value.length > 0 && 'file' in value[0]) {
+        if (value.length > 0 && value[0] && typeof value[0] === 'object' && 'file' in value[0]) {
           // Handle FileItem[] arrays
           result[key] = (value as FileItem[]).map(item => item.file);
         } else {
           // Handle direct File[] arrays
-          result[key] = value as File[];
+          result[key] = value as unknown as File[];
         }
       }
     });
@@ -48,6 +54,10 @@ export const fileAdapter = {
       videos: [],
       documents: []
     };
+    
+    logger.debug('Adapting UI files to FileState', {
+      fieldsPresent: Object.keys(uiFiles)
+    });
     
     // Handle logo (special case - single File)
     if ('logo' in uiFiles) {
