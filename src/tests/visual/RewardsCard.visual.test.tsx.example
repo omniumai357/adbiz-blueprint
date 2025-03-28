@@ -1,0 +1,119 @@
+
+/**
+ * Visual regression tests for RewardCard component
+ * 
+ * NOTE: This is an example file that demonstrates how to set up
+ * visual regression tests. It requires additional setup with
+ * jest-image-snapshot to run properly.
+ */
+
+import React from 'react';
+import { render } from '@testing-library/react';
+import RewardCard from '@/components/rewards/RewardCard';
+import { 
+  configureToMatchImageSnapshot,
+  defaultSnapshotOptions,
+  getSnapshotIdentifier,
+  testAllBreakpoints
+} from './visualRegressionSetup';
+import ResponsiveVisualTest from './components/ResponsiveVisualTest';
+import { Breakpoint } from '@/hooks/useResponsive';
+
+// Configure the matcher
+configureToMatchImageSnapshot();
+
+describe('RewardCard Visual Tests', () => {
+  // Sample reward data for testing
+  const sampleReward = {
+    milestone_id: 'reward-1',
+    milestone_name: 'First Purchase Discount',
+    milestone_description: 'A reward for completing your first purchase',
+    icon: 'gift',
+    is_completed: true,
+    reward_claimed: false,
+    reward_type: 'discount_percentage',
+    reward_value: 10,
+    completed_at: '2023-10-15T12:00:00Z'
+  };
+
+  // Test available reward state across breakpoints
+  testAllBreakpoints(
+    'renders available reward correctly',
+    ['xs', 'md', 'xl'],
+    (breakpoint: Breakpoint) => {
+      // Render component in the responsive test container
+      const { container } = render(
+        <ResponsiveVisualTest breakpoint={breakpoint}>
+          <RewardCard 
+            reward={sampleReward}
+            onClaim={() => Promise.resolve()}
+            disabled={false}
+          />
+        </ResponsiveVisualTest>
+      );
+      
+      // Take screenshot and compare with baseline
+      expect(container).toMatchImageSnapshot({
+        ...defaultSnapshotOptions,
+        customSnapshotIdentifier: getSnapshotIdentifier(
+          'RewardCard', 
+          breakpoint,
+          'available'
+        )
+      });
+    }
+  );
+
+  // Test claimed reward state
+  testAllBreakpoints(
+    'renders claimed reward correctly',
+    ['xs', 'md', 'xl'],
+    (breakpoint: Breakpoint) => {
+      const claimedReward = {
+        ...sampleReward,
+        reward_claimed: true
+      };
+      
+      const { container } = render(
+        <ResponsiveVisualTest breakpoint={breakpoint}>
+          <RewardCard 
+            reward={claimedReward}
+            onClaim={() => Promise.resolve()}
+            disabled={false}
+          />
+        </ResponsiveVisualTest>
+      );
+      
+      expect(container).toMatchImageSnapshot({
+        ...defaultSnapshotOptions,
+        customSnapshotIdentifier: getSnapshotIdentifier(
+          'RewardCard', 
+          breakpoint,
+          'claimed'
+        )
+      });
+    }
+  );
+
+  // Test disabled state
+  it('renders disabled state correctly on mobile', () => {
+    const { container } = render(
+      <ResponsiveVisualTest breakpoint="xs">
+        <RewardCard 
+          reward={sampleReward}
+          onClaim={() => Promise.resolve()}
+          disabled={true}
+        />
+      </ResponsiveVisualTest>
+    );
+    
+    expect(container).toMatchImageSnapshot({
+      ...defaultSnapshotOptions,
+      customSnapshotIdentifier: getSnapshotIdentifier(
+        'RewardCard', 
+        'xs',
+        'disabled'
+      )
+    });
+  });
+});
