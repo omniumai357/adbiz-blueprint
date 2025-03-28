@@ -1,239 +1,140 @@
 
-import { useRef, TouchEvent, useEffect, useState } from 'react';
-import { useResponsiveTour } from '@/contexts/tour/ResponsiveTourContext';
+import { useState, useCallback } from 'react';
 
-interface TourGestureOptions {
-  threshold?: number;
+interface GestureOptions {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onSwipeUp?: () => void;
   onSwipeDown?: () => void;
-  onTap?: (x: number, y: number) => void;
-  onDoubleTap?: (x: number, y: number) => void;
-  onLongPress?: (x: number, y: number) => void;
-  preventDefaultOnSwipe?: boolean;
+  onTap?: () => void;
+  onLongPress?: () => void;
+  threshold?: number;
   preventScrollOnSwipe?: boolean;
   vibrate?: boolean;
   longPressDelay?: number;
-  doubleTapDelay?: number;
 }
 
-/**
- * Enhanced hook to handle touch gestures for tour navigation
- * with improved detection and feedback mechanisms
- * 
- * @param options Gesture configuration options
- * @returns Touch event handlers for React components
- */
 export function useTourGestures({
-  threshold,
   onSwipeLeft,
   onSwipeRight,
   onSwipeUp,
   onSwipeDown,
   onTap,
-  onDoubleTap,
   onLongPress,
-  preventDefaultOnSwipe = false,
+  threshold = 50,
   preventScrollOnSwipe = false,
   vibrate = false,
-  longPressDelay = 500,
-  doubleTapDelay = 300
-}: TourGestureOptions = {}) {
-  // Get responsive context
-  const { isMobile, isTablet, isRTL } = useResponsiveTour();
+  longPressDelay = 500
+}: GestureOptions) {
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number; time: number } | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   
-  // Automatically adjust threshold based on device type
-  const defaultThreshold = isMobile ? 40 : isTablet ? 50 : 60;
-  const actualThreshold = threshold || defaultThreshold;
-  
-  // Touch tracking refs
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
-  const touchEndY = useRef<number | null>(null);
-  const touchMoved = useRef<boolean>(false);
-  const touchStartTime = useRef<number>(0);
-  const lastTapTime = useRef<number>(0);
-  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  
-  // Direction lock helps prevent diagonal swipes from triggering both horizontal and vertical actions
-  const [directionLock, setDirectionLock] = useState<'horizontal' | 'vertical' | null>(null);
-  
-  // Cleanup function for long press timer
-  useEffect(() => {
-    return () => {
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-      }
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const startData = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now()
     };
-  }, []);
-  
-  const handleTouchStart = (e: TouchEvent) => {
-    // Get touch coordinates
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchMoved.current = false;
-    touchStartTime.current = Date.now();
+    setTouchStart(startData);
     
-    // Reset direction lock
-    setDirectionLock(null);
-    
-    // Start long press timer
+    // Set up long press timer
     if (onLongPress) {
-      longPressTimer.current = setTimeout(() => {
-        if (
-          touchStartX.current !== null && 
-          touchStartY.current !== null && 
-          !touchMoved.current
-        ) {
-          // Trigger haptic feedback if enabled
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate(50);
-          }
-          
-          onLongPress(touchStartX.current, touchStartY.current);
+      const timer = setTimeout(() => {
+        onLongPress();
+        // Optional vibration feedback
+        if (vibrate && navigator.vibrate) {
+          navigator.vibrate(50);
         }
       }, longPressDelay);
+      
+      setLongPressTimer(timer);
     }
-  };
+  }, [onLongPress, longPressDelay, vibrate]);
   
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!touchStartX.current || !touchStartY.current) return;
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchStart) return;
     
-    touchEndX.current = e.touches[0].clientX;
-    touchEndY.current = e.touches[0].clientY;
-    
-    // Calculate distance moved
-    const diffX = Math.abs((touchStartX.current || 0) - (touchEndX.current || 0));
-    const diffY = Math.abs((touchStartY.current || 0) - (touchEndY.current || 0));
-    
-    // Determine direction if we haven't locked it yet
-    if (!directionLock && (diffX > 10 || diffY > 10)) {
-      setDirectionLock(diffX > diffY ? 'horizontal' : 'vertical');
+    // Clear long press timer on movement
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
     }
     
-    // If we've moved enough to consider it a swipe
-    if (diffX > actualThreshold || diffY > actualThreshold) {
-      touchMoved.current = true;
-      
-      // Clear long press timer since we're moving
-      if (longPressTimer.current) {
-        clearTimeout(longPressTimer.current);
-        longPressTimer.current = null;
-      }
-      
-      // If configured to prevent default (e.g., to prevent page scrolling during swipe)
-      if (preventDefaultOnSwipe) {
-        e.preventDefault();
-      }
-      
-      // Prevent scrolling during horizontal swipes if requested
-      if (preventScrollOnSwipe && directionLock === 'horizontal') {
-        e.preventDefault();
-      }
+    const touch = e.touches[0];
+    const diffX = touchStart.x - touch.clientX;
+    const diffY = touchStart.y - touch.clientY;
+    
+    // Prevent default if we need to stop scrolling
+    if (preventScrollOnSwipe && (Math.abs(diffX) > 10 || Math.abs(diffY) > 10)) {
+      e.preventDefault();
     }
-  };
+  }, [touchStart, longPressTimer, preventScrollOnSwipe]);
   
-  const handleTouchEnd = (e: TouchEvent) => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     // Clear long press timer
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
     }
     
-    if (!touchStartX.current || !touchEndX.current || 
-        !touchStartY.current || !touchEndY.current) {
-      return;
-    }
-    
-    const touchEndTime = Date.now();
-    const touchDuration = touchEndTime - touchStartTime.current;
-    
-    // Calculate distances
-    const diffX = touchStartX.current - touchEndX.current;
-    const diffY = touchStartY.current - touchEndY.current;
-    
-    // For RTL layouts, invert the horizontal direction
-    const adjustedDiffX = isRTL ? -diffX : diffX;
-    
-    // Determine if the gesture was a swipe or a tap
-    if (touchMoved.current) {
-      // Only handle swiping in the direction we've locked to (or both if no lock)
-      if (directionLock === 'horizontal' || !directionLock) {
-        if (adjustedDiffX > actualThreshold && onSwipeLeft) {
-          // Swiped left
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate(20);
-          }
-          onSwipeLeft();
-        } else if (adjustedDiffX < -actualThreshold && onSwipeRight) {
-          // Swiped right
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate(20);
-          }
-          onSwipeRight();
-        }
-      }
+    // Process gesture
+    if (touchStart) {
+      const touch = e.changedTouches[0];
+      const diffX = touchStart.x - touch.clientX;
+      const diffY = touchStart.y - touch.clientY;
+      const duration = Date.now() - touchStart.time;
       
-      if (directionLock === 'vertical' || !directionLock) {
-        if (diffY > actualThreshold && onSwipeUp) {
-          // Swiped up
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate(20);
+      // Determine if it was a tap
+      const isTap = Math.abs(diffX) < 10 && Math.abs(diffY) < 10 && duration < 300;
+      
+      if (isTap && onTap) {
+        onTap();
+      } else {
+        // Horizontal swipe takes precedence over vertical if both thresholds are exceeded
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
+          // Horizontal swipe
+          if (diffX > 0 && onSwipeLeft) {
+            onSwipeLeft();
+            if (vibrate && navigator.vibrate) navigator.vibrate(20);
+          } else if (diffX < 0 && onSwipeRight) {
+            onSwipeRight();
+            if (vibrate && navigator.vibrate) navigator.vibrate(20);
           }
-          onSwipeUp();
-        } else if (diffY < -actualThreshold && onSwipeDown) {
-          // Swiped down
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate(20);
+        } else if (Math.abs(diffY) > threshold) {
+          // Vertical swipe
+          if (diffY > 0 && onSwipeUp) {
+            onSwipeUp();
+            if (vibrate && navigator.vibrate) navigator.vibrate(20);
+          } else if (diffY < 0 && onSwipeDown) {
+            onSwipeDown();
+            if (vibrate && navigator.vibrate) navigator.vibrate(20);
           }
-          onSwipeDown();
-        }
-      }
-    } else if (touchDuration < 300) {
-      // It was a tap (only if short duration and minimal movement)
-      const maxMoveForTap = 10;
-      if (Math.abs(diffX) < maxMoveForTap && Math.abs(diffY) < maxMoveForTap) {
-        const now = Date.now();
-        
-        // Check for double tap
-        if (onDoubleTap && (now - lastTapTime.current) < doubleTapDelay) {
-          if (vibrate && navigator.vibrate) {
-            navigator.vibrate([20, 50, 20]);
-          }
-          onDoubleTap(touchEndX.current, touchEndY.current);
-          lastTapTime.current = 0; // Reset to prevent triple-tap detection
-        } else {
-          // Single tap
-          if (onTap) {
-            if (vibrate && navigator.vibrate) {
-              navigator.vibrate(10);
-            }
-            onTap(touchEndX.current, touchEndY.current);
-          }
-          lastTapTime.current = now;
         }
       }
     }
     
-    // Reset values
-    touchStartX.current = null;
-    touchEndX.current = null;
-    touchStartY.current = null;
-    touchEndY.current = null;
-    touchMoved.current = false;
-    setDirectionLock(null);
-  };
+    // Reset touch start
+    setTouchStart(null);
+  }, [touchStart, threshold, onSwipeLeft, onSwipeRight, onSwipeUp, onSwipeDown, onTap, longPressTimer, vibrate]);
+  
+  const handleTouchCancel = useCallback(() => {
+    // Clear long press timer
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    
+    // Reset touch start
+    setTouchStart(null);
+  }, [longPressTimer]);
   
   return {
-    onTouchStart: handleTouchStart,
-    onTouchMove: handleTouchMove,
-    onTouchEnd: handleTouchEnd,
     touchHandlers: {
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd,
+      onTouchCancel: handleTouchCancel
     }
   };
 }

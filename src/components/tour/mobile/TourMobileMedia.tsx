@@ -1,41 +1,66 @@
 
-import React from "react";
-import { TourMedia } from "../tooltip/TourMedia";
-import { TourStep } from "@/contexts/tour/types";
-import { cn } from "@/lib/utils";
-import { useResponsive } from "@/hooks/useResponsive";
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { TourStep } from '@/contexts/tour/types';
 
 interface TourMobileMediaProps {
   currentStepData: TourStep;
   className?: string;
 }
 
-export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({ 
+export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
   currentStepData,
-  className 
+  className
 }) => {
-  const { isLandscape } = useResponsive();
+  const { media } = currentStepData;
   
-  if (!currentStepData.media) return null;
+  if (!media || !media.url) {
+    return null;
+  }
   
-  // Calculate max height based on orientation
-  const maxHeight = isLandscape ? "max-h-24" : "max-h-36";
-  
-  // Convert the media format to the one expected by TourMedia
-  const mediaForTooltip = {
-    type: currentStepData.media.type,
-    url: currentStepData.media.url, // Use url instead of source
-    alt: currentStepData.media.alt || currentStepData.title,
-    animation: currentStepData.media.animation
-  };
-  
-  return (
-    <div className={cn("mt-2 mb-4", className)}>
-      <TourMedia 
-        media={mediaForTooltip} 
-        title={currentStepData.title}
-        className={cn("rounded-md mx-auto", maxHeight)}
-      />
-    </div>
+  const mediaClassNames = cn(
+    "rounded-md overflow-hidden max-h-40 flex justify-center",
+    className
   );
+  
+  if (media.type === 'image') {
+    return (
+      <div className={mediaClassNames}>
+        <img 
+          src={media.url} 
+          alt={media.alt || currentStepData.title} 
+          className="object-contain"
+        />
+      </div>
+    );
+  }
+  
+  if (media.type === 'video') {
+    return (
+      <div className={mediaClassNames}>
+        <video 
+          src={media.url}
+          className="object-contain"
+          controls
+          muted
+          autoPlay
+          loop
+        />
+      </div>
+    );
+  }
+  
+  if (media.type === 'gif') {
+    return (
+      <div className={mediaClassNames}>
+        <img 
+          src={media.url} 
+          alt={media.alt || currentStepData.title} 
+          className="object-contain"
+        />
+      </div>
+    );
+  }
+  
+  return null;
 };

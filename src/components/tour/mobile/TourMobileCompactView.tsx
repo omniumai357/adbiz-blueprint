@@ -1,9 +1,10 @@
 
-import React from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useTourGestures } from "@/hooks/tour/useTourGestures";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTourGestures } from '@/hooks/tour/useTourGestures';
+import { useLanguage } from '@/contexts/language-context';
+import { TourMobileProgress } from './TourMobileProgress';
 
 interface TourMobileCompactViewProps {
   title: string;
@@ -13,22 +14,16 @@ interface TourMobileCompactViewProps {
   onNext: () => void;
   onPrev: () => void;
   onClose: () => void;
-  nextLabel?: string;
-  prevLabel?: string;
   isRTL?: boolean;
   media?: {
-    type: 'image' | 'video';
+    type: "image" | "video" | "gif";
     url: string;
     alt?: string;
   };
+  nextLabel?: string;
+  prevLabel?: string;
 }
 
-/**
- * TourMobileCompactView Component
- * 
- * A space-efficient view for mobile devices in landscape orientation
- * where vertical space is limited.
- */
 export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   title,
   content,
@@ -37,99 +32,89 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   onNext,
   onPrev,
   onClose,
-  nextLabel = "Next",
-  prevLabel = "Previous",
-  isRTL = false,
-  media
+  isRTL: propIsRTL,
+  media,
+  nextLabel,
+  prevLabel
 }) => {
-  const isLastStep = currentStep === totalSteps - 1;
-  const showPrevButton = currentStep > 0;
+  const { isRTL: contextIsRTL } = useLanguage();
+  const isRTL = propIsRTL !== undefined ? propIsRTL : contextIsRTL;
   
-  // Swap directions for RTL layout
-  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
-  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
+  // Set gesture handlers (with RTL support)
+  const swipeLeftHandler = !isRTL ? onNext : onPrev;
+  const swipeRightHandler = !isRTL ? onPrev : onNext;
   
-  // Use gesture hooks for better touch interaction
+  // Setup swipe gestures
   const { touchHandlers } = useTourGestures({
-    onSwipeLeft: !isRTL ? onNext : onPrev,
-    onSwipeRight: !isRTL ? onPrev : onNext,
-    threshold: 30, // Lower threshold for smaller component
+    onSwipeLeft: swipeLeftHandler,
+    onSwipeRight: swipeRightHandler,
+    threshold: 30, // Lower threshold for compact view
+    preventScrollOnSwipe: false,
     vibrate: true
   });
   
+  // Get button labels
+  const nextButtonLabel = nextLabel || 'Next';
+  const prevButtonLabel = prevLabel || 'Back';
+  
+  // Determine if we should show the previous button
+  const showPrevButton = currentStep > 0;
+  
+  // Determine if this is the last step
+  const isLastStep = currentStep === totalSteps - 1;
+  
   return (
-    <div className="fixed bottom-2 right-2 z-50 max-w-[350px] w-full sm:w-auto">
-      <Card 
-        className="shadow-lg border border-border"
-        {...touchHandlers}
-      >
-        <CardHeader className="p-3 pb-0 flex flex-row items-center">
-          <CardTitle className="text-base flex-grow">{title}</CardTitle>
+    <div
+      className="fixed bottom-3 left-3 right-3 bg-background border rounded-lg shadow-lg overflow-hidden max-h-[40vh] touch-manipulation"
+      {...touchHandlers}
+    >
+      <div className="flex items-center justify-between p-3 border-b">
+        <h3 className="text-base font-semibold truncate pr-2">{title}</h3>
+        <div className="flex items-center gap-2">
+          <TourMobileProgress currentStep={currentStep} totalSteps={totalSteps} />
           <Button
             variant="ghost"
-            size="sm"
-            className="h-7 w-7 rounded-full p-0"
+            size="icon"
             onClick={onClose}
-            aria-label="Close tour"
+            className="h-7 w-7 ml-1"
           >
             <X className="h-3.5 w-3.5" />
             <span className="sr-only">Close</span>
           </Button>
-        </CardHeader>
-        
-        <div className="flex flex-row p-3">
-          {media && (
-            <div className="pr-2 flex-shrink-0 w-1/3">
-              {media.type === 'image' ? (
-                <img 
-                  src={media.url} 
-                  alt={media.alt || title} 
-                  className="rounded-sm object-cover h-[80px] w-full"
-                />
-              ) : (
-                <video 
-                  src={media.url} 
-                  controls 
-                  className="rounded-sm h-[80px] w-full"
-                />
-              )}
-            </div>
+        </div>
+      </div>
+      
+      <div className="p-3 overflow-y-auto max-h-[calc(40vh-6rem)]">
+        <div className="text-sm prose-sm prose-slate dark:prose-invert max-w-none">
+          <div dangerouslySetInnerHTML={{ __html: content }} />
+        </div>
+      </div>
+      
+      <div className="flex justify-between items-center p-2 border-t">
+        <div>
+          {showPrevButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onPrev}
+              className="gap-1 h-7 text-xs px-2"
+            >
+              {isRTL ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+              {prevButtonLabel}
+            </Button>
           )}
-          
-          <CardContent className="p-0 text-sm max-h-[80px] overflow-y-auto flex-grow">
-            {content}
-          </CardContent>
         </div>
         
-        <CardFooter className="p-3 pt-0 flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            {currentStep + 1} of {totalSteps}
-          </div>
-          
-          <div className="flex items-center gap-1">
-            {showPrevButton && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                onClick={onPrev}
-              >
-                <PrevIcon className="h-3 w-3 mr-1" />
-                {prevLabel}
-              </Button>
-            )}
-            
-            <Button
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={isLastStep ? onClose : onNext}
-            >
-              {isLastStep ? "Finish" : nextLabel}
-              {!isLastStep && <NextIcon className="h-3 w-3 ml-1" />}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
+        <Button
+          variant="default"
+          size="sm"
+          onClick={onNext}
+          className="gap-1 h-7 text-xs px-2"
+        >
+          {isLastStep ? 'Finish' : nextButtonLabel}
+          {isRTL ? <ChevronLeft className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+        </Button>
+      </div>
     </div>
   );
 };

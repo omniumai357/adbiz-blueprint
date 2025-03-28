@@ -12,6 +12,7 @@ import CTASection from "@/components/home/cta-section";
 import { ContentSection } from "@/components/ui/content-section";
 import { ContentStack } from "@/components/ui/spacing";
 import { ResponsiveHeading } from "@/components/ui/responsive-typography";
+import { TourGuide } from "@/components/tour/TourGuide";
 
 const Index = () => {
   const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});
@@ -48,7 +49,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow">
+      <main className="flex-grow" id="main-content">
         {/* Hero Section */}
         <ContentSection padding="none" size="full">
           <Hero />
@@ -110,6 +111,9 @@ const Index = () => {
       </main>
       
       <Footer />
+      
+      {/* Tour Guide Component */}
+      <TourGuide />
     </div>
   );
 };
