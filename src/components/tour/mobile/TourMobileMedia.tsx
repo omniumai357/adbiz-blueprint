@@ -74,7 +74,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
     );
   }
   
-  // Handle gif type - using separate if statement to avoid type comparison issues
+  // Handle gif type - using separate if statement to avoid type comparison issues 
   if (media.type === 'gif') {
     return (
       <div className={mediaClassNames}>
