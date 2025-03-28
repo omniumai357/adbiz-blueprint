@@ -14,7 +14,7 @@ const tourPathCreator = (steps: TourStep[]): TourPath => {
     steps,
     allowSkip: true,
     showProgress: true,
-    config: {
+    metadata: {
       allowSkip: true,
       showProgress: true
     }

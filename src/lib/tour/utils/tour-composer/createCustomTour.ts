@@ -49,13 +49,9 @@ export function createCustomTour(
     steps,
     allowSkip: config?.allowSkip,
     showProgress: config?.showProgress,
-    config: {
-      allowSkip: config?.allowSkip,
-      showProgress: config?.showProgress,
-      metadata: {
-        tags: config?.tags || [],
-        experienceLevel: config?.experienceLevel || 'all'
-      }
+    metadata: {
+      tags: config?.tags || [],
+      experienceLevel: config?.experienceLevel || 'all'
     }
   };
 }

@@ -55,9 +55,7 @@ export const checkoutTourPath: TourPath = {
   allowSkip: true,
   showProgress: true,
   route: '/checkout',
-  config: {
-    metadata: {
-      route: '/checkout'
-    }
+  metadata: {
+    route: '/checkout'
   }
 };

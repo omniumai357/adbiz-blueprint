@@ -1,4 +1,5 @@
-import { TourStep } from '@/contexts/tour/types';
+import { TourStep } from "@/contexts/tour/types";
+import { TourStepEnhancer } from "@/lib/tour/types";
 
 export interface ResponsiveContent {
   default: string;
@@ -82,3 +83,23 @@ export function responsiveSelectorEnhancedStep(
     };
   };
 }
+
+/**
+ * Creates a step that adjusts its placement in landscape mode
+ */
+export const landscapePlacement = (placement: "top" | "right" | "bottom" | "left"): TourStepEnhancer => {
+  return (step: TourStep): TourStep => {
+    return {
+      ...step,
+      metadata: {
+        ...(step.metadata || {}),
+        responsive: {
+          ...(step.metadata?.responsive || {}),
+          landscape: {
+            placement // Ensure we use the strongly typed placement here
+          }
+        }
+      }
+    };
+  };
+};

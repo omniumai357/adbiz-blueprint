@@ -14,7 +14,7 @@ export const createTourPath = (steps: TourStep[]): TourPath => {
     steps,
     allowSkip: true,
     showProgress: true,
-    config: {
+    metadata: {
       allowSkip: true,
       showProgress: true
     }
@@ -48,13 +48,9 @@ export const createNamedTourPath = (
     steps,
     allowSkip: options?.allowSkip ?? true,
     showProgress: options?.showProgress ?? true,
-    config: {
-      allowSkip: options?.allowSkip,
-      showProgress: options?.showProgress,
-      metadata: {
-        route: options?.route,
-        userRoles: options?.userRoles || []
-      }
+    metadata: {
+      route: options?.route,
+      userRoles: options?.userRoles || []
     }
   };
 };

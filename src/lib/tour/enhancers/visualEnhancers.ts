@@ -1,5 +1,5 @@
-
 import { TourStep } from '@/contexts/tour/types';
+import { TourStepEnhancer } from '@/lib/tour/types';
 
 /**
  * Apply animation effects to a tour step
@@ -147,3 +147,19 @@ export function transitionStep(options: {
     };
   };
 }
+
+/**
+ * Enhancer to add floating UI options to a step
+ * This allows advanced positioning customization
+ */
+export const withFloatingUI = <T extends TourStep>(options: any): TourStepEnhancer => {
+  return (step: T): T => {
+    return {
+      ...step,
+      floatingUIOptions: {
+        ...options,
+        ...(step.floatingUIOptions || {})
+      },
+    } as T;
+  };
+};

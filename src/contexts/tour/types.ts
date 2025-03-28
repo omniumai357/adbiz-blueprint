@@ -33,6 +33,8 @@ export interface TourStep {
     type: string;
     style: string;
     color?: string;
+    enabled: boolean;
+    targetElementId: string;
   };
   isHidden?: boolean;
   condition?: (data?: any) => boolean;
@@ -44,6 +46,7 @@ export interface TourStep {
   triggers?: string[];
   priority?: number;
   selector?: string;
+  floatingUIOptions?: any;
   // Add any other properties you encounter in the errors
 }
 
@@ -51,6 +54,7 @@ export interface TourStep {
 export interface TourStepAction {
   text?: string;
   callback?: () => void;
+  hidden?: boolean;
   // Add any other properties you encounter
 }
 
@@ -66,6 +70,16 @@ export interface TourPath {
   showProgress?: boolean;
   autoStart?: boolean;
   metadata?: Record<string, any>;
+  config?: {
+    allowSkip?: boolean;
+    showProgress?: boolean;
+    metadata?: {
+      route?: string;
+      tags?: string[];
+      userRoles?: string[];
+      experienceLevel?: string;
+    }
+  };
   // Add any other properties you encounter
 }
 
@@ -79,13 +93,34 @@ export interface TourContextType {
   totalSteps: number;
   visibleSteps: TourStep[];
   tourPaths: TourPath[];
-  startTour: (pathId: string) => void;
-  endTour: () => void;
-  goToStep: (stepIndex: number) => void;
+  availablePaths: TourPath[];
+  
+  // Tour navigation
   nextStep: () => void;
   prevStep: () => void;
-  registerTour: (path: TourPath) => void;
-  unregisterTour: (pathId: string) => void;
+  goToStep: (stepIndex: number) => void;
+  startTour: (pathId: string) => void;
+  endTour: () => void;
+  pauseTour?: () => void;
+  resumeTour?: () => void;
+  resetTour?: () => void;
+  goToPath?: () => void;
+  
+  // Tour state management
+  registerPath?: () => void;
+  unregisterPath?: () => void;
+  setDynamicContent?: () => void;
+  setAvailablePaths?: (paths: TourPath[]) => void;
+  
+  // Custom configuration
+  customConfig?: any;
+  setCustomConfig?: (config: any) => void;
+  
+  // Additional properties
+  handleKeyNavigation?: () => void;
+  content?: string;
+  
+  // Tour paths management
   setTourPaths: React.Dispatch<React.SetStateAction<TourPath[]>>;
   setVisibleSteps: React.Dispatch<React.SetStateAction<TourStep[]>>;
 }

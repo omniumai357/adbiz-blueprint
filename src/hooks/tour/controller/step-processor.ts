@@ -53,6 +53,48 @@ export function processSteps(steps: TourStep[], userData?: any): TourStep[] {
 }
 
 /**
+ * Get the current step data based on the current step index
+ * @param steps Array of tour steps
+ * @param currentStep Current step index
+ * @returns The current step data or null if not found
+ */
+export function getCurrentStepData(steps: TourStep[], currentStep: number): TourStep | null {
+  if (!steps || !Array.isArray(steps) || steps.length === 0 || currentStep < 0 || currentStep >= steps.length) {
+    return null;
+  }
+  
+  return steps[currentStep];
+}
+
+/**
+ * Find a tour path by its ID
+ * @param paths Array of tour paths
+ * @param pathId Tour path ID to find
+ * @returns The found path or undefined
+ */
+export function findTourPathById(paths: TourPath[], pathId: string): TourPath | undefined {
+  if (!paths || !Array.isArray(paths) || paths.length === 0 || !pathId) {
+    return undefined;
+  }
+  
+  return paths.find(path => path.id === pathId);
+}
+
+/**
+ * Get visible steps for a tour path
+ * @param path Tour path
+ * @param userData Optional user data for condition evaluation
+ * @returns Array of visible steps
+ */
+export function getVisibleSteps(path: TourPath | undefined, userData?: any): TourStep[] {
+  if (!path) {
+    return [];
+  }
+  
+  return processSteps(path.steps, userData);
+}
+
+/**
  * Hook for processing tour steps based on conditions and order
  */
 export function useStepProcessor() {

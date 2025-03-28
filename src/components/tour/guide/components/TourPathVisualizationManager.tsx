@@ -13,6 +13,7 @@ interface PathVisualization {
   color?: string;
   animationDuration?: number;
   showArrow?: boolean;
+  type?: string;
 }
 
 interface TourPathVisualizationManagerProps {
@@ -34,7 +35,7 @@ export const TourPathVisualizationManager: React.FC<TourPathVisualizationManager
     }
     
     // Check if step has path visualization
-    if (currentStepData.pathVisualization?.enabled) {
+    if (currentStepData.pathVisualization && currentStepData.pathVisualization.enabled) {
       setPathVisualization(currentStepData.pathVisualization as PathVisualization);
     } else {
       setPathVisualization(null);

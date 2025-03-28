@@ -40,7 +40,8 @@ export const TourMobileView: React.FC<TourMobileViewProps> = ({
   // Determine next/prev button labels
   const nextLabel = step.actions?.next?.text || 'Next';
   const prevLabel = step.actions?.prev?.text || 'Back';
-  const showPrevButton = currentStep > 0 && !(step.actions?.prev?.hidden);
+  // Check if the previous button should be shown - if on first step or hidden property is true
+  const showPrevButton = currentStep > 0 && !(step.actions?.prev?.hidden === true);
   
   // Build classnames for the container
   const containerClassNames = [
