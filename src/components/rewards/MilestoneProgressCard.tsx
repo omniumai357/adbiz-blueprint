@@ -1,53 +1,63 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Star } from 'lucide-react';
-import { MilestoneProgress } from '@/types/api';
-import RewardIcon from './RewardIcon';
+import { useTranslation } from 'react-i18next';
+import { Card, CardContent } from "@/components/ui/card";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { Medal, Award, Gift } from "lucide-react";
 
 interface MilestoneProgressCardProps {
-  milestone: MilestoneProgress;
+  totalPoints: number;
+  completedMilestones: number;
+  availableRewards: number;
+  isCompact?: boolean;
 }
 
 /**
- * Renders a card displaying a user's progress toward a milestone
+ * MilestoneProgressCard
  * 
- * Shows:
- * - Milestone name with an appropriate icon
- * - Current progress (points earned vs. points required)
- * - Visual progress bar
- * 
- * @param milestone - The milestone progress data to display
+ * Displays a user's overall milestone progress and reward status
+ * Enhanced with responsive design and attractive visual display
  */
-const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({ milestone }) => {
+const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({
+  totalPoints,
+  completedMilestones,
+  availableRewards,
+  isCompact = false
+}) => {
+  const { t } = useTranslation('rewards');
+  const isMobile = useMediaQuery("(max-width: 640px)");
+  
   return (
-    <Card className="shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {milestone.icon ? (
-              <RewardIcon iconName={milestone.icon} className="h-5 w-5" />
-            ) : (
-              <Star className="h-5 w-5 text-yellow-500" />
-            )}
-            <CardTitle className="text-lg">{milestone.milestone_name}</CardTitle>
+    <Card className={`bg-gradient-to-r from-slate-50 to-white border shadow-sm ${isCompact ? 'p-3' : 'p-4 md:p-6'}`}>
+      <CardContent className={`${isCompact ? 'p-0' : 'p-0'}`}>
+        <h2 className={`${isCompact ? 'text-lg' : 'text-xl'} font-semibold mb-2`}>
+          {t('yourProgress')}
+        </h2>
+        <p className="text-muted-foreground mb-4">
+          {t('pointsEarned', { points: totalPoints })}
+        </p>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-primary/5">
+            <Medal className="h-6 w-6 text-primary mb-1" />
+            <p className="text-xs text-muted-foreground">{t('totalPoints')}</p>
+            <p className="text-lg md:text-xl font-bold">{totalPoints}</p>
           </div>
-          <div className="text-sm font-medium">
-            {milestone.current_points} / {milestone.points_required} points
+          
+          <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-green-50">
+            <Award className="h-6 w-6 text-green-500 mb-1" />
+            <p className="text-xs text-muted-foreground">{t('completedMilestones')}</p>
+            <p className="text-lg md:text-xl font-bold">{completedMilestones}</p>
           </div>
+          
+          {(!isCompact || !isMobile) && (
+            <div className="flex flex-col items-center justify-center p-3 rounded-lg bg-amber-50 col-span-2 md:col-span-1">
+              <Gift className="h-6 w-6 text-amber-500 mb-1" />
+              <p className="text-xs text-muted-foreground">{t('availableRewards')}</p>
+              <p className="text-lg md:text-xl font-bold">{availableRewards}</p>
+            </div>
+          )}
         </div>
-        <CardDescription>
-          {milestone.progress_percentage === 100 
-            ? 'Completed!' 
-            : `${milestone.progress_percentage}% complete`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Progress 
-          value={milestone.progress_percentage} 
-          className={`h-2 ${milestone.progress_percentage === 100 ? 'bg-primary/20' : 'bg-slate-100'}`}
-        />
       </CardContent>
     </Card>
   );

@@ -107,14 +107,20 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           ))}
           
           {milestones.map((milestone) => {
-            // Extract points_required safely from milestone with robust type checking
+            // Extract points_required safely from milestone
             let pointsRequired = 0;
             
-            // Check if milestone.milestone exists and is an object
-            if (milestone.milestone && typeof milestone.milestone === 'object') {
-              // Now we can safely access properties
-              const milestoneObj = milestone.milestone as { points_required?: number };
-              pointsRequired = milestoneObj.points_required || 0;
+            // Handle different milestone.milestone data structures with proper type checking
+            if (milestone.milestone) {
+              if (typeof milestone.milestone === 'object' && milestone.milestone !== null) {
+                // Type assertion to tell TypeScript what the shape is
+                const milestoneObj = milestone.milestone as { points_required?: number };
+                pointsRequired = milestoneObj.points_required || 0;
+              } else if (typeof milestone.milestone === 'string') {
+                // Handle case where milestone.milestone might be a string ID
+                // In this case, we default to using the points_target field
+                pointsRequired = milestone.points_target || 0;
+              }
             }
               
             return (
