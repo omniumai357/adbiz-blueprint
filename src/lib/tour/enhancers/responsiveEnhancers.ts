@@ -1,3 +1,4 @@
+
 import { TourStep } from "@/contexts/tour/types";
 import { TourStepEnhancer } from "@/lib/tour/types";
 
@@ -38,10 +39,10 @@ export function responsiveContentEnhancedStep(
  */
 export function responsivePositionEnhancedStep(
   positions: {
-    default: string;
-    mobile?: string;
-    tablet?: string;
-    desktop?: string;
+    default: "top" | "right" | "bottom" | "left";
+    mobile?: "top" | "right" | "bottom" | "left";
+    tablet?: "top" | "right" | "bottom" | "left";
+    desktop?: "top" | "right" | "bottom" | "left";
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
