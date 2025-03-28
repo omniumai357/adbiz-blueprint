@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './contexts/language-context';
@@ -33,6 +32,9 @@ const LanguageObserver = () => {
   useLanguageA11y();
   return null;
 };
+
+// Import our new animations
+import "./styles/invoice-animations.css";
 
 const App = () => {
   useEffect(() => {

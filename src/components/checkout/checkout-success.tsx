@@ -2,7 +2,15 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, ArrowLeft, Download, Printer, Share2 } from "lucide-react";
+import { 
+  CheckCircle2, 
+  ArrowLeft, 
+  Download, 
+  Printer, 
+  Share2, 
+  CheckCircle,
+  ChevronRight
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ResponsiveInvoiceViewer from "@/components/invoice/responsive-invoice-viewer";
 import { useInvoiceDownload } from "@/hooks/checkout/useInvoiceDownload";
@@ -32,6 +40,8 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   const navigate = useNavigate();
   const { isMobile } = useResponsive();
   const [mounted, setMounted] = useState(false);
+  const [confettiActive, setConfettiActive] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   
   const { 
     invoiceHtml,
@@ -42,10 +52,32 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
     shareInvoice
   } = useInvoiceDownload(invoiceNumber, userId);
   
-  // Animation trigger for success message
+  // Animation trigger for success message and confetti
   useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 100);
-    return () => clearTimeout(timer);
+    // Trigger mount animation
+    const mountTimer = setTimeout(() => setMounted(true), 100);
+    
+    // Trigger confetti animation
+    const confettiTimer = setTimeout(() => setConfettiActive(true), 300);
+    
+    // Simulate completion steps
+    const steps = ["Order processing", "Payment confirmation", "Invoice generation", "Order completion"];
+    let currentStep = 0;
+    
+    const stepInterval = setInterval(() => {
+      if (currentStep < steps.length) {
+        setCompletedSteps(prev => [...prev, steps[currentStep]]);
+        currentStep++;
+      } else {
+        clearInterval(stepInterval);
+      }
+    }, 600);
+    
+    return () => {
+      clearTimeout(mountTimer);
+      clearTimeout(confettiTimer);
+      clearInterval(stepInterval);
+    };
   }, []);
   
   // Simulate progressive loading of invoice for better UX
@@ -88,6 +120,28 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   
   return (
     <div className="space-y-6">
+      {/* Confetti animation */}
+      {confettiActive && (
+        <div className="fixed inset-0 pointer-events-none z-50 flex justify-center">
+          <div className="confetti-container">
+            {Array.from({ length: 50 }).map((_, i) => (
+              <div
+                key={i}
+                className="confetti"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  width: `${Math.random() * 10 + 5}px`,
+                  height: `${Math.random() * 10 + 5}px`,
+                  backgroundColor: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                  opacity: Math.random(),
+                  animation: `fall ${Math.random() * 3 + 2}s linear forwards, sway ${Math.random() * 2 + 3}s ease-in-out infinite alternate`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <Card 
         className={cn(
           "border-green-100 bg-green-50 transition-all duration-500 ease-in-out",
@@ -110,6 +164,31 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
             Thank you for your purchase of the <strong>{packageName}</strong> package.
             Your order ID is <strong>{orderId}</strong>.
           </p>
+          
+          {/* Order processing steps animation */}
+          <div className="mt-4 border-t border-green-200 pt-3 space-y-2">
+            {["Order processing", "Payment confirmation", "Invoice generation", "Order completion"].map((step, index) => (
+              <div 
+                key={step}
+                className={cn(
+                  "flex items-center gap-2 text-sm transition-all duration-300",
+                  completedSteps.includes(step) ? "text-green-700" : "text-green-400 opacity-50",
+                  completedSteps.includes(step) ? "translate-x-0" : "translate-x-2"
+                )}
+              >
+                <div className={cn(
+                  "rounded-full flex items-center justify-center transition-all duration-300",
+                  completedSteps.includes(step) ? "text-green-500" : "text-green-300"
+                )}>
+                  {completedSteps.includes(step) ? 
+                    <CheckCircle className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
+                </div>
+                <span>{step}</span>
+              </div>
+            ))}
+          </div>
           
           <div className="mt-4 text-sm text-green-600">
             {isGeneratingInvoice ? (
@@ -137,7 +216,7 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
               variant="outline" 
               size={isMobile ? "sm" : "default"}
               onClick={() => navigate("/")}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 hover:bg-green-100 border-green-200 transition-all"
             >
               <ArrowLeft className="h-4 w-4" />
               Return to Home
@@ -171,7 +250,10 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Button 
             variant="outline"
-            className="flex items-center justify-center gap-2 h-auto py-3"
+            className={cn(
+              "flex items-center justify-center gap-2 h-auto py-3 transition-all duration-300",
+              "hover:bg-slate-50 hover:shadow-sm"
+            )}
             onClick={handlePrintInvoice}
             disabled={isLoading || isPrinting || isGeneratingInvoice}
           >
@@ -184,7 +266,10 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
           
           <Button 
             variant="outline"
-            className="flex items-center justify-center gap-2 h-auto py-3"
+            className={cn(
+              "flex items-center justify-center gap-2 h-auto py-3 transition-all duration-300",
+              "hover:bg-slate-50 hover:shadow-sm"
+            )}
             onClick={handleDownloadInvoice}
             disabled={isLoading || isGeneratingInvoice}
           >
@@ -197,7 +282,10 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
           
           <Button 
             variant="outline"
-            className="flex items-center justify-center gap-2 h-auto py-3"
+            className={cn(
+              "flex items-center justify-center gap-2 h-auto py-3 transition-all duration-300",
+              "hover:bg-slate-50 hover:shadow-sm"
+            )}
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-5 w-5" />
@@ -208,6 +296,42 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Add CSS animations */}
+      <style jsx>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(-100vh);
+          }
+          100% {
+            transform: translateY(100vh);
+          }
+        }
+        
+        @keyframes sway {
+          0% {
+            transform: translateX(-5px) rotate(-45deg);
+          }
+          100% {
+            transform: translateX(5px) rotate(45deg);
+          }
+        }
+        
+        .confetti-container {
+          position: absolute;
+          width: 100%;
+          height: 100vh;
+          overflow: hidden;
+          z-index: 1000;
+        }
+        
+        .confetti {
+          position: absolute;
+          top: -10px;
+          border-radius: 0;
+          transform-origin: center;
+        }
+      `}</style>
     </div>
   );
 };

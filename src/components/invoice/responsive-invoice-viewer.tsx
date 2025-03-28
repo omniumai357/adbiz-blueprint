@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,10 +12,12 @@ import {
   ChevronRightIcon,
   ZoomInIcon,
   ZoomOutIcon,
-  RotateCcwIcon
+  RotateCcwIcon,
+  MaximizeIcon,
+  MinimizeIcon
 } from "lucide-react";
 import { useResponsive } from "@/hooks/useResponsive";
-import { useToast } from "@/hooks/ui/use-toast";
+import { toast } from "sonner";
 
 interface InvoiceViewerProps {
   invoiceId: string;
@@ -48,12 +50,18 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
   className
 }) => {
   const { isMobile, isTablet } = useResponsive();
-  const { toast } = useToast();
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [mounted, setMounted] = useState(false);
-  
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [gestureType, setGestureType] = useState<null | 'pinch' | 'pan'>(null);
+  const [initialDistance, setInitialDistance] = useState(0);
+  const [initialScale, setInitialScale] = useState(1);
+  const viewerRef = useRef<HTMLDivElement>(null);
+
   // Animation on mount
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 150);
@@ -65,11 +73,7 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
     setScale(prev => {
       const newScale = Math.min(prev + 0.1, 2.0);
       if (newScale >= 2.0) {
-        toast({
-          title: "Maximum zoom reached",
-          description: "Cannot zoom in further",
-          variant: "default",
-        });
+        toast("Maximum zoom reached");
       }
       return newScale;
     });
@@ -79,11 +83,7 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
     setScale(prev => {
       const newScale = Math.max(prev - 0.1, 0.5);
       if (newScale <= 0.5) {
-        toast({
-          title: "Minimum zoom reached",
-          description: "Cannot zoom out further",
-          variant: "default",
-        });
+        toast("Minimum zoom reached");
       }
       return newScale;
     });
@@ -99,11 +99,22 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
     setScale(1);
     setRotation(0);
   };
+
+  // Toggle fullscreen mode
+  const handleToggleFullscreen = () => {
+    setIsFullscreen(prev => !prev);
+    
+    if (!isFullscreen) {
+      setShowControls(false);
+      setTimeout(() => setShowControls(true), 1500);
+    }
+  };
   
   // Hide/show controls based on scrolling (mobile only)
   useEffect(() => {
     if (isMobile) {
       let lastScrollY = window.scrollY;
+      let controlsTimeout: NodeJS.Timeout;
       
       const handleScroll = () => {
         const scrollY = window.scrollY;
@@ -111,12 +122,124 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
         
         setShowControls(!scrollingDown);
         lastScrollY = scrollY;
+        
+        // Hide controls after 3 seconds of inactivity
+        clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+          setShowControls(false);
+        }, 3000);
       };
       
       window.addEventListener('scroll', handleScroll, { passive: true });
-      return () => window.removeEventListener('scroll', handleScroll);
+      
+      // Show controls initially, then hide after timeout
+      controlsTimeout = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        clearTimeout(controlsTimeout);
+      };
     }
   }, [isMobile]);
+
+  // Mobile touch gesture handlers
+  const handleTouchStart = (event: React.TouchEvent) => {
+    if (!isMobile || !viewerRef.current) return;
+    
+    if (event.touches.length === 1) {
+      // Single touch for panning
+      setTouchStartX(event.touches[0].clientX);
+      setTouchStartY(event.touches[0].clientY);
+      setGestureType('pan');
+      
+      // Show controls on touch
+      setShowControls(true);
+    } else if (event.touches.length === 2) {
+      // Two fingers for pinch zoom
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      
+      setInitialDistance(distance);
+      setInitialScale(scale);
+      setGestureType('pinch');
+      
+      // Prevent default to avoid page zooming
+      event.preventDefault();
+    }
+  };
+
+  const handleTouchMove = (event: React.TouchEvent) => {
+    if (!gestureType || !viewerRef.current) return;
+    
+    // Show controls during interaction
+    setShowControls(true);
+    
+    if (gestureType === 'pinch' && event.touches.length === 2) {
+      // Handle pinch zoom
+      const touch1 = event.touches[0];
+      const touch2 = event.touches[1];
+      
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      
+      // Calculate new scale based on finger distance change
+      const scaleFactor = distance / initialDistance;
+      const newScale = Math.min(Math.max(initialScale * scaleFactor, 0.5), 2.0);
+      
+      setScale(newScale);
+      event.preventDefault();
+    }
+    
+    // No need to handle panning here as the container is scrollable
+  };
+
+  const handleTouchEnd = () => {
+    setGestureType(null);
+    
+    // Hide controls after a delay
+    setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  };
+
+  // Double tap to zoom
+  const lastTapRef = useRef<number>(0);
+  const handleTap = (event: React.TouchEvent) => {
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+    
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // Double tap detected
+      if (scale === 1) {
+        setScale(1.5);
+        
+        // Center zoom on tap location
+        if (viewerRef.current) {
+          const rect = viewerRef.current.getBoundingClientRect();
+          const x = event.touches[0].clientX - rect.left;
+          const y = event.touches[0].clientY - rect.top;
+          
+          // Could implement scrolling to tap position here
+        }
+      } else {
+        // Reset to normal view
+        setScale(1);
+      }
+      
+      event.preventDefault();
+    }
+    
+    lastTapRef.current = now;
+  };
   
   // Determine rendering dimensions based on rotation
   const isLandscape = rotation === 90 || rotation === 270;
@@ -125,11 +248,13 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
     <Card className={cn(
       "w-full overflow-hidden flex flex-col transition-all duration-300",
       mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
+      isFullscreen ? "fixed inset-0 z-50 rounded-none" : "",
       className
     )}>
       <CardHeader className={cn(
-        "px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0",
-        showControls ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden"
+        "px-4 py-3 sm:px-6 sm:py-4 border-b flex-shrink-0 transition-all duration-300",
+        showControls ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden",
+        isFullscreen ? "bg-background/80 backdrop-blur-sm" : ""
       )}>
         <div className="flex justify-between items-center">
           <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
@@ -184,13 +309,30 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
                 >
                   <span className="text-xs">1:1</span>
                 </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 ml-1"
+                  onClick={handleToggleFullscreen}
+                  aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                >
+                  {isFullscreen ? 
+                    <MinimizeIcon className="h-4 w-4" /> : 
+                    <MaximizeIcon className="h-4 w-4" />
+                  }
+                </Button>
               </div>
             )}
           </div>
         </div>
       </CardHeader>
       
-      <CardContent className="flex-grow overflow-auto p-0 relative">
+      <CardContent 
+        className={cn(
+          "flex-grow overflow-auto p-0 relative",
+          isFullscreen ? "overflow-y-auto" : ""
+        )}
+      >
         {isLoading ? (
           <div className="p-4 sm:p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" />
@@ -204,8 +346,16 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
           </div>
         ) : (
           <div 
-            className="min-h-[50vh] p-1 sm:p-4 flex justify-center"
+            ref={viewerRef}
+            className={cn(
+              "min-h-[50vh] p-1 sm:p-4 flex justify-center",
+              isFullscreen ? "h-[calc(100vh-120px)]" : ""
+            )}
             onClick={() => isMobile && setShowControls(prev => !prev)}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
           >
             {invoiceHtml ? (
               <div
@@ -218,6 +368,7 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
                   maxWidth: isLandscape ? "80vh" : "unset",
                   marginTop: isLandscape ? "20vh" : "0"
                 }}
+                onTouchStart={handleTap}
               >
                 <div dangerouslySetInnerHTML={{ __html: invoiceHtml }} />
               </div>
@@ -262,13 +413,49 @@ const ResponsiveInvoiceViewer: React.FC<InvoiceViewerProps> = ({
             >
               <RotateCcwIcon className="h-4 w-4" />
             </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 w-8 p-0 rounded-full"
+              onClick={handleToggleFullscreen}
+            >
+              {isFullscreen ? 
+                <MinimizeIcon className="h-4 w-4" /> : 
+                <MaximizeIcon className="h-4 w-4" />
+              }
+            </Button>
           </div>
+        )}
+        
+        {/* Mobile pinch-to-zoom hint */}
+        {isMobile && !isLoading && invoiceHtml && mounted && !showControls && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-background/40 backdrop-blur-sm text-xs px-3 py-1 rounded-full animate-pulse">
+              Pinch to zoom
+            </div>
+          </div>
+        )}
+        
+        {/* Fullscreen close button (mobile) */}
+        {isMobile && isFullscreen && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn(
+              "h-8 w-8 p-0 rounded-full absolute top-2 right-2 bg-background/80 backdrop-blur-sm transition-all duration-300",
+              showControls ? "opacity-100" : "opacity-0"
+            )}
+            onClick={handleToggleFullscreen}
+          >
+            <MinimizeIcon className="h-4 w-4" />
+          </Button>
         )}
       </CardContent>
       
       <CardFooter className={cn(
         "px-4 py-3 sm:px-6 sm:py-4 border-t flex-shrink-0 transition-all duration-300",
-        showControls ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden"
+        showControls ? "opacity-100" : "opacity-0 h-0 p-0 overflow-hidden",
+        isFullscreen ? "bg-background/80 backdrop-blur-sm" : ""
       )}>
         <div className={cn(
           "flex gap-3 w-full", 
