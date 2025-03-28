@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useDevice } from './use-device';
 
-// Breakpoint definitions
+// Standardized breakpoint definitions
 export const BREAKPOINTS = {
   xs: 480,   // Extra small devices
   sm: 640,   // Small devices
@@ -16,8 +16,8 @@ export const BREAKPOINTS = {
 export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 
 /**
- * Hook for responsive design decisions
- * Provides responsive variables and helper functions
+ * Enhanced hook for responsive design decisions
+ * Consolidates device information and responsive breakpoints
  */
 export function useResponsive() {
   const device = useDevice();
