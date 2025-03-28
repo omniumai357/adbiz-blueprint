@@ -8,7 +8,7 @@
  * This file is now just a wrapper that imports the functionality from modularized files.
  */
 
-import { generateVisualReferenceLibrary } from './visual-reference';
+import { generateVisualReferenceLibrary } from './visual-reference/generator';
 
 // Run the generator
 generateVisualReferenceLibrary()

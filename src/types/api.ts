@@ -101,7 +101,7 @@ export interface Milestone {
 export interface CommonMilestoneData {
   milestone_id: string;
   milestone_name: string;
-  milestone_description: string;
+  milestone_description?: string;
   icon?: string;
   is_completed?: boolean;
   reward_claimed?: boolean;
