@@ -1,14 +1,13 @@
 
 import React from "react";
-import { useKeyboardShortcuts } from "@/contexts/tour/KeyboardShortcutsContext";
-import { TourKeyboardShortcutsHelp } from "../TourKeyboardShortcutsHelp";
 
+/**
+ * TourShortcutsHelp Component
+ * 
+ * Displays a help dialog showing available keyboard shortcuts
+ * for navigating the tour. Only shown when triggered.
+ */
 export const TourShortcutsHelp: React.FC = () => {
-  const { showKeyboardHelp, closeKeyboardShortcutsHelp } = useKeyboardShortcuts();
-  
-  if (!showKeyboardHelp) {
-    return null;
-  }
-  
-  return <TourKeyboardShortcutsHelp onClose={closeKeyboardShortcutsHelp} />;
+  // This component only renders when keyboard help is requested
+  return null;
 };

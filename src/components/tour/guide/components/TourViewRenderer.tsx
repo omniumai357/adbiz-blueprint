@@ -1,16 +1,17 @@
 
 import React from "react";
 import { TourStep } from "@/contexts/tour/types";
-import { TourTooltip } from "../../tooltip/TourTooltip";
-import { TourBottomSheetView } from "../../mobile/TourBottomSheetView";
-import { TourMobileCompactView } from "../../mobile/TourMobileCompactView";
-import { TourDrawerView } from "../../drawer/TourDrawerView";
+import { TourTooltip } from "./TourTooltip";
+import { TourDrawer } from "./TourDrawer";
+import { TourCompactView } from "./TourCompactView";
+import { TourSpotlight } from "./TourSpotlight";
+import { Position } from "@/lib/tour/types";
 
 interface TourViewRendererProps {
   step: TourStep;
   targetElement: HTMLElement | null;
   isRTL: boolean;
-  direction: 'ltr' | 'rtl';
+  direction: "ltr" | "rtl";
   currentStep: number;
   totalSteps: number;
   onNext: () => void;
@@ -24,11 +25,17 @@ interface TourViewRendererProps {
   isLandscape: boolean;
   useDrawer: boolean;
   useCompactView: boolean;
-  preferredViewMode: 'tooltip' | 'drawer' | 'compact' | 'fullscreen';
+  preferredViewMode?: "tooltip" | "drawer" | "compact" | "auto";
 }
 
 /**
- * Component that renders the appropriate tour view based on device and viewport
+ * TourViewRenderer component
+ * 
+ * This component determines which view to render based on device and configuration.
+ * It can render either:
+ * - Tooltip: Default desktop view that positions near elements
+ * - Drawer: Mobile-optimized view that slides up from bottom
+ * - Compact: Space-efficient view for smaller screens
  */
 export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   step,
@@ -48,89 +55,113 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   isLandscape,
   useDrawer,
   useCompactView,
-  preferredViewMode
+  preferredViewMode = "auto"
 }) => {
-  // For very small screens or when drawer mode is preferred
-  if (useDrawer && !useCompactView) {
-    return (
-      <TourDrawerView
-        step={step}
-        isOpen={true}
-        onClose={onClose}
-        onNext={onNext}
-        onPrev={onPrev}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        isLastStep={isLastStep}
-        isTablet={isTablet}
-        isLandscape={isLandscape}
-        direction={direction}
-      />
-    );
-  }
+  // Determine the position of the tooltip
+  const position = step.position || "bottom";
+
+  // Convert position to take RTL into account if needed
+  const getAdjustedPosition = (pos: Position): Position => {
+    if (!isRTL) return pos;
+    
+    // In RTL mode, flip left/right positions
+    if (pos === "left") return "right";
+    if (pos === "right") return "left";
+    return pos;
+  };
+
+  const adjustedPosition = getAdjustedPosition(position as Position);
+
+  // Choose the view to render based on device and preferences
+  const shouldRenderTooltip = 
+    (preferredViewMode === "tooltip") || 
+    (preferredViewMode === "auto" && !useDrawer && !useCompactView);
   
-  // For landscape mode on mobile or very short screens
-  if (useCompactView) {
-    return (
-      <TourMobileCompactView
-        title={step.title}
-        content={step.content}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        onNext={onNext}
-        onPrev={onPrev}
-        onClose={onClose}
-        nextLabel={step.actions?.next?.text}
-        prevLabel={step.actions?.prev?.text}
-      />
-    );
-  }
+  const shouldRenderDrawer = 
+    (preferredViewMode === "drawer") || 
+    (preferredViewMode === "auto" && useDrawer);
   
-  // For fullscreen presentation mode (not implemented yet)
-  if (preferredViewMode === 'fullscreen') {
-    // Fallback to drawer view until fullscreen is implemented
-    return (
-      <TourBottomSheetView
-        step={step}
-        isOpen={true}
-        onClose={onClose}
-        onNext={onNext}
-        onPrev={onPrev}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        isLastStep={isLastStep}
-        direction={direction}
-      />
-    );
-  }
-  
-  // Default desktop tooltip view
-  return targetElement ? (
-    <TourTooltip
-      ref={tooltipRef}
-      targetElement={targetElement}
-      position={step.position || 'bottom'}
-      title={step.title}
-      content={step.content}
-      stepInfo={stepInfo}
-      onNext={onNext}
-      onPrev={currentStep > 0 ? onPrev : undefined}
-      onClose={onClose}
-      isLastStep={isLastStep}
-      animation={step.animation}
-      media={step.media ? {
-        type: step.media.type,
-        url: step.media.source, // Map 'source' to expected 'url' property
-        alt: step.media.alt,
-        animation: step.media.animation
-      } : undefined}
-      nextLabel={step.actions?.next?.text}
-      prevLabel={step.actions?.prev?.text}
-      skipLabel={step.actions?.skip?.text}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
-      isRTL={isRTL}
-      direction={direction}
-    />
-  ) : null;
+  const shouldRenderCompact = 
+    (preferredViewMode === "compact") || 
+    (preferredViewMode === "auto" && useCompactView);
+
+  // Extract extended properties from step
+  const mediaContent = step.media ? {
+    type: step.media.type,
+    url: step.media.url,
+    alt: step.media.alt || "",
+    animation: step.media.animation
+  } : undefined;
+
+  const transitionEffect = step.transition;
+  const spotlightConfig = step.spotlight;
+
+  return (
+    <>
+      {/* Render spotlight effect if configured */}
+      {spotlightConfig && targetElement && (
+        <TourSpotlight 
+          targetElement={targetElement}
+          intensity={spotlightConfig.intensity || "medium"}
+          color={spotlightConfig.color}
+          pulseEffect={spotlightConfig.pulseEffect}
+          fadeBackground={spotlightConfig.fadeBackground}
+        />
+      )}
+
+      {/* Render the appropriate view based on device and configuration */}
+      {shouldRenderTooltip && (
+        <TourTooltip
+          title={step.title}
+          content={step.content}
+          targetElement={targetElement}
+          position={adjustedPosition}
+          onNext={onNext}
+          onPrev={onPrev}
+          onClose={onClose}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isLastStep={isLastStep}
+          stepInfo={stepInfo}
+          media={mediaContent}
+          tooltipRef={tooltipRef}
+          isRTL={isRTL}
+          transition={transitionEffect}
+        />
+      )}
+
+      {shouldRenderDrawer && (
+        <TourDrawer
+          title={step.title}
+          content={step.content}
+          onNext={onNext}
+          onPrev={onPrev}
+          onClose={onClose}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isLastStep={isLastStep}
+          stepInfo={stepInfo}
+          media={mediaContent}
+          isLandscape={isLandscape}
+          isRTL={isRTL}
+        />
+      )}
+
+      {shouldRenderCompact && (
+        <TourCompactView
+          title={step.title}
+          content={step.content}
+          onNext={onNext}
+          onPrev={onPrev}
+          onClose={onClose}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isLastStep={isLastStep}
+          stepInfo={stepInfo}
+          media={mediaContent}
+          isRTL={isRTL}
+        />
+      )}
+    </>
+  );
 };

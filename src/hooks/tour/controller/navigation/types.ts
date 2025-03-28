@@ -1,51 +1,27 @@
 
-import { KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { TourPath, TourStep } from '@/contexts/tour/types';
-
-export type NavigationHandler = {
-  nextStep: () => void;
-  prevStep: () => void;
-  endTour: () => void;
-  goToStep: (stepIndex: number) => void;
-  trackInteraction: (
-    pathData: TourPath,
-    currentStepData: TourStep,
-    currentStep: number,
-    interactionType: string,
-    userId?: string,
-    userType?: string
-  ) => void;
-  showKeyboardShortcutsHelp?: () => void;
-};
-
-// Update NavigationAction to include all possible values
+/**
+ * Type for tour navigation actions
+ */
 export type NavigationAction = 
+  | 'next_keyboard_shortcut'
+  | 'previous_keyboard_shortcut'
+  | 'next_from_element'
+  | 'escape'
+  | 'show_shortcuts_help'
+  | 'skip_keyboard_shortcut'
   | 'first_step'
   | 'last_step'
   | 'jump_forward'
-  | 'jump_back'
-  | 'show_shortcuts_help'
-  | 'next_from_element' 
-  | 'next_keyboard_shortcut'
-  | 'previous_keyboard_shortcut'
-  | 'skip_keyboard_shortcut'
-  | 'escape'
-  | 'next'
-  | 'prev'
-  | 'skip'
-  | 'close';
+  | 'jump_back';
 
+/**
+ * Configuration options for keyboard navigation
+ */
 export interface KeyboardHandlerOptions {
   isActive: boolean;
-  currentPath: string | null;
-  tourPaths: TourPath[];
-  currentStep: number;
-  totalSteps: number;
-  visibleSteps: TourStep[];
-  userId?: string;
-  userType?: string;
-  handlers: NavigationHandler;
-  isMobileDevice?: boolean;
   isRTL?: boolean;
-  direction?: 'ltr' | 'rtl';
+  enableHomeEndKeys?: boolean;
+  enablePageKeys?: boolean;
+  pageKeyJumpSize?: number;
+  enableShortcutsHelp?: boolean;
 }

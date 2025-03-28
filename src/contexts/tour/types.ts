@@ -17,7 +17,7 @@ export interface TourStep {
   };
   media?: {
     type: 'image' | 'video';
-    source: string;
+    url: string;
     alt?: string;
     animation?: string;
   };
