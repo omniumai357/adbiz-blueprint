@@ -97,7 +97,7 @@ export const landscapePlacement = (placement: "top" | "right" | "bottom" | "left
         responsive: {
           ...(step.metadata?.responsive || {}),
           landscape: {
-            placement // Ensure we use the strongly typed placement here
+            placement
           }
         }
       }

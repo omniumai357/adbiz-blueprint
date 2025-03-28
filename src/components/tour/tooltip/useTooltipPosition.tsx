@@ -75,7 +75,7 @@ export const useTooltipPosition = (
       };
 
       // Position based on adjusted direction
-      const pos = positions[adjustedPosition];
+      const pos = positions[adjustedPosition as Position];
       
       setTooltipPosition({
         top: pos.top,
