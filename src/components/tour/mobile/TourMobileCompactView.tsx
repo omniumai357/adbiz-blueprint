@@ -1,15 +1,12 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { TourMobileProgress } from "./TourMobileProgress";
-import { TourMobileActions } from "./TourMobileActions";
-import { useDevice } from "@/hooks/use-device";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface TourMobileCompactViewProps {
   title: string;
-  content?: string;
+  content: string;
   currentStep: number;
   totalSteps: number;
   onNext: () => void;
@@ -19,6 +16,12 @@ interface TourMobileCompactViewProps {
   prevLabel?: string;
 }
 
+/**
+ * TourMobileCompactView Component
+ * 
+ * A space-efficient view for mobile devices in landscape orientation
+ * where vertical space is limited.
+ */
 export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   title,
   content,
@@ -27,79 +30,61 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   onNext,
   onPrev,
   onClose,
-  nextLabel,
-  prevLabel
+  nextLabel = "Next",
+  prevLabel = "Previous"
 }) => {
-  const { dimensions, isLandscape } = useDevice();
-  const [expanded, setExpanded] = useState(false);
+  const isLastStep = currentStep === totalSteps - 1;
+  const showPrevButton = currentStep > 0;
   
-  // Use more compact layout for small screens or landscape orientation
-  const isSmallMobile = dimensions.width < 380;
-  const titleSize = isSmallMobile ? "text-lg" : "text-xl";
-
-  // Position differently based on orientation
-  const positionClass = isLandscape 
-    ? "fixed top-4 right-4 max-w-sm" 
-    : "fixed bottom-4 left-2 right-2";
-
-  // Adjust content display based on orientation and space
-  const contentClass = expanded || isLandscape
-    ? "line-clamp-none"
-    : "line-clamp-2";
-
   return (
-    <div 
-      className={cn(
-        positionClass,
-        "bg-background rounded-lg shadow-lg z-50 p-4",
-        "border border-border animate-slide-in-up"
-      )}
-    >
-      <div className="flex items-start justify-between mb-2">
-        <h3 className={cn("font-semibold", titleSize)}>{title}</h3>
-        <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 -mt-1 -mr-2">
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-      
-      <TourMobileProgress 
-        currentStep={currentStep} 
-        totalSteps={totalSteps} 
-      />
-      
-      {content && (
-        <div className="space-y-3 mt-2">
-          <p 
-            className={cn("text-sm text-muted-foreground", contentClass)}
-            onClick={() => !isLandscape && setExpanded(!expanded)}
+    <div className="fixed bottom-2 right-2 z-50 max-w-[350px]">
+      <Card className="shadow-lg border border-border">
+        <CardHeader className="p-3 pb-0 flex flex-row items-center">
+          <CardTitle className="text-base flex-grow">{title}</CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 rounded-full p-0"
+            onClick={onClose}
           >
-            {content}
-          </p>
+            <X className="h-3.5 w-3.5" />
+            <span className="sr-only">Close</span>
+          </Button>
+        </CardHeader>
+        
+        <CardContent className="p-3 text-sm max-h-[100px] overflow-y-auto">
+          {content}
+        </CardContent>
+        
+        <CardFooter className="p-3 pt-0 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">
+            {currentStep + 1} of {totalSteps}
+          </div>
           
-          {!isLandscape && content.length > 120 && !expanded && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs py-0 h-6 px-2"
-              onClick={() => setExpanded(true)}
+          <div className="flex items-center gap-1">
+            {showPrevButton && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={onPrev}
+              >
+                <ChevronLeft className="h-3 w-3 mr-1" />
+                {prevLabel}
+              </Button>
+            )}
+            
+            <Button
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={isLastStep ? onClose : onNext}
             >
-              Show more
+              {isLastStep ? "Finish" : nextLabel}
+              {!isLastStep && <ChevronRight className="h-3 w-3 ml-1" />}
             </Button>
-          )}
-        </div>
-      )}
-      
-      <TourMobileActions
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        onNext={onNext}
-        onPrev={onPrev}
-        onClose={onClose}
-        nextLabel={nextLabel}
-        prevLabel={prevLabel}
-        deviceType="mobile"
-        className={isLandscape ? "pt-1" : "pt-3"}
-      />
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

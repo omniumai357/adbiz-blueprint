@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { TourStep } from "@/contexts/tour/types";
 import { TourTooltip } from "./TourTooltip";
 import { TourDrawer } from "./TourDrawer";
@@ -76,7 +76,7 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   const adjustedPosition = getAdjustedPosition(position as Position);
 
   // Log view selection for debugging
-  React.useEffect(() => {
+  useEffect(() => {
     logger.debug('Tour view selection', {
       context: 'TourViewRenderer',
       data: {
@@ -93,23 +93,38 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
     });
   }, [preferredViewMode, useDrawer, useCompactView, isOrientationChanging, isMobile, isTablet, isLandscape]);
 
-  // Choose the view to render based on device and preferences
-  const shouldRenderTooltip = 
-    !isOrientationChanging && 
-    ((preferredViewMode === "tooltip") || 
-    (preferredViewMode !== "fullscreen" && !useDrawer && !useCompactView));
+  // Improved view mode selection logic with clearer rules
+  const determineViewMode = (): 'tooltip' | 'drawer' | 'compact' => {
+    // During orientation changes, return the current mode to prevent flickering
+    if (isOrientationChanging) {
+      return preferredViewMode === 'fullscreen' ? 'drawer' : 
+             preferredViewMode as 'tooltip' | 'drawer' | 'compact';
+    }
+    
+    // On mobile in portrait, prefer drawer for better touch interactions
+    if (isMobile && !isLandscape) {
+      return 'drawer';
+    }
+    
+    // On mobile in landscape, use compact view to save vertical space
+    if (isMobile && isLandscape) {
+      return 'compact';
+    }
+    
+    // On tablets, consider orientation
+    if (isTablet) {
+      return isLandscape ? 'tooltip' : 'drawer';
+    }
+    
+    // For larger screens, default to tooltip
+    return 'tooltip';
+  };
   
-  const shouldRenderDrawer = 
-    !isOrientationChanging && 
-    ((preferredViewMode === "drawer") || 
-    (preferredViewMode === "fullscreen") || 
-    (preferredViewMode !== "compact" && useDrawer));
+  // If there's an explicit preference, use it, otherwise determine automatically
+  const viewMode = preferredViewMode !== 'fullscreen' 
+    ? preferredViewMode 
+    : determineViewMode();
   
-  const shouldRenderCompact = 
-    !isOrientationChanging && 
-    ((preferredViewMode === "compact") || 
-    (preferredViewMode !== "tooltip" && preferredViewMode !== "drawer" && useCompactView));
-
   // During orientation changes, use a stable view to prevent flickering
   const isTransitioning = isOrientationChanging;
 
@@ -147,7 +162,7 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   }
 
   return (
-    <div className={`tour-view-container ${responsiveClass} ${touchClass}`}>
+    <div className={`tour-view-container ${responsiveClass} ${touchClass}`} data-testid="tour-view-container">
       {/* Render spotlight effect if configured */}
       {spotlightConfig && targetElement && (
         <TourSpotlight 
@@ -159,8 +174,8 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
         />
       )}
 
-      {/* Render the appropriate view based on device and configuration */}
-      {shouldRenderTooltip && (
+      {/* Render the appropriate view based on viewMode */}
+      {viewMode === 'tooltip' && (
         <TourTooltip
           title={step.title}
           content={step.content}
@@ -180,7 +195,7 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
         />
       )}
 
-      {shouldRenderDrawer && (
+      {viewMode === 'drawer' && (
         <TourDrawer
           title={step.title}
           content={step.content}
@@ -197,7 +212,7 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
         />
       )}
 
-      {shouldRenderCompact && (
+      {viewMode === 'compact' && (
         <TourCompactView
           title={step.title}
           content={step.content}
@@ -214,4 +229,4 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
       )}
     </div>
   );
-};
+}

@@ -14,6 +14,8 @@ import { useLanguage } from "@/contexts/language-context";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 import { Position } from "@/lib/tour/types";
 import { logger } from "@/lib/utils/logging";
+import { TourLiveAnnouncer } from "../accessibility/TourLiveAnnouncer";
+import { TourFocusManager } from "../accessibility/TourFocusManager";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {
@@ -107,6 +109,17 @@ export const TourGuideControllerInner: React.FC = () => {
 
   return (
     <>
+      {/* Enhanced accessibility components */}
+      <TourLiveAnnouncer 
+        isActive={isActive} 
+        currentStepData={currentStepData} 
+      />
+      
+      <TourFocusManager 
+        isActive={isActive} 
+        currentStepData={currentStepData} 
+      />
+      
       {/* Track analytics */}
       <TourAnalyticsTracker />
       

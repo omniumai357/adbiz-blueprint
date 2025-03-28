@@ -1,5 +1,4 @@
-
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTour } from "@/contexts/tour";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 import { logger } from "@/lib/utils/logging";
@@ -12,10 +11,20 @@ import { logger } from "@/lib/utils/logging";
  * - Scroll events
  * - History navigation events
  * - Orientation changes
+ * - Touch gestures (for mobile)
  */
 export const TourEventManager: React.FC = () => {
   const { isActive, endTour, currentStepData } = useTour();
-  const { handleOrientationChange, isOrientationChanging } = useResponsiveTour();
+  const { 
+    handleOrientationChange, 
+    isOrientationChanging,
+    isMobile,
+    isTablet
+  } = useResponsiveTour();
+  
+  // Keep track of touch start position for swipe detection
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
   
   // Handle browser navigation (back button)
   useEffect(() => {
@@ -69,13 +78,81 @@ export const TourEventManager: React.FC = () => {
   useEffect(() => {
     if (!isActive) return;
     
-    // Watch for orientation changes
-    window.addEventListener('orientationchange', handleOrientationChange);
+    // Enhanced orientation change handler for improved reliability
+    const handleOrientationChangeEvent = () => {
+      logger.debug('Orientation change detected', {
+        context: 'TourEventManager',
+        data: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+          orientation: window.orientation
+        }
+      });
+      
+      // Call the context's orientation change handler
+      handleOrientationChange();
+    };
+    
+    // Watch for both orientationchange and resize events for better cross-device support
+    window.addEventListener('orientationchange', handleOrientationChangeEvent);
+    
+    // Also listen for resize events as a fallback for some devices
+    const resizeHandler = () => {
+      if (window.innerWidth !== window.outerWidth) {
+        handleOrientationChangeEvent();
+      }
+    };
+    
+    window.addEventListener('resize', resizeHandler);
     
     return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('orientationchange', handleOrientationChangeEvent);
+      window.removeEventListener('resize', resizeHandler);
     };
   }, [isActive, handleOrientationChange]);
+  
+  // Handle touch events for mobile swipe navigation
+  useEffect(() => {
+    if (!isActive || (!isMobile && !isTablet)) return;
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+    
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+      
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      
+      const diffX = touchStartX.current - touchEndX;
+      const diffY = touchStartY.current - touchEndY;
+      
+      // Only handle horizontal swipes if they're more horizontal than vertical
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+        logger.debug('Tour swipe detected', {
+          context: 'TourEventManager',
+          data: { direction: diffX > 0 ? 'left' : 'right' }
+        });
+        
+        // We'll implement the swipe navigation in a separate touch handler component
+        // This just logs the swipe for now
+      }
+      
+      // Reset touch start position
+      touchStartX.current = null;
+      touchStartY.current = null;
+    };
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isActive, isMobile, isTablet]);
   
   // Handle orientation change completion
   useEffect(() => {
