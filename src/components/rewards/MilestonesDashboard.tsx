@@ -11,7 +11,7 @@ import { AlertCircle } from "lucide-react";
 import { useRewardActions } from "@/hooks/rewards/useRewardActions";
 import MilestoneProgressCard from "./MilestoneProgressCard";
 import { createComponentLogger } from "@/lib/utils/logging";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const logger = createComponentLogger('MilestonesDashboard');
 
@@ -21,7 +21,8 @@ interface MilestonesDashboardProps {
 
 const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   const { t } = useTranslation();
-  const isTabletOrMobile = useMediaQuery("(max-width: 1023px)");
+  const { isMobile, isTablet } = useResponsive();
+  const isTabletOrMobile = isMobile || isTablet;
   
   const {
     milestones,

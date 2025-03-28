@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { CommonMilestoneData } from '@/types/api';
 import RewardIcon from './RewardIcon';
 import { createComponentLogger } from '@/lib/utils/logging';
-import { useMediaQuery } from '@/hooks/use-media-query';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const logger = createComponentLogger('RewardCard');
 
@@ -35,7 +35,7 @@ interface RewardCardProps {
  */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
   const { t } = useTranslation();
-  const isMobile = useMediaQuery('(max-width: 640px)');
+  const { isMobile } = useResponsive();
   
   /**
    * Handles the user clicking the claim button

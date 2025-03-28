@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Clock, CheckCircle } from "lucide-react";
 import RewardIcon from './RewardIcon';
 import { createComponentLogger } from '@/lib/utils/logging';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const logger = createComponentLogger('MilestoneCard');
 
@@ -40,8 +41,14 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   isClaimingReward = false
 }) => {
   const { t } = useTranslation('rewards');
-  const progress = Math.min(100, Math.round((currentPoints / pointsRequired) * 100));
-  const pointsRemaining = pointsRequired - currentPoints;
+  const { isMobile } = useResponsive();
+  
+  // Memoize calculations for better performance
+  const { progress, pointsRemaining } = useMemo(() => {
+    const calculatedProgress = Math.min(100, Math.round((currentPoints / Math.max(1, pointsRequired)) * 100));
+    const remaining = Math.max(0, pointsRequired - currentPoints);
+    return { progress: calculatedProgress, pointsRemaining: remaining };
+  }, [currentPoints, pointsRequired]);
   
   // Log milestone view for analytics
   React.useEffect(() => {
@@ -101,6 +108,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
             className="w-full"
             variant="default"
             aria-label={t('claimRewardAriaLabel', 'Claim your reward for completing {{name}}', { name })}
+            size={isMobile ? "sm" : "default"}
           >
             {isClaimingReward ? t('processing', 'Processing...') : t('claimReward')}
           </Button>

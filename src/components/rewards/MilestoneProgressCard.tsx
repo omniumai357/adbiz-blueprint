@@ -2,9 +2,9 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from "@/components/ui/card";
-import { useMediaQuery } from "@/hooks/use-media-query";
 import { Medal, Award, Gift } from "lucide-react";
 import { createComponentLogger } from "@/lib/utils/logging";
+import { useResponsive } from "@/hooks/useResponsive";
 
 const logger = createComponentLogger('MilestoneProgressCard');
 
@@ -28,8 +28,7 @@ const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({
   isCompact = false
 }) => {
   const { t } = useTranslation('rewards');
-  const isMobile = useMediaQuery("(max-width: 640px)");
-  const isTablet = useMediaQuery("(min-width: 641px) and (max-width: 1023px)");
+  const { isMobile, isTablet } = useResponsive();
   
   useEffect(() => {
     logger.debug('MilestoneProgressCard rendered', {
