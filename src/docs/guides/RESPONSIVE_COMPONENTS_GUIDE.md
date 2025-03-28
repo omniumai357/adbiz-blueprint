@@ -7,9 +7,10 @@ This guide provides best practices for creating responsive components in the AdB
 
 1. [Core Principles](#core-principles)
 2. [Responsive Hooks](#responsive-hooks)
-3. [Component Patterns](#component-patterns)
-4. [Testing Responsive Components](#testing-responsive-components)
-5. [Common Pitfalls](#common-pitfalls)
+3. [Content Section Components](#content-section-components)
+4. [Component Patterns](#component-patterns)
+5. [Testing Responsive Components](#testing-responsive-components)
+6. [Common Pitfalls](#common-pitfalls)
 
 ## Core Principles
 
@@ -105,6 +106,74 @@ const isPrint = useMediaQuery('print');
 const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 ```
 
+## Content Section Components
+
+We've standardized our content section layouts with a set of dedicated components:
+
+### ContentSection
+
+The primary container for all content sections:
+
+```tsx
+<ContentSection
+  heading="Section Title"
+  description="Optional description text"
+  variant="muted"
+  padding="lg"
+  size="xl"
+  centered
+>
+  <YourContent />
+</ContentSection>
+```
+
+### ContentColumns
+
+Creates responsive two-column layouts:
+
+```tsx
+<ContentColumns
+  distribution="left-wide"
+  left={<LeftContent />}
+  right={<RightContent />}
+  reverseMobile
+  gap="lg"
+>
+</ContentColumns>
+```
+
+### Spacing Components
+
+Provides consistent spacing between elements:
+
+```tsx
+// Vertical spacer
+<Spacer size="lg" />
+
+// Vertical stack with consistent spacing
+<ContentStack spacing="md">
+  <Item1 />
+  <Item2 />
+  <Item3 />
+</ContentStack>
+```
+
+### Responsive Typography
+
+Text components that adapt to screen size:
+
+```tsx
+<ResponsiveHeading as="h2" size="2xl">
+  Adaptive Heading
+</ResponsiveHeading>
+
+<ResponsiveText size="lg" muted>
+  This text will be properly sized on all devices
+</ResponsiveText>
+```
+
+See the complete [Content Sections Guide](./CONTENT_SECTIONS_GUIDE.md) for detailed documentation.
+
 ## Component Patterns
 
 ### Responsive View Components
@@ -174,6 +243,17 @@ const UserDashboard = () => {
 3. Use device emulators for a wider range of devices
 4. Check orientation changes (portrait/landscape)
 
+### Visual Testing
+
+Use our `ResponsiveContentPreview` component to visualize responsive behavior:
+
+```tsx
+import ResponsiveContentPreview from '@/tests/visual/ResponsiveContentPreview';
+
+// Then in your development environment:
+<ResponsiveContentPreview />
+```
+
 ### Automated Testing
 
 We provide several utilities for testing responsive components:
@@ -222,6 +302,7 @@ testAllBreakpoints(
 
 ## Resources
 
+- [Content Sections Guide](./CONTENT_SECTIONS_GUIDE.md)
 - [Responsive Testing Guide](./RESPONSIVE_TESTING_GUIDE.md)
 - [Device Testing Matrix](../DEVICE_TESTING_MATRIX.md)
 - [CSS Breakpoint Reference](../BREAKPOINT_REFERENCE.md)
