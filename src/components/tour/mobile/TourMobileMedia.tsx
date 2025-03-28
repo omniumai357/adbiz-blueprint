@@ -54,7 +54,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
     className
   );
   
-  // Fix: Handle each media type separately to avoid type comparison errors
+  // Handle image type
   if (media.type === 'image') {
     return (
       <div className={mediaClassNames}>
@@ -74,6 +74,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
     );
   }
   
+  // Handle gif type
   if (media.type === 'gif') {
     return (
       <div className={mediaClassNames}>
@@ -93,6 +94,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
     );
   }
   
+  // Handle video type
   if (media.type === 'video') {
     return (
       <div className={mediaClassNames}>
