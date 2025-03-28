@@ -1,72 +1,39 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { TourStepIndicators } from "../tooltip/TourStepIndicators";
 import { cn } from "@/lib/utils";
 
 interface TourMobileProgressProps {
   currentStep: number;
   totalSteps: number;
   className?: string;
-  variant?: "minimal" | "standard" | "full";
+  compact?: boolean;
 }
 
-export const TourMobileProgress: React.FC<TourMobileProgressProps> = ({ 
-  currentStep, 
+export const TourMobileProgress: React.FC<TourMobileProgressProps> = ({
+  currentStep,
   totalSteps,
   className,
-  variant = "standard"
+  compact = false
 }) => {
-  const [progressValue, setProgressValue] = useState(0);
-  const [animateProgress, setAnimateProgress] = useState(false);
-  
-  // Calculate progress percentage with animation
-  useEffect(() => {
-    setProgressValue(0);
-    setAnimateProgress(false);
-    
-    // Small delay to allow for animation reset
-    const timeout = setTimeout(() => {
-      setAnimateProgress(true);
-      setProgressValue(((currentStep + 1) / totalSteps) * 100);
-    }, 50);
-    
-    return () => clearTimeout(timeout);
-  }, [currentStep, totalSteps]);
-  
-  if (variant === "minimal") {
-    return (
-      <div className={cn("flex justify-between items-center text-xs text-muted-foreground", className)}>
-        <span>Step {currentStep + 1}/{totalSteps}</span>
-      </div>
-    );
-  }
+  // Calculate progress percentage
+  const progressPercentage = ((currentStep + 1) / totalSteps) * 100;
   
   return (
-    <div className={className}>
-      {/* Progress bar */}
-      <Progress 
-        value={progressValue} 
-        className={cn(
-          "h-1 mb-4", 
-          animateProgress ? "transition-all duration-500" : ""
-        )} 
-      />
-      
-      {/* Step dots for smaller tours */}
-      {variant === "full" && totalSteps <= 8 && (
-        <TourStepIndicators 
-          currentStep={currentStep} 
-          totalSteps={totalSteps} 
-        />
-      )}
-      
-      {/* Text indicator for larger tours or when in full variant */}
-      {(variant === "full" || totalSteps > 8) && (
-        <div className="text-xs text-center text-muted-foreground mb-2">
-          Step {currentStep + 1} of {totalSteps}
+    <div className={cn("space-y-1", className)}>
+      {!compact && (
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Step {currentStep + 1} of {totalSteps}</span>
+          <span>{Math.round(progressPercentage)}%</span>
         </div>
       )}
+      <Progress 
+        value={progressPercentage} 
+        className={cn(
+          "h-1", 
+          compact ? "w-full" : "h-1.5"
+        )}
+      />
     </div>
   );
 };

@@ -1,183 +1,147 @@
+import { ReactNode } from "react";
 
-// If this file exists, we'll extend it. 
-// If it doesn't exist, we'll create a basic version here
+// Customer Information Types
+export interface CustomerInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  website?: string;
+  invoiceDeliveryMethod: "email" | "sms" | "both";
+  userId?: string;
+}
 
-export interface TourPathVisualization {
-  enabled: boolean;
-  targetElementId: string;
-  style?: string;
-  waypoints?: any[];
-  color?: string;
-  animationDuration?: number;
-  showArrow?: boolean;
+export interface CustomerInfoFormProps {
+  customerInfo: Partial<CustomerInfo>;
+  onChange: (values: Partial<CustomerInfo>) => void;
+  isLoading?: boolean;
+}
+
+export interface CustomerBusinessInfoProps {
+  form: any; // Replace with the actual form type when available
+}
+
+export interface CustomerPersonalInfoProps {
+  form: any; // Replace with the actual form type when available
+  phoneRequired: boolean;
+}
+
+export interface InvoiceDeliveryOptionsProps {
+  form: any; // Replace with the actual form type when available
+}
+
+// Payment Related Types
+export type PaymentMethod = "credit-card" | "paypal";
+
+export interface PaymentOptionProps {
+  id: string;
+  value: string; 
+  label: string;
+  icon: ReactNode;
+  isSelected: boolean;
+}
+
+// Checkout State Types
+export interface CheckoutState {
+  customerInfo: CustomerInfo;
+  paymentMethod: PaymentMethod;
+  showDownloadOptions: boolean;
+  orderId: string | null;
+  invoiceNumber: string | null;
+  isGeneratingInvoice: boolean;
+  userId: string | null;
+  selectedAddOnIds: string[];
+}
+
+// Package Details Types
+export interface PackageDetails {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  features: string[];
+  category?: string; // Added this property to match the Package interface
+}
+
+// Add-On Types
+export interface AddOnItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+}
+
+// Discount Types
+export interface BundleDiscountInfo {
+  title: string;
+  description: string;
+  percentage: number;
 }
 
 export interface TourStepAction {
   text?: string;
   hidden?: boolean;
-  callback?: () => void;
-}
-
-export interface TourStepActions {
-  next?: TourStepAction;
-  prev?: TourStepAction;
-  skip?: TourStepAction;
-  finish?: TourStepAction;
-  close?: TourStepAction;
 }
 
 export interface TourStep {
   id: string;
   title: string;
   content: string;
-  target?: string;
-  elementId?: string;
-  selector?: string;
-  placement?: "top" | "right" | "bottom" | "left";
-  actions?: TourStepActions;
-  condition?: (state: any) => boolean;
-  priority?: number;
-  triggers?: string[];
-  triggerData?: any[];
-  pathVisualization?: TourPathVisualization;
-  metadata?: {
-    responsiveContent?: {
-      default: string;
-      mobile?: string;
-      tablet?: string;
-      desktop?: string;
-    };
-    responsivePosition?: {
-      default: string;
-      mobile?: string;
-      tablet?: string;
-      desktop?: string;
-    };
-    responsiveSelector?: {
-      default: string;
-      mobile?: string;
-      tablet?: string;
-      desktop?: string;
-    };
-    [key: string]: any;
-  };
-  
-  // Additional properties needed by various components
-  animation?: string;
+  target: string;
+  placement?:
+    | "auto"
+    | "auto-start"
+    | "auto-end"
+    | "top"
+    | "top-start"
+    | "top-end"
+    | "right"
+    | "right-start"
+    | "right-end"
+    | "bottom"
+    | "bottom-start"
+    | "bottom-end"
+    | "left"
+    | "left-start"
+    | "left-end";
+  animation?: "fade" | "slide-in-bottom" | "slide-in-top" | "slide-in-left" | "slide-in-right";
   media?: {
-    type: "image" | "video" | "gif";
-    url: string;
-    alt?: string;
-    animation?: string;
+    type: 'image' | 'video';
+    source: string;
   };
-  path?: string | {
-    enabled: boolean;
-    targetElementId: string;
-    style: string;
-    color?: string;
-    animationDuration?: number;
-    showArrow?: boolean;
-    waypoints?: Array<{x: number, y: number}>;
-  };
-  dependencies?: string[];
-  isHidden?: boolean;
-  order?: number;
-  position?: string;
-  isOptional?: boolean;
-  spotlight?: {
-    intensity?: "low" | "medium" | "high";
-    color?: string;
-    pulseEffect?: boolean;
-    fadeBackground?: boolean;
-  };
-  floatingUIOptions?: any;
-  userRoles?: string[];
-  highlightClass?: string;
-  effects3D?: {
-    enable?: boolean;
-    intensity?: number;
-  };
-  transition?: {
-    type: "fade" | "slide" | "zoom" | "flip" | "none";
-    direction?: "up" | "down" | "left" | "right";
-    duration?: number;
+  actions?: {
+    next?: TourStepAction;
+    prev?: TourStepAction;
+    skip?: TourStepAction;
   };
 }
 
-export interface TourPath {
+export interface TourConfig {
   id: string;
-  name: string;
-  description?: string;
   steps: TourStep[];
-  
-  // Additional properties needed by components
-  allowSkip?: boolean;
-  showProgress?: boolean;
-  autoStart?: boolean;
-  route?: string;
-  config?: {
-    metadata?: Record<string, any>;
-    allowSkip?: boolean;
-    showProgress?: boolean;
-    autoStart?: boolean;
-  };
+  loop?: boolean;
+  isCompleted?: boolean;
 }
 
-export interface TourStepData {
-  stepId: string;
-  pathId: string;
-  tourId: string;
-  tourName: string;
-  stepIndex: number;
-  totalSteps: number;
-  userId: string;
-  userType: string;
-}
-
-export interface TourStartData extends Omit<TourStepData, 'stepId'> {}
-
-export interface TourCompleteData extends Omit<TourStepData, 'stepId'> {}
-
-export type TourStepEnhancer = (step: TourStep) => TourStep;
-
-// Tour context type definition
-export interface TourContextType {
-  isActive: boolean;
+export interface TourContextValue {
   currentStep: number;
   totalSteps: number;
   currentStepData: TourStep | null;
-  currentPath: string | null;
-  currentPathData?: TourPath;
-  tourPaths: TourPath[];
-  availablePaths: TourPath[];
-  
-  // Tour navigation
+  isActive: boolean;
+  isCompleted: boolean;
+  startTour: (tourId?: string) => void;
+  endTour: () => void;
   nextStep: () => void;
   prevStep: () => void;
-  goToStep: (index: number) => void;
-  startTour: (pathId?: string) => void;
-  endTour: () => void;
-  pauseTour: () => void;
-  resumeTour: () => void;
-  resetTour: () => void;
-  goToPath: (pathId: string) => void;
-  
-  // Tour state management
-  registerPath: (path: TourPath) => void;
-  unregisterPath: (pathId: string) => void;
-  setDynamicContent: (stepId: string, content: string) => void;
-  setAvailablePaths: (paths: TourPath[]) => void;
-  
-  // Custom configuration
-  customConfig: Record<string, any>;
-  setCustomConfig: (config: Record<string, any>) => void;
-  
-  // Additional properties
-  handleKeyNavigation: (event: React.KeyboardEvent<Element> | KeyboardEvent) => void;
-  visibleSteps: TourStep[];
-  content: string;
-  
-  // Tour paths management
-  setTourPaths: (paths: TourPath[]) => void;
-  setVisibleSteps: (steps: TourStep[]) => void;
+  goToStep: (stepIndex: number) => void;
+  registerTour: (tourConfig: TourConfig) => void;
+  unregisterTour: (tourId: string) => void;
+  updateTourConfig: (tourId: string, config: Partial<TourConfig>) => void;
+  getTourConfig: (tourId: string) => TourConfig | undefined;
+  getAllTours: () => TourConfig[];
+  markTourAsCompleted: (tourId: string) => void;
+  resetCompletedTours: () => void;
+  isTourCompleted: (tourId: string) => boolean;
+  activeTourId: string | null;
 }

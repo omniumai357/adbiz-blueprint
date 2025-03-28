@@ -1,9 +1,12 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useTour } from "@/contexts/tour";
 import { TourTooltip } from "../../tooltip/TourTooltip";
 import { TourMobileCompactView } from "../../mobile/TourMobileCompactView";
+import { TourBottomSheetView } from "../../mobile/TourBottomSheetView";
+import { TourDrawerView } from "../../drawer/TourDrawerView";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
+import { useDevice } from "@/hooks/use-device";
 
 interface TourViewContainerProps {
   targetElement: HTMLElement | null;
@@ -32,13 +35,26 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
     totalSteps,
     nextStep,
     prevStep,
-    endTour
+    endTour,
+    isActive
   } = useTour();
   
-  // Additional responsive context if needed
   const { getOptimalPosition, isLandscape } = useResponsiveTour();
+  const { deviceType, isPortrait } = useDevice();
   
-  if (!currentStepData) {
+  // State for mobile views
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
+
+  // Ensure drawer is open when tour is active
+  useEffect(() => {
+    if (isActive && (isMobile || isTablet)) {
+      setIsDrawerOpen(true);
+    } else {
+      setIsDrawerOpen(false);
+    }
+  }, [isActive, isMobile, isTablet]);
+  
+  if (!currentStepData || !isActive) {
     return null;
   }
   
@@ -48,12 +64,35 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
   // Format step info text
   const stepInfo = `${currentStep + 1} of ${totalSteps}`;
   
-  // Determine optimal position for tooltip
+  // Get optimal position for tooltip
   const targetRect = targetElement?.getBoundingClientRect() || null;
   const optimalPosition = getOptimalPosition(targetRect);
   
+  // Determine view mode based on device and orientation
+  const getBestViewMode = (): 'tooltip' | 'drawer' | 'compact' | 'sheet' => {
+    // Phone in portrait - use bottom sheet
+    if (isMobile && isPortrait) {
+      return 'sheet';
+    }
+    
+    // Phone in landscape - use compact view
+    if (isMobile && !isPortrait) {
+      return 'compact';
+    }
+    
+    // Tablet - use drawer
+    if (isTablet) {
+      return 'drawer';
+    }
+    
+    // Default to tooltip for desktop
+    return 'tooltip';
+  };
+  
+  const viewMode = getBestViewMode();
+  
   // Render the appropriate view based on device and orientation
-  switch (preferredViewMode) {
+  switch (viewMode) {
     case 'tooltip':
       return (
         <TourTooltip
@@ -79,27 +118,18 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
       );
     
     case 'drawer':
-      // Since there's an import error for TourDrawer, let's fallback to tooltip view
-      console.warn('TourDrawer component not available, falling back to tooltip view');
       return (
-        <TourTooltip
-          targetElement={targetElement!}
-          position={optimalPosition}
-          title={currentStepData.title}
-          content={currentStepData.content}
-          stepInfo={stepInfo}
-          onPrev={currentStep > 0 ? prevStep : undefined}
-          onNext={nextStep}
+        <TourDrawerView
+          step={currentStepData}
+          isOpen={isDrawerOpen}
           onClose={endTour}
-          isLastStep={isLastStep}
-          animation={currentStepData.animation}
-          media={currentStepData.media}
-          nextLabel={currentStepData.actions?.next?.text}
-          prevLabel={currentStepData.actions?.prev?.text}
-          skipLabel={currentStepData.actions?.skip?.text}
+          onNext={nextStep}
+          onPrev={prevStep}
           currentStep={currentStep}
           totalSteps={totalSteps}
-          isRTL={isRTL}
+          isLastStep={isLastStep}
+          isTablet={isTablet}
+          isLandscape={isLandscape}
           direction={direction}
         />
       );
@@ -119,20 +149,18 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
         />
       );
     
-    case 'fullscreen':
-      // Since there's an import error for TourMobileView, let's fallback to compact view
-      console.warn('TourMobileView component not available, falling back to compact view');
+    case 'sheet':
       return (
-        <TourMobileCompactView
-          title={currentStepData.title}
-          content={currentStepData.content}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
+        <TourBottomSheetView
+          step={currentStepData}
+          isOpen={isDrawerOpen}
+          onClose={endTour}
           onNext={nextStep}
           onPrev={prevStep}
-          onClose={endTour}
-          nextLabel={currentStepData.actions?.next?.text}
-          prevLabel={currentStepData.actions?.prev?.text}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isLastStep={isLastStep}
+          direction={direction}
         />
       );
     

@@ -1,9 +1,11 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TourMobileProgress } from "./TourMobileProgress";
+import { TourMobileActions } from "./TourMobileActions";
+import { useDevice } from "@/hooks/use-device";
 
 interface TourMobileCompactViewProps {
   title: string;
@@ -28,13 +30,28 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   nextLabel,
   prevLabel
 }) => {
-  const isSmallMobile = window.innerWidth < 380;
+  const { dimensions, isLandscape } = useDevice();
+  const [expanded, setExpanded] = useState(false);
+  
+  // Use more compact layout for small screens or landscape orientation
+  const isSmallMobile = dimensions.width < 380;
   const titleSize = isSmallMobile ? "text-lg" : "text-xl";
+
+  // Position differently based on orientation
+  const positionClass = isLandscape 
+    ? "fixed top-4 right-4 max-w-sm" 
+    : "fixed bottom-4 left-2 right-2";
+
+  // Adjust content display based on orientation and space
+  const contentClass = expanded || isLandscape
+    ? "line-clamp-none"
+    : "line-clamp-2";
 
   return (
     <div 
       className={cn(
-        "fixed bottom-4 left-2 right-2 bg-background rounded-lg shadow-lg z-50 p-4",
+        positionClass,
+        "bg-background rounded-lg shadow-lg z-50 p-4",
         "border border-border animate-slide-in-up"
       )}
     >
@@ -51,19 +68,38 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
       />
       
       {content && (
-        <p className="text-sm text-muted-foreground mt-2 mb-3 line-clamp-2">{content}</p>
+        <div className="space-y-3 mt-2">
+          <p 
+            className={cn("text-sm text-muted-foreground", contentClass)}
+            onClick={() => !isLandscape && setExpanded(!expanded)}
+          >
+            {content}
+          </p>
+          
+          {!isLandscape && content.length > 120 && !expanded && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs py-0 h-6 px-2"
+              onClick={() => setExpanded(true)}
+            >
+              Show more
+            </Button>
+          )}
+        </div>
       )}
       
-      <div className="flex justify-end space-x-2 mt-4">
-        {currentStep > 0 && (
-          <Button variant="outline" size="sm" onClick={onPrev}>
-            {prevLabel || "Previous"}
-          </Button>
-        )}
-        <Button size="sm" onClick={onNext}>
-          {currentStep === totalSteps - 1 ? (nextLabel || "Finish") : (nextLabel || "Next")}
-        </Button>
-      </div>
+      <TourMobileActions
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onNext={onNext}
+        onPrev={onPrev}
+        onClose={onClose}
+        nextLabel={nextLabel}
+        prevLabel={prevLabel}
+        deviceType="mobile"
+        className={isLandscape ? "pt-1" : "pt-3"}
+      />
     </div>
   );
 };
