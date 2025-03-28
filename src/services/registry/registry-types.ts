@@ -2,35 +2,33 @@
 /**
  * Service Registry Types
  * 
- * This file contains type definitions for the service registry
- * to ensure type safety when using services.
+ * This file defines the types for the service registry system.
  */
 
-// Import service types
-import { apiClient } from '../api/api-client';
-import { paymentService } from '../payment/payment-service';
-import { milestoneService } from '../milestone/milestone-service';
-import { invoiceService } from '../invoice/invoice-service';
-import { supabaseClient } from '../api/supabase-client';
+// Define all possible service keys
+export type ServiceKey = 
+  | 'api' 
+  | 'auth' 
+  | 'packages' 
+  | 'users' 
+  | 'orders'
+  | 'invoices'
+  | 'payment'
+  | 'milestone'
+  | 'supabase';
 
-// Define the valid service keys
-export type ServiceKey = 'api' | 'payment' | 'milestone' | 'invoice' | 'supabase';
+// Define the mapping of service keys to their implementation types
+export type ServiceTypeMap = {
+  'api': any;
+  'auth': any;
+  'packages': any;
+  'users': any;
+  'orders': any;
+  'invoices': any;
+  'payment': any;
+  'milestone': any;
+  'supabase': any;
+};
 
-// Define actual service types based on their implementations
-export type ApiClientType = typeof apiClient;
-export type PaymentServiceType = typeof paymentService;
-export type MilestoneServiceType = typeof milestoneService;
-export type InvoiceServiceType = typeof invoiceService;
-export type SupabaseClientType = typeof supabaseClient;
-
-// Map service keys to their respective types
-export interface ServiceTypeMap {
-  api: ApiClientType;
-  payment: PaymentServiceType;
-  milestone: MilestoneServiceType;
-  invoice: InvoiceServiceType;
-  supabase: SupabaseClientType;
-}
-
-// Helper type to get the type of a service by its key
+// Get the service implementation type based on the service key
 export type ServiceType<K extends ServiceKey> = ServiceTypeMap[K];

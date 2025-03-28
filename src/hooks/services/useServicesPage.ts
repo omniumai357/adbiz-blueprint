@@ -27,7 +27,7 @@ export function useServicesPage() {
   const [hasPurchased, setHasPurchased] = useState<boolean>(false);
   
   // Use milestone service for any reward-related functionality
-  const milestoneService = useService<any>('milestone');
+  const milestoneService = useService('milestone');
   
   // Update error state if packages query fails
   useEffect(() => {

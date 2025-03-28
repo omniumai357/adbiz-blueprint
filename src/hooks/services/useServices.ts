@@ -7,7 +7,7 @@
  */
 
 import { useService } from './useService';
-import { ServiceKey, ServiceType } from '@/services/registry/registry-types';
+import { ServiceKey } from '@/services/registry/registry-types';
 
 /**
  * Hook that provides access to multiple application services.
@@ -17,8 +17,8 @@ import { ServiceKey, ServiceType } from '@/services/registry/registry-types';
  */
 export function useServices<K extends ServiceKey[]>(
   ...services: K
-): { [P in K[number]]: ServiceType<P> } {
-  const result = {} as { [P in K[number]]: ServiceType<P> };
+): { [P in K[number]]: ReturnType<typeof useService> } {
+  const result = {} as { [P in K[number]]: ReturnType<typeof useService> };
   
   for (const serviceKey of services) {
     // Use the existing useService hook to get each service
@@ -32,7 +32,7 @@ export function useServices<K extends ServiceKey[]>(
 /**
  * Example usage:
  * 
- * const { api, payment, invoice } = useServices('api', 'payment', 'invoice');
+ * const { api, payment, invoices } = useServices('api', 'payment', 'invoices');
  * 
  * This gets multiple services with a single hook call, reducing boilerplate.
  */

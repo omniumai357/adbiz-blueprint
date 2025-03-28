@@ -1,9 +1,5 @@
-import { apiService } from "@/services/api/api-service";
-import { authService } from "@/services/auth/auth-service";
-import { packageService } from "@/services/packages/package-service";
-import { userService } from "@/services/user/user-service";
-import { orderService } from "@/services/order/order-service";
-import { invoiceServiceApi } from "@/services/invoice/invoice-service-api";
+
+import { serviceRegistry } from "@/services/registry/service-registry";
 
 // Define the available services
 export type ServiceName = 
@@ -12,7 +8,8 @@ export type ServiceName =
   | "packages" 
   | "users" 
   | "orders"
-  | "invoices";  // Add the new invoice service
+  | "invoices"  // Add the new invoice service
+  | "milestone"; // Add milestone service
 
 /**
  * Hook to access the registered services
@@ -21,15 +18,9 @@ export type ServiceName =
  * @returns The requested service instance
  */
 export function useService(name: ServiceName) {
-  // Services mapping
-  const services = {
-    api: apiService,
-    auth: authService,
-    packages: packageService,
-    users: userService,
-    orders: orderService,
-    invoices: invoiceServiceApi  // Register the new invoice service
-  };
+  if (!serviceRegistry.has(name)) {
+    console.warn(`Service '${name}' not registered. Available services: ${Array.from(serviceRegistry.getRegisteredServices()).join(', ')}`);
+  }
   
-  return services[name];
+  return serviceRegistry.get(name);
 }

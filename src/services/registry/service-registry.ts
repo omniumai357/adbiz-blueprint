@@ -12,7 +12,7 @@
 import { apiClient } from '../api/api-client';
 import { paymentService } from '../payment/payment-service';
 import { milestoneService } from '../milestone/milestone-service';
-import { invoiceService } from '../invoice/invoice-service';
+import { invoiceServiceApi } from '../invoice/invoice-service-api';
 import { supabaseClient } from '../api/supabase-client';
 import { ServiceKey, ServiceType } from './registry-types';
 
@@ -31,8 +31,14 @@ class ServiceRegistry {
     this.register('api', apiClient);
     this.register('payment', paymentService);
     this.register('milestone', milestoneService);
-    this.register('invoice', invoiceService);
+    this.register('invoices', invoiceServiceApi);
     this.register('supabase', supabaseClient);
+    
+    // Map legacy service names to appropriate services for backward compatibility
+    this.register('auth', apiClient.auth);
+    this.register('packages', apiClient.packages);
+    this.register('users', apiClient.profiles);
+    this.register('orders', apiClient.orders);
 
     this.initialized = true;
   }
@@ -72,6 +78,14 @@ class ServiceRegistry {
    */
   public has(key: ServiceKey): boolean {
     return this.services.has(key);
+  }
+
+  /**
+   * Get an array of all registered service keys
+   * @returns Array of registered service keys
+   */
+  public getRegisteredServices(): ServiceKey[] {
+    return Array.from(this.services.keys()) as ServiceKey[];
   }
 
   /**
