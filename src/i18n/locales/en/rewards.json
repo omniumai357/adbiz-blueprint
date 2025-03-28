@@ -6,10 +6,19 @@
   "pointsEarned": "You've earned {{points}} total points",
   "availableRewards": "Available Rewards",
   "completedMilestones": "Completed Milestones",
+  "totalPoints": "Total Points",
+  "points": "points",
   "claimReward": "Claim Reward",
   "claimed": "Claimed",
   "pointsToGo": "{{points}} points to go",
+  "progressInfo": "{{progress}}% complete",
+  "processing": "Processing...",
   "rewardClaimed": "Reward Claimed",
   "noMilestones": "No Milestones Available",
-  "startEarning": "Start using our services to earn points and unlock rewards!"
+  "startEarning": "Start using our services to earn points and unlock rewards!",
+  "discount": "Discount",
+  "achievedOn": "Achieved on {{date}}",
+  "noDescription": "No description available",
+  "alreadyClaimed": "This reward has already been claimed",
+  "claimRewardAriaLabel": "Claim your reward for completing {{name}}"
 }

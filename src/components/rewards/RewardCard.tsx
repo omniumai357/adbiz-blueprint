@@ -21,13 +21,12 @@ interface RewardCardProps {
 /**
  * Renders a card displaying a reward the user has earned
  * 
- * Shows:
- * - Reward name with an appropriate icon
- * - Reward value (discount percentage or amount)
- * - Date the milestone was achieved
- * - Button to claim the reward
- * 
- * Enhanced with responsive design and logging
+ * Features:
+ * - Responsive design optimized for all device sizes
+ * - Clear visual hierarchy with appropriate spacing
+ * - Touch-friendly interaction targets
+ * - Dynamic content adaptation for different screen sizes
+ * - Optimized text truncation and overflow handling
  * 
  * @param reward - The reward data to display
  * @param onClaim - Function to call when the user claims the reward
@@ -35,18 +34,17 @@ interface RewardCardProps {
  */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
   const { t } = useTranslation();
-  const { isMobile } = useResponsive();
+  const { isMobile, isTablet, isDesktop } = useResponsive();
   
-  /**
-   * Handles the user clicking the claim button
-   * Calls the onClaim function with the milestone ID
-   */
+  // Handle claim button interaction
   const handleClaim = async () => {
     if (!disabled) {
       logger.info('User claiming reward', {
         milestoneId: reward.milestone_id,
-        milestoneName: reward.milestone_name
+        milestoneName: reward.milestone_name,
+        deviceType: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
       });
+      
       try {
         await onClaim(reward.milestone_id);
         logger.info('Reward claimed successfully');
@@ -56,38 +54,54 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
     }
   };
 
-  // Format the completion date if available
+  // Format the completion date with proper fallback
   const completedDate = 'completed_at' in reward && reward.completed_at ? 
     format(new Date(reward.completed_at as string), 'MMM d, yyyy') : '';
   
+  // Determine appropriate spacing based on device size
+  const headerPadding = isMobile ? "pb-2 pt-3 px-3 sm:px-4" : "pb-3 pt-4";
+  const contentPadding = isMobile ? "py-2 px-3 sm:px-4" : "py-3";
+  const footerPadding = isMobile ? "pt-2 pb-3 px-3 sm:px-4" : "pt-3 pb-4";
+  
   return (
-    <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 shadow-md hover:shadow-lg transition-all">
-      <CardHeader className={isMobile ? "pb-1 px-4" : "pb-2"}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <RewardIcon iconName={reward.icon} />
-            <CardTitle className={isMobile ? "text-base" : "text-lg"}>{reward.milestone_name}</CardTitle>
+    <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200 shadow-md hover:shadow-lg transition-all h-full flex flex-col">
+      <CardHeader className={headerPadding}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 flex-shrink min-w-0">
+            <RewardIcon iconName={reward.icon} className="flex-shrink-0" />
+            <CardTitle className={`${isMobile ? "text-base" : "text-lg"} truncate`}>
+              {reward.milestone_name}
+            </CardTitle>
           </div>
-          <div className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
-            {reward.reward_value}{reward.reward_type === 'discount_percentage' ? '%' : '$'} Discount
+          <div className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium flex-shrink-0">
+            {reward.reward_value}{reward.reward_type === 'discount_percentage' ? '%' : '$'} {t('rewards.discount')}
           </div>
         </div>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          {completedDate && `Achieved on ${completedDate}`}
-        </p>
+        {completedDate && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {t('rewards.achievedOn', { date: completedDate })}
+          </p>
+        )}
       </CardHeader>
-      <CardContent className={isMobile ? "pb-2 px-4" : ""}>
-        <p className="text-xs sm:text-sm line-clamp-2 sm:line-clamp-none">{reward.milestone_description}</p>
+      
+      <CardContent className={contentPadding}>
+        <p className={`text-sm ${isMobile ? "line-clamp-2" : ""}`}>
+          {reward.milestone_description || t('rewards.noDescription')}
+        </p>
       </CardContent>
-      <CardFooter className={isMobile ? "pt-2 pb-4 px-4" : ""}>
+      
+      <CardFooter className={`${footerPadding} mt-auto`}>
         <Button 
           onClick={handleClaim}
           disabled={disabled || reward.is_claimed}
           variant="default"
-          className="w-full"
+          className="w-full transition-all"
           size={isMobile ? "sm" : "default"}
+          aria-label={reward.is_claimed 
+            ? t('rewards.alreadyClaimed') 
+            : t('rewards.claimRewardAriaLabel', { name: reward.milestone_name })}
         >
-          <Sparkles className="h-4 w-4 mr-2" />
+          <Sparkles className={`${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"} mr-2`} />
           {reward.is_claimed ? t('rewards.claimed') : t('rewards.claimReward')}
         </Button>
       </CardFooter>

@@ -6,10 +6,19 @@
   "pointsEarned": "Ha ganado {{points}} puntos en total",
   "availableRewards": "Recompensas Disponibles",
   "completedMilestones": "Hitos Completados",
+  "totalPoints": "Puntos Totales",
+  "points": "puntos",
   "claimReward": "Reclamar Recompensa",
   "claimed": "Reclamada",
   "pointsToGo": "{{points}} puntos por recorrer",
+  "progressInfo": "{{progress}}% completado",
+  "processing": "Procesando...",
   "rewardClaimed": "Recompensa Reclamada",
   "noMilestones": "No Hay Hitos Disponibles",
-  "startEarning": "¡Comience a usar nuestros servicios para ganar puntos y desbloquear recompensas!"
+  "startEarning": "¡Comience a usar nuestros servicios para ganar puntos y desbloquear recompensas!",
+  "discount": "Descuento",
+  "achievedOn": "Logrado el {{date}}",
+  "noDescription": "No hay descripción disponible",
+  "alreadyClaimed": "Esta recompensa ya ha sido reclamada",
+  "claimRewardAriaLabel": "Reclame su recompensa por completar {{name}}"
 }
