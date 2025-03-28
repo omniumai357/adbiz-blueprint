@@ -6,6 +6,7 @@ import { invoiceService } from "@/services/invoice/invoice-service";
 import { CustomerInfo } from "@/types/checkout";
 import { AddOnItem } from "@/components/checkout/add-on-item";
 import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
+import { useService } from "@/hooks/services/useService";
 
 interface UseOrderProcessingProps {
   userId: string | null;
@@ -53,6 +54,7 @@ export function useOrderProcessing({
   customerInfo
 }: UseOrderProcessingProps) {
   const { toast } = useToast();
+  const invoicesService = useService("invoices");
   const [showDownloadOptions, setShowDownloadOptions] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
@@ -65,6 +67,7 @@ export function useOrderProcessing({
     try {
       const deliveryMethod = customerInfo.invoiceDeliveryMethod || 'email';
       
+      // Validate delivery method selection
       if ((deliveryMethod === 'sms' || deliveryMethod === 'both') && !customerInfo.phone) {
         toast({
           title: "Invoice delivery warning",

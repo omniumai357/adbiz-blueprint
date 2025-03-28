@@ -1,25 +1,35 @@
+import { apiService } from "@/services/api/api-service";
+import { authService } from "@/services/auth/auth-service";
+import { packageService } from "@/services/packages/package-service";
+import { userService } from "@/services/user/user-service";
+import { orderService } from "@/services/order/order-service";
+import { invoiceServiceApi } from "@/services/invoice/invoice-service-api";
 
-import { serviceRegistry } from '@/services/registry/service-registry';
-import { ServiceKey, ServiceType } from '@/services/registry/registry-types';
+// Define the available services
+export type ServiceName = 
+  | "api" 
+  | "auth" 
+  | "packages" 
+  | "users" 
+  | "orders"
+  | "invoices";  // Add the new invoice service
 
 /**
- * Hook to access services from the service registry
+ * Hook to access the registered services
  * 
- * This provides a convenient way to use services in React components
- * while maintaining the ability to mock services during testing.
- * 
- * @example
- * // Get the API client with full type safety
- * const api = useService('api');
- * // TypeScript knows this is the API client type
- * 
- * // Get the payment service
- * const paymentService = useService('payment');
- * // TypeScript knows this is the payment service type
- * 
- * @param key The service key to retrieve
- * @returns The requested service instance with proper typing
+ * @param name The name of the service to retrieve
+ * @returns The requested service instance
  */
-export function useService<K extends ServiceKey>(key: K): ServiceType<K> {
-  return serviceRegistry.get<K>(key);
+export function useService(name: ServiceName) {
+  // Services mapping
+  const services = {
+    api: apiService,
+    auth: authService,
+    packages: packageService,
+    users: userService,
+    orders: orderService,
+    invoices: invoiceServiceApi  // Register the new invoice service
+  };
+  
+  return services[name];
 }
