@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
 import { CustomerInfo } from "@/types/checkout";
-import { validateCustomerInfo } from "@/utils/checkout/validation-utils";
+import { validateCustomerInfo as validateCustomerInfoUtil } from "@/utils/checkout/validation-utils";
 
 /**
  * Hook for validating checkout data
@@ -20,10 +20,10 @@ export function useCheckoutValidation() {
    * @returns Whether the customer information is valid
    */
   const validateCustomerInfo = (customerInfo: Partial<CustomerInfo>): boolean => {
-    const { isValid, error } = validateCustomerInfo(customerInfo as CustomerInfo);
+    const result = validateCustomerInfoUtil(customerInfo as CustomerInfo);
     
-    if (!isValid) {
-      setValidationError(error);
+    if (!result.isValid) {
+      setValidationError(result.error);
       return false;
     }
     
