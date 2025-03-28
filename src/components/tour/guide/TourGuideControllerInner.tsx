@@ -11,6 +11,7 @@ import { TourEventManager } from "./components/TourEventManager";
 import { TourViewContainer } from "./components/TourViewContainer";
 import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
 import { useLanguage } from "@/contexts/language-context";
+import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {
@@ -23,6 +24,14 @@ export const TourGuideControllerInner: React.FC = () => {
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const { direction, isRTL } = useLanguage();
+  
+  // Use our new responsive tour context
+  const {
+    isMobile,
+    isTablet,
+    preferredViewMode,
+    minTouchTargetSize
+  } = useResponsiveTour();
   
   const { targetElement } = useTourElementFinder(currentStepData?.target || '');
   
@@ -70,11 +79,15 @@ export const TourGuideControllerInner: React.FC = () => {
       {/* Handle event listeners */}
       <TourEventManager />
       
-      {/* Render the appropriate view (mobile or desktop) */}
+      {/* Render the appropriate view (mobile or desktop) based on responsive context */}
       <TourViewContainer 
         targetElement={targetElement}
         isRTL={isRTL}
         direction={direction}
+        preferredViewMode={preferredViewMode}
+        isMobile={isMobile}
+        isTablet={isTablet}
+        minTouchTargetSize={minTouchTargetSize}
       >
         {/* Add children here as required by the component */}
         <div className="tour-content">
