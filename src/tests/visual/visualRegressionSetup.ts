@@ -29,8 +29,6 @@ export const defaultSnapshotOptions: MatchImageSnapshotOptions = {
   // Threshold for pixel difference to trigger failure (1% by default)
   failureThreshold: 0.01,
   failureThresholdType: 'percent',
-  // Update snapshots in CI mode if needed with updateSnapshot: true
-  updateSnapshot: process.env.UPDATE_SNAPSHOTS === 'true',
   // Improve diff visualization
   comparisonMethod: 'ssim',
 };
