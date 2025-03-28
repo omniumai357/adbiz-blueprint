@@ -26,9 +26,9 @@ export const fileAdapter = {
     arrayProperties.forEach(prop => {
       if (Array.isArray(fileState[prop])) {
         const items = fileState[prop] as FileItem[];
-        result[prop] = items.map(item => item.file);
+        result[prop as string] = items.map(item => item.file);
       } else {
-        result[prop] = [];
+        result[prop as string] = [];
       }
     });
     
@@ -61,12 +61,14 @@ export const fileAdapter = {
       if (Array.isArray(uiFiles[prop])) {
         const files = uiFiles[prop] as File[];
         
-        result[prop as keyof FileState] = files.map(file => ({
+        const fileItemArray: FileItem[] = files.map(file => ({
           id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           file,
           status: 'ready',
           progress: 0
-        })) as FileItem[];
+        }));
+        
+        result[prop as keyof FileState] = fileItemArray;
       }
     });
     

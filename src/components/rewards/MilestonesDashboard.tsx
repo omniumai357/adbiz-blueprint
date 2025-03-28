@@ -112,7 +112,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             if (milestone.milestone && 
                 typeof milestone.milestone === 'object' && 
                 'points_required' in milestone.milestone) {
-              pointsRequired = milestone.milestone.points_required as number;
+              pointsRequired = (milestone.milestone.points_required as number) || 0;
             }
               
             return (
