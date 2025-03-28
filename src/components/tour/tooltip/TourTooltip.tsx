@@ -1,13 +1,17 @@
 
-import React, { forwardRef, useCallback } from "react";
-import { TourTooltipPositioner } from "./TourTooltipPositioner";
-import { TourTooltipContent } from "./TourTooltipContent";
+import React, { forwardRef } from "react";
+import { cn } from "@/lib/utils";
+import { useTooltipPosition } from "./useTooltipPosition";
+import { useTooltipAnimation } from "./useTooltipAnimation";
 import { TourTooltipActions } from "./TourTooltipActions";
+import { TourTooltipContent } from "./TourTooltipContent";
 import { TourTooltipContainer } from "./TourTooltipContainer";
+
+type Position = "top" | "right" | "bottom" | "left";
 
 interface TourTooltipProps {
   targetElement: HTMLElement;
-  position?: "top" | "right" | "bottom" | "left";
+  position?: Position;
   title: string;
   content: string;
   stepInfo: string;
@@ -40,6 +44,8 @@ interface TourTooltipProps {
   totalSteps: number;
   showKeyboardShortcuts?: () => void;
   tooltipRef?: React.RefObject<HTMLDivElement>;
+  isRTL?: boolean;
+  direction?: 'ltr' | 'rtl';
 }
 
 export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
@@ -62,134 +68,84 @@ export const TourTooltip = forwardRef<HTMLDivElement, TourTooltipProps>(({
   currentStep,
   totalSteps,
   showKeyboardShortcuts,
-  tooltipRef
+  tooltipRef,
+  isRTL = false,
+  direction = 'ltr'
 }, ref) => {
-  // Generate unique IDs for accessibility
+  // Use the provided ref or our own internal ref
+  const divRef = tooltipRef || ref;
+
+  // Use our custom hooks for positioning and animations
+  const { 
+    tooltipStyles, 
+    arrowStyles, 
+    arrowClassNames 
+  } = useTooltipPosition(
+    targetElement, 
+    position, 
+    transition?.duration || 300
+  );
+  
+  const { 
+    animationClass, 
+    transitionClass,
+    getSpotlightStyles 
+  } = useTooltipAnimation(animation, transition);
+  
+  // Combine spotlight styles with tooltip styles if necessary
+  const combinedStyles = {
+    ...tooltipStyles as React.CSSProperties,
+    ...getSpotlightStyles(spotlight)
+  };
+
+  // Generate a unique ID for each tooltip
   const tooltipId = `tour-tooltip-${currentStep}`;
   const titleId = `${tooltipId}-title`;
   const contentId = `${tooltipId}-content`;
   const descriptionId = `${tooltipId}-description`;
-  
-  // Calculate arrow styles and classes based on position
-  const calculateArrowStylesAndClasses = useCallback(() => {
-    // Default arrow styles point to the top
-    const defaultArrowStyles = { 
-      top: '-6px',
-      left: '50%',
-      transform: 'translateX(-50%) rotate(45deg)',
-      borderTop: '1px solid',
-      borderLeft: '1px solid'
-    };
-    
-    // Default arrow classes
-    const defaultArrowClassNames = "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l";
-    
-    // Adjust arrow position based on tooltip position
-    switch (position) {
-      case "top":
-        return {
-          styles: {
-            bottom: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(225deg)',
-            borderBottom: '1px solid',
-            borderRight: '1px solid'
-          },
-          classes: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-225 border-b border-r"
-        };
-      case "right":
-        return {
-          styles: {
-            left: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%) rotate(-45deg)',
-            borderTop: '1px solid',
-            borderLeft: '1px solid'
-          },
-          classes: "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-45 border-t border-l"
-        };
-      case "bottom":
-        return {
-          styles: {
-            top: '-6px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            borderTop: '1px solid',
-            borderLeft: '1px solid'
-          },
-          classes: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-45 border-t border-l"
-        };
-      case "left":
-        return {
-          styles: {
-            right: '-6px',
-            top: '50%',
-            transform: 'translateY(-50%) rotate(135deg)',
-            borderBottom: '1px solid',
-            borderLeft: '1px solid'
-          },
-          classes: "right-0 top-1/2 translate-x-1/2 -translate-y-1/2 rotate-135 border-b border-l"
-        };
-      default:
-        return { 
-          styles: defaultArrowStyles, 
-          classes: defaultArrowClassNames 
-        };
-    }
-  }, [position]);
-  
-  const { styles: arrowStyles, classes: arrowClassNames } = calculateArrowStylesAndClasses();
 
   return (
     <TourTooltipContainer
+      ref={divRef}
       tooltipId={tooltipId}
       titleId={titleId}
       contentId={contentId}
       descriptionId={descriptionId}
+      className={cn(animationClass, transitionClass)}
+      style={combinedStyles}
       onClose={onClose}
-      currentStep={currentStep}
-      totalSteps={totalSteps}
       arrowStyles={arrowStyles}
       arrowClassNames={arrowClassNames}
-      className=""
-      style={{}}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isRTL={isRTL}
+      direction={direction}
     >
-      <TourTooltipPositioner
-        ref={ref}
-        targetElement={targetElement}
-        position={position}
-        animation={animation}
-        transition={transition}
-        spotlight={spotlight}
-        tooltipRef={tooltipRef}
-      >
-        <div className="relative bg-popover text-popover-foreground rounded-lg shadow-lg p-4 w-80 pointer-events-auto border z-50">
-          <TourTooltipContent
-            title={title}
-            content={content}
-            media={media}
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-            titleId={titleId}
-            contentId={contentId}
-            descriptionId={descriptionId}
-          />
-          
-          <TourTooltipActions
-            onPrev={onPrev}
-            onNext={onNext}
-            onClose={onClose}
-            isLastStep={isLastStep}
-            nextLabel={nextLabel}
-            prevLabel={prevLabel}
-            skipLabel={skipLabel}
-            stepInfo={stepInfo}
-            showKeyboardShortcuts={showKeyboardShortcuts}
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-          />
-        </div>
-      </TourTooltipPositioner>
+      <TourTooltipContent
+        title={title}
+        content={content}
+        media={media}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        titleId={titleId}
+        contentId={contentId}
+        descriptionId={descriptionId}
+      />
+      
+      <TourTooltipActions
+        onPrev={onPrev}
+        onNext={onNext}
+        onClose={onClose}
+        isLastStep={isLastStep}
+        nextLabel={nextLabel}
+        prevLabel={prevLabel}
+        skipLabel={skipLabel}
+        stepInfo={stepInfo}
+        showKeyboardShortcuts={showKeyboardShortcuts}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isRTL={isRTL}
+      />
     </TourTooltipContainer>
   );
 });

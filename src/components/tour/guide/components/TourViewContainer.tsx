@@ -2,8 +2,6 @@
 import React from "react";
 import { useTour } from "@/contexts/tour";
 import { TourTooltip } from "../../tooltip/TourTooltip";
-import { TourMobileView } from "../../mobile/TourMobileView";
-import { TourDrawer } from "../../tour/TourDrawer";
 import { TourMobileCompactView } from "../../mobile/TourMobileCompactView";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 
@@ -76,24 +74,33 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
           currentStep={currentStep}
           totalSteps={totalSteps}
           isRTL={isRTL}
+          direction={direction}
         />
       );
     
     case 'drawer':
+      // Since there's an import error for TourDrawer, let's fallback to tooltip view
+      console.warn('TourDrawer component not available, falling back to tooltip view');
       return (
-        <TourDrawer
+        <TourTooltip
+          targetElement={targetElement!}
+          position={optimalPosition}
           title={currentStepData.title}
           content={currentStepData.content}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
+          stepInfo={stepInfo}
+          onPrev={currentStep > 0 ? prevStep : undefined}
           onNext={nextStep}
-          onPrev={prevStep}
           onClose={endTour}
+          isLastStep={isLastStep}
+          animation={currentStepData.animation}
           media={currentStepData.media}
           nextLabel={currentStepData.actions?.next?.text}
           prevLabel={currentStepData.actions?.prev?.text}
           skipLabel={currentStepData.actions?.skip?.text}
-          isLastStep={isLastStep}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isRTL={isRTL}
+          direction={direction}
         />
       );
     
@@ -113,19 +120,19 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
       );
     
     case 'fullscreen':
+      // Since there's an import error for TourMobileView, let's fallback to compact view
+      console.warn('TourMobileView component not available, falling back to compact view');
       return (
-        <TourMobileView
-          step={currentStepData}
-          stepInfo={stepInfo}
+        <TourMobileCompactView
+          title={currentStepData.title}
+          content={currentStepData.content}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
           onNext={nextStep}
           onPrev={prevStep}
           onClose={endTour}
-          isLastStep={isLastStep}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          targetElement={targetElement}
-          isRTL={isRTL}
-          direction={direction}
+          nextLabel={currentStepData.actions?.next?.text}
+          prevLabel={currentStepData.actions?.prev?.text}
         />
       );
     
@@ -150,6 +157,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
           currentStep={currentStep}
           totalSteps={totalSteps}
           isRTL={isRTL}
+          direction={direction}
         />
       );
   }
