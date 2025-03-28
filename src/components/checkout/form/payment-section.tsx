@@ -2,13 +2,13 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import CardPaymentForm from "../card-payment-form";
-import { PayPalButton } from "@/components/PayPalButton";
+import PayPalButton from "@/components/PayPalButton";
 import { PackageDetails, CustomerInfo, PaymentMethod } from "@/types/checkout";
 
 interface PaymentSectionProps {
   paymentMethod: PaymentMethod;
   packageDetails: PackageDetails;
-  customerInfo: Partial<CustomerInfo>; // Changed from CustomerInfo to Partial<CustomerInfo>
+  customerInfo: Partial<CustomerInfo>; // Allow partial customer info
   total: number;
   onOrderSuccess: (orderId: string) => void;
 }
@@ -35,7 +35,7 @@ const PaymentSection = ({
           <CardPaymentForm
             amount={total}
             packageName={packageDetails.title}
-            customerInfo={customerInfo as CustomerInfo} // Cast to CustomerInfo as we validate before payment
+            customerInfo={customerInfo} // Pass as Partial<CustomerInfo>
             onSuccess={onOrderSuccess}
           />
         ) : (
