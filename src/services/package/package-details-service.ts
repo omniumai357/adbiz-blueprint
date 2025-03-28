@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { PackageDetails } from "@/types/checkout";
+import { Json } from "@/integrations/supabase/types";
 
 /**
  * Service for fetching and manipulating package details
@@ -23,12 +24,17 @@ export const packageDetailsService = {
       throw error;
     }
     
+    // Convert the features from JSON to string array
+    const features = Array.isArray(data.features) 
+      ? data.features.map(item => String(item))
+      : [];
+    
     return {
       id: data.id,
       title: data.title,
       description: data.description,
       price: data.price,
-      features: data.features || [],
+      features: features,
       category: data.category
     };
   },
@@ -48,13 +54,20 @@ export const packageDetailsService = {
       throw error;
     }
     
-    return data.map((pkg: any) => ({
-      id: pkg.id,
-      title: pkg.title,
-      description: pkg.description,
-      price: pkg.price,
-      features: pkg.features || [],
-      category: pkg.category
-    }));
+    return data.map((pkg: any) => {
+      // Convert the features from JSON to string array
+      const features = Array.isArray(pkg.features) 
+        ? pkg.features.map(item => String(item))
+        : [];
+      
+      return {
+        id: pkg.id,
+        title: pkg.title,
+        description: pkg.description,
+        price: pkg.price,
+        features: features,
+        category: pkg.category
+      };
+    });
   }
 };
