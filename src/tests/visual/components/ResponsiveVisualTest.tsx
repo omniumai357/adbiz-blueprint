@@ -63,3 +63,4 @@ export const ResponsiveVisualTest: React.FC<ResponsiveVisualTestProps> = ({
 };
 
 export default ResponsiveVisualTest;
+

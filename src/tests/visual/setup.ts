@@ -53,3 +53,4 @@ global.IntersectionObserver = MockIntersectionObserver as unknown as typeof Inte
 
 // Global timeout for visual tests (may need to be longer for complex components)
 jest.setTimeout(30000);
+

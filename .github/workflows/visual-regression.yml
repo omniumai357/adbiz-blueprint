@@ -47,3 +47,4 @@ jobs:
           name: image-snapshots-diff
           path: src/tests/__image_snapshots__/__diff_output__
           retention-days: 7
+

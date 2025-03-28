@@ -153,3 +153,4 @@ If you encounter issues with visual testing:
 - [Jest Image Snapshot Documentation](https://github.com/americanexpress/jest-image-snapshot)
 - [Responsive Testing Protocol](../RESPONSIVE_TESTING_PROTOCOL.md)
 - [Component Development Guidelines](../UI_REQUIREMENTS.md)
+

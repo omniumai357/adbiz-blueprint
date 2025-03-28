@@ -201,3 +201,4 @@ testAllBreakpoints(
    - Use selective component testing rather than full page
 
 For more detailed guidance, see the [Component Testing Template](./COMPONENT_TESTING_TEMPLATE.md).
+
