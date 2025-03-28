@@ -4,8 +4,8 @@ import { useServicesPage } from '@/hooks/services/useServicesPage';
 import { useToast } from '@/hooks/ui/use-toast';
 import { ServicesTitle } from '@/components/services/ServicesTitle';
 import { useResourceAccess } from '@/hooks/useResourceAccess';
-import { ServicesContent } from '@/components/services/ServicesContent';
-import { createToastEvent } from '@/utils/toast-utils';
+import { ResponsiveServicesPage } from '@/components/services/ResponsiveServicesPage';
+import DownloadOptions from '@/components/DownloadOptions';
 
 /**
  * Services Page Component
@@ -13,14 +13,6 @@ import { createToastEvent } from '@/utils/toast-utils';
  * Displays available service packages and related information.
  * Manages the state and presentation of service offerings, including
  * package categories, features, recommendations, and resource downloads.
- * 
- * Features:
- * - Package category selection (monthly, quarterly, annual)
- * - Dynamic display of packages based on selected category
- * - Package features listing
- * - Next steps recommendations
- * - Resource download options
- * - Toast notifications for important events
  */
 const Services = () => {
   const {
@@ -77,19 +69,17 @@ const Services = () => {
     <>
       <ServicesTitle />
       
-      <ServicesContent
-        viewedPackages={viewedPackages}
-        selectedCategory={selectedCategory}
-        hasCompletedTour={hasCompletedTour}
-        hasPurchased={hasPurchased}
-        error={error}
-        isLoading={isLoading}
-        showDownloadModal={showDownloadModal}
-        selectedResource={selectedResource}
-        handleResourceAccess={handleResourceAccess}
-        closeDownloadModal={closeDownloadModal}
-        handleCategoryChange={handleCategoryChange}
-      />
+      <ResponsiveServicesPage />
+      
+      {showDownloadModal && selectedResource && (
+        <DownloadOptions
+          purchaseId="resource-download"
+          packageName={selectedResource.title}
+          resourceType={selectedResource.type as "ebook" | "tutorial"}
+          resourceTitle={selectedResource.title}
+          onClose={closeDownloadModal}
+        />
+      )}
     </>
   );
 };

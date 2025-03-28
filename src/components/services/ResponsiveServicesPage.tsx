@@ -42,7 +42,10 @@ export const ResponsiveServicesPage: React.FC = () => {
   
   return (
     <ResponsiveContainer className="py-6 md:py-10">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">
+      <h1 
+        id="services-title"
+        className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6"
+      >
         Our Service Packages
       </h1>
       
@@ -51,10 +54,12 @@ export const ResponsiveServicesPage: React.FC = () => {
         Each package is tailored to meet different business needs and budgets.
       </p>
       
-      <CategorySelection 
-        selectedCategory={selectedCategory} 
-        onCategoryChange={handleCategoryChange} 
-      />
+      <div id="category-selection">
+        <CategorySelection 
+          selectedCategory={selectedCategory} 
+          onCategoryChange={handleCategoryChange} 
+        />
+      </div>
       
       {isLoading ? (
         <ServicesGrid>
@@ -73,7 +78,7 @@ export const ResponsiveServicesPage: React.FC = () => {
           {error}
         </div>
       ) : (
-        <>
+        <div id="packages-grid">
           <ServicesGrid minItemWidth={isMobile ? 280 : 320} gap={isMobile ? "sm" : "md"}>
             {filteredPackages.map(pkg => (
               <PackageCard key={pkg.id} pkg={pkg} />
@@ -87,12 +92,14 @@ export const ResponsiveServicesPage: React.FC = () => {
               </p>
             </div>
           )}
-        </>
+        </div>
       )}
       
-      <div className="mt-12">
+      <div id="package-features" className="mt-12">
         <ContactCTA />
       </div>
     </ResponsiveContainer>
   );
 };
+
+export default ResponsiveServicesPage;
