@@ -19,6 +19,9 @@ import {
   getSnapshotIdentifier
 } from '../utils/responsiveTesting';
 
+// Re-export utilities from responsiveTesting for test files to use
+export { defaultSnapshotOptions, getSnapshotIdentifier, PRIORITY_BREAKPOINTS };
+
 /**
  * Configure jest-image-snapshot for responsive component testing
  */
