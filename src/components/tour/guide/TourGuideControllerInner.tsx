@@ -111,7 +111,7 @@ export const TourGuideControllerInner: React.FC = () => {
         isLandscape={isLandscape}
         useDrawer={shouldUseDrawer()}
         useCompactView={shouldUseCompactView()}
-        preferredViewMode={preferredViewMode}
+        preferredViewMode={preferredViewMode as "tooltip" | "drawer" | "compact" | "auto"}
       />
     </>
   );

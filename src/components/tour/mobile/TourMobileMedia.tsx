@@ -24,7 +24,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
   // Convert the media format to the one expected by TourMedia
   const mediaForTooltip = {
     type: currentStepData.media.type,
-    url: currentStepData.media.source, // Map source to url
+    url: currentStepData.media.url, // Use url instead of source
     alt: currentStepData.media.alt || currentStepData.title,
     animation: currentStepData.media.animation
   };
