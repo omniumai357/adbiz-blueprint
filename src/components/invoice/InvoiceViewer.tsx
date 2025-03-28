@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateInvoiceHtml } from '@/services/invoice/templates/templateFactory';
 import { InvoiceData, InvoiceItem } from '@/services/invoice/types';
 import { Button } from '@/components/ui/button';
-import { Loader2, Printer, Download, X } from 'lucide-react';
+import { Loader2, Printer, Download, X, ExternalLink } from 'lucide-react';
+import { useResponsive } from '@/hooks/useResponsive';
 
 interface InvoiceViewerProps {
   invoiceNumber: string;
@@ -37,6 +38,7 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
   const [invoiceData, setInvoiceData] = useState<DatabaseInvoice | null>(null);
   const [invoiceHtml, setInvoiceHtml] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -131,13 +133,23 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
     element.click();
     document.body.removeChild(element);
   };
+  
+  const openInNewTab = () => {
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write(invoiceHtml);
+      newWindow.document.close();
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
         <div className="p-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Invoice #{invoiceNumber}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <h2 className="text-xl font-semibold truncate">
+            Invoice #{invoiceNumber}
+          </h2>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -157,28 +169,55 @@ const InvoiceViewer: React.FC<InvoiceViewerProps> = ({ invoiceNumber, onClose })
               srcDoc={invoiceHtml}
               title={`Invoice #${invoiceNumber}`}
               className="w-full h-full min-h-[60vh] border rounded"
+              sandbox="allow-scripts"
             />
           )}
         </div>
         
-        <div className="p-4 border-t flex justify-end space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={printInvoice}
-            disabled={loading || !!error}
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={downloadInvoice}
-            disabled={loading || !!error}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download
-          </Button>
-          <Button onClick={onClose}>Close</Button>
+        <div className="p-4 border-t flex flex-wrap justify-end gap-2">
+          {isMobile ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={openInNewTab}
+                disabled={loading || !!error}
+                className="flex-1"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={downloadInvoice}
+                disabled={loading || !!error}
+                className="flex-1"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button onClick={onClose} className="flex-1">Close</Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={printInvoice}
+                disabled={loading || !!error}
+              >
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={downloadInvoice}
+                disabled={loading || !!error}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              <Button onClick={onClose}>Close</Button>
+            </>
+          )}
         </div>
       </div>
     </div>

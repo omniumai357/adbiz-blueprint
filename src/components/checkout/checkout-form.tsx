@@ -10,6 +10,7 @@ import AddOnsSelector from "@/components/checkout/form/add-ons-selector";
 import DiscountDisplay from "@/components/checkout/form/discount-display";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
 import { useCheckoutValidation } from "@/hooks/checkout/useCheckoutValidation";
+import ResponsiveFormSection from "@/components/checkout/form/responsive-form-section";
 
 interface CheckoutFormProps {
   checkout: ReturnType<typeof import("@/hooks/checkout/useCheckoutConsolidated").useCheckoutConsolidated>;
@@ -20,7 +21,7 @@ interface CheckoutFormProps {
  * CheckoutForm Component
  * 
  * Renders the complete checkout form using smaller, focused sub-components
- * with integrated validation
+ * with integrated validation and responsive design
  * 
  * @param props CheckoutFormProps containing the checkout object and success handler
  */
@@ -76,29 +77,40 @@ const CheckoutForm = ({
 
   if (isLoading || isProfileLoading) {
     return (
-      <>
-        <Skeleton className="w-full h-12 mt-8" />
-        <Skeleton className="w-full h-48 mt-4" />
-      </>
+      <div className="space-y-6">
+        <Skeleton className="w-full h-12 rounded-lg" />
+        <Skeleton className="w-full h-72 rounded-lg" />
+        <Skeleton className="w-full h-48 rounded-lg" />
+      </div>
     );
   }
 
   return (
     <div className="space-y-8">
       {/* Customer Information Section */}
-      <CustomerInfoForm 
-        customerInfo={customerInfo}
-        onChange={setCustomerInfo}
-        isLoading={isProfileLoading}
-      />
+      <ResponsiveFormSection 
+        title="Customer Information"
+        description="Please provide your contact details"
+      >
+        <CustomerInfoForm 
+          customerInfo={customerInfo}
+          onChange={setCustomerInfo}
+          isLoading={isProfileLoading}
+        />
+      </ResponsiveFormSection>
       
       {/* Add-ons section */}
       {addOns.available.length > 0 && (
-        <AddOnsSelector 
-          availableAddOns={addOns.available}
-          selectedAddOns={addOns.selected}
-          onAddOnToggle={addOns.toggle}
-        />
+        <ResponsiveFormSection
+          title="Additional Services"
+          description="Enhance your package with these add-ons"
+        >
+          <AddOnsSelector 
+            availableAddOns={addOns.available}
+            selectedAddOns={addOns.selected}
+            onAddOnToggle={addOns.toggle}
+          />
+        </ResponsiveFormSection>
       )}
       
       {/* Discount summary display */}
@@ -119,33 +131,43 @@ const CheckoutForm = ({
       />
       
       {/* Discounts and offers section */}
-      <DiscountSection 
-        subtotal={totals.subtotal}
-        userId={customerInfo?.userId || null}
-        bundleDiscount={discounts.bundle.info}
-        isDiscountApplicable={discounts.bundle.applicable}
-        tieredDiscount={discounts.tiered.info}
-        isFirstPurchase={discounts.tiered.isFirstPurchase}
-        isLoyaltyProgramEnabled={discounts.loyalty.enabled}
-        loyaltyBonusAmount={discounts.loyalty.amount}
-        onLoyaltyProgramToggle={discounts.loyalty.toggle}
-        activeOffers={discounts.offers.active}
-        availableOffer={discounts.offers.available}
-        personalizedCoupon={null}
-        appliedCoupon={discounts.coupons.applied}
-        couponDiscountAmount={discounts.coupons.amount}
-        isCheckingCoupon={discounts.coupons.isChecking}
-        applyCoupon={discounts.coupons.apply}
-        removeCoupon={discounts.coupons.remove}
-        onMilestoneRewardApplied={(reward) => discounts.rewards.applyReward(reward as any)}
-        appliedMilestoneReward={discounts.rewards.applied as unknown as UserMilestone}
-      />
+      <ResponsiveFormSection
+        title="Discounts & Special Offers"
+        description="Apply discounts or join our loyalty program"
+      >
+        <DiscountSection 
+          subtotal={totals.subtotal}
+          userId={customerInfo?.userId || null}
+          bundleDiscount={discounts.bundle.info}
+          isDiscountApplicable={discounts.bundle.applicable}
+          tieredDiscount={discounts.tiered.info}
+          isFirstPurchase={discounts.tiered.isFirstPurchase}
+          isLoyaltyProgramEnabled={discounts.loyalty.enabled}
+          loyaltyBonusAmount={discounts.loyalty.amount}
+          onLoyaltyProgramToggle={discounts.loyalty.toggle}
+          activeOffers={discounts.offers.active}
+          availableOffer={discounts.offers.available}
+          personalizedCoupon={null}
+          appliedCoupon={discounts.coupons.applied}
+          couponDiscountAmount={discounts.coupons.amount}
+          isCheckingCoupon={discounts.coupons.isChecking}
+          applyCoupon={discounts.coupons.apply}
+          removeCoupon={discounts.coupons.remove}
+          onMilestoneRewardApplied={(reward) => discounts.rewards.applyReward(reward as any)}
+          appliedMilestoneReward={discounts.rewards.applied as unknown as UserMilestone}
+        />
+      </ResponsiveFormSection>
       
       {/* Payment method selection */}
-      <PaymentMethodSelector
-        selectedMethod={paymentMethod}
-        onMethodChange={setPaymentMethod}
-      />
+      <ResponsiveFormSection
+        title="Payment Method"
+        description="Choose how you'd like to pay"
+      >
+        <PaymentMethodSelector
+          selectedMethod={paymentMethod}
+          onMethodChange={setPaymentMethod}
+        />
+      </ResponsiveFormSection>
       
       {/* Payment section */}
       <PaymentSection 
