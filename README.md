@@ -43,6 +43,7 @@ Our expertly crafted ads are designed to capture attention and drive conversions
 - **Deployment**: Continuous deployment via GitHub Actions
 - **AI Chatbot**: Deepseek Coder AI model for cost-effective support
 - **Accessibility**: Enhanced focus management system with WCAG 2.1 AA compliance
+- **Testing**: Comprehensive visual regression testing with Jest and jest-image-snapshot
 
 ## User Experience
 
@@ -55,6 +56,22 @@ Our platform follows Apple-inspired design principles with a focus on:
 - Enhanced keyboard navigation and screen reader support
 - Customizable focus management system
 - RTL language support
+
+## Quality Assurance
+
+### Visual Regression Testing
+We maintain UI consistency through automated visual testing:
+- Component-level visual snapshots across all breakpoints
+- Automated detection of unintended UI changes
+- Cross-device and cross-browser testing
+- Standardized responsive design validation
+
+### Responsive Design Testing
+Our comprehensive responsive testing protocol ensures:
+- Consistent user experience across all devices
+- Standardized breakpoint definitions and behavior
+- Automatic validation of component adaptability
+- Device-specific optimizations
 
 ## Customer Support
 
@@ -104,6 +121,7 @@ Our platform includes a comprehensive focus management system:
 │   ├── 📄 SUCCESS_METRICS.md        # Success metrics specification
 │   ├── 📄 TECHNICAL_REQUIREMENTS.md # Technical requirements specification
 │   ├── 📄 UI_REQUIREMENTS.md        # User interface requirements
+│   ├── 📄 RESPONSIVE_TESTING_PROTOCOL.md # Visual testing standards and protocol
 │   │
 │   ├── 📁 appendices/
 │   │   ├── 📄 ACCESSIBILITY_GUIDE.md  # Detailed accessibility implementation guide
@@ -115,7 +133,13 @@ Our platform includes a comprehensive focus management system:
 │   │
 │   └── 📁 guides/
 │       ├── 📄 SCREEN_READER_TESTING.md    # Screen reader testing guidelines
-│       └── 📄 SCREEN_READER_TESTING_PLAN.md # Detailed screen reader testing plan
+│       ├── 📄 SCREEN_READER_TESTING_PLAN.md # Detailed screen reader testing plan
+│       └── 📄 VISUAL_TESTING_GUIDE.md     # Guide for visual regression testing
+│
+├── 📁 tests/
+│   ├── 📁 visual/                    # Visual regression testing
+│   ├── 📁 responsive/                # Responsive design testing
+│   └── 📁 reports/                   # Test reports and documentation
 │
 ├── 📄 DIRECTORY_STRUCTURE.md        # Project code organization guide
 ├── 📄 PRD.md                        # Main Product Requirements Document
@@ -150,6 +174,20 @@ npm run dev
 
 4. The application will be available at http://localhost:5173
 
+### Running Tests
+
+#### Visual Regression Tests
+```bash
+# Run all visual tests
+npm run test:visual
+
+# Run tests for a specific component
+npm run test:visual MilestoneCard
+
+# Update snapshots
+npm run test:visual -- -u
+```
+
 ## Development Standards
 
 We maintain strict development standards to ensure code quality and consistency:
@@ -157,6 +195,7 @@ We maintain strict development standards to ensure code quality and consistency:
 - [Code Standards](src/docs/CODE_STANDARDS.md) - Coding conventions and patterns
 - [Directory Structure](src/DIRECTORY_STRUCTURE.md) - Project organization
 - [Import Standards](src/docs/IMPORT_STANDARDS.md) - Import ordering and barrel exports
+- [Visual Testing Protocol](src/docs/RESPONSIVE_TESTING_PROTOCOL.md) - Visual testing standards
 
 ## Contributing
 
