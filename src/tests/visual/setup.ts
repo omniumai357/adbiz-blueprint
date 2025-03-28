@@ -10,15 +10,17 @@ import { configureToMatchImageSnapshot } from './visualRegressionSetup';
 configureToMatchImageSnapshot();
 
 // Mock window.matchMedia for responsive tests
-window.matchMedia = window.matchMedia || function() {
+window.matchMedia = window.matchMedia || function(query: string): MediaQueryList {
   return {
     matches: false,
+    media: query,
+    onchange: null,
     addListener: function() {},
     removeListener: function() {},
     addEventListener: function() {},
     removeEventListener: function() {},
-    dispatchEvent: function() {},
-  };
+    dispatchEvent: function() { return true; },
+  } as MediaQueryList;
 };
 
 // Mock requestAnimationFrame
@@ -28,13 +30,19 @@ global.requestAnimationFrame = (callback) => {
 };
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
+class MockIntersectionObserver implements IntersectionObserver {
+  readonly root: Element | Document | null = null;
+  readonly rootMargin: string = '0px';
+  readonly thresholds: ReadonlyArray<number> = [0];
+  
+  constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {}
   disconnect() {}
   observe() {}
-  takeRecords() { return []; }
+  takeRecords(): IntersectionObserverEntry[] { return []; }
   unobserve() {}
-};
+}
+
+global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Global timeout for visual tests (may need to be longer for complex components)
 jest.setTimeout(30000);
