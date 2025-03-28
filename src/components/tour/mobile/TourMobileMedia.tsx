@@ -3,7 +3,7 @@ import React from "react";
 import { TourMedia } from "../tooltip/TourMedia";
 import { TourStep } from "@/contexts/tour/types";
 import { cn } from "@/lib/utils";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useResponsive } from "@/hooks/useResponsive";
 
 interface TourMobileMediaProps {
   currentStepData: TourStep;
@@ -14,7 +14,7 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
   currentStepData,
   className 
 }) => {
-  const isLandscape = useMediaQuery("(orientation: landscape)");
+  const { isLandscape } = useResponsive();
   
   if (!currentStepData.media) return null;
   

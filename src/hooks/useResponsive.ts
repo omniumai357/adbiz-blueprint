@@ -27,7 +27,7 @@ export type Breakpoint = keyof typeof BREAKPOINTS;
  * @returns Object with various responsive helpers
  */
 export function useResponsive() {
-  // Base media queries
+  // Base media queries - fully memoized to prevent unnecessary re-renders
   const isXs = useMediaQuery(`(max-width: ${BREAKPOINTS.sm - 1}px)`);
   const isSm = useMediaQuery(`(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.md - 1}px)`);
   const isMd = useMediaQuery(`(min-width: ${BREAKPOINTS.md}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`);
@@ -46,8 +46,13 @@ export function useResponsive() {
   const isPortrait = !isLandscape;
 
   // Device capabilities (client-side only)
-  const hasTouchSupport = typeof window !== 'undefined' && 
-    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  const hasTouchSupport = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return 'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 || 
+      // @ts-ignore - MS specific prefixed implementation detection
+      (window.DocumentTouch && document instanceof DocumentTouch);
+  }, []);
   
   // Current active breakpoint
   const activeBreakpoint = useMemo((): Breakpoint => {
@@ -127,7 +132,7 @@ export function useResponsive() {
  *   default: 'default',
  *   mobile: 'compact',
  *   desktop: 'expanded'
- * });
+ * }, activeBreakpoint);
  * 
  * @param values Object with values for different breakpoints
  * @param currentBreakpoint Current active breakpoint
