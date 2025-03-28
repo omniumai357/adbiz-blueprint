@@ -1,93 +1,82 @@
 
-import { FileState, FileItem } from "@/features/file-upload/types";
+import { FileState, FileItem } from '@/features/file-upload/types';
 
 /**
- * File adapter utility to convert between different file representations
- * and provide consistent file handling across the application.
+ * Utility functions for adapting file types between different components
  */
 export const fileAdapter = {
   /**
-   * Convert a FileState object to a UI-friendly format with plain File objects
+   * Convert FileState to UI-compatible format (plain File objects)
    */
-  adaptFileStateForUI(fileState: FileState): {
-    logo: File | null;
-    images: File[];
-    videos: File[];
-    documents: File[];
-    identity: File[];
-    business: File[];
-    additional: File[];
-  } {
-    return {
-      logo: fileState.logo ? fileState.logo : null,
-      images: this.extractFilesFromItems(fileState.images),
-      videos: this.extractFilesFromItems(fileState.videos),
-      documents: this.extractFilesFromItems(fileState.documents),
-      identity: this.extractFilesFromItems(fileState.identity),
-      business: this.extractFilesFromItems(fileState.business),
-      additional: this.extractFilesFromItems(fileState.additional),
-    };
+  adaptFileStateForUI: (fileState: FileState): Record<string, File | File[]> => {
+    const result: Record<string, File | File[]> = {};
+    
+    // Handle logo (single file)
+    if (fileState.logo) {
+      result.logo = fileState.logo;
+    } else {
+      result.logo = null;
+    }
+    
+    // Handle array types by extracting File objects from FileItems
+    const arrayProperties: Array<keyof FileState> = [
+      'images', 'videos', 'documents', 'identity', 'business', 'additional'
+    ];
+    
+    arrayProperties.forEach(prop => {
+      if (Array.isArray(fileState[prop])) {
+        const items = fileState[prop] as FileItem[];
+        result[prop] = items.map(item => item.file);
+      } else {
+        result[prop] = [];
+      }
+    });
+    
+    return result;
   },
-
+  
   /**
-   * Convert UI files back to FileState format
+   * Convert UI format (plain File objects) back to FileState
    */
-  adaptUIFilesToFileState(files: {
-    logo?: File | null;
-    images?: File[];
-    videos?: File[];
-    documents?: File[];
-    identity?: File[];
-    business?: File[];
-    additional?: File[];
-  }): FileState {
-    return {
-      logo: files.logo || null,
-      images: this.createFileItems(files.images || []),
-      videos: this.createFileItems(files.videos || []),
-      documents: this.createFileItems(files.documents || []),
-      identity: this.createFileItems(files.identity || []),
-      business: this.createFileItems(files.business || []),
-      additional: this.createFileItems(files.additional || []),
-    };
-  },
-
-  /**
-   * Create FileItem objects from File objects
-   */
-  createFileItems(files: File[]): FileItem[] {
-    return files.map(file => ({
-      id: crypto.randomUUID(),
-      file,
-      status: 'ready',
-      progress: 0,
-    }));
-  },
-
-  /**
-   * Extract File objects from FileItem objects
-   */
-  extractFilesFromItems(items: FileItem[] | any[]): File[] {
-    if (!items || !Array.isArray(items)) return [];
-    return items
-      .filter(item => item && item.file instanceof File)
-      .map(item => item.file);
-  },
-
-  /**
-   * Convert file type key to human-readable string
-   */
-  fileTypeToString(fileType: keyof FileState | string): string {
-    const typeMapping: Record<string, string> = {
-      logo: 'Logo',
-      images: 'Images',
-      videos: 'Videos',
-      documents: 'Documents',
-      identity: 'Identity Documents',
-      business: 'Business Documents',
-      additional: 'Additional Files',
+  adaptUIFilesToFileState: (uiFiles: Record<string, File | File[]>): FileState => {
+    const result: FileState = {
+      logo: null,
+      images: [],
+      videos: [],
+      documents: [],
+      identity: [],
+      business: [],
+      additional: []
     };
     
-    return typeMapping[fileType as string] || String(fileType);
+    // Handle logo (single file)
+    if (uiFiles.logo) {
+      result.logo = uiFiles.logo as File;
+    }
+    
+    // Handle array types by converting File objects to FileItems
+    const arrayProperties = ['images', 'videos', 'documents', 'identity', 'business', 'additional'];
+    
+    arrayProperties.forEach(prop => {
+      if (Array.isArray(uiFiles[prop])) {
+        const files = uiFiles[prop] as File[];
+        
+        result[prop as keyof FileState] = files.map(file => ({
+          id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          file,
+          status: 'ready',
+          progress: 0
+        }));
+      }
+    });
+    
+    return result;
+  },
+  
+  /**
+   * Safely convert a keyof FileState to string for display or logging
+   */
+  fileTypeToString: (fileType: keyof FileState): string => {
+    return String(fileType);
   }
 };

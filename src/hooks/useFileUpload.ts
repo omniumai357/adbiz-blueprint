@@ -1,6 +1,5 @@
-
 import { useCallback, useState, useEffect } from 'react';
-import { FileState, FileItem, UploadProgressItem } from '@/features/file-upload/types';
+import { FileState, FileItem, UploadProgressItem, FileStatus } from '@/features/file-upload/types';
 import { logger } from '@/lib/utils/logging';
 
 /**
@@ -37,14 +36,20 @@ export function useFileUpload() {
     const newFiles = Array.from(fileList).map(file => ({
       id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       file,
-      status: 'ready',
+      status: 'ready' as FileStatus,
       progress: 0,
     }));
 
-    setFiles(prev => ({
-      ...prev,
-      [fileType]: [...(prev[fileType] as FileItem[] || []), ...newFiles]
-    }));
+    setFiles(prev => {
+      const existingFiles = prev[fileType] && Array.isArray(prev[fileType]) 
+        ? prev[fileType] as FileItem[] 
+        : [];
+        
+      return {
+        ...prev,
+        [fileType]: [...existingFiles, ...newFiles]
+      };
+    });
   }, []);
 
   const removeFile = useCallback((fileType: string, index?: number) => {

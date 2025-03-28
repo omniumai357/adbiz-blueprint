@@ -1,4 +1,3 @@
-
 /**
  * Centralized logging utility with structured logging capabilities
  */
@@ -28,6 +27,7 @@ export interface LogData {
   totalMilestones?: number;
   completedMilestones?: number;
   availableRewards?: number;
+  fileCount?: number;
 }
 
 // Define a logger class with methods for different log levels

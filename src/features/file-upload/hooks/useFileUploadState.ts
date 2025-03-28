@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { FileState, FileItem } from '../types';
+import { FileState, FileItem, FileStatus } from '../types';
 
 /**
  * Hook for managing file upload state
@@ -33,7 +33,7 @@ export const useFileUploadState = () => {
         const newFileItem: FileItem = {
           id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           file,
-          status: 'ready',
+          status: 'ready' as FileStatus,
           progress: 0
         };
         

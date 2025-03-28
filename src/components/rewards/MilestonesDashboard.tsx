@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { MilestoneCard } from "./MilestoneCard";
@@ -33,13 +32,10 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
     refreshData
   } = useMilestones(userId);
 
-  // Get reward actions functionality
   const { claimReward, isProcessing } = useRewardActions(userId || null, refreshData);
   
-  // State for error tracking
   const [localError, setLocalError] = useState<Error | null>(null);
   
-  // Log performance metrics
   useEffect(() => {
     logger.debug('Milestones dashboard loaded', { 
       totalMilestones: milestones.length,
@@ -82,7 +78,6 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
       skeletonContent={<MilestonesSkeleton />}
     >
       <div className="space-y-6">
-        {/* Progress Overview */}
         <div className="bg-gradient-to-r from-slate-50 to-white p-4 md:p-6 rounded-lg border shadow-sm">
           <h2 className="text-xl font-semibold mb-2">{t('rewards.yourProgress')}</h2>
           <p className="text-muted-foreground mb-4">
@@ -100,9 +95,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           </div>
         </div>
         
-        {/* Milestones & Rewards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Display available rewards */}
           {availableRewards.map((reward) => (
             <RewardCard
               key={reward.milestone_id}
@@ -112,28 +105,35 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             />
           ))}
           
-          {/* Display milestones */}
-          {milestones.map((milestone) => (
-            <MilestoneCard 
-              key={milestone.id}
-              name={milestone.milestone_name}
-              description={milestone.milestone_description || ''}
-              icon={milestone.icon}
-              pointsRequired={milestone.milestone && typeof milestone.milestone !== 'string' ? milestone.milestone.points_required : 0}
-              currentPoints={milestone.current_points}
-              isCompleted={milestone.is_completed}
-              rewardClaimed={milestone.reward_claimed}
-              onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
-                () => {
-                  logger.info('User claiming reward', {
-                    milestoneId: milestone.milestone_id,
-                    milestoneName: milestone.milestone_name
-                  });
-                  return claimReward(milestone.milestone_id);
-                } : undefined}
-              isClaimingReward={isProcessing}
-            />
-          ))}
+          {milestones.map((milestone) => {
+            const pointsRequired = 
+              milestone.milestone && 
+              typeof milestone.milestone === 'object' && 
+              'points_required' in milestone.milestone ? 
+              milestone.milestone.points_required : 0;
+              
+            return (
+              <MilestoneCard 
+                key={milestone.id}
+                name={milestone.milestone_name}
+                description={milestone.milestone_description || ''}
+                icon={milestone.icon}
+                pointsRequired={pointsRequired}
+                currentPoints={milestone.current_points}
+                isCompleted={milestone.is_completed}
+                rewardClaimed={milestone.reward_claimed}
+                onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
+                  () => {
+                    logger.info('User claiming reward', {
+                      milestoneId: milestone.milestone_id,
+                      milestoneName: milestone.milestone_name
+                    });
+                    return claimReward(milestone.milestone_id);
+                  } : undefined}
+                isClaimingReward={isProcessing}
+              />
+            );
+          })}
         </div>
       </div>
     </LoadingContent>

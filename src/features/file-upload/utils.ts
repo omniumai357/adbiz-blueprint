@@ -1,5 +1,5 @@
 
-import { FileState, FileItem } from './types';
+import { FileState, FileItem, FileStatus } from './types';
 
 /**
  * Utility functions for file upload operations
@@ -11,7 +11,7 @@ import { FileState, FileItem } from './types';
 export const createFileItem = (file: File): FileItem => ({
   id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
   file,
-  status: 'ready',
+  status: 'ready' as FileStatus,
   progress: 0
 });
 
