@@ -1,51 +1,35 @@
 
 import React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import OrderSummaryHeader from "./order-summary-header";
-import PackageSection from "./package-section";
-import { DiscountsSection } from "./discounts-section"; 
-import OrderTotal from "./order-total";
-import { useResponsive } from "@/hooks/useResponsive";
-import { logger } from "@/lib/utils/logging";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddOnItem } from "../add-on-item";
-import { BundleDiscountInfo } from "../bundle-discount";
-import { LimitedTimeOfferInfo } from "../limited-time-offer";
-import { UserMilestone } from "@/hooks/rewards/useMilestones";
+import { packageDetailsService } from "@/services/package/package-details-service";
 
 interface OrderSummaryProps {
   packageName: string;
   packagePrice: number;
   selectedAddOns?: AddOnItem[];
-  appliedDiscount?: BundleDiscountInfo | null;
+  appliedDiscount?: any;
   bundleDiscountAmount?: number;
-  tieredDiscount?: {
-    id: string;
-    name: string;
-    discountAmount: number;
-    firstPurchaseBonus?: number;
-  } | null;
-  isFirstPurchase?: boolean;
+  tieredDiscount?: any;
   tieredDiscountAmount?: number;
-  loyaltyBonusAmount?: number;
-  isLoyaltyProgramEnabled?: boolean;
-  limitedTimeOffer?: LimitedTimeOfferInfo | null;
-  offerDiscountAmount?: number;
-  appliedCoupon?: { 
-    code: string; 
-    discount: number;
-    id: string; 
-    name: string;
-    discountAmount: number;
-    firstPurchaseBonus?: number;
-  } | null;
-  couponDiscountAmount?: number;
-  appliedMilestoneReward?: UserMilestone | null;
-  milestoneRewardAmount?: number;
-  totalDiscountAmount?: number;
+  isFirstPurchase?: boolean;
+  totalDiscountAmount: number;
   invoiceNumber?: string | null;
-  isLoading?: boolean;
+  isLoyaltyProgramEnabled?: boolean;
+  loyaltyBonusAmount?: number;
+  limitedTimeOffer?: any;
+  offerDiscountAmount?: number;
+  appliedCoupon?: any;
+  couponDiscountAmount?: number;
+  appliedMilestoneReward?: any;
+  milestoneRewardAmount?: number;
 }
 
+/**
+ * OrderSummary Component
+ * 
+ * Shows a responsive summary of the customer's order during checkout
+ */
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   packageName,
   packagePrice,
@@ -53,100 +37,126 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   appliedDiscount,
   bundleDiscountAmount = 0,
   tieredDiscount,
-  isFirstPurchase,
   tieredDiscountAmount = 0,
+  isFirstPurchase,
+  totalDiscountAmount,
+  invoiceNumber,
+  isLoyaltyProgramEnabled,
   loyaltyBonusAmount = 0,
-  isLoyaltyProgramEnabled = false,
   limitedTimeOffer,
   offerDiscountAmount = 0,
   appliedCoupon,
   couponDiscountAmount = 0,
   appliedMilestoneReward,
-  milestoneRewardAmount = 0,
-  totalDiscountAmount = 0,
-  invoiceNumber,
-  isLoading = false,
+  milestoneRewardAmount = 0
 }) => {
-  const { isMobile, isTablet, activeBreakpoint } = useResponsive();
-  
-  logger.debug('Rendering OrderSummary component', {
-    context: 'OrderSummary',
-    data: {
-      packageName,
-      totalDiscount: totalDiscountAmount,
-      breakpoint: activeBreakpoint
-    }
-  });
-
-  if (isLoading) {
-    return (
-      <div className="bg-card rounded-lg border shadow-sm p-4 lg:p-6 mb-4 md:mb-0">
-        <Skeleton className="h-8 w-2/3 mb-6" />
-        <Skeleton className="h-20 w-full mb-4" />
-        <Skeleton className="h-24 w-full mb-4" />
-        <Skeleton className="h-16 w-full" />
-      </div>
-    );
-  }
-
-  const hasAnyDiscount = bundleDiscountAmount > 0 || 
-                        tieredDiscountAmount > 0 || 
-                        loyaltyBonusAmount > 0 || 
-                        offerDiscountAmount > 0 || 
-                        couponDiscountAmount > 0 || 
-                        milestoneRewardAmount > 0;
-
+  // Calculate the subtotal
   const addOnsTotal = selectedAddOns.reduce((sum, addon) => sum + addon.price, 0);
-  
   const subtotal = packagePrice + addOnsTotal;
   
-  const total = Math.max(0, subtotal - (totalDiscountAmount || 0));
-  
-  const savingsPercentage = subtotal > 0 
-    ? Math.round((totalDiscountAmount / subtotal) * 100) 
-    : 0;
+  // Calculate the total after all discounts
+  const total = Math.max(0, subtotal - totalDiscountAmount);
 
-  const paddingClass = isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5';
-  const marginClass = isMobile ? 'space-y-4' : 'space-y-6';
+  // Format currency values
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(amount);
+  };
 
   return (
-    <div className={`bg-card rounded-lg border shadow-sm ${paddingClass} sticky top-20`}>
-      <OrderSummaryHeader 
-        packageName={packageName} 
-        invoiceNumber={invoiceNumber}
-        savingsPercentage={savingsPercentage > 0 ? savingsPercentage : undefined}
-      />
-      
-      <div className={marginClass}>
-        <PackageSection 
-          packageName={packageName}
-          packagePrice={packagePrice}
-          selectedAddOns={selectedAddOns}
-        />
-        
-        {hasAnyDiscount && (
-          <DiscountsSection 
-            showDiscounts={hasAnyDiscount}
-            bundleDiscount={appliedDiscount || undefined}
-            couponDiscount={appliedCoupon || undefined}
-            limitedTimeOffer={limitedTimeOffer || undefined}
-            milestoneReward={appliedMilestoneReward || undefined}
-            tieredDiscount={tieredDiscount ? {
-              threshold: tieredDiscount.discountAmount,
-              discountPercent: tieredDiscount.discountAmount,
-              applied: !!tieredDiscountAmount && tieredDiscountAmount > 0
-            } : undefined}
-          />
-        )}
-        
-        <OrderTotal 
-          subtotal={subtotal}
-          totalDiscountAmount={totalDiscountAmount}
-          total={total}
-          showSpecialOffer={offerDiscountAmount > 0 || (appliedMilestoneReward !== null && milestoneRewardAmount > 0)}
-        />
-      </div>
-    </div>
+    <Card className="shadow-sm border-primary/10 h-fit">
+      <CardHeader className="bg-primary-foreground border-b border-border">
+        <CardTitle className="text-xl">Order Summary</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="p-4 space-y-4">
+          {/* Package Details */}
+          <div className="flex justify-between">
+            <div className="font-medium">{packageName}</div>
+            <div>{formatCurrency(packagePrice)}</div>
+          </div>
+          
+          {/* Add-Ons */}
+          {selectedAddOns.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-muted-foreground">Add-Ons</div>
+              {selectedAddOns.map((addon, index) => (
+                <div key={index} className="flex justify-between text-sm pl-2">
+                  <div>{addon.name}</div>
+                  <div>{formatCurrency(addon.price)}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Subtotal */}
+          <div className="flex justify-between border-t border-border pt-2">
+            <div className="font-medium">Subtotal</div>
+            <div>{formatCurrency(subtotal)}</div>
+          </div>
+          
+          {/* Discounts */}
+          {totalDiscountAmount > 0 && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-muted-foreground">Discounts</div>
+              
+              {bundleDiscountAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>Bundle Discount</div>
+                  <div>-{formatCurrency(bundleDiscountAmount)}</div>
+                </div>
+              )}
+              
+              {tieredDiscountAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>{isFirstPurchase ? "First Purchase Bonus" : "Tier Discount"}</div>
+                  <div>-{formatCurrency(tieredDiscountAmount)}</div>
+                </div>
+              )}
+              
+              {loyaltyBonusAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>Loyalty Program Bonus</div>
+                  <div>-{formatCurrency(loyaltyBonusAmount)}</div>
+                </div>
+              )}
+              
+              {offerDiscountAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>Limited Time Offer</div>
+                  <div>-{formatCurrency(offerDiscountAmount)}</div>
+                </div>
+              )}
+              
+              {couponDiscountAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>Coupon Code: {appliedCoupon?.code}</div>
+                  <div>-{formatCurrency(couponDiscountAmount)}</div>
+                </div>
+              )}
+              
+              {milestoneRewardAmount > 0 && (
+                <div className="flex justify-between text-sm pl-2 text-green-600">
+                  <div>Reward: {appliedMilestoneReward?.name}</div>
+                  <div>-{formatCurrency(milestoneRewardAmount)}</div>
+                </div>
+              )}
+              
+              <div className="flex justify-between border-t border-border pt-2 text-green-600">
+                <div className="font-medium">Total Discount</div>
+                <div>-{formatCurrency(totalDiscountAmount)}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="bg-primary-foreground border-t border-border flex justify-between p-4">
+        <div className="font-bold text-lg">Total</div>
+        <div className="font-bold text-lg">{formatCurrency(total)}</div>
+      </CardFooter>
+    </Card>
   );
 };
 

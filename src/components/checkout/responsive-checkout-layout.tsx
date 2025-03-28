@@ -1,7 +1,5 @@
 
 import React from "react";
-import { useResponsive } from "@/hooks/useResponsive";
-import { ResponsiveContainer } from "@/components/ui/responsive-container";
 
 interface ResponsiveCheckoutLayoutProps {
   summary: React.ReactNode;
@@ -11,27 +9,27 @@ interface ResponsiveCheckoutLayoutProps {
 /**
  * ResponsiveCheckoutLayout Component
  * 
- * Provides a responsive layout for the checkout page that adapts to different screen sizes.
- * On larger screens, displays the summary and form side by side.
- * On smaller screens, stacks them vertically with the summary first.
+ * Provides a responsive layout for the checkout page that:
+ * - Shows side-by-side layout on desktop (summary on right, form on left)
+ * - Stacks vertically on mobile (summary on top, form below)
  */
-export const ResponsiveCheckoutLayout: React.FC<ResponsiveCheckoutLayoutProps> = ({
-  summary,
-  form
-}) => {
-  const { isMobile, isTablet, atLeast } = useResponsive();
-  
+const ResponsiveCheckoutLayout = ({ summary, form }: ResponsiveCheckoutLayoutProps) => {
   return (
-    <ResponsiveContainer className="py-8">
-      <div className={`grid ${atLeast.lg ? 'grid-cols-3 gap-8' : 'grid-cols-1 gap-6'}`}>
-        <div className={`${atLeast.lg ? 'col-span-1' : ''}`}>
-          {summary}
-        </div>
-        <div className={`${atLeast.lg ? 'col-span-2' : ''}`}>
+    <div className="container mx-auto px-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* On mobile: Full width form below summary */}
+        {/* On desktop: 8 columns for form, 4 for summary */}
+        <div className="lg:col-span-8 lg:order-1 order-2">
           {form}
         </div>
+        
+        {/* On mobile: Full width summary above form */}
+        {/* On desktop: 4 columns for summary */}
+        <div className="lg:col-span-4 lg:order-2 order-1 lg:sticky lg:top-24 self-start">
+          {summary}
+        </div>
       </div>
-    </ResponsiveContainer>
+    </div>
   );
 };
 
