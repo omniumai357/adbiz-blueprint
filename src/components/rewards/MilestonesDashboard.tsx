@@ -119,7 +119,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
               name={milestone.milestone_name}
               description={milestone.milestone_description || ''}
               icon={milestone.icon}
-              pointsRequired={milestone.milestone?.points_required || 0}
+              pointsRequired={milestone.milestone ? milestone.milestone.points_required : 0}
               currentPoints={milestone.current_points}
               isCompleted={milestone.is_completed}
               rewardClaimed={milestone.reward_claimed}

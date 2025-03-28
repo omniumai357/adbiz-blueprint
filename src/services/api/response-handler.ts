@@ -107,7 +107,7 @@ export const responseHandler = {
    * Handle a Supabase query response with standardized error handling and transformation
    */
   handle<T>(
-    query: Promise<any>, 
+    query: Promise<any> | { then(onfulfilled: any): Promise<any> }, 
     options: {
       context?: string;
       transform?: (response: any) => T;
@@ -124,7 +124,10 @@ export const responseHandler = {
       successMessage = 'Operation successful'
     } = options;
 
-    return query
+    // Handle both Promise objects and Supabase query builders (which are thenable)
+    const promise = 'then' in query ? query : Promise.resolve(query);
+
+    return promise
       .then((response) => {
         if (response.error) {
           throw new APIError(
