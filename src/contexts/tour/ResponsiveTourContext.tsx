@@ -1,10 +1,11 @@
 
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useMemo, useEffect, useCallback, useState } from 'react';
 import { useResponsive } from '@/hooks/useResponsive';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { useLanguage } from '@/contexts/language-context';
 import { useDevice } from '@/hooks/use-device';
 import { Position } from '@/lib/tour/types';
+import { logger } from '@/lib/utils/logging';
 
 // Define the context type
 export interface ResponsiveTourContextType {
@@ -39,6 +40,10 @@ export interface ResponsiveTourContextType {
   getOptimalPosition: (elementRect: DOMRect | null) => Position;
   shouldUseDrawer: () => boolean;
   shouldUseCompactView: () => boolean;
+  
+  // Orientation change detection
+  isOrientationChanging: boolean;
+  handleOrientationChange: () => void;
 }
 
 // Create the context with a default value
@@ -59,42 +64,136 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
   // Check for reduced motion preference
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   
-  // Determine the preferred view mode based on device
-  const preferredViewMode = useMemo((): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
-    if (device.isMobile) {
-      return device.isLandscape ? 'compact' : 'drawer';
-    } else if (device.isTablet) {
-      return device.isLandscape ? 'tooltip' : 'drawer';
-    } else {
-      return 'tooltip';
-    }
-  }, [device.isMobile, device.isTablet, device.isLandscape]);
+  // Track orientation changes
+  const [isOrientationChanging, setIsOrientationChanging] = useState(false);
   
-  // Helper function to get optimal view for current device
-  const getViewForDevice = (): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
-    if (device.dimensions.width < 480) return 'fullscreen';
-    if (device.dimensions.width < 768) return 'drawer';
-    if (device.dimensions.height < 500) return 'compact';
-    if (device.isTablet && !device.isLandscape) return 'drawer';
+  // Enhanced device detection with fallbacks
+  const isMobileEnhanced = useMemo(() => {
+    // Primary check: use the device hook
+    if (device.isMobile !== undefined) return device.isMobile;
+    
+    // Fallback: check screen dimensions
+    return responsive.screenWidth < 640;
+  }, [device.isMobile, responsive.screenWidth]);
+  
+  const isTabletEnhanced = useMemo(() => {
+    // Primary check: use the device hook
+    if (device.isTablet !== undefined) return device.isTablet;
+    
+    // Fallback: check screen dimensions
+    return responsive.screenWidth >= 640 && responsive.screenWidth < 1024;
+  }, [device.isTablet, responsive.screenWidth]);
+  
+  // Handle orientation changes
+  const handleOrientationChange = useCallback(() => {
+    if (!window) return;
+    
+    setIsOrientationChanging(true);
+    
+    // Allow a small delay for the browser to adjust layout
+    setTimeout(() => {
+      setIsOrientationChanging(false);
+    }, 300);
+    
+    logger.debug('Orientation changed', {
+      context: 'ResponsiveTourContext',
+      data: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'
+      }
+    });
+  }, []);
+  
+  // Add orientation change event listener
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    // Listen for orientation changes
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // Also listen for resize events which could indicate orientation changes
+    window.addEventListener('resize', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, [handleOrientationChange]);
+  
+  // Determine the preferred view mode based on device and orientation
+  const preferredViewMode = useMemo((): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
+    // Handle orientation change
+    if (isOrientationChanging) {
+      // Return current mode to avoid flickering during transition
+      return 'drawer'; // Safe fallback during transitions
+    }
+    
+    // Very small screens get fullscreen treatment
+    if (device.dimensions.width < 320) {
+      return 'fullscreen';
+    }
+    
+    // Mobile phones
+    if (isMobileEnhanced) {
+      return device.isLandscape ? 'compact' : 'drawer';
+    }
+    
+    // Tablets
+    if (isTabletEnhanced) {
+      return device.isLandscape ? 'tooltip' : 'drawer';
+    }
+    
+    // Default for desktop
     return 'tooltip';
-  };
+  }, [
+    device.dimensions.width, 
+    device.isLandscape, 
+    isMobileEnhanced, 
+    isTabletEnhanced, 
+    isOrientationChanging
+  ]);
+  
+  // Enhanced helper function to get optimal view for current device
+  const getViewForDevice = useCallback((): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
+    if (!window) return 'tooltip'; // Safe server-side default
+    
+    const width = device.dimensions.width;
+    const height = device.dimensions.height;
+    const isLandscape = width > height;
+    
+    // Very small screens
+    if (width < 320) return 'fullscreen';
+    
+    // Small phones
+    if (width < 480) return isLandscape ? 'compact' : 'drawer';
+    
+    // Large phones
+    if (width < 768) return isLandscape ? 'compact' : 'drawer';
+    
+    // Small tablets
+    if (width < 1024) return isLandscape ? 'tooltip' : 'drawer';
+    
+    // Limited vertical space
+    if (height < 500) return 'compact';
+    
+    // Default
+    return 'tooltip';
+  }, [device.dimensions]);
   
   // Helper function to determine if drawer should be used
-  const shouldUseDrawer = (): boolean => {
-    return device.isMobile || 
-          (device.isTablet && !device.isLandscape) || 
-          device.dimensions.width < 768;
-  };
+  const shouldUseDrawer = useCallback((): boolean => {
+    return preferredViewMode === 'drawer' || preferredViewMode === 'fullscreen';
+  }, [preferredViewMode]);
   
   // Helper function to determine if compact view should be used
-  const shouldUseCompactView = (): boolean => {
-    return (device.isMobile && device.isLandscape) || 
-           device.dimensions.height < 500;
-  };
+  const shouldUseCompactView = useCallback((): boolean => {
+    return preferredViewMode === 'compact';
+  }, [preferredViewMode]);
 
   // Helper function to determine optimal position for tooltips
-  const getOptimalPosition = (elementRect: DOMRect | null): Position => {
-    if (!elementRect) return 'bottom';
+  const getOptimalPosition = useCallback((elementRect: DOMRect | null): Position => {
+    if (!elementRect || typeof window === 'undefined') return 'bottom';
     
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -116,15 +215,21 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
     // Sort by available space
     spaces.sort((a, b) => b.space - a.space);
     
+    // Adjust for RTL languages
+    if (isRTL) {
+      if (spaces[0].direction === 'left') return 'right';
+      if (spaces[0].direction === 'right') return 'left';
+    }
+    
     // Return the direction with the most space
     return spaces[0].direction as Position;
-  };
+  }, [isRTL]);
   
   // Define the context value
   const contextValue = useMemo(() => ({
     // Device detection
-    isMobile: device.isMobile,
-    isTablet: device.isTablet,
+    isMobile: isMobileEnhanced,
+    isTablet: isTabletEnhanced,
     isDesktop: device.isDesktop,
     isLandscape: device.isLandscape,
     isPortrait: device.isPortrait,
@@ -139,7 +244,7 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
     
     // Layout preferences
     minTouchTargetSize: 44, // Minimum touch target size in pixels
-    contentMaxWidth: device.isMobile ? 320 : device.isTablet ? 480 : 600,
+    contentMaxWidth: isMobileEnhanced ? 320 : isTabletEnhanced ? 480 : 600,
     
     // RTL support
     isRTL,
@@ -148,16 +253,33 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
     // Accessibility
     prefersReducedMotion,
     
+    // Orientation change detection
+    isOrientationChanging,
+    handleOrientationChange,
+    
     // Helper functions
     getViewForDevice,
     getOptimalPosition,
     shouldUseDrawer,
     shouldUseCompactView
   }), [
-    device.isMobile, device.isTablet, device.isDesktop, 
-    device.isLandscape, device.isPortrait, device.dimensions,
-    responsive.activeBreakpoint, preferredViewMode, 
-    isRTL, direction, prefersReducedMotion
+    isMobileEnhanced, 
+    isTabletEnhanced, 
+    device.isDesktop, 
+    device.isLandscape, 
+    device.isPortrait, 
+    device.dimensions,
+    responsive.activeBreakpoint, 
+    preferredViewMode, 
+    isRTL, 
+    direction, 
+    prefersReducedMotion,
+    isOrientationChanging,
+    handleOrientationChange,
+    getViewForDevice,
+    getOptimalPosition,
+    shouldUseDrawer,
+    shouldUseCompactView
   ]);
   
   // Provide the context to children

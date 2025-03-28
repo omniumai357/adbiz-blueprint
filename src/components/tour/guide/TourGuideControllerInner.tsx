@@ -1,5 +1,5 @@
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useTour } from "@/contexts/tour";
 import { useTourElementFinder } from "@/hooks/tour/useTourElementFinder";
 import { useTourKeyboardNavigation } from "@/hooks/tour/useTourKeyboardNavigation";
@@ -13,6 +13,7 @@ import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
 import { useLanguage } from "@/contexts/language-context";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 import { Position } from "@/lib/tour/types";
+import { logger } from "@/lib/utils/logging";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {
@@ -37,10 +38,39 @@ export const TourGuideControllerInner: React.FC = () => {
     preferredViewMode,
     minTouchTargetSize,
     shouldUseDrawer,
-    shouldUseCompactView
+    shouldUseCompactView,
+    isOrientationChanging,
+    handleOrientationChange
   } = useResponsiveTour();
   
   const { targetElement } = useTourElementFinder(currentStepData?.target || '');
+  
+  // Log device information for debugging
+  useEffect(() => {
+    if (isActive && currentStepData) {
+      logger.debug('Tour active with device info', {
+        context: 'TourGuideController',
+        data: { 
+          isMobile,
+          isTablet, 
+          isLandscape,
+          preferredViewMode,
+          currentStep: currentStep + 1,
+          totalSteps
+        }
+      });
+    }
+  }, [isActive, currentStepData, isMobile, isTablet, isLandscape, preferredViewMode, currentStep, totalSteps]);
+  
+  // Handle orientation changes
+  useEffect(() => {
+    if (isActive && isOrientationChanging) {
+      // Perform any cleanup or adjustments needed during orientation changes
+      logger.debug('Handling orientation change in tour', {
+        context: 'TourGuideController'
+      });
+    }
+  }, [isActive, isOrientationChanging]);
   
   // Define a handleKeyNavigation function with RTL awareness
   const handleKeyNavigation = (event: React.KeyboardEvent | KeyboardEvent, navigationAction?: string) => {
@@ -111,7 +141,8 @@ export const TourGuideControllerInner: React.FC = () => {
         isLandscape={isLandscape}
         useDrawer={shouldUseDrawer()}
         useCompactView={shouldUseCompactView()}
-        preferredViewMode={preferredViewMode as "tooltip" | "drawer" | "compact" | "auto"}
+        preferredViewMode={preferredViewMode}
+        isOrientationChanging={isOrientationChanging}
       />
     </>
   );

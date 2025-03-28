@@ -6,6 +6,7 @@ import { TourDrawer } from "./TourDrawer";
 import { TourCompactView } from "./TourCompactView";
 import { TourSpotlight } from "./TourSpotlight";
 import { Position } from "@/lib/tour/types";
+import { logger } from "@/lib/utils/logging";
 
 interface TourViewRendererProps {
   step: TourStep;
@@ -25,7 +26,8 @@ interface TourViewRendererProps {
   isLandscape: boolean;
   useDrawer: boolean;
   useCompactView: boolean;
-  preferredViewMode?: "tooltip" | "drawer" | "compact" | "auto";
+  preferredViewMode: "tooltip" | "drawer" | "compact" | "fullscreen";
+  isOrientationChanging?: boolean;
 }
 
 /**
@@ -55,7 +57,8 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   isLandscape,
   useDrawer,
   useCompactView,
-  preferredViewMode = "auto"
+  preferredViewMode,
+  isOrientationChanging = false
 }) => {
   // Determine the position of the tooltip
   const position = step.position || "bottom";
@@ -72,18 +75,43 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
 
   const adjustedPosition = getAdjustedPosition(position as Position);
 
+  // Log view selection for debugging
+  React.useEffect(() => {
+    logger.debug('Tour view selection', {
+      context: 'TourViewRenderer',
+      data: {
+        preferredViewMode,
+        useDrawer,
+        useCompactView,
+        isOrientationChanging,
+        deviceInfo: {
+          isMobile,
+          isTablet,
+          isLandscape
+        }
+      }
+    });
+  }, [preferredViewMode, useDrawer, useCompactView, isOrientationChanging, isMobile, isTablet, isLandscape]);
+
   // Choose the view to render based on device and preferences
   const shouldRenderTooltip = 
-    (preferredViewMode === "tooltip") || 
-    (preferredViewMode === "auto" && !useDrawer && !useCompactView);
+    !isOrientationChanging && 
+    ((preferredViewMode === "tooltip") || 
+    (preferredViewMode !== "fullscreen" && !useDrawer && !useCompactView));
   
   const shouldRenderDrawer = 
-    (preferredViewMode === "drawer") || 
-    (preferredViewMode === "auto" && useDrawer);
+    !isOrientationChanging && 
+    ((preferredViewMode === "drawer") || 
+    (preferredViewMode === "fullscreen") || 
+    (preferredViewMode !== "compact" && useDrawer));
   
   const shouldRenderCompact = 
-    (preferredViewMode === "compact") || 
-    (preferredViewMode === "auto" && useCompactView);
+    !isOrientationChanging && 
+    ((preferredViewMode === "compact") || 
+    (preferredViewMode !== "tooltip" && preferredViewMode !== "drawer" && useCompactView));
+
+  // During orientation changes, use a stable view to prevent flickering
+  const isTransitioning = isOrientationChanging;
 
   // Extract extended properties from step
   const mediaContent = step.media ? {
@@ -95,9 +123,31 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
 
   const transitionEffect = step.transition;
   const spotlightConfig = step.spotlight;
+  
+  // Create responsive class based on device
+  const responsiveClass = isMobile 
+    ? "tour-mobile" 
+    : isTablet 
+      ? "tour-tablet" 
+      : "tour-desktop";
+  
+  // Touch-specific classes
+  const touchClass = isMobile || isTablet 
+    ? "touch-optimized" 
+    : "";
+
+  if (isTransitioning) {
+    // During transition, show a simplified placeholder to prevent flickering
+    return (
+      <div className="tour-transition-placeholder">
+        {/* Simple loading indicator during orientation change */}
+        <div className="tour-loading-indicator"></div>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className={`tour-view-container ${responsiveClass} ${touchClass}`}>
       {/* Render spotlight effect if configured */}
       {spotlightConfig && targetElement && (
         <TourSpotlight 
@@ -162,6 +212,6 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
           isRTL={isRTL}
         />
       )}
-    </>
+    </div>
   );
 };
