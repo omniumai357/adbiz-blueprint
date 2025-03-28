@@ -81,7 +81,9 @@ export interface BundleDiscountInfo {
 
 export interface TourStepAction {
   text?: string;
+  label?: string;
   hidden?: boolean;
+  callback?: () => void;
 }
 
 export interface TourStep {
@@ -89,6 +91,7 @@ export interface TourStep {
   title: string;
   content: string;
   target: string;
+  elementId?: string;
   placement?:
     | "auto"
     | "auto-start"
@@ -105,15 +108,48 @@ export interface TourStep {
     | "left"
     | "left-start"
     | "left-end";
+  position?: string;
   animation?: "fade" | "slide-in-bottom" | "slide-in-top" | "slide-in-left" | "slide-in-right";
+  isHidden?: boolean;
+  condition?: () => boolean;
+  order?: number;
+  metadata?: Record<string, any>;
+  path?: {
+    enabled: boolean;
+    targetElementId: string;
+    style?: string;
+  } | string;
+  dependencies?: string[];
+  isOptional?: boolean;
+  userRoles?: string[];
+  triggers?: string[];
+  priority?: number;
+  floatingUIOptions?: any;
   media?: {
     type: 'image' | 'video';
     source: string;
+    alt?: string;
   };
   actions?: {
     next?: TourStepAction;
     prev?: TourStepAction;
     skip?: TourStepAction;
+    finish?: TourStepAction;
+    close?: TourStepAction;
+  };
+}
+
+export interface TourPath {
+  id: string;
+  name: string;
+  description?: string;
+  steps: TourStep[];
+  route?: string;
+  allowSkip?: boolean;
+  showProgress?: boolean;
+  autoStart?: boolean;
+  config?: {
+    metadata?: Record<string, any>;
   };
 }
 
@@ -122,6 +158,47 @@ export interface TourConfig {
   steps: TourStep[];
   loop?: boolean;
   isCompleted?: boolean;
+}
+
+export interface TourContextType {
+  isActive: boolean;
+  currentStep: number;
+  totalSteps: number;
+  currentStepData: TourStep | null;
+  currentPath: string | null;
+  currentPathData: TourPath | undefined;
+  tourPaths: TourPath[];
+  availablePaths: TourPath[];
+  
+  // Tour navigation
+  nextStep: () => void;
+  prevStep: () => void;
+  goToStep: (stepIndex: number) => void;
+  startTour: (pathId: string) => void;
+  endTour: () => void;
+  pauseTour: () => void;
+  resumeTour: () => void;
+  resetTour: () => void;
+  goToPath: (pathId: string) => void;
+  
+  // Tour state management
+  registerPath: (path: TourPath) => void;
+  unregisterPath: (pathId: string) => void;
+  setDynamicContent: (stepId: string, content: string) => void;
+  setAvailablePaths: (paths: TourPath[]) => void;
+  
+  // Custom configuration
+  customConfig: Record<string, any>;
+  setCustomConfig: (config: Record<string, any>) => void;
+  
+  // Additional properties
+  handleKeyNavigation: (event: React.KeyboardEvent | KeyboardEvent, navigationAction?: string) => void;
+  visibleSteps: TourStep[];
+  content: string;
+  
+  // Tour paths management
+  setTourPaths: React.Dispatch<React.SetStateAction<TourPath[]>>;
+  setVisibleSteps: React.Dispatch<React.SetStateAction<TourStep[]>>;
 }
 
 export interface TourContextValue {

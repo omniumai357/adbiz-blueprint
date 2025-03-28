@@ -14,7 +14,7 @@ export const createServicesPageTour = (): TourPath => {
       content: 'Explore our wide range of services tailored to your business needs.',
       position: 'bottom',
       placement: 'bottom',
-      animation: 'fade-in'
+      animation: 'fade'  // Changed from 'fade-in' to 'fade'
     },
     {
       id: 'services-categories',
@@ -24,7 +24,7 @@ export const createServicesPageTour = (): TourPath => {
       content: 'Browse services by category to find what you need.',
       position: 'bottom',
       placement: 'bottom',
-      animation: 'fade-in'
+      animation: 'fade'  // Changed from 'fade-in' to 'fade'
     },
     {
       id: 'service-details',
@@ -34,7 +34,7 @@ export const createServicesPageTour = (): TourPath => {
       content: 'Click on any service to view detailed information and pricing.',
       position: 'right',
       placement: 'right',
-      animation: 'slide-in'
+      animation: 'slide-in-right'  // Changed from 'slide-in' to 'slide-in-right'
     }
   ];
   

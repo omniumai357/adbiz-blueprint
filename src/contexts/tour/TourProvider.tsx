@@ -1,4 +1,3 @@
-
 import React, {
   createContext,
   useState,
@@ -7,7 +6,6 @@ import React, {
   useMemo,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-// Update import to use the correct path
 import { useAuth } from '@/features/auth';
 import { TourPath, TourStep } from './types';
 import { loadTourPath } from '@/hooks/tour/controller/tour-loader';
@@ -52,10 +50,8 @@ export const TourProvider: React.FC<TourProviderProps> = ({
   const location = useLocation();
   const { user } = useAuth();
 
-  // Load tour paths on component mount
   useEffect(() => {
     const loadInitialTours = async () => {
-      // Example: Load a tour based on the current pathname
       if (currentPathname) {
         const pathId = `${currentPathname.replace(/\//g, '-')}-tour`.replace(/^-/, '');
         const loadedPath = await loadTourPath(pathId);
@@ -64,7 +60,6 @@ export const TourProvider: React.FC<TourProviderProps> = ({
         }
       }
       
-      // Example: Load a default demo tour
       const demoTour = await loadTourPath('demo-tour');
       if (demoTour) {
         setTourPaths(prev => [...prev, demoTour]);
@@ -74,12 +69,10 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     loadInitialTours();
   }, [currentPathname]);
 
-  // Find current path data
   const currentPathData = useMemo(() => {
     return tourPaths.find(path => path.id === currentPath) || undefined;
   }, [currentPath, tourPaths]);
 
-  // Find current step data
   const currentStepData = useMemo(() => {
     return visibleSteps[currentStep] || null;
   }, [currentStep, visibleSteps]);
@@ -88,7 +81,6 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     return visibleSteps.length;
   }, [visibleSteps]);
 
-  // Start tour function
   const startTour = useCallback((pathId: string) => {
     const path = tourPaths.find(p => p.id === pathId);
     if (!path) {
@@ -101,13 +93,11 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     setCurrentStep(0);
     setVisibleSteps(path.steps);
     
-    // Navigate to the tour route if it exists
     if (path.route) {
       navigate(path.route);
     }
   }, [tourPaths, navigate]);
 
-  // End tour function
   const endTour = useCallback(() => {
     setIsActive(false);
     setCurrentStep(0);
@@ -115,14 +105,12 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     setVisibleSteps([]);
   }, []);
 
-  // Go to step function
   const goToStep = useCallback((stepIndex: number) => {
     if (stepIndex >= 0 && stepIndex < totalSteps) {
       setCurrentStep(stepIndex);
     }
   }, [totalSteps]);
 
-  // Next step function
   const nextStep = useCallback(() => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(prev => prev + 1);
@@ -131,19 +119,16 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     }
   }, [currentStep, totalSteps, endTour]);
 
-  // Previous step function
   const prevStep = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
   }, [currentStep]);
   
-  // Register tour function
   const registerTour = useCallback((path: TourPath) => {
     setTourPaths(prev => [...prev, path]);
   }, []);
   
-  // Unregister tour function
   const unregisterTour = useCallback((pathId: string) => {
     setTourPaths(prev => prev.filter(path => path.id !== pathId));
   }, []);
@@ -186,7 +171,6 @@ export const TourProvider: React.FC<TourProviderProps> = ({
     setVisibleSteps
   ]);
 
-  // Reset tour when location changes
   useEffect(() => {
     if (isActive && currentPathData?.route !== location.pathname) {
       endTour();

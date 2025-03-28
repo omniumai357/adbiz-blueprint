@@ -14,7 +14,7 @@ export const TourPathManager: React.FC<TourPathManagerProps> = ({
   onPathTargetChange
 }) => {
   useEffect(() => {
-    if (!isActive || !currentStepData?.path) {
+    if (!isActive || !currentStepData || !currentStepData.path) {
       onPathTargetChange(null);
       return;
     }

@@ -40,7 +40,8 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
   } = useTour();
   
   const { getOptimalPosition, isLandscape } = useResponsiveTour();
-  const { deviceType, isPortrait } = useDevice();
+  const device = useDevice();
+  const isPortrait = device.isPortrait;
   
   // State for mobile views
   const [isDrawerOpen, setIsDrawerOpen] = useState(true);
