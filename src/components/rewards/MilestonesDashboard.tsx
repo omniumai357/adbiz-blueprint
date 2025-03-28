@@ -110,13 +110,11 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             // Extract points_required safely from milestone with robust type checking
             let pointsRequired = 0;
             
-            // First check if milestone.milestone exists at all
-            if (milestone.milestone) {
-              // Then use a type guard to safely handle different possible types
-              if (typeof milestone.milestone === 'object') {
-                // Get points_required with nullish coalescing for safety
-                pointsRequired = milestone.milestone ? Number(milestone.milestone.points_required || 0) : 0;
-              }
+            // Check if milestone.milestone exists and is an object
+            if (milestone.milestone && typeof milestone.milestone === 'object') {
+              // Now we can safely access properties
+              const milestoneObj = milestone.milestone as { points_required?: number };
+              pointsRequired = milestoneObj.points_required || 0;
             }
               
             return (
