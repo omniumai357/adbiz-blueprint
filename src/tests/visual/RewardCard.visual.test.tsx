@@ -1,4 +1,11 @@
 
+/**
+ * Visual regression tests for the RewardCard component
+ * 
+ * Tests the RewardCard component's appearance across different breakpoints,
+ * states, and configurations.
+ */
+
 import React from 'react';
 import { render } from '@testing-library/react';
 import RewardCard from '@/components/rewards/RewardCard';
@@ -14,30 +21,68 @@ import { Breakpoint } from '@/hooks/useResponsive';
 // Configure the matcher
 configureToMatchImageSnapshot();
 
+// Mock the hooks and translations
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      const translations: Record<string, string> = {
+        'discount': 'Discount',
+        'claimReward': 'Claim Reward',
+        'claimed': 'Claimed',
+        'alreadyClaimed': 'Already Claimed',
+        'achievedOn': options?.date ? `Achieved on ${options.date}` : 'Achieved',
+        'claimRewardAriaLabel': options?.name ? `Claim ${options.name} reward` : 'Claim reward',
+        'noDescription': 'No description available'
+      };
+      return translations[key] || key;
+    }
+  })
+}));
+
+// Mock the useResponsive hook
+jest.mock('@/hooks/useResponsive', () => ({
+  useResponsive: () => ({
+    isMobile: window.innerWidth < 768,
+    isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+    activeBreakpoint: window.innerWidth < 640 ? 'xs' : 
+                      window.innerWidth < 768 ? 'sm' :
+                      window.innerWidth < 1024 ? 'md' :
+                      window.innerWidth < 1280 ? 'lg' :
+                      window.innerWidth < 1536 ? 'xl' : 'xxl'
+  })
+}));
+
 describe('RewardCard Visual Tests', () => {
-  // Sample reward data for testing
-  const sampleReward = {
+  // Standard mock data for tests
+  const standardReward = {
     milestone_id: 'reward-1',
     milestone_name: 'First Purchase Discount',
     milestone_description: 'A reward for completing your first purchase',
     icon: 'gift',
-    is_completed: true,
-    reward_claimed: false,
     reward_type: 'discount_percentage',
     reward_value: 10,
+    is_completed: true,
+    reward_claimed: false,
     completed_at: '2023-10-15T12:00:00Z'
   };
-
-  // Test available reward state
+  
+  const mockOnClaim = jest.fn().mockResolvedValue({});
+  
+  beforeEach(() => {
+    // Reset mock between tests
+    mockOnClaim.mockClear();
+  });
+  
+  // Test standard reward card across breakpoints
   testAllBreakpoints(
-    'renders unclaimed reward correctly',
-    ['xs', 'md', 'xl'],
+    'renders standard reward card correctly',
+    ['xs', 'sm', 'md', 'lg', 'xl'],
     (breakpoint: Breakpoint) => {
       const { container } = render(
         <ResponsiveVisualTest breakpoint={breakpoint}>
-          <RewardCard 
-            reward={sampleReward}
-            onClaim={() => Promise.resolve()}
+          <RewardCard
+            reward={standardReward}
+            onClaim={mockOnClaim}
             disabled={false}
           />
         </ResponsiveVisualTest>
@@ -48,28 +93,24 @@ describe('RewardCard Visual Tests', () => {
         customSnapshotIdentifier: getSnapshotIdentifier(
           'RewardCard', 
           breakpoint,
-          'unclaimed'
+          'standard'
         )
       });
     }
   );
-
-  // Test claimed reward state
+  
+  // Test claimed reward card
   testAllBreakpoints(
-    'renders claimed reward correctly',
+    'renders claimed reward card correctly',
     ['xs', 'md', 'xl'],
     (breakpoint: Breakpoint) => {
-      const claimedReward = {
-        ...sampleReward,
-        reward_claimed: true,
-        is_claimed: true
-      };
+      const claimedReward = { ...standardReward, reward_claimed: true, is_claimed: true };
       
       const { container } = render(
         <ResponsiveVisualTest breakpoint={breakpoint}>
-          <RewardCard 
+          <RewardCard
             reward={claimedReward}
-            onClaim={() => Promise.resolve()}
+            onClaim={mockOnClaim}
             disabled={false}
           />
         </ResponsiveVisualTest>
@@ -85,46 +126,14 @@ describe('RewardCard Visual Tests', () => {
       });
     }
   );
-
-  // Test fixed amount reward instead of percentage
-  testAllBreakpoints(
-    'renders fixed amount reward correctly',
-    ['xs', 'md', 'xl'],
-    (breakpoint: Breakpoint) => {
-      const fixedReward = {
-        ...sampleReward,
-        reward_type: 'discount_fixed',
-        reward_value: 25
-      };
-      
-      const { container } = render(
-        <ResponsiveVisualTest breakpoint={breakpoint}>
-          <RewardCard 
-            reward={fixedReward}
-            onClaim={() => Promise.resolve()}
-            disabled={false}
-          />
-        </ResponsiveVisualTest>
-      );
-      
-      expect(container).toMatchImageSnapshot({
-        ...defaultSnapshotOptions,
-        customSnapshotIdentifier: getSnapshotIdentifier(
-          'RewardCard', 
-          breakpoint,
-          'fixed-amount'
-        )
-      });
-    }
-  );
-
-  // Test disabled state
-  it('renders disabled state correctly', () => {
+  
+  // Test disabled state (while processing)
+  it('renders disabled reward card correctly', () => {
     const { container } = render(
       <ResponsiveVisualTest breakpoint="md">
-        <RewardCard 
-          reward={sampleReward}
-          onClaim={() => Promise.resolve()}
+        <RewardCard
+          reward={standardReward}
+          onClaim={mockOnClaim}
           disabled={true}
         />
       </ResponsiveVisualTest>
@@ -139,20 +148,48 @@ describe('RewardCard Visual Tests', () => {
       )
     });
   });
-
-  // Test long content handling
-  it('handles long content correctly', () => {
-    const longContentReward = {
-      ...sampleReward,
-      milestone_name: 'This is an extremely long milestone name that should be properly truncated on smaller screens',
-      milestone_description: 'This description is intentionally very long to test how the component handles text overflow and wrapping across different screen sizes. We want to make sure that the card still looks good and maintains its design integrity.'
+  
+  // Test fixed dollar amount reward
+  it('renders dollar amount reward correctly', () => {
+    const dollarReward = { 
+      ...standardReward, 
+      reward_type: 'discount_fixed',
+      reward_value: 25
+    };
+    
+    const { container } = render(
+      <ResponsiveVisualTest breakpoint="md">
+        <RewardCard
+          reward={dollarReward}
+          onClaim={mockOnClaim}
+          disabled={false}
+        />
+      </ResponsiveVisualTest>
+    );
+    
+    expect(container).toMatchImageSnapshot({
+      ...defaultSnapshotOptions,
+      customSnapshotIdentifier: getSnapshotIdentifier(
+        'RewardCard', 
+        'md',
+        'dollar-amount'
+      )
+    });
+  });
+  
+  // Test with long text content
+  it('handles long text content correctly', () => {
+    const longTextReward = { 
+      ...standardReward, 
+      milestone_name: 'Very Long Milestone Name That Should Be Truncated on Mobile Devices',
+      milestone_description: 'This is an extremely long description that tests how the component handles text overflow and ensures that appropriate ellipsis or wrapping is applied based on the current viewport size and available space.'
     };
     
     const { container } = render(
       <ResponsiveVisualTest breakpoint="xs">
-        <RewardCard 
-          reward={longContentReward}
-          onClaim={() => Promise.resolve()}
+        <RewardCard
+          reward={longTextReward}
+          onClaim={mockOnClaim}
           disabled={false}
         />
       </ResponsiveVisualTest>
@@ -163,7 +200,7 @@ describe('RewardCard Visual Tests', () => {
       customSnapshotIdentifier: getSnapshotIdentifier(
         'RewardCard', 
         'xs',
-        'long-content'
+        'long-text'
       )
     });
   });
