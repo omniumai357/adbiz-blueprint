@@ -8,7 +8,7 @@
  */
 
 // Import jest-image-snapshot types for TypeScript support
-import { MatchImageSnapshotOptions } from 'jest-image-snapshot';
+import type { MatchImageSnapshotOptions } from 'jest-image-snapshot';
 import { BREAKPOINTS, Breakpoint } from '@/hooks/useResponsive';
 
 /**
