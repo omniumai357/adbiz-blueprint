@@ -1,4 +1,5 @@
 
+
 # Responsive Issue Management Workflow
 
 This document outlines the standardized process for identifying, documenting, triaging, and resolving responsive design issues in our application.
@@ -175,3 +176,4 @@ This workflow is reviewed and updated quarterly based on:
 - New device categories
 - Team feedback
 - Changes to browser rendering engines
+
