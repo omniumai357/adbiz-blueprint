@@ -1,86 +1,120 @@
 
-import { useCallback } from 'react';
-import { useTourGestures } from './useTourGestures';
+import { useState, useEffect, useCallback } from 'react';
 import { useResponsiveTour } from '@/contexts/tour/ResponsiveTourContext';
 
 /**
- * Options for the mobile tour interactions hook
+ * Touch event boundary protection distance in pixels
  */
-interface MobileTourInteractionsOptions {
-  onNext: () => void;
-  onPrev: () => void;
-  onClose: () => void;
-  currentStep: number;
-  totalSteps: number;
-  enableHaptics?: boolean;
-  enableSwipeNavigation?: boolean;
-  preventScrolling?: boolean;
-}
+const EDGE_PROTECTION_PX = 48;
 
 /**
- * Hook that provides comprehensive mobile interaction handling for tour components
+ * Hook to handle mobile-specific tour interactions
+ * 
+ * Provides gesture support, touch optimization, and
+ * accessibility enhancements for mobile tour experiences.
  */
-export function useMobileTourInteractions({
-  onNext,
-  onPrev,
-  onClose,
-  currentStep,
-  totalSteps,
-  enableHaptics = true,
-  enableSwipeNavigation = true,
-  preventScrolling = true
-}: MobileTourInteractionsOptions) {
-  const { isRTL, isLandscape } = useResponsiveTour();
+export function useMobileTourInteractions() {
+  const {
+    isMobile,
+    isTablet,
+    screenWidth,
+    screenHeight,
+    minTouchTargetSize,
+    isRTL,
+    direction
+  } = useResponsiveTour();
   
-  // Handle previous/next based on current step
-  const handlePrev = useCallback(() => {
-    if (currentStep > 0) {
-      onPrev();
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  
+  // Detect if device has touch capability
+  const hasTouchCapability = typeof window !== 'undefined' && 
+    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  
+  // Handle touch start events
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (!isMobile && !isTablet) return;
+    
+    const touch = e.touches[0];
+    setStartX(touch.clientX);
+    setStartY(touch.clientY);
+    setIsSwiping(true);
+  }, [isMobile, isTablet]);
+  
+  // Handle touch move events
+  const handleTouchMove = useCallback((
+    e: React.TouchEvent, 
+    onSwipeLeft?: () => void,
+    onSwipeRight?: () => void
+  ) => {
+    if (!isSwiping) return;
+    
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - startX;
+    const deltaY = touch.clientY - startY;
+    
+    // Ignore vertical swipes
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+      return;
     }
-  }, [currentStep, onPrev]);
-  
-  const handleNext = useCallback(() => {
-    if (currentStep < totalSteps - 1) {
-      onNext();
-    } else {
-      onClose();
+    
+    // Prevent edge swipes (device gestures)
+    if (touch.clientX < EDGE_PROTECTION_PX || touch.clientX > screenWidth - EDGE_PROTECTION_PX) {
+      return;
     }
-  }, [currentStep, totalSteps, onNext, onClose]);
+    
+    // Required minimum distance for a swipe
+    const MIN_SWIPE_DISTANCE = 50;
+    
+    // Handle horizontal swipes based on RTL setting
+    if (Math.abs(deltaX) > MIN_SWIPE_DISTANCE) {
+      if (isRTL) {
+        // In RTL mode, swipe directions are reversed
+        if (deltaX > 0 && onSwipeLeft) {
+          onSwipeLeft();
+        } else if (deltaX < 0 && onSwipeRight) {
+          onSwipeRight();
+        }
+      } else {
+        // Standard LTR handling
+        if (deltaX < 0 && onSwipeLeft) {
+          onSwipeLeft();
+        } else if (deltaX > 0 && onSwipeRight) {
+          onSwipeRight();
+        }
+      }
+      
+      setIsSwiping(false);
+    }
+  }, [isSwiping, startX, startY, screenWidth, isRTL]);
   
-  // Set gesture handlers (with RTL support)
-  const swipeLeftHandler = !isRTL ? handleNext : handlePrev;
-  const swipeRightHandler = !isRTL ? handlePrev : handleNext;
+  // Handle touch end events
+  const handleTouchEnd = useCallback(() => {
+    setIsSwiping(false);
+  }, []);
   
-  // Configure gesture handling based on options
-  const { touchHandlers } = useTourGestures({
-    onSwipeLeft: enableSwipeNavigation ? swipeLeftHandler : undefined,
-    onSwipeRight: enableSwipeNavigation ? swipeRightHandler : undefined,
-    onSwipeDown: isLandscape ? undefined : onClose,
-    threshold: isLandscape ? 30 : 50, // Lower threshold for landscape mode
-    preventScrollOnSwipe: preventScrolling,
-    vibrate: enableHaptics,
-    longPressDelay: 700
-  });
+  // Calculate optimal touch areas
+  const getTouchSizeStyles = () => {
+    return {
+      minWidth: `${minTouchTargetSize}px`,
+      minHeight: `${minTouchTargetSize}px`,
+      padding: `${Math.max(8, minTouchTargetSize / 4)}px`
+    };
+  };
   
   return {
-    // Event handlers
-    touchHandlers,
-    handleNext,
-    handlePrev,
-    handleClose: onClose,
+    // Touch event handlers
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
     
-    // Navigation state
-    isFirstStep: currentStep === 0,
-    isLastStep: currentStep === totalSteps - 1,
-    currentStep,
-    totalSteps,
+    // Touch optimization
+    hasTouchCapability,
+    touchSizeStyles: getTouchSizeStyles(),
     
-    // Direction helpers
+    // Direction awareness
     isRTL,
-    isLandscape,
-    
-    // Accessibility helpers
-    getStepLabel: (step: number) => `Step ${step + 1} of ${totalSteps}`,
-    getProgressPercentage: () => ((currentStep + 1) / totalSteps) * 100
+    direction
   };
 }
