@@ -47,6 +47,17 @@ export interface TourStep {
   priority?: number;
   selector?: string;
   floatingUIOptions?: any;
+  transition?: {
+    type: "fade" | "slide" | "zoom" | "flip" | "none";
+    direction?: "up" | "down" | "left" | "right";
+    duration?: number;
+  };
+  spotlight?: {
+    intensity?: "low" | "medium" | "high";
+    color?: string;
+    pulseEffect?: boolean;
+    fadeBackground?: boolean;
+  };
   // Add any other properties you encounter in the errors
 }
 

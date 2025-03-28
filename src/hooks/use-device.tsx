@@ -65,7 +65,11 @@ export function useDevice(): DeviceState {
         });
         setPixelRatio(window.devicePixelRatio || 1);
       } catch (err) {
-        logger.error('Error updating device dimensions', { error: err });
+        // Using a more compatible way to pass error information
+        logger.error('Error updating device dimensions', { 
+          context: 'useDevice',
+          data: { errorMessage: String(err) }
+        });
       }
     };
 

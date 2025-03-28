@@ -118,12 +118,15 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
       onClose={onClose}
       isLastStep={isLastStep}
       animation={step.animation}
-      media={step.media}
+      media={step.media ? {
+        type: step.media.type,
+        url: step.media.source, // Map 'source' to expected 'url' property
+        alt: step.media.alt,
+        animation: step.media.animation
+      } : undefined}
       nextLabel={step.actions?.next?.text}
       prevLabel={step.actions?.prev?.text}
       skipLabel={step.actions?.skip?.text}
-      transition={step.transition}
-      spotlight={step.spotlight}
       currentStep={currentStep}
       totalSteps={totalSteps}
       isRTL={isRTL}

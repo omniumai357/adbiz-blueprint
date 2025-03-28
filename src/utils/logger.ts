@@ -1,4 +1,3 @@
-
 /**
  * Centralized logging utility that provides consistent logging with severity levels,
  * context awareness, and conditional output based on environment
@@ -70,6 +69,7 @@ const logSymbols = {
 export interface LogData {
   context?: string;
   data?: any;
+  error?: any; // Add error property explicitly
 }
 
 /**
