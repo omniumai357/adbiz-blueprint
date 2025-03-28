@@ -54,8 +54,27 @@ export const TourMobileMedia: React.FC<TourMobileMediaProps> = ({
     className
   );
   
-  // Fix: Correct type comparison for media types
-  if (media.type === 'image' || media.type === 'gif') {
+  // Fix: Handle each media type separately to avoid type comparison errors
+  if (media.type === 'image') {
+    return (
+      <div className={mediaClassNames}>
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-8 w-8 border-4 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
+          </div>
+        )}
+        <img 
+          src={media.url} 
+          alt={media.alt || currentStepData.title} 
+          className={cn("object-contain", isLoading ? "opacity-0" : "opacity-100 transition-opacity")}
+          onLoad={handleLoad}
+          loading="eager"
+        />
+      </div>
+    );
+  }
+  
+  if (media.type === 'gif') {
     return (
       <div className={mediaClassNames}>
         {isLoading && (
