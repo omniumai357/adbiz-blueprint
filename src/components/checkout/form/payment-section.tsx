@@ -35,7 +35,7 @@ const PaymentSection = ({
     description: packageDetails.description,
     price: packageDetails.price,
     features: packageDetails.features,
-    category: packageDetails.category || 'custom', // Use the category if available, or default to 'custom'
+    category: (packageDetails.category as "monthly" | "custom" | "platinum") || 'custom', // Explicitly type cast to one of the allowed values
   };
 
   return (
