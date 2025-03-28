@@ -1,6 +1,6 @@
 
 import React from "react";
-import { cn } from "@/lib/utils";
+import { ResponsiveContainer } from "./responsive-container";
 
 interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -11,10 +11,8 @@ interface ContainerProps extends React.HTMLAttributes<HTMLDivElement> {
  * Container component that provides consistent horizontal spacing
  * and maximum widths following responsive design patterns
  * 
- * Features:
- * - Responsive padding that adjusts to screen size
- * - Multiple size variants for different content needs
- * - Centered content with consistent margins
+ * Now uses the unified ResponsiveContainer internally.
+ * Maintained for backward compatibility.
  */
 export const Container: React.FC<ContainerProps> = ({ 
   children, 
@@ -22,25 +20,23 @@ export const Container: React.FC<ContainerProps> = ({
   size = "default",
   ...props 
 }) => {
-  // Determine max-width based on size prop
-  const maxWidthClass = {
-    small: "max-w-screen-md",
-    default: "max-w-screen-xl",
-    large: "max-w-screen-2xl",
-    fluid: "max-w-none"
-  }[size];
+  // Map the old size values to the new ones
+  const mappedSize = size === "small" ? "md" :
+                     size === "default" ? "xl" :
+                     size === "large" ? "full" :
+                     size === "fluid" ? undefined : undefined;
+  
+  const isFluid = size === "fluid";
   
   return (
-    <div 
-      className={cn(
-        "w-full mx-auto px-4 sm:px-6 md:px-8", 
-        maxWidthClass,
-        className
-      )}
+    <ResponsiveContainer
+      size={mappedSize}
+      fluid={isFluid}
+      className={className}
       {...props}
     >
       {children}
-    </div>
+    </ResponsiveContainer>
   );
 };
 
