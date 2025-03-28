@@ -112,8 +112,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             if (milestone.milestone && 
                 typeof milestone.milestone === 'object' && 
                 milestone.milestone !== null && 
-                'points_required' in milestone.milestone && 
-                milestone.milestone.points_required !== null) {
+                'points_required' in milestone.milestone) {
               pointsRequired = Number(milestone.milestone.points_required) || 0;
             }
               

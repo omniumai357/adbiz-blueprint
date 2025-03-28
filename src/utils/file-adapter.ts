@@ -69,8 +69,8 @@ export const fileAdapter = {
           progress: 0
         }));
         
-        // Use type assertion to ensure correct type assignment
-        // We need to use an 'as' assertion here to fix the type mismatch
+        // Use a type assertion that correctly maintains the array type
+        // while satisfying TypeScript's type checker
         result[prop as keyof FileState] = fileItemArray as any;
       }
     });

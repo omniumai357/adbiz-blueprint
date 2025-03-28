@@ -30,8 +30,9 @@ export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
   
   // Safely convert fileType to string for display purposes using our adapter utility
   const fileTypeStr = fileAdapter.fileTypeToString(fileType);
-  const maxFileSize = getMaxFileSize(fileType.toString()); // Use direct toString() to avoid type issues
-  const readableFormats = getReadableFileFormats(fileType.toString());
+  // Pass the fileType directly to getMaxFileSize and getReadableFileFormats since they expect a keyof FileState
+  const maxFileSize = getMaxFileSize(fileType);
+  const readableFormats = getReadableFileFormats(fileType);
   
   return (
     <div className="space-y-4">
