@@ -8,7 +8,7 @@
 
 import React, { ReactNode, useEffect } from 'react';
 import { Breakpoint } from '@/hooks/useResponsive';
-import { getViewportForBreakpoint, mockWindowSize } from '../utils/responsiveTesting';
+import { getViewportForBreakpoint, mockWindowSize } from '../utils/responsiveTestHelpers';
 
 interface ResponsiveTestWrapperProps {
   /** Component or content to test */
