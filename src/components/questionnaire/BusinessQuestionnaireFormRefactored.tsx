@@ -19,7 +19,9 @@ interface BusinessQuestionnaireFormProps {
 }
 
 const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnaireFormProps) => {
-  logger.debug('Rendering BusinessQuestionnaireFormRefactored');
+  logger.debug('Rendering BusinessQuestionnaireFormRefactored', {
+    data: { currentStep: 'initialization' }
+  });
   
   const {
     form,
@@ -40,7 +42,9 @@ const BusinessQuestionnaireFormRefactored = ({ onComplete }: BusinessQuestionnai
   
   // Helper function to validate step by number
   const validateStep = (stepNumber: number) => {
-    logger.debug('Validating step', { step: stepNumber });
+    logger.debug('Validating step', { 
+      data: { stepNumber }
+    });
     
     switch (stepNumber) {
       case 1:

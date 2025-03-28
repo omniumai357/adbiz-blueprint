@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from 'react';
-import { FileState, FileItem, UploadProgressItem, FileUploadHook, FileStatus } from '../types';
+import { FileState, FileItem, UploadProgressItem, FileStatus } from '../types';
 import { useFileUploadProgress } from './useFileUploadProgress';
 import { useFileUploadState } from './useFileUploadState';
 import { fileAdapter } from '@/utils/file-adapter';
@@ -10,7 +10,7 @@ import { logger } from '@/utils/logger';
  * 
  * This hook combines state management and file upload handling in one place
  */
-export const useFileUpload = (): FileUploadHook => {
+export const useFileUpload = () => {
   // Use the specialized hooks internally
   const {
     files,
@@ -23,7 +23,8 @@ export const useFileUpload = (): FileUploadHook => {
   const {
     uploadProgress,
     updateProgress,
-    resetProgress
+    resetProgress,
+    clearProgress
   } = useFileUploadProgress();
   
   // Local state
@@ -51,14 +52,17 @@ export const useFileUpload = (): FileUploadHook => {
     
     if (newFiles.length === 0) return;
 
+    // Use data property for structured logging
     logger.info('File change detected', { 
-      fileType: String(fileType), 
-      fileCount: newFiles.length,
-      fileTypes: newFiles.map(f => f.type).join(', ')
+      data: {
+        fileType: String(fileType), 
+        fileCount: newFiles.length,
+        fileTypes: newFiles.map(f => f.type).join(', ')
+      }
     });
 
     // Convert fileType to string explicitly
-    const fileTypeStr = fileAdapter.fileTypeToString(fileType);
+    const fileTypeStr = String(fileType);
 
     // For logo, we only keep one file
     if (fileType === 'logo') {
@@ -95,10 +99,13 @@ export const useFileUpload = (): FileUploadHook => {
       if (Array.isArray(currentFiles) && currentFiles[index]) {
         const fileToRemove = currentFiles[index];
         
+        // Use the data property for structured logging
         logger.debug('Removing file', { 
-          fileType, 
-          index, 
-          fileName: fileToRemove?.file?.name 
+          data: {
+            fileType: String(fileType), 
+            index, 
+            fileName: fileToRemove?.file?.name 
+          }
         });
         
         // Remove from progress tracking if needed
@@ -116,18 +123,28 @@ export const useFileUpload = (): FileUploadHook => {
   const uploadFiles = useCallback(async (businessId: string): Promise<boolean> => {
     setUploading(true);
     setUploadError(null);
-    logger.info('Starting file upload process', { businessId: businessId });
+    logger.info('Starting file upload process', { 
+      data: {
+        businessId
+      }
+    });
     
     try {
       // For now, just simulate an upload process
       await new Promise(resolve => setTimeout(resolve, 1000));
-      logger.info('Upload completed successfully', { businessId: businessId });
+      logger.info('Upload completed successfully', { 
+        data: {
+          businessId
+        }
+      });
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
       logger.error('File upload failed', { 
-        businessId: businessId, 
-        error: errorMessage 
+        data: {
+          businessId, 
+          error: errorMessage 
+        }
       });
       setUploadError('Failed to upload files');
       return false;
@@ -140,14 +157,19 @@ export const useFileUpload = (): FileUploadHook => {
   const resetFileUpload = useCallback(() => {
     logger.debug('Resetting file upload state');
     clearFiles();
-    resetProgress();
+    clearProgress();
     setUploadError(null);
     setSelectedFiles([]);
-  }, [clearFiles, resetProgress]);
+  }, [clearFiles, clearProgress]);
   
   // Upload a single file (for direct uploads)
   const uploadFile = useCallback(async (file: File, path: string): Promise<string> => {
-    logger.debug('Uploading single file', { fileName: file.name, path: path });
+    logger.debug('Uploading single file', { 
+      data: {
+        fileName: file.name, 
+        path
+      }
+    });
     
     try {
       // Simulate upload with delay based on file size
@@ -156,13 +178,19 @@ export const useFileUpload = (): FileUploadHook => {
       
       // Return a simulated URL
       const url = `https://example.com/uploads/${path}/${file.name}`;
-      logger.debug('Single file upload complete', { url: url });
+      logger.debug('Single file upload complete', { 
+        data: {
+          url
+        }
+      });
       return url;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown upload error';
       logger.error('Single file upload failed', { 
-        fileName: file.name, 
-        error: errorMessage 
+        data: {
+          fileName: file.name, 
+          error: errorMessage 
+        }
       });
       throw error;
     }

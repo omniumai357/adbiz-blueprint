@@ -66,7 +66,7 @@ export const fileAdapter = {
           file,
           status: 'ready',
           progress: 0
-        }));
+        })) as FileItem[];
       }
     });
     

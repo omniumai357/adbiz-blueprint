@@ -43,8 +43,10 @@ export const useFileValidation = () => {
     // Check file size
     if (file.size > maxSize) {
       logger.warn(`File "${file.name}" exceeds maximum size for ${fileType}`, {
-        fileSize: formatFileSize(file.size),
-        maxSize: formatFileSize(maxSize)
+        data: {
+          fileSize: formatFileSize(file.size),
+          maxSize: formatFileSize(maxSize)
+        }
       });
       return false;
     }
@@ -54,8 +56,10 @@ export const useFileValidation = () => {
       const isValidType = allowedTypes[fileType].includes(file.type);
       if (!isValidType) {
         logger.warn(`File "${file.name}" has invalid type for ${fileType}`, {
-          actualType: file.type,
-          allowedTypes: allowedTypes[fileType].join(', ')
+          data: {
+            actualType: file.type,
+            allowedTypes: allowedTypes[fileType].join(', ')
+          }
         });
       }
       return isValidType;

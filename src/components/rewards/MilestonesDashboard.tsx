@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import { MilestoneCard } from "./MilestoneCard";
@@ -106,11 +107,13 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           ))}
           
           {milestones.map((milestone) => {
-            const pointsRequired = 
-              milestone.milestone && 
-              typeof milestone.milestone === 'object' && 
-              'points_required' in milestone.milestone ? 
-              milestone.milestone.points_required : 0;
+            // Safely extract points_required from milestone
+            let pointsRequired = 0;
+            if (milestone.milestone && 
+                typeof milestone.milestone === 'object' && 
+                'points_required' in milestone.milestone) {
+              pointsRequired = milestone.milestone.points_required as number;
+            }
               
             return (
               <MilestoneCard 

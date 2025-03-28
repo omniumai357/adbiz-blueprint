@@ -71,10 +71,12 @@ const BusinessQuestionnaireForm = ({ onComplete }: BusinessQuestionnaireFormProp
   
   // Log file state transformations at debug level
   logger.debug('File state being adapted for UI', { 
-    hasLogo: !!fileState.logo,
-    imagesCount: fileState.images.length,
-    videosCount: fileState.videos.length,
-    documentsCount: fileState.documents.length
+    data: {
+      hasLogo: !!fileState.logo,
+      imagesCount: fileState.images.length,
+      videosCount: fileState.videos.length,
+      documentsCount: fileState.documents.length
+    }
   });
   
   // Adapt files for the ReviewSection component which expects plain File objects

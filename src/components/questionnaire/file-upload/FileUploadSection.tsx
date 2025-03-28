@@ -22,14 +22,18 @@ const FileUploadSection: FC<FileUploadSectionProps> = ({ hasLogo }) => {
   } = useFileUploadContext();
 
   // Log the file upload section initialization
-  logger.debug('Rendering FileUploadSection', { hasLogo });
+  logger.debug('Rendering FileUploadSection', { 
+    data: { hasLogo }
+  });
 
   // Adapt FileState to be used with UI components expecting File objects
   const adaptedFiles = fileAdapter.adaptFileStateForUI(files);
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: keyof FileState) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    logger.debug(`File change for ${fileType}`, { count: e.target.files.length });
+    logger.debug(`File change for ${String(fileType)}`, { 
+      data: { count: e.target.files.length }
+    });
     handleFileChange(fileType, e);
   };
 
