@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,7 @@ import DiscountDisplay from "@/components/checkout/form/discount-display";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
 import { useCheckoutValidation } from "@/hooks/checkout/useCheckoutValidation";
 import ResponsiveFormSection from "@/components/checkout/form/responsive-form-section";
+import { useFormAutoSave } from "@/hooks/form/useFormAutoSave";
 
 type CheckoutStep = "information" | "payment" | "confirmation";
 
@@ -52,6 +52,15 @@ const CheckoutForm = ({
   const validation = useCheckoutValidation();
   const [isSubmittingInfo, setIsSubmittingInfo] = useState(false);
   
+  // Use form auto-save functionality
+  const { lastSaved, saveFormData } = useFormAutoSave({
+    formId: 'checkout_customer_info',
+    data: customerInfo,
+    onRestore: (savedData) => {
+      setCustomerInfo(prev => ({ ...prev, ...savedData }));
+    }
+  });
+  
   // Validate customer info when it changes
   useEffect(() => {
     if (customerInfo) {
@@ -67,12 +76,8 @@ const CheckoutForm = ({
     const isValid = validation.validateCustomerInfo(customerInfo);
     
     if (isValid) {
-      // Save form data in local storage for recovery
-      try {
-        localStorage.setItem('checkout_customer_info', JSON.stringify(customerInfo));
-      } catch (e) {
-        console.error('Error saving form data:', e);
-      }
+      // Force save form data before proceeding
+      saveFormData();
       
       // Progress to payment step
       onNextStep("payment");
@@ -127,6 +132,13 @@ const CheckoutForm = ({
   if (currentStep === "information") {
     return (
       <div className="space-y-8 animate-fade-in">
+        {/* Last saved indicator */}
+        {lastSaved && (
+          <div className="text-xs text-muted-foreground text-right">
+            Last saved: {lastSaved.toLocaleTimeString()}
+          </div>
+        )}
+        
         {/* Customer Information Section */}
         <ResponsiveFormSection 
           title="Customer Information"

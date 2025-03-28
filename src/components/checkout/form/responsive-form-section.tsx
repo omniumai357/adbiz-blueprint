@@ -1,49 +1,59 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useResponsive } from "@/hooks/useResponsive";
 
 interface ResponsiveFormSectionProps {
   title: string;
   description?: string;
   children: React.ReactNode;
   className?: string;
+  headerClassName?: string;
   contentClassName?: string;
-  isLoading?: boolean;
 }
 
 /**
- * A responsive form section component that provides consistent styling
- * and layout for form sections across the application
+ * A responsive container for form sections
+ * Adapts layout and spacing based on screen size
  */
 const ResponsiveFormSection: React.FC<ResponsiveFormSectionProps> = ({
   title,
   description,
   children,
   className,
-  contentClassName,
-  isLoading = false
+  headerClassName,
+  contentClassName
 }) => {
+  const { isMobile } = useResponsive();
+  
   return (
-    <Card className={cn("w-full", className)}>
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-xl">{title}</CardTitle>
+    <div className={cn(
+      "rounded-lg border border-border p-4 md:p-6",
+      isMobile ? "space-y-4" : "space-y-6",
+      className
+    )}>
+      <div className={cn("space-y-1", headerClassName)}>
+        <h3 className={cn(
+          "font-medium",
+          isMobile ? "text-lg" : "text-xl"
+        )}>
+          {title}
+        </h3>
+        
         {description && (
-          <CardDescription>{description}</CardDescription>
+          <p className="text-sm text-muted-foreground">
+            {description}
+          </p>
         )}
-      </CardHeader>
-      <CardContent className={cn("", contentClassName)}>
-        {isLoading ? (
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-10 bg-gray-200 rounded"></div>
-          </div>
-        ) : (
-          children
-        )}
-      </CardContent>
-    </Card>
+      </div>
+      
+      <div className={cn(
+        isMobile ? "space-y-4" : "space-y-6",
+        contentClassName
+      )}>
+        {children}
+      </div>
+    </div>
   );
 };
 
