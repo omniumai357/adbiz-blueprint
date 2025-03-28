@@ -38,7 +38,7 @@ export const ReactQueryProvider = ({ children }: ReactQueryProviderProps) => {
           return failureCount < 2;
         },
         refetchOnWindowFocus: false,
-        gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache longer
+        gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache longer (updated from cacheTime)
         refetchOnReconnect: "always", // Refetch when connection restored
         placeholderData: (previousData) => previousData, // Keep previous data while refetching
         
