@@ -1,7 +1,7 @@
 
 import React from "react";
 import CardPaymentForm from "@/components/checkout/form/card-payment-form";
-import PayPalButton from "@/components/PayPalButton";
+import PayPalPaymentForm from "@/components/checkout/form/paypal-payment-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerInfo, PackageDetails, PaymentMethod } from "@/types/checkout";
 
@@ -39,11 +39,12 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
             packageName={packageDetails.title}
           />
         ) : (
-          <PayPalButton
+          <PayPalPaymentForm
             amount={total}
-            packageDetails={packageDetails as any}
-            customerInfo={customerInfo as any}
+            packageDetails={packageDetails}
+            customerInfo={customerInfo}
             onSuccess={onOrderSuccess}
+            packageName={packageDetails.title}
           />
         )}
       </CardContent>

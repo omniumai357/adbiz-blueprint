@@ -1,69 +1,62 @@
 
-import { useState, useEffect } from "react";
-import { CustomerInfo } from "@/types/checkout";
-import { customerInfoSchema } from "@/schemas/checkout-validation";
+import { useState } from "react";
 import { useToast } from "@/hooks/ui/use-toast";
+import { CustomerInfo } from "@/types/checkout";
+import { validateCustomerInfo } from "@/utils/checkout/validation-utils";
 
+/**
+ * Hook for validating checkout data
+ * 
+ * Provides validation utilities for customer information and checkout submission
+ */
 export function useCheckoutValidation() {
-  const [customerInfoValid, setCustomerInfoValid] = useState(false);
-  const [paymentFormValid, setPaymentFormValid] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
-  // Validate customer information
+  /**
+   * Validates customer information
+   * @param customerInfo Customer information to validate
+   * @returns Whether the customer information is valid
+   */
   const validateCustomerInfo = (customerInfo: Partial<CustomerInfo>): boolean => {
-    try {
-      // Use the zod schema to validate the customer info
-      customerInfoSchema.parse(customerInfo);
-      setCustomerInfoValid(true);
-      return true;
-    } catch (error) {
-      setCustomerInfoValid(false);
+    const { isValid, error } = validateCustomerInfo(customerInfo as CustomerInfo);
+    
+    if (!isValid) {
+      setValidationError(error);
       return false;
     }
+    
+    setValidationError(null);
+    return true;
   };
   
-  // Set payment form validation state
-  const setPaymentValidationState = (isValid: boolean) => {
-    setPaymentFormValid(isValid);
-  };
-  
-  // Check if all conditions are met for submission
-  const canSubmit = () => {
-    return customerInfoValid && paymentFormValid && !isSubmitting;
-  };
-  
-  // Validate the entire checkout before submission
+  /**
+   * Validates the checkout submission
+   * @param customerInfo Customer information to validate
+   * @returns Whether the checkout submission is valid
+   */
   const validateCheckoutSubmission = (customerInfo: Partial<CustomerInfo>): boolean => {
+    // First validate customer info
     if (!validateCustomerInfo(customerInfo)) {
       toast({
-        title: "Missing information",
-        description: "Please complete all required customer information fields.",
+        title: "Missing or invalid information",
+        description: validationError || "Please check your information and try again.",
         variant: "destructive",
       });
       return false;
     }
     
-    if (!paymentFormValid) {
-      toast({
-        title: "Invalid payment details",
-        description: "Please check your payment information and try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
+    // Additional validation could be added here
     
     return true;
   };
   
   return {
-    customerInfoValid,
-    paymentFormValid,
+    validationError,
     isSubmitting,
     setIsSubmitting,
     validateCustomerInfo,
-    setPaymentValidationState,
-    validateCheckoutSubmission,
-    canSubmit
+    validateCheckoutSubmission
   };
 }
