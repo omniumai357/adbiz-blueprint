@@ -5,7 +5,13 @@ import { createComponentLogger } from "@/lib/utils/logging";
 const logger = createComponentLogger('useMediaQuery');
 
 /**
- * Hook to handle media queries for responsive design
+ * Enhanced hook to handle media queries for responsive design
+ * 
+ * Features:
+ * - SSR compatibility
+ * - Error handling
+ * - Performance optimized
+ * - Proper cleanup of event listeners
  * 
  * @param query CSS media query string
  * @returns Boolean indicating whether the media query matches
@@ -39,7 +45,7 @@ export function useMediaQuery(query: string): boolean {
       // Define handler
       const handler = (): void => setMatches(mediaQuery.matches);
       
-      // Add event listener using the standard API
+      // Add event listener using the modern API
       mediaQuery.addEventListener("change", handler);
       
       // Clean up
@@ -56,25 +62,47 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /**
- * Hook that returns media query matches for common breakpoints
- * Using Tailwind's default breakpoints
+ * Hook that returns media query matches for Tailwind's default breakpoints
  * 
  * @returns Object with boolean values for common breakpoints
  */
 export function useBreakpoints() {
-  const isMobile = useMediaQuery("(max-width: 639px)");  // < sm
-  const isTablet = useMediaQuery("(min-width: 640px) and (max-width: 1023px)");  // sm-lg
-  const isDesktop = useMediaQuery("(min-width: 1024px)");  // >= lg
-  const isLargeDesktop = useMediaQuery("(min-width: 1280px)"); // >= xl
+  const sm = useMediaQuery("(min-width: 640px)");
+  const md = useMediaQuery("(min-width: 768px)");
+  const lg = useMediaQuery("(min-width: 1024px)");
+  const xl = useMediaQuery("(min-width: 1280px)");
+  const xxl = useMediaQuery("(min-width: 1536px)");
+  
+  const isMobile = !md;  // < md
+  const isTablet = md && !lg;  // md-lg
+  const isDesktop = lg;  // ≥ lg
+  const isLargeDesktop = xl; // ≥ xl
   const isLandscape = useMediaQuery("(orientation: landscape)");
   
   // Memoize result to avoid unnecessary re-renders
   return useMemo(() => ({
+    breakpoints: { sm, md, lg, xl, xxl },
     isMobile,
     isTablet, 
     isDesktop,
     isLargeDesktop,
     isLandscape,
-    isPortrait: !isLandscape
-  }), [isMobile, isTablet, isDesktop, isLargeDesktop, isLandscape]);
+    isPortrait: !isLandscape,
+    
+    // Comparison helpers
+    atLeast: {
+      sm,
+      md,
+      lg,
+      xl,
+      xxl
+    },
+    atMost: {
+      sm: !sm,
+      md: !md,
+      lg: !lg,
+      xl: !xl,
+      xxl: !xxl
+    }
+  }), [sm, md, lg, xl, xxl, isMobile, isTablet, isDesktop, isLargeDesktop, isLandscape]);
 }

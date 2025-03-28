@@ -16,12 +16,11 @@ interface MilestoneProgressCardProps {
 }
 
 /**
- * MilestoneProgressCard - Enhanced with optimized responsive design
+ * MilestoneProgressCard - Enhanced with standardized responsive design pattern
  * 
  * Features:
  * - Dynamic layout adjustments for all screen sizes
  * - Optimized spacing and typography for readability
- * - Smooth transitions between layouts
  * - Conditional rendering of content based on available space
  * - Performance optimized with selective rendering
  */
@@ -52,21 +51,21 @@ const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({
   return (
     <Card className={`bg-gradient-to-r from-slate-50 to-white border shadow-sm ${cardPadding}`}>
       <CardContent className="p-0">
-        <h2 className={`${titleClass} font-semibold mb-1 sm:mb-2`}>
+        <h2 className={`${titleClass} font-semibold mb-1 sm:mb-2`} id="progress-heading">
           {t('yourProgress')}
         </h2>
         <p className="text-muted-foreground mb-3 sm:mb-4 text-sm">
           {t('pointsEarned', { points: totalPoints })}
         </p>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-          <div className={`${statItemClass} bg-primary/5`}>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4" aria-labelledby="progress-heading">
+          <div className={`${statItemClass} bg-primary/5`} role="status" aria-label={t('totalPoints')}>
             <Medal className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-primary mb-1`} aria-hidden="true" />
             <p className="text-xs text-muted-foreground">{t('totalPoints')}</p>
             <p className={`${isMobile ? 'text-lg' : 'text-lg md:text-xl'} font-bold`}>{totalPoints}</p>
           </div>
           
-          <div className={`${statItemClass} bg-green-50`}>
+          <div className={`${statItemClass} bg-green-50`} role="status" aria-label={t('completedMilestones')}>
             <Award className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-green-500 mb-1`} aria-hidden="true" />
             <p className="text-xs text-muted-foreground">{t('completedMilestones')}</p>
             <p className={`${isMobile ? 'text-lg' : 'text-lg md:text-xl'} font-bold`}>{completedMilestones}</p>
@@ -75,7 +74,7 @@ const MilestoneProgressCard: React.FC<MilestoneProgressCardProps> = ({
           {(!isCompact || !isMobile) && (
             <div className={`${statItemClass} bg-amber-50 ${
               isMobile && isTablet ? 'col-span-2 md:col-span-1' : ''
-            }`}>
+            }`} role="status" aria-label={t('availableRewards')}>
               <Gift className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'} text-amber-500 mb-1`} aria-hidden="true" />
               <p className="text-xs text-muted-foreground">{t('availableRewards')}</p>
               <p className={`${isMobile ? 'text-lg' : 'text-lg md:text-xl'} font-bold`}>{availableRewards}</p>

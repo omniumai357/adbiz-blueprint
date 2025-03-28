@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle } from "lucide-react";
+import { Clock, CheckCircle, Target } from "lucide-react";
 import RewardIcon from './RewardIcon';
 import { createComponentLogger } from '@/lib/utils/logging';
 import { useResponsive } from '@/hooks/useResponsive';
@@ -24,15 +24,14 @@ interface MilestoneCardProps {
 }
 
 /**
- * Enhanced MilestoneCard Component
+ * Enhanced MilestoneCard Component with standardized responsive design pattern
  * 
- * Displays a single milestone with progress and reward information
  * Features:
- * - Fully responsive layout with optimized spacing
- * - Enhanced progress visualization with percentage indicator
- * - Improved content hierarchies for different screen sizes
- * - Optimized touch targets for mobile users
- * - Performance optimizations with memoized calculations
+ * - Optimized layout for all device sizes
+ * - Enhanced progress visualization
+ * - Consistent spacing and typography
+ * - Improved content hierarchies
+ * - Touch-friendly interactive elements
  */
 export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   name,
@@ -46,7 +45,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   isClaimingReward = false
 }) => {
   const { t } = useTranslation('rewards');
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile, isTablet, activeBreakpoint } = useResponsive();
   
   // Memoize calculations for better performance
   const { progress, pointsRemaining, progressText } = useMemo(() => {
@@ -81,13 +80,13 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
   const footerPadding = isMobile ? "px-3 py-3 sm:px-4" : "px-4 py-3 sm:px-6";
   
   return (
-    <Card className="overflow-hidden border shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+    <Card className={`overflow-hidden border ${isCompleted ? 'border-green-200' : 'border-slate-200'} shadow-sm hover:shadow-md transition-shadow h-full flex flex-col`} data-testid="milestone-card">
       <div className={`h-2 ${isCompleted ? 'bg-green-500' : 'bg-primary'}`} />
       
       <CardContent className={contentPadding}>
         <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
           <div className="flex-shrink-0">
-            <RewardIcon iconName={icon} completed={isCompleted} />
+            <RewardIcon iconName={icon} completed={isCompleted} size={isMobile ? 'sm' : 'default'} />
           </div>
           
           <div className="flex-1 w-full">
@@ -96,7 +95,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
             
             {!isCompleted && (
               <div className="mt-4 space-y-2 w-full">
-                <div className="flex justify-between text-sm mb-1">
+                <div className="flex justify-between text-sm mb-1" aria-hidden="true">
                   <span className="font-medium">{currentPoints} {t('points')}</span>
                   <span>{pointsRequired} {t('points')}</span>
                 </div>
@@ -106,17 +105,39 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
                     value={progress} 
                     className="h-2.5 rounded-full" 
                     aria-label={t('progressInfo', { progress })} 
+                    aria-valuenow={progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
                   />
-                  {isTablet && (
-                    <span className="absolute text-xs font-medium -top-0.5 text-primary" style={{ left: `${Math.min(90, progress)}%` }}>
+                  
+                  {/* Progress indicator - only shown on larger screens */}
+                  {!isMobile && (
+                    <span 
+                      className="absolute text-xs font-medium text-primary" 
+                      style={{ 
+                        left: `${Math.min(Math.max(progress, 5), 95)}%`, 
+                        top: '-1.25rem',
+                        transform: 'translateX(-50%)'
+                      }}
+                      aria-hidden="true"
+                    >
                       {progressText}
                     </span>
                   )}
                 </div>
                 
                 <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <Clock className="h-3 w-3 flex-shrink-0" />
-                  <span>{t('pointsToGo', { points: pointsRemaining })}</span>
+                  {progress < 100 ? (
+                    <>
+                      <Clock className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+                      <span>{t('pointsToGo', { points: pointsRemaining })}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Target className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+                      <span>{t('completedMilestones')}</span>
+                    </>
+                  )}
                 </p>
               </div>
             )}
@@ -125,7 +146,7 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
       </CardContent>
       
       {isCompleted && !rewardClaimed && (
-        <CardFooter className="bg-muted/30 px-4 py-3 sm:px-6 mt-auto">
+        <CardFooter className="bg-muted/30 mt-auto" style={{ padding: footerPadding }}>
           <Button 
             onClick={handleClaimReward} 
             disabled={isClaimingReward}
@@ -140,9 +161,9 @@ export const MilestoneCard: React.FC<MilestoneCardProps> = ({
       )}
       
       {isCompleted && rewardClaimed && (
-        <CardFooter className="bg-green-50 px-4 py-3 sm:px-6 mt-auto">
-          <div className="w-full flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
-            <CheckCircle className="h-4 w-4 flex-shrink-0" />
+        <CardFooter className="bg-green-50 mt-auto" style={{ padding: footerPadding }}>
+          <div className="w-full flex items-center justify-center gap-2 text-green-600 text-sm font-medium" role="status">
+            <CheckCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{t('rewardClaimed')}</span>
           </div>
         </CardFooter>

@@ -22,19 +22,15 @@ interface RewardCardProps {
  * Renders a card displaying a reward the user has earned
  * 
  * Features:
- * - Responsive design optimized for all device sizes
- * - Clear visual hierarchy with appropriate spacing
+ * - Standardized responsive design pattern
+ * - Optimized for all device sizes with appropriate spacing
+ * - Clear visual hierarchy with consistent typography
  * - Touch-friendly interaction targets
- * - Dynamic content adaptation for different screen sizes
- * - Optimized text truncation and overflow handling
- * 
- * @param reward - The reward data to display
- * @param onClaim - Function to call when the user claims the reward
- * @param disabled - Whether the claim button should be disabled
+ * - Proper text truncation and overflow handling
  */
 const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = false }) => {
-  const { t } = useTranslation();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { t } = useTranslation('rewards');
+  const { isMobile, isTablet } = useResponsive();
   
   // Handle claim button interaction
   const handleClaim = async () => {
@@ -74,19 +70,19 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
             </CardTitle>
           </div>
           <div className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium flex-shrink-0">
-            {reward.reward_value}{reward.reward_type === 'discount_percentage' ? '%' : '$'} {t('rewards.discount')}
+            {reward.reward_value}{reward.reward_type === 'discount_percentage' ? '%' : '$'} {t('discount')}
           </div>
         </div>
         {completedDate && (
           <p className="text-xs text-muted-foreground mt-1">
-            {t('rewards.achievedOn', { date: completedDate })}
+            {t('achievedOn', { date: completedDate })}
           </p>
         )}
       </CardHeader>
       
       <CardContent className={contentPadding}>
         <p className={`text-sm ${isMobile ? "line-clamp-2" : ""}`}>
-          {reward.milestone_description || t('rewards.noDescription')}
+          {reward.milestone_description || t('noDescription')}
         </p>
       </CardContent>
       
@@ -98,11 +94,11 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, onClaim, disabled = fal
           className="w-full transition-all"
           size={isMobile ? "sm" : "default"}
           aria-label={reward.is_claimed 
-            ? t('rewards.alreadyClaimed') 
-            : t('rewards.claimRewardAriaLabel', { name: reward.milestone_name })}
+            ? t('alreadyClaimed') 
+            : t('claimRewardAriaLabel', { name: reward.milestone_name })}
         >
           <Sparkles className={`${isMobile ? "h-3.5 w-3.5" : "h-4 w-4"} mr-2`} />
-          {reward.is_claimed ? t('rewards.claimed') : t('rewards.claimReward')}
+          {reward.is_claimed ? t('claimed') : t('claimReward')}
         </Button>
       </CardFooter>
     </Card>

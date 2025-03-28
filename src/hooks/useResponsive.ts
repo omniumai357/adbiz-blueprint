@@ -1,7 +1,7 @@
 
 import { useMemo } from 'react';
 import { useMediaQuery } from './use-media-query';
-import { createComponentLogger } from '@/lib/utils/logging';
+import { createComponentLogger } from "@/lib/utils/logging";
 
 const logger = createComponentLogger('useResponsive');
 
@@ -10,7 +10,7 @@ export const BREAKPOINTS = {
   xs: 480,    // Extra small devices (portrait phones)
   sm: 640,    // Small devices (landscape phones)
   md: 768,    // Medium devices (tablets)
-  lg: 1024,   // Large devices (laptops, small desktops)
+  lg: 1024,   // Large devices (laptops/desktops)
   xl: 1280,   // Extra large devices (large desktops)
   xxl: 1536   // Extra extra large devices (ultra-wide)
 };

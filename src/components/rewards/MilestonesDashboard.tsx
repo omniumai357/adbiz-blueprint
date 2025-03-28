@@ -20,8 +20,8 @@ interface MilestonesDashboardProps {
 }
 
 const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
-  const { t } = useTranslation();
-  const { isMobile, isTablet } = useResponsive();
+  const { t } = useTranslation('rewards');
+  const { isMobile, isTablet, atLeast } = useResponsive();
   const isTabletOrMobile = isMobile || isTablet;
   
   const {
@@ -53,7 +53,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
   const MilestonesSkeleton = () => (
     <div className="space-y-6">
       <Skeleton className="h-[120px] md:h-[150px] w-full rounded-lg" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
         <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
         <Skeleton className="h-[180px] md:h-[220px] rounded-lg" />
@@ -63,9 +63,9 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
 
   const EmptyMilestones = () => (
     <div className="p-4 md:p-6 text-center border rounded-lg">
-      <h3 className="text-lg font-medium mb-2">{t('rewards.noMilestones')}</h3>
+      <h3 className="text-lg font-medium mb-2">{t('noMilestones')}</h3>
       <p className="text-muted-foreground">
-        {t('rewards.startEarning')}
+        {t('startEarning')}
       </p>
     </div>
   );
@@ -80,6 +80,7 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
       skeletonContent={<MilestonesSkeleton />}
     >
       <div className="space-y-6">
+        {/* Progress Card - Full width across all breakpoints */}
         <MilestoneProgressCard
           totalPoints={totalPoints}
           completedMilestones={completedMilestones.length}
@@ -87,55 +88,83 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           isCompact={isTabletOrMobile}
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availableRewards.map((reward) => (
-            <RewardCard
-              key={reward.milestone_id}
-              reward={reward}
-              onClaim={claimReward}
-              disabled={isProcessing}
-            />
-          ))}
+        {/* 
+          Responsive grid with optimized layout:
+          - 1 column on mobile (<640px)
+          - 2 columns on small tablets (640px-1023px)
+          - 3 columns on larger screens (≥1024px)
+        */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+          {/* Available rewards are shown first */}
+          {availableRewards.length > 0 && (
+            <div className={`${atLeast.lg ? 'col-span-1' : atLeast.sm ? 'col-span-2' : 'col-span-1'}`}>
+              <h3 className="text-lg font-medium mb-3">{t('availableRewards')}</h3>
+              <div className="grid grid-cols-1 gap-4">
+                {availableRewards.map((reward) => (
+                  <RewardCard
+                    key={reward.milestone_id}
+                    reward={reward}
+                    onClaim={claimReward}
+                    disabled={isProcessing}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           
-          {milestones.map((milestone) => {
-            // Extract points_required safely from milestone
-            let pointsRequired = 0;
-            
-            // Handle different milestone.milestone data structures with proper type checking
-            if (milestone.milestone) {
-              if (typeof milestone.milestone === 'object' && milestone.milestone !== null) {
-                // Type assertion to tell TypeScript what the shape is
-                const milestoneObj = milestone.milestone as { points_required?: number };
-                pointsRequired = milestoneObj.points_required || 0;
-              } else if (typeof milestone.milestone === 'string') {
-                // Handle case where milestone.milestone might be a string ID
-                // In this case, we default to using the points_target field
-                pointsRequired = milestone.points_target || 0;
-              }
-            }
-              
-            return (
-              <MilestoneCard 
-                key={milestone.id}
-                name={milestone.milestone_name}
-                description={milestone.milestone_description || ''}
-                icon={milestone.icon}
-                pointsRequired={pointsRequired}
-                currentPoints={milestone.current_points}
-                isCompleted={milestone.is_completed}
-                rewardClaimed={milestone.reward_claimed}
-                onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
-                  () => {
-                    logger.info('User claiming reward', {
-                      milestoneId: milestone.milestone_id,
-                      milestoneName: milestone.milestone_name
-                    });
-                    return claimReward(milestone.milestone_id);
-                  } : undefined}
-                isClaimingReward={isProcessing}
-              />
-            );
-          })}
+          {/* Milestones fill the remaining space */}
+          <div className={`${
+            availableRewards.length > 0 
+              ? (atLeast.lg ? 'col-span-2' : 'col-span-full') 
+              : 'col-span-full'
+          }`}>
+            {milestones.length > 0 && (
+              <>
+                <h3 className="text-lg font-medium mb-3">{t('completedMilestones')}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {milestones.map((milestone) => {
+                    // Extract points_required safely from milestone
+                    let pointsRequired = 0;
+                    
+                    // Handle different milestone.milestone data structures with proper type checking
+                    if (milestone.milestone) {
+                      if (typeof milestone.milestone === 'object' && milestone.milestone !== null) {
+                        // Type assertion to tell TypeScript what the shape is
+                        const milestoneObj = milestone.milestone as { points_required?: number };
+                        pointsRequired = milestoneObj.points_required || 0;
+                      } else if (typeof milestone.milestone === 'string') {
+                        // Handle case where milestone.milestone might be a string ID
+                        // In this case, we default to using the points_target field
+                        pointsRequired = milestone.points_target || 0;
+                      }
+                    }
+                      
+                    return (
+                      <MilestoneCard 
+                        key={milestone.id}
+                        name={milestone.milestone_name}
+                        description={milestone.milestone_description || ''}
+                        icon={milestone.icon}
+                        pointsRequired={pointsRequired}
+                        currentPoints={milestone.current_points}
+                        isCompleted={milestone.is_completed}
+                        rewardClaimed={milestone.reward_claimed}
+                        onClaimReward={milestone.is_completed && !milestone.reward_claimed ? 
+                          () => {
+                            logger.info('User claiming reward', {
+                              milestoneId: milestone.milestone_id,
+                              milestoneName: milestone.milestone_name
+                            });
+                            return claimReward(milestone.milestone_id);
+                          } : undefined}
+                        isClaimingReward={isProcessing}
+                      />
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </LoadingContent>
