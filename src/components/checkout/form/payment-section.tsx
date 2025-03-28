@@ -1,56 +1,51 @@
 
 import React from "react";
-import { useToast } from "@/hooks/ui/use-toast";
-import PayPalButton from "@/components/PayPalButton";
-import CardPaymentForm from "@/components/checkout/card-payment-form";
-import { CustomerInfo } from "@/types/checkout";
+import { Card } from "@/components/ui/card";
+import CardPaymentForm from "../card-payment-form";
+import { PayPalButton } from "@/components/PayPalButton";
+import { PackageDetails, CustomerInfo, PaymentMethod } from "@/types/checkout";
 
 interface PaymentSectionProps {
-  paymentMethod: "credit-card" | "paypal";
-  packageDetails: any;
-  customerInfo: CustomerInfo;
+  paymentMethod: PaymentMethod;
+  packageDetails: PackageDetails;
+  customerInfo: Partial<CustomerInfo>; // Changed from CustomerInfo to Partial<CustomerInfo>
   total: number;
-  onOrderSuccess: (id: string) => void;
+  onOrderSuccess: (orderId: string) => void;
 }
 
-const PaymentSection: React.FC<PaymentSectionProps> = ({
+/**
+ * PaymentSection Component
+ * 
+ * Renders the appropriate payment form based on the selected payment method
+ * 
+ * @param props PaymentSectionProps containing payment method and other required data
+ */
+const PaymentSection = ({
   paymentMethod,
   packageDetails,
   customerInfo,
   total,
-  onOrderSuccess,
-}) => {
-  const { toast } = useToast();
-
-  const handleOrderSuccess = (orderId: string) => {
-    toast({
-      title: "Payment successful!",
-      description: "Your order has been processed successfully.",
-    });
-    
-    onOrderSuccess(orderId);
-  };
-
+  onOrderSuccess
+}: PaymentSectionProps) => {
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Payment</h2>
-      
-      {paymentMethod === "credit-card" ? (
-        <CardPaymentForm
-          packagePrice={packageDetails.price}
-          packageDetails={packageDetails}
-          customerInfo={customerInfo}
-          onSuccess={handleOrderSuccess}
-          finalAmount={total}
-        />
-      ) : (
-        <PayPalButton
-          amount={total}
-          packageDetails={packageDetails}
-          customerInfo={customerInfo}
-          onSuccess={handleOrderSuccess}
-        />
-      )}
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
+      <Card className="p-5">
+        {paymentMethod === "credit-card" ? (
+          <CardPaymentForm
+            amount={total}
+            packageName={packageDetails.title}
+            customerInfo={customerInfo as CustomerInfo} // Cast to CustomerInfo as we validate before payment
+            onSuccess={onOrderSuccess}
+          />
+        ) : (
+          <PayPalButton
+            amount={total}
+            description={packageDetails.title}
+            onSuccess={onOrderSuccess}
+          />
+        )}
+      </Card>
     </div>
   );
 };
