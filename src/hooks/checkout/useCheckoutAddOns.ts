@@ -1,75 +1,68 @@
 
-import { useEffect, useState } from "react";
-import { useToast } from "@/hooks/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { AddOnItem } from "@/types/checkout";
+import { useState } from "react";
+import { AddOnItem } from "@/components/checkout/add-on-item";
 
 /**
- * Hook for managing add-ons during checkout
+ * Hook for managing add-ons in the checkout process
+ * 
+ * Extracted from useCheckout to improve modularity and maintainability
  * 
  * @returns Object containing add-on state and handlers
  */
 export function useCheckoutAddOns() {
-  const [availableAddOns, setAvailableAddOns] = useState<AddOnItem[]>([]);
-  const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
-  const { toast } = useToast();
-
-  // Fetch available add-ons
-  useEffect(() => {
-    const fetchAddOns = async () => {
-      try {
-        const { data: addonsData, error: addonsError } = await supabase
-          .from("packages")
-          .select("*")
-          .eq("category", "add-on");
-
-        if (addonsError) {
-          throw addonsError;
-        }
-
-        if (addonsData && Array.isArray(addonsData)) {
-          const addOns: AddOnItem[] = addonsData.map((addon) => ({
-            id: addon.id,
-            name: addon.title,
-            description: addon.description,
-            price: addon.price,
-          }));
-          setAvailableAddOns(addOns);
-        } else {
-          console.warn("No add-ons found or invalid data format.");
-          setAvailableAddOns([]);
-        }
-      } catch (error) {
-        console.error("Error fetching add-ons:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch available add-ons.",
-        });
-      }
-    };
-
-    fetchAddOns();
-  }, [toast]);
-
-  // Handle add-on toggle
-  const handleAddOnToggle = (id: string) => {
-    setSelectedAddOnIds((prev) =>
-      prev.includes(id) ? prev.filter((addOnId) => addOnId !== id) : [...prev, id]
+  // Available add-ons (in a real app, these would come from the API)
+  const available = [
+    {
+      id: "addon-1",
+      name: "Priority Support",
+      description: "Get priority access to our support team",
+      price: 19.99,
+    },
+    {
+      id: "addon-2",
+      name: "Extended Coverage",
+      description: "Extend your coverage period by 3 months",
+      price: 29.99,
+    },
+    {
+      id: "addon-3",
+      name: "Customization Package",
+      description: "Custom branding and personalization options",
+      price: 49.99,
+    },
+  ];
+  
+  // Selected add-ons
+  const [selected, setSelected] = useState<string[]>([]);
+  
+  // Toggle an add-on selection
+  const toggle = (addonId: string) => {
+    setSelected(prev => 
+      prev.includes(addonId)
+        ? prev.filter(id => id !== addonId)
+        : [...prev, addonId]
     );
   };
   
-  // Compute selected add-ons based on IDs
-  const selectedAddOns = availableAddOns.filter(addon => selectedAddOnIds.includes(addon.id));
+  // Get selected add-on items with full details
+  const selectedItems = available.filter(addon => 
+    selected.includes(addon.id)
+  );
   
-  // Calculate add-ons total price
-  const addOnsTotal = selectedAddOns.reduce((total, addon) => total + addon.price, 0);
-
+  // Calculate total price of selected add-ons
+  const total = selectedItems.reduce(
+    (sum, addon) => sum + addon.price, 
+    0
+  );
+  
   return {
-    available: availableAddOns,
-    selected: selectedAddOnIds,
-    selectedItems: selectedAddOns,
-    toggle: handleAddOnToggle,
-    total: addOnsTotal,
+    // Data
+    available,
+    selected,
+    selectedItems,
+    total,
+    
+    // Actions
+    toggle,
   };
 }

@@ -110,7 +110,7 @@ export function useCheckoutConsolidated(
           });
         } catch (error) {
           console.error("Error updating milestone progress:", error);
-          // Non-critical error, don't block the success flow
+          // Non-critical error, we don't want to block the order success flow
         }
       }
       

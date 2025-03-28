@@ -1,28 +1,36 @@
 
+import { useCallback } from "react";
+
+interface UseCheckoutActionsProps {
+  handleBaseOrderSuccess: (orderId: string) => void;
+  handleOrderSuccessWithRewards: (orderId: string, orderTotal: number) => Promise<void>;
+}
+
 /**
- * Hook to centralize checkout-related actions
+ * Hook for managing checkout action handlers
+ * 
+ * Coordinates different success handlers for the checkout process
+ * 
+ * @param props Object containing base handlers for order success
+ * @returns Object containing combined handlers
  */
 export function useCheckoutActions({
   handleBaseOrderSuccess,
   handleOrderSuccessWithRewards
-}: {
-  handleBaseOrderSuccess: (orderId: string) => void;
-  handleOrderSuccessWithRewards: (orderId: string, total: number) => Promise<void>;
-}) {
+}: UseCheckoutActionsProps) {
   // Combined order success handler
-  const handleOrderSuccess = async (orderId: string) => {
-    // Call the base order success handler
+  const handleOrderSuccess = useCallback(async (orderId: string) => {
+    // First call the base handler
     handleBaseOrderSuccess(orderId);
     
+    // Then call the rewards handler
     try {
-      // Award milestone points if applicable
-      // We use a default total of 0 if it's not provided by the caller
-      await handleOrderSuccessWithRewards(orderId, 0);
+      await handleOrderSuccessWithRewards(orderId, 0); // Total will be calculated inside
     } catch (error) {
-      console.error("Error processing rewards after order success:", error);
-      // We don't want to break the main success flow if rewards fail
+      console.error("Failed to process rewards for order:", error);
+      // Non-critical error, we don't want to block the order success flow
     }
-  };
+  }, [handleBaseOrderSuccess, handleOrderSuccessWithRewards]);
   
   return {
     handleOrderSuccess

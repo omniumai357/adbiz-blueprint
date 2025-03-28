@@ -1,6 +1,6 @@
 
-import { useEffect, useState } from "react";
-import { AddOnItem } from "@/types/checkout";
+import { useState, useCallback } from "react";
+import { AddOnItem } from "@/components/checkout/add-on-item";
 
 interface UseCheckoutTotalsProps {
   packagePrice: number;
@@ -11,7 +11,9 @@ interface UseCheckoutTotalsProps {
 /**
  * Hook for calculating checkout totals
  * 
- * @param props Object containing base values for calculation
+ * Extracted from useCheckout to improve modularity and maintainability
+ * 
+ * @param props Object containing price data for calculations
  * @returns Object containing calculated totals
  */
 export function useCheckoutTotals({
@@ -19,51 +21,32 @@ export function useCheckoutTotals({
   selectedAddOns,
   totalDiscountAmount
 }: UseCheckoutTotalsProps) {
-  const [addOnsTotal, setAddOnsTotal] = useState(0);
-  const [subtotal, setSubtotal] = useState(0);
-  const [total, setTotal] = useState(0);
-
   // Calculate add-ons total
-  useEffect(() => {
-    const addOnsSum = selectedAddOns.reduce(
-      (sum, addon) => sum + addon.price,
-      0
-    );
-    setAddOnsTotal(addOnsSum);
-  }, [selectedAddOns]);
-
+  const addOnsTotal = selectedAddOns.reduce(
+    (sum, addon) => sum + addon.price, 
+    0
+  );
+  
   // Calculate subtotal (package + add-ons)
-  useEffect(() => {
-    setSubtotal(packagePrice + addOnsTotal);
-  }, [packagePrice, addOnsTotal]);
-
-  // Calculate final total
-  useEffect(() => {
+  const subtotal = packagePrice + addOnsTotal;
+  
+  // Calculate final total (subtotal - discounts)
+  const [total, setTotal] = useState(Math.max(0, subtotal - totalDiscountAmount));
+  
+  // Recalculate total based on current values
+  const recalculate = useCallback(() => {
     setTotal(Math.max(0, subtotal - totalDiscountAmount));
   }, [subtotal, totalDiscountAmount]);
-
+  
+  // Update total when inputs change
+  if (total !== Math.max(0, subtotal - totalDiscountAmount)) {
+    recalculate();
+  }
+  
   return {
     addOnsTotal,
     subtotal,
     total,
-    recalculate: () => {
-      // This can be called to force a recalculation if needed
-      const newAddOnsTotal = selectedAddOns.reduce(
-        (sum, addon) => sum + addon.price,
-        0
-      );
-      const newSubtotal = packagePrice + newAddOnsTotal;
-      const newTotal = Math.max(0, newSubtotal - totalDiscountAmount);
-      
-      setAddOnsTotal(newAddOnsTotal);
-      setSubtotal(newSubtotal);
-      setTotal(newTotal);
-      
-      return {
-        addOnsTotal: newAddOnsTotal,
-        subtotal: newSubtotal,
-        total: newTotal
-      };
-    }
+    recalculate
   };
 }

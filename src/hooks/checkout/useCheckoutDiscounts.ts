@@ -1,125 +1,144 @@
 
+import { useState, useEffect } from "react";
 import { useDiscount } from "./useDiscount";
+import { useCoupons } from "./useCoupons";
 import { useLimitedTimeOffers } from "./useLimitedTimeOffers";
-import { useCouponHandling } from "./useCouponHandling";
 import { useRewardsAndLoyalty } from "./useRewardsAndLoyalty";
 
 /**
- * Hook that consolidates all discount-related logic for the checkout
+ * Hook for managing all discount-related functionality in the checkout process
  * 
- * @param userId Current user ID
- * @param subtotal Current subtotal before discounts
- * @param addOnsTotal Total price of selected add-ons
- * @returns Object containing all discount state and handlers
+ * Extracted from useCheckout to improve modularity and maintainability
+ * 
+ * @param userId The current user's ID
+ * @param subtotal The current order subtotal
+ * @param addOnsTotal The total price of selected add-ons
+ * @returns Object containing all discount-related state and handlers
  */
 export function useCheckoutDiscounts(
   userId: string | undefined | null,
   subtotal: number,
   addOnsTotal: number
 ) {
-  // Handle rewards and loyalty program
+  // Track total discount amount for calculations
+  const [totalDiscountAmount, setTotalDiscountAmount] = useState(0);
+  
+  // Use the bundle and tiered discount hook
+  const bundleAndTierDiscounts = useDiscount(subtotal, addOnsTotal, userId || null);
+  
+  // Use the coupons hook
+  const couponDiscounts = useCoupons(userId || null, subtotal);
+  
+  // Use the limited time offers hook
+  const offers = useLimitedTimeOffers(subtotal);
+  
+  // Use the rewards and loyalty hook
   const rewardsAndLoyalty = useRewardsAndLoyalty(userId, subtotal);
-  const {
-    isLoyaltyProgramEnabled,
-    loyaltyBonusAmount,
-    handleLoyaltyProgramToggle,
-    updateLoyaltyBonus,
-    appliedMilestoneReward,
-    handleMilestoneRewardApplied,
-    handleOrderSuccessWithRewards
-  } = rewardsAndLoyalty;
-
-  // Handle coupon application and validation
-  const couponHandling = useCouponHandling();
-  const {
-    appliedCoupon,
-    isCheckingCoupon,
-    couponDiscountAmount,
-    applyCoupon,
-    removeCoupon,
-    updateCouponDiscountAmount,
-  } = couponHandling;
-
-  // Use the discount hook
-  const discount = useDiscount(subtotal, addOnsTotal, userId || null);
-  const {
-    bundleDiscount,
-    isDiscountApplicable,
-    bundleDiscountAmount,
-    appliedTier,
-    tieredDiscountAmount,
-    isFirstPurchase,
-    totalDiscountAmount: baseDiscountAmount
-  } = discount;
-
-  // Handle limited time offers
-  const limitedTimeOffers = useLimitedTimeOffers(subtotal);
-  const {
-    activeOffers,
-    availableOffer,
-    offerDiscountAmount
-  } = limitedTimeOffers;
-
+  
   // Calculate total discount from all sources
-  const totalDiscount = bundleDiscountAmount +
-    tieredDiscountAmount +
-    (isLoyaltyProgramEnabled ? loyaltyBonusAmount || 0 : 0) +
-    offerDiscountAmount +
-    couponDiscountAmount +
-    (appliedMilestoneReward ? tieredDiscountAmount : 0);
-
+  const getTotalDiscount = () => {
+    return (
+      bundleAndTierDiscounts.bundleDiscountAmount +
+      bundleAndTierDiscounts.tieredDiscountAmount +
+      rewardsAndLoyalty.loyaltyBonusAmount +
+      offers.offerDiscountAmount +
+      couponDiscounts.couponDiscountAmount +
+      (rewardsAndLoyalty.appliedMilestoneReward ? 
+        calculateMilestoneRewardAmount(rewardsAndLoyalty.appliedMilestoneReward) : 0)
+    );
+  };
+  
+  // Helper function to calculate milestone reward amount
+  const calculateMilestoneRewardAmount = (reward: any) => {
+    if (!reward || !reward.reward_type) return 0;
+    
+    if (reward.reward_type === 'percentage' && reward.reward_value) {
+      return subtotal * (reward.reward_value / 100);
+    }
+    
+    if (reward.reward_type === 'fixed' && reward.reward_value) {
+      return reward.reward_value;
+    }
+    
+    return 0;
+  };
+  
+  // Update total discount amount when any discount changes
+  useEffect(() => {
+    const newTotalDiscount = getTotalDiscount();
+    setTotalDiscountAmount(newTotalDiscount);
+  }, [
+    bundleAndTierDiscounts.bundleDiscountAmount,
+    bundleAndTierDiscounts.tieredDiscountAmount,
+    rewardsAndLoyalty.loyaltyBonusAmount,
+    offers.offerDiscountAmount,
+    couponDiscounts.couponDiscountAmount,
+    rewardsAndLoyalty.appliedMilestoneReward
+  ]);
+  
+  // Update loyalty bonus and coupon discount when subtotal changes
+  useEffect(() => {
+    rewardsAndLoyalty.updateLoyaltyBonus(subtotal);
+    // Update coupon amount if there's an applied coupon
+    if (couponDiscounts.appliedCoupon) {
+      couponDiscounts.updateAmount(subtotal);
+    }
+  }, [subtotal]);
+  
   return {
-    // Bundle discounts
+    // Bundle discount
     bundle: {
-      info: bundleDiscount,
-      applicable: isDiscountApplicable,
-      amount: bundleDiscountAmount,
+      info: bundleAndTierDiscounts.bundleDiscount,
+      applicable: bundleAndTierDiscounts.isDiscountApplicable,
+      amount: bundleAndTierDiscounts.bundleDiscountAmount,
     },
     
-    // Tiered discounts
+    // Tiered discount
     tiered: {
-      info: appliedTier,
-      isFirstPurchase,
-      amount: tieredDiscountAmount,
+      info: bundleAndTierDiscounts.appliedTier,
+      isFirstPurchase: bundleAndTierDiscounts.isFirstPurchase,
+      amount: bundleAndTierDiscounts.tieredDiscountAmount,
     },
     
     // Loyalty program
     loyalty: {
-      enabled: isLoyaltyProgramEnabled,
-      toggle: handleLoyaltyProgramToggle,
-      amount: loyaltyBonusAmount,
-      updateBonus: updateLoyaltyBonus
+      enabled: rewardsAndLoyalty.isLoyaltyProgramEnabled,
+      toggle: rewardsAndLoyalty.handleLoyaltyProgramToggle,
+      amount: rewardsAndLoyalty.loyaltyBonusAmount,
+      updateBonus: rewardsAndLoyalty.updateLoyaltyBonus,
     },
     
     // Limited time offers
     offers: {
-      active: activeOffers,
-      available: availableOffer,
-      amount: offerDiscountAmount,
+      active: offers.activeOffers,
+      available: offers.availableOffer,
+      amount: offers.offerDiscountAmount,
     },
     
-    // Coupon handling
+    // Coupons
     coupons: {
-      applied: appliedCoupon,
-      amount: couponDiscountAmount,
-      isChecking: isCheckingCoupon,
-      apply: applyCoupon,
-      remove: removeCoupon,
-      updateAmount: updateCouponDiscountAmount,
+      personal: couponDiscounts.personalizedCoupon,
+      applied: couponDiscounts.appliedCoupon,
+      amount: couponDiscounts.couponDiscountAmount,
+      isChecking: couponDiscounts.isCheckingCoupon,
+      apply: couponDiscounts.applyCoupon,
+      remove: couponDiscounts.removeCoupon,
+      updateAmount: couponDiscounts.updateAmount,
     },
     
     // Milestone rewards
     rewards: {
-      applied: appliedMilestoneReward,
-      applyReward: handleMilestoneRewardApplied,
-      amount: appliedMilestoneReward ? tieredDiscountAmount : 0,
-      handleOrderSuccess: handleOrderSuccessWithRewards
+      applied: rewardsAndLoyalty.appliedMilestoneReward,
+      applyReward: rewardsAndLoyalty.handleMilestoneRewardApplied,
+      amount: rewardsAndLoyalty.appliedMilestoneReward ? 
+        calculateMilestoneRewardAmount(rewardsAndLoyalty.appliedMilestoneReward) : 0,
+      handleOrderSuccess: rewardsAndLoyalty.handleOrderSuccessWithRewards,
     },
     
     // Total discount amount
-    total: totalDiscount,
+    total: totalDiscountAmount,
     
-    // Function to get total discount (kept for backward compatibility)
-    getTotalDiscount: () => totalDiscount
+    // Helper functions
+    getTotalDiscount,
   };
 }

@@ -1,37 +1,28 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CustomerInfo } from "@/types/checkout";
 
 /**
- * Hook to manage the core checkout state
- * This separates the state management from the business logic
+ * Hook for managing customer information and payment method state
+ * 
+ * Extracted from useCheckout to improve modularity and maintainability
+ * 
+ * @returns Object containing customer info and payment method state
  */
 export function useCheckoutState() {
-  // Customer info state
-  const [customerInfo, setBaseCustomerInfo] = useState<CustomerInfo>({
+  // Initialize customer info state
+  const [customerInfo, setCustomerInfo] = useState<Partial<CustomerInfo>>({
     firstName: "",
     lastName: "",
-    company: "",
     email: "",
+    phone: "",
+    company: "",
+    website: "",
     invoiceDeliveryMethod: "email"
   });
-
-  // Payment method state
-  const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal">("credit-card");
   
-  // Custom handler for customer info changes to maintain shape
-  const setCustomerInfo = (info: CustomerInfo) => {
-    setBaseCustomerInfo({
-      firstName: info.firstName,
-      lastName: info.lastName,
-      company: info.company || "",
-      email: info.email,
-      phone: info.phone,
-      website: info.website,
-      invoiceDeliveryMethod: info.invoiceDeliveryMethod,
-      userId: info.userId
-    });
-  };
+  // Initialize payment method state
+  const [paymentMethod, setPaymentMethod] = useState<"credit-card" | "paypal">("credit-card");
   
   return {
     customerInfo,
