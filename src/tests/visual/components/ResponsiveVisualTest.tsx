@@ -18,6 +18,11 @@ interface ResponsiveVisualTestProps {
    * @default true
    */
   withPadding?: boolean;
+  /**
+   * Show a small breakpoint indicator in the corner
+   * @default true
+   */
+  showIndicator?: boolean;
 }
 
 /**
@@ -37,6 +42,7 @@ export const ResponsiveVisualTest: React.FC<ResponsiveVisualTestProps> = ({
   testId,
   background = 'white',
   withPadding = true,
+  showIndicator = true,
 }) => {
   const { width, height } = getViewportByBreakpoint(breakpoint);
   
@@ -58,9 +64,16 @@ export const ResponsiveVisualTest: React.FC<ResponsiveVisualTestProps> = ({
       aria-label={`Viewport at ${breakpoint} breakpoint (${width}x${height}px)`}
     >
       {children}
+      {showIndicator && (
+        <div 
+          className="absolute top-0 right-0 text-xs text-white bg-black/50 px-1 py-0.5 rounded-bl z-50"
+          aria-hidden="true"
+        >
+          {breakpoint}: {width}px
+        </div>
+      )}
     </div>
   );
 };
 
 export default ResponsiveVisualTest;
-

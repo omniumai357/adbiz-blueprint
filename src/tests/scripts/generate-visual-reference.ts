@@ -29,7 +29,7 @@ const INTERACTIVE_STATES = ['default', 'hover', 'active', 'disabled'];
 const BREAKPOINTS_TO_CAPTURE: Breakpoint[] = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'];
 
 // Output directory for the visual reference library
-const OUTPUT_DIR = path.resolve(__dirname, '../../docs/visual-reference-library');
+const OUTPUT_DIR = path.resolve(__dirname, '../../../docs/visual-reference-library');
 
 /**
  * Ensure the output directory exists

@@ -42,9 +42,9 @@ function renderComponent(componentName: string, state: string) {
   // Mock data for components
   const mockProps = {
     milestone: {
-      id: 'milestone-1',
-      name: 'First Purchase',
-      description: 'Complete your first purchase to earn 100 points',
+      milestone_id: 'milestone-1',
+      milestone_name: 'First Purchase',
+      milestone_description: 'Complete your first purchase to earn 100 points',
       pointsRequired: 100,
       currentPoints: 50,
       isCompleted: state === 'completed',
@@ -52,13 +52,15 @@ function renderComponent(componentName: string, state: string) {
       icon: 'shopping-bag'
     },
     reward: {
-      id: 'reward-1',
-      name: '10% Discount',
-      description: 'Get 10% off your next purchase',
+      milestone_id: 'reward-1',
+      milestone_name: '10% Discount',
+      milestone_description: 'Get 10% off your next purchase',
       pointsRequired: 500,
       isAvailable: state !== 'unavailable',
-      isRedeemed: state === 'redeemed',
-      icon: 'percent'
+      is_claimed: state === 'redeemed',
+      icon: 'percent',
+      reward_value: 10,
+      reward_type: 'discount_percentage'
     }
   };
   
@@ -67,9 +69,9 @@ function renderComponent(componentName: string, state: string) {
     case 'MilestoneCard':
       return (
         <MilestoneCard
-          id={mockProps.milestone.id}
-          name={mockProps.milestone.name}
-          description={mockProps.milestone.description}
+          milestone_id={mockProps.milestone.milestone_id}
+          name={mockProps.milestone.milestone_name}
+          description={mockProps.milestone.milestone_description}
           pointsRequired={mockProps.milestone.pointsRequired}
           currentPoints={mockProps.milestone.currentPoints}
           isCompleted={mockProps.milestone.isCompleted}
@@ -84,13 +86,18 @@ function renderComponent(componentName: string, state: string) {
     case 'RewardCard':
       return (
         <RewardCard
-          id={mockProps.reward.id}
-          name={mockProps.reward.name}
-          description={mockProps.reward.description}
-          pointsRequired={mockProps.reward.pointsRequired}
-          isAvailable={mockProps.reward.isAvailable}
-          isRedeemed={mockProps.reward.isRedeemed}
-          icon={mockProps.reward.icon}
+          reward={{
+            milestone_id: mockProps.reward.milestone_id,
+            milestone_name: mockProps.reward.milestone_name,
+            milestone_description: mockProps.reward.milestone_description,
+            pointsRequired: mockProps.reward.pointsRequired,
+            isAvailable: mockProps.reward.isAvailable,
+            is_claimed: mockProps.reward.is_claimed,
+            icon: mockProps.reward.icon,
+            reward_value: mockProps.reward.reward_value,
+            reward_type: mockProps.reward.reward_type
+          }}
+          onClaim={() => Promise.resolve()}
         />
       );
       
