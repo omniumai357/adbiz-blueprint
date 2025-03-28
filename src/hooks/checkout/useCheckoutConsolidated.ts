@@ -8,7 +8,7 @@ import { useCheckoutAddOns } from "./useCheckoutAddOns";
 import { useCheckoutTotals } from "./useCheckoutTotals";
 import { useProfile } from "@/hooks/data/useProfile";
 import { useOrderProcessing } from "./useOrderProcessing";
-import { PackageDetails } from "@/types/checkout";
+import { PackageDetails, CustomerInfo } from "@/types/checkout";
 
 /**
  * A consolidated hook that brings together all checkout functionality
@@ -97,7 +97,7 @@ export function useCheckoutConsolidated(packageDetails: PackageDetails, userId: 
     loyaltyBonusAmount: discounts.loyalty.amount,
     totalDiscountAmount,
     total: totals.total,
-    customerInfo
+    customerInfo: customerInfo as CustomerInfo // Use type assertion since CustomerInfo won't be partial when used
   });
   
   // Handle order success

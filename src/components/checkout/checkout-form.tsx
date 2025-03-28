@@ -35,7 +35,7 @@ const CheckoutForm = ({
     addOns,
     discounts,
     totals,
-    packageDetails
+    orderDetails
   } = checkout;
 
   if (isLoading || isProfileLoading) {
@@ -114,7 +114,7 @@ const CheckoutForm = ({
       {/* Payment section */}
       <PaymentSection 
         paymentMethod={paymentMethod}
-        packageDetails={packageDetails}
+        packageDetails={orderDetails.packageDetails}
         customerInfo={customerInfo}
         total={totals.total}
         onOrderSuccess={onOrderSuccess}

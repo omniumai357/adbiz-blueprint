@@ -2,7 +2,6 @@
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddOnItem } from "../add-on-item";
-import { packageDetailsService } from "@/services/package/package-details-service";
 
 interface OrderSummaryProps {
   packageName: string;
