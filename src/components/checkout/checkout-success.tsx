@@ -297,41 +297,43 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
         </div>
       </div>
 
-      {/* Add CSS animations */}
-      <style jsx>{`
-        @keyframes fall {
-          0% {
-            transform: translateY(-100vh);
+      {/* Use regular style tag without jsx property */}
+      <style>
+        {`
+          @keyframes fall {
+            0% {
+              transform: translateY(-100vh);
+            }
+            100% {
+              transform: translateY(100vh);
+            }
           }
-          100% {
-            transform: translateY(100vh);
+          
+          @keyframes sway {
+            0% {
+              transform: translateX(-5px) rotate(-45deg);
+            }
+            100% {
+              transform: translateX(5px) rotate(45deg);
+            }
           }
-        }
-        
-        @keyframes sway {
-          0% {
-            transform: translateX(-5px) rotate(-45deg);
+          
+          .confetti-container {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            z-index: 1000;
           }
-          100% {
-            transform: translateX(5px) rotate(45deg);
+          
+          .confetti {
+            position: absolute;
+            top: -10px;
+            border-radius: 0;
+            transform-origin: center;
           }
-        }
-        
-        .confetti-container {
-          position: absolute;
-          width: 100%;
-          height: 100vh;
-          overflow: hidden;
-          z-index: 1000;
-        }
-        
-        .confetti {
-          position: absolute;
-          top: -10px;
-          border-radius: 0;
-          transform-origin: center;
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
