@@ -1,64 +1,52 @@
 
 import React from "react";
-import { Card } from "@/components/ui/card";
-import CardPaymentForm from "../card-payment-form";
+import CardPaymentForm from "@/components/checkout/form/card-payment-form";
 import PayPalButton from "@/components/PayPalButton";
-import { PackageDetails, CustomerInfo, PaymentMethod } from "@/types/checkout";
-import { Package } from "@/lib/data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CustomerInfo, PackageDetails, PaymentMethod } from "@/types/checkout";
 
 interface PaymentSectionProps {
   paymentMethod: PaymentMethod;
   packageDetails: PackageDetails;
-  customerInfo: Partial<CustomerInfo>; // Allow partial customer info
+  customerInfo: Partial<CustomerInfo>;
   total: number;
   onOrderSuccess: (orderId: string) => void;
 }
 
 /**
- * PaymentSection Component
+ * Payment Section Component
  * 
  * Renders the appropriate payment form based on the selected payment method
- * 
- * @param props PaymentSectionProps containing payment method and other required data
  */
-const PaymentSection = ({
+const PaymentSection: React.FC<PaymentSectionProps> = ({
   paymentMethod,
   packageDetails,
   customerInfo,
   total,
   onOrderSuccess
-}: PaymentSectionProps) => {
-  // Convert PackageDetails to Package type for PayPalButton
-  const packageForPayPal: Package = {
-    id: packageDetails.id,
-    title: packageDetails.title,
-    description: packageDetails.description,
-    price: packageDetails.price,
-    features: packageDetails.features,
-    category: (packageDetails.category as "monthly" | "custom" | "platinum") || 'custom', // Explicitly type cast to one of the allowed values
-  };
-
+}) => {
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
-      <Card className="p-5">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-xl">Payment Details</CardTitle>
+      </CardHeader>
+      <CardContent>
         {paymentMethod === "credit-card" ? (
           <CardPaymentForm
             amount={total}
-            packageName={packageDetails.title}
             customerInfo={customerInfo}
             onSuccess={onOrderSuccess}
           />
         ) : (
           <PayPalButton
             amount={total}
-            packageDetails={packageForPayPal}
-            customerInfo={customerInfo as CustomerInfo}
+            packageDetails={packageDetails as any}
+            customerInfo={customerInfo as any}
             onSuccess={onOrderSuccess}
           />
         )}
-      </Card>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

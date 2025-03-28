@@ -1,6 +1,6 @@
 
-import { useState, useCallback } from "react";
 import { AddOnItem } from "@/components/checkout/add-on-item";
+import { useState, useEffect } from "react";
 
 interface UseCheckoutTotalsProps {
   packagePrice: number;
@@ -13,7 +13,7 @@ interface UseCheckoutTotalsProps {
  * 
  * Extracted from useCheckout to improve modularity and maintainability
  * 
- * @param props Object containing price data for calculations
+ * @param props Object containing base price, add-ons, and discounts
  * @returns Object containing calculated totals
  */
 export function useCheckoutTotals({
@@ -27,26 +27,15 @@ export function useCheckoutTotals({
     0
   );
   
-  // Calculate subtotal (package + add-ons)
+  // Calculate subtotal (before discounts)
   const subtotal = packagePrice + addOnsTotal;
   
-  // Calculate final total (subtotal - discounts)
-  const [total, setTotal] = useState(Math.max(0, subtotal - totalDiscountAmount));
-  
-  // Recalculate total based on current values
-  const recalculate = useCallback(() => {
-    setTotal(Math.max(0, subtotal - totalDiscountAmount));
-  }, [subtotal, totalDiscountAmount]);
-  
-  // Update total when inputs change
-  if (total !== Math.max(0, subtotal - totalDiscountAmount)) {
-    recalculate();
-  }
+  // Calculate total (after discounts)
+  const total = Math.max(0, subtotal - totalDiscountAmount);
   
   return {
     addOnsTotal,
     subtotal,
-    total,
-    recalculate
+    total
   };
 }

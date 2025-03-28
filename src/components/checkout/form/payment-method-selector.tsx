@@ -1,51 +1,32 @@
 
 import React from "react";
-import { RadioGroup } from "@/components/ui/radio-group";
-import { CreditCard, Wallet } from "lucide-react";
-import { PaymentOption } from "@/components/payment/payment-option";
-import { useResponsive } from "@/hooks/useResponsive";
+import { PaymentMethod } from "@/types/checkout";
+import PaymentSelector from "@/components/PaymentSelector";
 
 interface PaymentMethodSelectorProps {
-  selectedMethod: "credit-card" | "paypal";
-  onMethodChange: (method: "credit-card" | "paypal") => void;
+  selectedMethod: PaymentMethod;
+  onMethodChange: (method: PaymentMethod) => void;
 }
 
 /**
- * PaymentMethodSelector Component
+ * Payment Method Selector Component
  * 
- * Provides a responsive radio group interface for selecting between different payment methods
+ * This component provides a selector for different payment methods
+ * 
+ * @param props.selectedMethod The currently selected payment method
+ * @param props.onMethodChange Handler for when payment method changes
  */
-const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({ 
-  selectedMethod, 
-  onMethodChange 
+const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
+  selectedMethod,
+  onMethodChange
 }) => {
-  const { isMobile } = useResponsive();
-  
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Payment Method</h2>
-      
-      <RadioGroup 
-        value={selectedMethod} 
-        onValueChange={(value) => onMethodChange(value as "credit-card" | "paypal")}
-        className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}
-      >
-        <PaymentOption
-          id="credit-card"
-          value="credit-card"
-          label="Credit Card"
-          icon={<CreditCard className="h-5 w-5" />}
-          isSelected={selectedMethod === "credit-card"}
-        />
-        
-        <PaymentOption
-          id="paypal"
-          value="paypal"
-          label="PayPal"
-          icon={<Wallet className="h-5 w-5" />}
-          isSelected={selectedMethod === "paypal"}
-        />
-      </RadioGroup>
+      <h3 className="text-lg font-semibold">Payment Method</h3>
+      <PaymentSelector 
+        selectedMethod={selectedMethod}
+        onMethodChange={onMethodChange}
+      />
     </div>
   );
 };

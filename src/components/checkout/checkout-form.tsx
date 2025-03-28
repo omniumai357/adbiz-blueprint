@@ -60,7 +60,7 @@ const CheckoutForm = ({
       {addOns.available.length > 0 && (
         <AddOnsSelector 
           availableAddOns={addOns.available}
-          selectedAddOns={addOns.selected}
+          selectedAddOns={addOns.selectedItems}
           onAddOnToggle={addOns.toggle}
         />
       )}
