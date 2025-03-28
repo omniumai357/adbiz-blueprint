@@ -31,6 +31,10 @@ export const defaultSnapshotOptions: MatchImageSnapshotOptions = {
   failureThresholdType: 'percent',
   // Improve diff visualization
   comparisonMethod: 'ssim',
+  // Custom directory for snapshot storage
+  customSnapshotsDir: 'src/tests/__image_snapshots__',
+  // Organized snapshots by component
+  customDiffDir: 'src/tests/__image_snapshots__/__diff_output__',
 };
 
 /**
@@ -79,6 +83,37 @@ export const testAllBreakpoints = (
     breakpoints.forEach(breakpoint => {
       it(`at ${breakpoint} breakpoint (${VIEWPORT_SIZES[breakpoint].width}px)`, () => {
         testFn(breakpoint);
+      });
+    });
+  });
+};
+
+/**
+ * Create a visual test for a component at multiple breakpoints
+ * 
+ * @param componentName Name of the component being tested
+ * @param renderComponent Function that renders the component with the given breakpoint
+ * @param breakpoints Array of breakpoints to test (defaults to xs, md, xl)
+ * @param options Additional options for snapshot testing
+ */
+export const createResponsiveVisualTests = (
+  componentName: string,
+  renderComponent: (breakpoint: Breakpoint) => JSX.Element,
+  breakpoints: Breakpoint[] = ['xs', 'md', 'xl'],
+  options: Partial<MatchImageSnapshotOptions> = {}
+): void => {
+  describe(`${componentName} visual tests`, () => {
+    breakpoints.forEach(breakpoint => {
+      it(`renders correctly at ${breakpoint} breakpoint`, () => {
+        // Render the component
+        const { container } = render(renderComponent(breakpoint));
+        
+        // Take and compare snapshot
+        expect(container).toMatchImageSnapshot({
+          ...defaultSnapshotOptions,
+          ...options,
+          customSnapshotIdentifier: getSnapshotIdentifier(componentName, breakpoint)
+        });
       });
     });
   });
