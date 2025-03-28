@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/ui/use-toast";
@@ -119,7 +120,10 @@ export function useCoupons(userId: string | null, subtotal: number) {
           discountAmount: data.discount_amount,
           discountPercentage: data.discount_percentage,
           validUntil: data.valid_until ? new Date(data.valid_until) : null,
-          isPersonalized: !!data.user_id
+          isPersonalized: !!data.user_id,
+          id: data.id, // Add id for compatibility
+          name: data.description || "Coupon", // Add name for compatibility
+          discount: data.discount_percentage || 0 // Add discount for compatibility
         };
         
         setAppliedCoupon(couponInfo);

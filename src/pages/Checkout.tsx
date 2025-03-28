@@ -87,6 +87,19 @@ const Checkout = () => {
     );
   }
   
+  // Map the coupon info to the expected format for OrderSummary
+  const mapCouponInfoToSummaryFormat = (coupon: CouponInfo | null) => {
+    if (!coupon) return null;
+    
+    return {
+      code: coupon.code,
+      discount: coupon.discountPercentage || 0,
+      id: coupon.id || "coupon-id",
+      name: coupon.description || "Coupon",
+      discountAmount: coupon.discountAmount || 0,
+    };
+  };
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -115,13 +128,7 @@ const Checkout = () => {
             isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
             limitedTimeOffer={checkout.discounts.offers.available as unknown as LimitedTimeOfferInfo}
             offerDiscountAmount={checkout.discounts.offers.amount}
-            appliedCoupon={checkout.discounts.coupons.applied ? {
-              code: checkout.discounts.coupons.applied.code,
-              discount: checkout.discounts.coupons.applied.discountPercentage || 0,
-              id: checkout.discounts.coupons.applied.id || "coupon-id",
-              name: checkout.discounts.coupons.applied.description || "Coupon",
-              discountAmount: checkout.discounts.coupons.applied.discountAmount || 0,
-            } : null}
+            appliedCoupon={checkout.discounts.coupons.applied ? mapCouponInfoToSummaryFormat(checkout.discounts.coupons.applied) : null}
             couponDiscountAmount={checkout.discounts.coupons.amount}
             appliedMilestoneReward={checkout.discounts.rewards.applied as unknown as UserMilestone}
             milestoneRewardAmount={checkout.discounts.rewards.amount}

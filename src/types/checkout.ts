@@ -14,8 +14,8 @@ export interface CustomerInfo {
 }
 
 export interface CustomerInfoFormProps {
-  customerInfo: Partial<CustomerInfo>; // Changed from CustomerInfo to Partial<CustomerInfo>
-  onChange: (values: Partial<CustomerInfo>) => void; // Changed parameter type
+  customerInfo: Partial<CustomerInfo>;
+  onChange: (values: Partial<CustomerInfo>) => void;
   isLoading?: boolean;
 }
 
