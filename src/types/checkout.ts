@@ -62,6 +62,7 @@ export interface PackageDetails {
   price: number;
   description: string;
   features: string[];
+  category?: string; // Added this property to match the Package interface
 }
 
 // Add-On Types
