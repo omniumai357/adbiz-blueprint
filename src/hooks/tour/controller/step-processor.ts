@@ -1,92 +1,67 @@
 
-import { TourPath, TourStep } from '@/contexts/tour/types';
+import { useCallback } from "react";
+import { TourPath, TourStep } from "@/contexts/tour/types";
 
 /**
- * Find a tour path by ID
+ * Returns filtered and sorted tour steps based on conditions
+ * @param steps Array of tour steps
+ * @param userData Optional user data for condition evaluation
+ * @returns Filtered and sorted steps
  */
-export function findTourPathById(
-  tourPaths: TourPath[],
-  pathId: string | null
-): TourPath | undefined {
-  if (!pathId) return undefined;
-  return tourPaths.find(path => path.id === pathId);
-}
-
-/**
- * Get current step data
- */
-export function getCurrentStepData(
-  steps: TourStep[] | undefined, 
-  currentStep: number
-): TourStep | null {
-  if (!steps || steps.length === 0) {
-    return null;
+export function processSteps(steps: TourStep[], userData?: any): TourStep[] {
+  if (!steps || !Array.isArray(steps) || steps.length === 0) {
+    return [];
   }
-  
-  return steps[currentStep] || null;
-}
 
-/**
- * Get visible steps based on conditions
- */
-export function getVisibleSteps(steps: TourStep[], state: any = {}): TourStep[] {
-  return steps.filter(step => {
-    // Skip hidden steps
-    if (step.isHidden) return false;
-    
-    // Evaluate condition if present
-    if (step.condition && !step.condition(state)) {
+  // Filter steps first
+  const filteredSteps = steps.filter(step => {
+    // Skip steps marked as hidden
+    if (step.isHidden) {
       return false;
     }
-    
+
+    // Evaluate conditional display
+    if (typeof step.condition === 'function') {
+      try {
+        // Don't pass any arguments if it's not expecting any
+        // Some condition functions might be expecting data, others might not
+        if (step.condition.length === 0) {
+          return step.condition();
+        } else {
+          return step.condition(userData);
+        }
+      } catch (error) {
+        console.error(`Error evaluating condition for step ${step.id}:`, error);
+        return false;
+      }
+    }
+
     return true;
-  }).sort((a, b) => {
-    // Sort by order if present
+  });
+
+  // Sort steps by order if provided
+  const sortedSteps = [...filteredSteps].sort((a, b) => {
     if (a.order !== undefined && b.order !== undefined) {
       return a.order - b.order;
     }
+    if (a.order !== undefined) return -1;
+    if (b.order !== undefined) return 1;
     return 0;
   });
+
+  return sortedSteps;
 }
 
 /**
- * Process dynamic content in steps
+ * Hook for processing tour steps based on conditions and order
  */
-export function processDynamicContent(step: TourStep, dynamicData: Record<string, any>): TourStep {
-  if (!step || !dynamicData) return step;
-  
-  // Create a copy of the step to avoid mutating the original
-  const processedStep = { ...step };
-  
-  // Process title
-  if (step.title) {
-    processedStep.title = replaceTokens(step.title, dynamicData);
-  }
-  
-  // Process content
-  if (step.content) {
-    processedStep.content = replaceTokens(step.content, dynamicData);
-  }
-  
-  return processedStep;
-}
+export function useStepProcessor() {
+  const processStepsCallback = useCallback(
+    (steps: TourStep[], userData?: any) => processSteps(steps, userData),
+    []
+  );
 
-/**
- * Update step content with dynamic data
- */
-export function updateStepContent(step: TourStep, content: string): TourStep {
   return {
-    ...step,
-    content
+    processSteps: processStepsCallback
   };
-}
-
-/**
- * Helper function to replace tokens in text
- */
-function replaceTokens(text: string, data: Record<string, any>): string {
-  return text.replace(/\{\{(.*?)\}\}/g, (match, token) => {
-    const key = token.trim();
-    return data[key] !== undefined ? String(data[key]) : match;
-  });
 }

@@ -14,40 +14,44 @@ export const TourPathManager: React.FC<TourPathManagerProps> = ({
   onPathTargetChange
 }) => {
   useEffect(() => {
-    if (!isActive || !currentStepData || !currentStepData.path) {
+    if (!isActive || !currentStepData) {
       onPathTargetChange(null);
       return;
     }
 
     // Handle path property which could be a string or an object
-    const pathData = typeof currentStepData.path === 'string' 
-      ? { enabled: true, targetElementId: currentStepData.path, style: 'solid' } 
-      : currentStepData.path;
+    // If path property doesn't exist, try using target or elementId
+    const targetId = currentStepData.target || 
+                     (currentStepData as any).elementId || 
+                     (currentStepData as any).path?.targetElementId;
     
-    // Check if the path has a target element
-    if (pathData && pathData.targetElementId) {
-      const targetId = pathData.targetElementId;
-      const element = document.getElementById(targetId);
+    if (!targetId) {
+      onPathTargetChange(null);
+      return;
+    }
+    
+    try {
+      // Try to find the element by id first
+      let element = document.getElementById(targetId);
       
-      if (element) {
-        onPathTargetChange(element);
-      } else {
-        try {
-          const potentialElement = document.querySelector(
-            `#${targetId}, .${targetId}, [data-tour-id="${targetId}"]`
-          );
-          if (potentialElement instanceof HTMLElement) {
-            onPathTargetChange(potentialElement);
-          } else {
-            console.warn(`Path target element not found: ${targetId}`);
-            onPathTargetChange(null);
-          }
-        } catch (e) {
-          console.warn(`Error finding path target element: ${targetId}`, e);
+      // If not found, try other selectors
+      if (!element) {
+        const potentialElement = document.querySelector(
+          `#${targetId}, .${targetId}, [data-tour-id="${targetId}"]`
+        );
+        
+        if (potentialElement instanceof HTMLElement) {
+          element = potentialElement;
+        } else {
+          console.warn(`Path target element not found: ${targetId}`);
           onPathTargetChange(null);
+          return;
         }
       }
-    } else {
+      
+      onPathTargetChange(element);
+    } catch (e) {
+      console.warn(`Error finding path target element: ${targetId}`, e);
       onPathTargetChange(null);
     }
   }, [isActive, currentStepData, onPathTargetChange]);

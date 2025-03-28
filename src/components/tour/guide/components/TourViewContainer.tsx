@@ -69,6 +69,18 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
   const targetRect = targetElement?.getBoundingClientRect() || null;
   const optimalPosition = getOptimalPosition(targetRect);
   
+  // Map media object to the expected format for TourTooltip
+  const mapMediaForTooltip = (media: any) => {
+    if (!media) return undefined;
+    
+    return {
+      type: media.type,
+      url: media.source,
+      alt: media.alt || currentStepData.title,
+      animation: media.animation
+    };
+  };
+  
   // Determine view mode based on device and orientation
   const getBestViewMode = (): 'tooltip' | 'drawer' | 'compact' | 'sheet' => {
     // Phone in portrait - use bottom sheet
@@ -107,7 +119,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
           onClose={endTour}
           isLastStep={isLastStep}
           animation={currentStepData.animation}
-          media={currentStepData.media}
+          media={mapMediaForTooltip(currentStepData.media)}
           nextLabel={currentStepData.actions?.next?.text}
           prevLabel={currentStepData.actions?.prev?.text}
           skipLabel={currentStepData.actions?.skip?.text}
@@ -179,7 +191,7 @@ export const TourViewContainer: React.FC<TourViewContainerProps> = ({
           onClose={endTour}
           isLastStep={isLastStep}
           animation={currentStepData.animation}
-          media={currentStepData.media}
+          media={mapMediaForTooltip(currentStepData.media)}
           nextLabel={currentStepData.actions?.next?.text}
           prevLabel={currentStepData.actions?.prev?.text}
           skipLabel={currentStepData.actions?.skip?.text}

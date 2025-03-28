@@ -44,15 +44,7 @@ interface ResponsiveTourProviderProps {
 
 export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ children }) => {
   // Use our existing responsive hook
-  const {
-    isMobile,
-    isTablet,
-    isDesktop,
-    isLandscape,
-    isPortrait,
-    activeBreakpoint,
-    hasTouchSupport
-  } = useResponsive();
+  const responsive = useResponsive();
   
   // Get language direction settings
   const { isRTL, direction } = useLanguage();
@@ -62,21 +54,21 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
   
   // Determine the preferred view mode based on device
   const preferredViewMode = useMemo((): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
-    if (isMobile) {
-      return isLandscape ? 'compact' : 'drawer';
-    } else if (isTablet) {
-      return isLandscape ? 'tooltip' : 'drawer';
+    if (responsive.isMobile) {
+      return responsive.isLandscape ? 'compact' : 'drawer';
+    } else if (responsive.isTablet) {
+      return responsive.isLandscape ? 'tooltip' : 'drawer';
     } else {
       return 'tooltip';
     }
-  }, [isMobile, isTablet, isLandscape]);
+  }, [responsive.isMobile, responsive.isTablet, responsive.isLandscape]);
   
   // Helper function to get optimal view for current device
   const getViewForDevice = (): 'tooltip' | 'drawer' | 'compact' | 'fullscreen' => {
     if (window.innerWidth < 480) return 'fullscreen';
     if (window.innerWidth < 768) return 'drawer';
     if (window.innerHeight < 500) return 'compact';
-    if (isTablet && !isLandscape) return 'drawer';
+    if (responsive.isTablet && !responsive.isLandscape) return 'drawer';
     return 'tooltip';
   };
   
@@ -111,21 +103,21 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
   // Define the context value
   const contextValue = useMemo(() => ({
     // Device detection
-    isMobile,
-    isTablet,
-    isDesktop,
-    isLandscape,
-    isPortrait,
+    isMobile: responsive.isMobile,
+    isTablet: responsive.isTablet,
+    isDesktop: responsive.isDesktop,
+    isLandscape: responsive.isLandscape,
+    isPortrait: responsive.isPortrait,
     
     // Screen size
-    activeBreakpoint,
+    activeBreakpoint: responsive.activeBreakpoint,
     
     // View preferences
     preferredViewMode,
     
     // Layout preferences
     minTouchTargetSize: 44, // Minimum touch target size in pixels
-    contentMaxWidth: isMobile ? 320 : isTablet ? 480 : 600,
+    contentMaxWidth: responsive.isMobile ? 320 : responsive.isTablet ? 480 : 600,
     
     // RTL support
     isRTL,
@@ -138,9 +130,9 @@ export const ResponsiveTourProvider: React.FC<ResponsiveTourProviderProps> = ({ 
     getViewForDevice,
     getOptimalPosition
   }), [
-    isMobile, isTablet, isDesktop, isLandscape, isPortrait, 
-    activeBreakpoint, preferredViewMode, isRTL, direction,
-    prefersReducedMotion
+    responsive.isMobile, responsive.isTablet, responsive.isDesktop, 
+    responsive.isLandscape, responsive.isPortrait, responsive.activeBreakpoint,
+    preferredViewMode, isRTL, direction, prefersReducedMotion
   ]);
   
   // Provide the context to children
