@@ -35,13 +35,14 @@ const PaymentSection = ({
           <CardPaymentForm
             amount={total}
             packageName={packageDetails.title}
-            customerInfo={customerInfo} // Pass as Partial<CustomerInfo>
+            customerInfo={customerInfo}
             onSuccess={onOrderSuccess}
           />
         ) : (
           <PayPalButton
             amount={total}
-            description={packageDetails.title}
+            packageDetails={packageDetails}
+            customerInfo={customerInfo as CustomerInfo}
             onSuccess={onOrderSuccess}
           />
         )}
