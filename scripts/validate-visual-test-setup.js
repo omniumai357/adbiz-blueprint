@@ -69,7 +69,53 @@ if (!hasVisualTestScript || !hasVisualUpdateScript) {
   console.log('✅ npm scripts are already configured');
 }
 
-console.log('\n✅ Visual testing setup is valid and ready to use!');
+// Make the scripts executable
+console.log('Making scripts executable...');
+try {
+  if (process.platform !== 'win32') {
+    execSync('chmod +x scripts/*.js', { stdio: 'inherit' });
+    console.log('✅ Made scripts executable');
+  } else {
+    console.log('✅ Running on Windows - no need to set executable permissions');
+  }
+} catch (error) {
+  console.warn('⚠️ Failed to make scripts executable, you may need to do this manually');
+}
+
+// Check for visual test examples
+const visualTestDir = path.resolve(__dirname, '../src/tests/visual');
+if (!fs.existsSync(visualTestDir)) {
+  console.log('⚠️ No visual tests directory found. Creating it...');
+  try {
+    fs.mkdirSync(visualTestDir, { recursive: true });
+    console.log('✅ Created visual tests directory');
+  } catch (error) {
+    console.error('❌ Failed to create visual tests directory');
+  }
+} else {
+  const testFiles = fs.readdirSync(visualTestDir)
+    .filter(f => f.endsWith('.visual.test.tsx') || f.endsWith('.visual.test.ts'));
+  
+  if (testFiles.length === 0) {
+    console.log('⚠️ No visual test files found. Create some test files to start testing components.');
+  } else {
+    console.log(`✅ Found ${testFiles.length} visual test files`);
+  }
+}
+
+// Verify snapshot directory
+const snapshotDir = path.resolve(__dirname, '../src/tests/__image_snapshots__');
+if (!fs.existsSync(snapshotDir)) {
+  console.log('⚠️ No snapshot directory found. It will be created when you run tests for the first time.');
+  try {
+    fs.mkdirSync(snapshotDir, { recursive: true });
+    console.log('✅ Created snapshot directory');
+  } catch (error) {
+    console.error('❌ Failed to create snapshot directory');
+  }
+}
+
+console.log('\n✅ Visual testing setup validation complete!');
 console.log('\nYou can now run:');
 console.log('  npm run test:visual         # Run all visual tests');
 console.log('  npm run test:visual:update  # Update baseline images');
