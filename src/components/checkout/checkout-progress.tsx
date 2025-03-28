@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { CheckIcon, CreditCardIcon, CircleIcon, PackageIcon, ShoppingCartIcon } from "lucide-react";
+import { CheckIcon, CreditCardIcon, PackageIcon, ShoppingCartIcon } from "lucide-react";
 import { useResponsive } from "@/hooks/useResponsive";
 
 export type CheckoutStep = "cart" | "information" | "payment" | "confirmation";
@@ -13,13 +13,14 @@ interface CheckoutProgressProps {
 
 /**
  * A responsive checkout progress component
- * Shows the user where they are in the checkout flow
+ * Shows the user where they are in the checkout flow with visual indicators
+ * Adapts to different screen sizes for optimal display
  */
 const CheckoutProgress: React.FC<CheckoutProgressProps> = ({
   currentStep,
   className
 }) => {
-  const { isMobile } = useResponsive();
+  const { isMobile, isTablet } = useResponsive();
   
   const steps: Array<{
     id: CheckoutStep;
@@ -59,7 +60,7 @@ const CheckoutProgress: React.FC<CheckoutProgressProps> = ({
   };
   
   return (
-    <div className={cn("w-full py-4", className)}>
+    <div className={cn("w-full py-4", className)} aria-label="Checkout progress">
       <div className="flex items-center justify-between">
         {steps.map((step, index) => {
           const status = getStepStatus(step.id);
@@ -70,12 +71,15 @@ const CheckoutProgress: React.FC<CheckoutProgressProps> = ({
             <React.Fragment key={step.id}>
               {/* Step indicator */}
               <div className="flex flex-col items-center">
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center relative z-10 transition-all duration-200",
-                  status === "completed" ? "bg-primary text-primary-foreground" :
-                  status === "current" ? "bg-primary/20 text-primary border-2 border-primary" :
-                  "bg-muted text-muted-foreground"
-                )}>
+                <div 
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center relative z-10 transition-all duration-300",
+                    status === "completed" ? "bg-primary text-primary-foreground shadow-sm" :
+                    status === "current" ? "bg-primary/20 text-primary border-2 border-primary animate-pulse" :
+                    "bg-muted text-muted-foreground"
+                  )}
+                  aria-current={status === "current" ? "step" : undefined}
+                >
                   {status === "completed" ? (
                     <CheckIcon className="h-4 w-4" />
                   ) : (
@@ -85,12 +89,14 @@ const CheckoutProgress: React.FC<CheckoutProgressProps> = ({
                 
                 {/* Step label - hide on mobile */}
                 {!isMobile && (
-                  <span className={cn(
-                    "text-xs mt-1 text-center transition-colors",
-                    status === "completed" ? "text-primary font-medium" :
-                    status === "current" ? "text-primary font-bold" :
-                    "text-muted-foreground"
-                  )}>
+                  <span 
+                    className={cn(
+                      "text-xs mt-2 text-center transition-colors duration-300",
+                      status === "completed" ? "text-primary font-medium" :
+                      status === "current" ? "text-primary font-bold" :
+                      "text-muted-foreground"
+                    )}
+                  >
                     {step.label}
                   </span>
                 )}
@@ -98,17 +104,29 @@ const CheckoutProgress: React.FC<CheckoutProgressProps> = ({
               
               {/* Connector line */}
               {!isLast && (
-                <div className={cn(
-                  "flex-1 h-0.5 relative",
-                  status === "completed" ? "bg-primary" :
-                  status === "current" ? "bg-gradient-to-r from-primary to-muted" :
-                  "bg-muted"
-                )} />
+                <div 
+                  className={cn(
+                    "flex-1 h-0.5 transition-all duration-500",
+                    status === "completed" ? "bg-primary" :
+                    status === "current" ? "bg-gradient-to-r from-primary to-muted" :
+                    "bg-muted"
+                  )}
+                  aria-hidden="true"
+                />
               )}
             </React.Fragment>
           );
         })}
       </div>
+      
+      {/* Mobile step labels - show current step name only on mobile */}
+      {isMobile && (
+        <div className="mt-3 text-center">
+          <span className="text-sm font-medium text-primary">
+            {steps.find(step => step.id === currentStep)?.label}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
