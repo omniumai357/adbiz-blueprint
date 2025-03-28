@@ -49,3 +49,27 @@ export interface UploadResponse {
   fileUrl?: string;
   error?: string;
 }
+
+export interface UploadResult {
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+// Complete file upload hook interface
+export interface FileUploadHook {
+  files: FileState;
+  uploadProgress: Record<string, UploadProgressItem>;
+  uploadError: string | null;
+  uploading: boolean;
+  hasError: boolean;
+  isUploading: boolean;
+  handleFileChange: (fileType: keyof FileState, e: React.ChangeEvent<HTMLInputElement> | readonly File[]) => void;
+  onRemoveFile: (fileType: keyof FileState, index?: number) => void;
+  uploadFiles: (businessId: string) => Promise<boolean>;
+  resetFileUpload: () => void;
+  selectedFiles: File[];
+  setSelectedFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  uploadFile: (file: File, path: string) => Promise<string>;
+  setUploadError: React.Dispatch<React.SetStateAction<string | null>>;
+}

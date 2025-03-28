@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { UploadProgressItem } from '../types';
+import { UploadProgressItem, FileStatus } from '../types';
 import { logger } from '@/utils/logger';
 
 /**
@@ -12,12 +12,18 @@ export const useFileUploadProgress = () => {
   /**
    * Update progress for a specific file
    */
-  const updateProgress = useCallback((fileId: string, fileName: string, progress: number) => {
+  const updateProgress = useCallback((fileId: string, fileName: string, progress: number, fileType: string = 'file', status: FileStatus = 'uploading') => {
     logger.debug(`Updating progress for ${fileName}: ${progress}%`);
     
     setUploadProgress(prev => ({
       ...prev,
-      [fileId]: { fileName, progress }
+      [fileId]: { 
+        fileId, 
+        fileName, 
+        progress, 
+        fileType, 
+        status 
+      }
     }));
   }, []);
 
@@ -49,7 +55,7 @@ export const useFileUploadProgress = () => {
       if (prev[fileId]) {
         return {
           ...prev,
-          [fileId]: { ...prev[fileId], progress: 100 }
+          [fileId]: { ...prev[fileId], progress: 100, status: 'uploaded' as FileStatus }
         };
       }
       return prev;

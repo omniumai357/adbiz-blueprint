@@ -7,7 +7,16 @@
  */
 
 // Export types 
-export type { FileState, FileItem, UploadProgressItem, FileUploadHook, UploadResult } from './types';
+export type { 
+  FileState, 
+  FileItem, 
+  UploadProgressItem, 
+  FileUploadHook, 
+  UploadResult, 
+  FileStatus, 
+  UploadResponse, 
+  FileUploadOptions 
+} from './types';
 
 // Core file upload functionality
 export * from './hooks';
