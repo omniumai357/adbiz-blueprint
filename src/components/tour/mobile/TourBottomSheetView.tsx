@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { TourStep } from "@/contexts/tour/types";
+import { useTourGestures } from "@/hooks/tour/useTourGestures";
 
 interface TourBottomSheetViewProps {
   step: TourStep;
@@ -76,22 +77,24 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
   const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
   const NextIcon = isRTL ? ChevronLeft : ChevronRight;
   
-  // Drag constraints to improve touch experience
-  const dragConstraints = {
-    top: false,
-    bottom: true,
-    left: false,
-    right: false
-  };
+  // Use gesture hooks for better touch interaction
+  const { touchHandlers } = useTourGestures({
+    onSwipeLeft: !isRTL ? onNext : onPrev,
+    onSwipeRight: !isRTL ? onPrev : onNext,
+    preventScrollOnSwipe: true,
+    vibrate: true
+  });
   
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent 
         side="bottom" 
         className="rounded-t-xl p-0 overflow-hidden max-h-[90vh] focus:outline-none"
-        dragConstraints={dragConstraints}
       >
-        <div className="flex flex-col h-full focus:outline-none">
+        <div 
+          className="flex flex-col h-full focus:outline-none"
+          {...touchHandlers}
+        >
           {/* Header with close button */}
           <SheetHeader className="px-4 pt-4 pb-2 border-b">
             <div className="flex items-center justify-between">
@@ -132,6 +135,27 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
             </div>
           </div>
           
+          {/* Swipe hint indicator */}
+          <div className="flex justify-center items-center py-2 text-xs text-muted-foreground">
+            <span className="flex items-center">
+              {currentStep > 0 && (
+                <>
+                  <PrevIcon className="h-3 w-3 mr-1" />
+                  <span className="mr-2">Swipe right for previous</span>
+                </>
+              )}
+              <span className="mx-2">
+                {currentStep + 1} of {totalSteps}
+              </span>
+              {!isLastStep && (
+                <>
+                  <span className="ml-2">Swipe left for next</span>
+                  <NextIcon className="h-3 w-3 ml-1" />
+                </>
+              )}
+            </span>
+          </div>
+          
           {/* Footer with navigation buttons */}
           <SheetFooter className="px-4 py-3 border-t flex-shrink-0">
             <div className="flex items-center justify-between w-full">
@@ -147,10 +171,6 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
                     {prevLabel}
                   </Button>
                 )}
-              </div>
-              
-              <div className="text-xs text-muted-foreground">
-                {currentStep + 1} of {totalSteps}
               </div>
               
               <div className="flex-1 flex justify-end">

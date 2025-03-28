@@ -3,6 +3,7 @@ import React from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTourGestures } from "@/hooks/tour/useTourGestures";
 
 interface TourMobileCompactViewProps {
   title: string;
@@ -48,9 +49,20 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
   const NextIcon = isRTL ? ChevronLeft : ChevronRight;
   
+  // Use gesture hooks for better touch interaction
+  const { touchHandlers } = useTourGestures({
+    onSwipeLeft: !isRTL ? onNext : onPrev,
+    onSwipeRight: !isRTL ? onPrev : onNext,
+    threshold: 30, // Lower threshold for smaller component
+    vibrate: true
+  });
+  
   return (
     <div className="fixed bottom-2 right-2 z-50 max-w-[350px] w-full sm:w-auto">
-      <Card className="shadow-lg border border-border">
+      <Card 
+        className="shadow-lg border border-border"
+        {...touchHandlers}
+      >
         <CardHeader className="p-3 pb-0 flex flex-row items-center">
           <CardTitle className="text-base flex-grow">{title}</CardTitle>
           <Button
@@ -65,27 +77,29 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
           </Button>
         </CardHeader>
         
-        {media && (
-          <div className="px-3 pt-2">
-            {media.type === 'image' ? (
-              <img 
-                src={media.url} 
-                alt={media.alt || title} 
-                className="rounded-sm w-full max-h-[80px] object-cover"
-              />
-            ) : (
-              <video 
-                src={media.url} 
-                controls 
-                className="rounded-sm w-full max-h-[80px]"
-              />
-            )}
-          </div>
-        )}
-        
-        <CardContent className="p-3 text-sm max-h-[80px] overflow-y-auto">
-          {content}
-        </CardContent>
+        <div className="flex flex-row p-3">
+          {media && (
+            <div className="pr-2 flex-shrink-0 w-1/3">
+              {media.type === 'image' ? (
+                <img 
+                  src={media.url} 
+                  alt={media.alt || title} 
+                  className="rounded-sm object-cover h-[80px] w-full"
+                />
+              ) : (
+                <video 
+                  src={media.url} 
+                  controls 
+                  className="rounded-sm h-[80px] w-full"
+                />
+              )}
+            </div>
+          )}
+          
+          <CardContent className="p-0 text-sm max-h-[80px] overflow-y-auto flex-grow">
+            {content}
+          </CardContent>
+        </div>
         
         <CardFooter className="p-3 pt-0 flex items-center justify-between">
           <div className="text-xs text-muted-foreground">
