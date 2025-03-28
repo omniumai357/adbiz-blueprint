@@ -3,198 +3,119 @@ import { useState, useEffect, useMemo } from "react";
 import { logger } from "@/utils/logger";
 
 // Device breakpoints in pixels - standardized across the application
-export const BREAKPOINTS = {
-  xs: 480,   // Extra small devices
-  sm: 640,   // Small devices
-  md: 768,   // Medium devices
-  lg: 1024,  // Large devices
-  xl: 1280,  // Extra large devices
-  xxl: 1536  // Extra extra large devices
+export const DEVICE_BREAKPOINTS = {
+  mobile: 640,    // Mobile devices (up to 640px)
+  tablet: 1024,   // Tablets (up to 1024px)
+  desktop: 1280,  // Desktop (up to 1280px)
+  large: 1536     // Large screens (beyond 1536px)
 };
 
+interface DeviceDimensions {
+  width: number;
+  height: number;
+}
+
+interface DeviceState {
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  isLargeDesktop: boolean;
+  
+  isPortrait: boolean;
+  isLandscape: boolean;
+  
+  hasTouchCapability: boolean;
+  highDPI: boolean;
+  
+  dimensions: DeviceDimensions;
+  pixelRatio: number;
+}
+
 /**
- * Enhanced hook for device type detection with capabilities
- * 
- * @returns Object with device type and capability flags
+ * Hook that provides device information and capabilities
+ * for responsive design decisions
  */
-export function useDevice() {
-  const [devicePixelRatio, setDevicePixelRatio] = useState<number>(
+export function useDevice(): DeviceState {
+  // Initialize with default values
+  const [dimensions, setDimensions] = useState<DeviceDimensions>({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1024,
+    height: typeof window !== 'undefined' ? window.innerHeight : 768
+  });
+  
+  const [pixelRatio, setPixelRatio] = useState<number>(
     typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
   );
   
-  const [hasTouchCapability, setHasTouchCapability] = useState<boolean>(false);
-  const [windowDimensions, setWindowDimensions] = useState<{
-    width: number;
-    height: number;
-  }>({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
-  });
-  
-  // Initialize device capabilities on mount
+  const [hasTouchCapability, setHasTouchCapability] = useState<boolean>(
+    typeof window !== 'undefined' ? 
+      'ontouchstart' in window || 
+      navigator.maxTouchPoints > 0 : 
+      false
+  );
+
+  // Update dimensions on window resize
   useEffect(() => {
-    // Skip during SSR
     if (typeof window === 'undefined') return;
     
-    // Detect touch capability
-    setHasTouchCapability('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    
-    // Get device pixel ratio for high-DPI screens
-    setDevicePixelRatio(window.devicePixelRatio || 1);
-    
-    // Set initial window dimensions
-    setWindowDimensions({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    });
-    
-    // Handle window resize
     const handleResize = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+      try {
+        setDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+        setPixelRatio(window.devicePixelRatio || 1);
+      } catch (err) {
+        logger.error('Error updating device dimensions', { error: err });
+      }
     };
-    
-    // Handle changes to device pixel ratio (rare but possible)
-    const handlePixelRatioChange = () => {
-      setDevicePixelRatio(window.devicePixelRatio || 1);
-    };
-    
-    // Add event listeners
+
+    // Set initial values
+    handleResize();
+
+    // Add event listener
     window.addEventListener('resize', handleResize);
     
-    // Media query for detecting changes to device pixel ratio
-    try {
-      const mediaQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
-      mediaQuery.addEventListener("change", handlePixelRatioChange);
-      
-      // Cleanup
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        mediaQuery.removeEventListener("change", handlePixelRatioChange);
-      };
-    } catch (err) {
-      logger.warn("Device pixel ratio monitoring not supported", {
-        context: "useDevice",
-        data: { error: err }
-      });
-      
-      // Cleanup resize listener only
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
   
-  // Derived breakpoint states
-  const breakpoints = useMemo(() => {
-    const width = windowDimensions.width;
+  // Memoize derived device states to prevent unnecessary re-renders
+  return useMemo(() => {
+    const { width, height } = dimensions;
+    
+    // Device type detection
+    const isMobile = width < DEVICE_BREAKPOINTS.mobile;
+    const isTablet = width >= DEVICE_BREAKPOINTS.mobile && width < DEVICE_BREAKPOINTS.tablet;
+    const isDesktop = width >= DEVICE_BREAKPOINTS.tablet && width < DEVICE_BREAKPOINTS.large;
+    const isLargeDesktop = width >= DEVICE_BREAKPOINTS.large;
+    
+    // Orientation detection
+    const isPortrait = height > width;
+    const isLandscape = width >= height;
+    
+    // High DPI detection
+    const highDPI = pixelRatio > 1;
+    
     return {
-      isXs: width < BREAKPOINTS.sm,
-      isSm: width >= BREAKPOINTS.sm && width < BREAKPOINTS.md,
-      isMd: width >= BREAKPOINTS.md && width < BREAKPOINTS.lg,
-      isLg: width >= BREAKPOINTS.lg && width < BREAKPOINTS.xl,
-      isXl: width >= BREAKPOINTS.xl && width < BREAKPOINTS.xxl,
-      isXxl: width >= BREAKPOINTS.xxl,
-      // Combined breakpoints for convenience
-      isMobile: width < BREAKPOINTS.md,
-      isTablet: width >= BREAKPOINTS.md && width < BREAKPOINTS.lg,
-      isDesktop: width >= BREAKPOINTS.lg,
-      isLargeDesktop: width >= BREAKPOINTS.xl
+      // Device types
+      isMobile,
+      isTablet,
+      isDesktop,
+      isLargeDesktop,
+      
+      // Orientation
+      isPortrait,
+      isLandscape,
+      
+      // Capabilities
+      hasTouchCapability,
+      highDPI,
+      
+      // Raw values
+      dimensions,
+      pixelRatio
     };
-  }, [windowDimensions.width]);
-  
-  // Orientation detection
-  const isPortrait = windowDimensions.height > windowDimensions.width;
-  
-  // Device capabilities
-  const capabilities = useMemo(() => ({
-    touch: hasTouchCapability,
-    highDPI: devicePixelRatio >= 2,
-    ultraHighDPI: devicePixelRatio >= 3,
-    portrait: isPortrait,
-    landscape: !isPortrait,
-    // Raw dimensions for custom calculations
-    width: windowDimensions.width,
-    height: windowDimensions.height
-  }), [hasTouchCapability, devicePixelRatio, isPortrait, windowDimensions]);
-  
-  // Log device information in development (once)
-  useEffect(() => {
-    logger.debug("Device information", {
-      context: "useDevice",
-      data: {
-        ...breakpoints,
-        ...capabilities,
-        devicePixelRatio
-      }
-    });
-  }, []);
-  
-  return {
-    // Breakpoint flags
-    ...breakpoints,
-    
-    // Orientation
-    isPortrait,
-    isLandscape: !isPortrait,
-    
-    // Capabilities
-    ...capabilities,
-    
-    // Raw values for custom logic
-    devicePixelRatio,
-    hasTouchCapability,
-    
-    // Window dimensions
-    dimensions: windowDimensions
-  };
-}
-
-/**
- * Legacy hook for backward compatibility
- * @deprecated Use useDevice() instead
- */
-export function useIsMobile() {
-  const { isMobile } = useDevice();
-  return isMobile;
-}
-
-/**
- * Simple hook for media query matching
- * @param query CSS media query string
- * @returns Boolean indicating if the query matches
- */
-export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState<boolean>(false);
-  
-  useEffect(() => {
-    // Skip during SSR
-    if (typeof window === 'undefined') return;
-    
-    // Create the media query
-    const mediaQuery = window.matchMedia(query);
-    
-    // Set initial value
-    setMatches(mediaQuery.matches);
-    
-    // Define callback
-    const handleChange = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
-    
-    // Add event listener
-    try {
-      // Modern browsers
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } catch (err) {
-      // Fallback for older browsers
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
-  }, [query]);
-  
-  return matches;
+  }, [dimensions, pixelRatio, hasTouchCapability]);
 }

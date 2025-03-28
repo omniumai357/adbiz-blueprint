@@ -8,7 +8,7 @@ import { TourAccessibilityManager } from "./components/TourAccessibilityManager"
 import { TourPathVisualizationManager } from "./components/TourPathVisualizationManager";
 import { TourShortcutsHelp } from "./components/TourShortcutsHelp";
 import { TourEventManager } from "./components/TourEventManager";
-import { TourViewContainer } from "./components/TourViewContainer";
+import { TourViewRenderer } from "./components/TourViewRenderer";
 import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
 import { useLanguage } from "@/contexts/language-context";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
@@ -19,19 +19,25 @@ export const TourGuideControllerInner: React.FC = () => {
     isActive,
     currentStepData,
     nextStep,
-    prevStep
+    prevStep,
+    totalSteps,
+    currentStep,
+    endTour
   } = useTour();
   
   const { showKeyboardShortcutsHelp } = useKeyboardShortcuts();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const { direction, isRTL } = useLanguage();
   
-  // Use our new responsive tour context
+  // Use our enhanced responsive tour context
   const {
     isMobile,
     isTablet,
+    isLandscape,
     preferredViewMode,
-    minTouchTargetSize
+    minTouchTargetSize,
+    shouldUseDrawer,
+    shouldUseCompactView
   } = useResponsiveTour();
   
   const { targetElement } = useTourElementFinder(currentStepData?.target || '');
@@ -48,7 +54,7 @@ export const TourGuideControllerInner: React.FC = () => {
     } else if (navigationAction === 'next_from_element') {
       nextStep();
     } else if (navigationAction === 'escape') {
-      // This would need an endTour function
+      endTour();
     } else if (navigationAction === 'show_shortcuts_help') {
       showKeyboardShortcutsHelp();
     }
@@ -62,6 +68,12 @@ export const TourGuideControllerInner: React.FC = () => {
   if (!isActive || !currentStepData) {
     return null;
   }
+
+  // Calculate if this is the last step
+  const isLastStep = currentStep === totalSteps - 1;
+  
+  // Format step info text
+  const stepInfo = `${currentStep + 1} of ${totalSteps}`;
 
   return (
     <>
@@ -80,21 +92,27 @@ export const TourGuideControllerInner: React.FC = () => {
       {/* Handle event listeners */}
       <TourEventManager />
       
-      {/* Render the appropriate view (mobile or desktop) based on responsive context */}
-      <TourViewContainer 
+      {/* Render the appropriate view based on device and orientation */}
+      <TourViewRenderer 
+        step={currentStepData}
         targetElement={targetElement}
         isRTL={isRTL}
         direction={direction}
-        preferredViewMode={preferredViewMode}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onNext={nextStep}
+        onPrev={prevStep}
+        onClose={endTour}
+        isLastStep={isLastStep}
+        stepInfo={stepInfo}
+        tooltipRef={tooltipRef}
         isMobile={isMobile}
         isTablet={isTablet}
-        minTouchTargetSize={minTouchTargetSize}
-      >
-        {/* Add children here as required by the component */}
-        <div className="tour-content">
-          {/* This content will be shown inside the tour container */}
-        </div>
-      </TourViewContainer>
+        isLandscape={isLandscape}
+        useDrawer={shouldUseDrawer()}
+        useCompactView={shouldUseCompactView()}
+        preferredViewMode={preferredViewMode}
+      />
     </>
   );
 };
