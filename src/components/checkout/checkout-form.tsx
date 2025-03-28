@@ -1,6 +1,7 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import CustomerInfoForm from "@/components/checkout/customer-info-form";
 import DiscountSection from "@/components/checkout/form/discount-section";
 import PaymentSection from "@/components/checkout/form/payment-section";
@@ -8,6 +9,7 @@ import PaymentMethodSelector from "@/components/checkout/form/payment-method-sel
 import AddOnsSelector from "@/components/checkout/form/add-ons-selector";
 import DiscountDisplay from "@/components/checkout/form/discount-display";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
+import { useCheckoutValidation } from "@/hooks/checkout/useCheckoutValidation";
 
 interface CheckoutFormProps {
   checkout: ReturnType<typeof import("@/hooks/checkout/useCheckoutConsolidated").useCheckoutConsolidated>;
@@ -18,6 +20,7 @@ interface CheckoutFormProps {
  * CheckoutForm Component
  * 
  * Renders the complete checkout form using smaller, focused sub-components
+ * with integrated validation
  * 
  * @param props CheckoutFormProps containing the checkout object and success handler
  */
@@ -37,6 +40,39 @@ const CheckoutForm = ({
     totals,
     orderDetails
   } = checkout;
+  
+  // Use the checkout validation hook
+  const validation = useCheckoutValidation();
+  
+  // Validate customer info when it changes
+  useEffect(() => {
+    if (customerInfo) {
+      validation.validateCustomerInfo(customerInfo);
+    }
+  }, [customerInfo]);
+
+  // Custom order success handler with validation
+  const handleOrderSuccess = (id: string) => {
+    if (!validation.validateCheckoutSubmission(customerInfo)) {
+      return;
+    }
+    
+    validation.setIsSubmitting(true);
+    
+    try {
+      onOrderSuccess(id);
+      toast.success("Order completed successfully", {
+        description: `Your order #${id} has been processed.`
+      });
+    } catch (error) {
+      console.error("Order processing error:", error);
+      toast.error("Order processing failed", {
+        description: "There was an error processing your order. Please try again."
+      });
+    } finally {
+      validation.setIsSubmitting(false);
+    }
+  };
 
   if (isLoading || isProfileLoading) {
     return (
@@ -95,7 +131,7 @@ const CheckoutForm = ({
         onLoyaltyProgramToggle={discounts.loyalty.toggle}
         activeOffers={discounts.offers.active}
         availableOffer={discounts.offers.available}
-        personalizedCoupon={null} // Changed from discounts.coupons.personal to null
+        personalizedCoupon={null}
         appliedCoupon={discounts.coupons.applied}
         couponDiscountAmount={discounts.coupons.amount}
         isCheckingCoupon={discounts.coupons.isChecking}
@@ -117,7 +153,7 @@ const CheckoutForm = ({
         packageDetails={orderDetails.packageDetails}
         customerInfo={customerInfo}
         total={totals.total}
-        onOrderSuccess={onOrderSuccess}
+        onOrderSuccess={handleOrderSuccess}
       />
     </div>
   );
