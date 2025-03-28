@@ -1,84 +1,101 @@
 
+/**
+ * Visual regression test for MilestoneCard component
+ * 
+ * Tests the appearance of the component across different breakpoints
+ * and in different states (default, completed, in-progress)
+ */
+
 import React from 'react';
 import { render } from '@testing-library/react';
-import { MilestoneCard } from '@/components/rewards/MilestoneCard';
-import { ResponsiveVisualTest } from './components/ResponsiveVisualTest';
-import { testAllBreakpoints } from './visualRegressionSetup';
+import MilestoneCard from '@/components/rewards/MilestoneCard';
+import ResponsiveTestWrapper from '../components/ResponsiveTestWrapper';
+import { createResponsiveVisualTests, testAllBreakpoints } from './visualRegressionSetup';
 import { Breakpoint } from '@/hooks/useResponsive';
 
-// Mock translations (if using i18next)
-jest.mock('react-i18next', () => ({
-  useTranslation: () => {
-    return {
-      t: (str: string) => str,
-      i18n: {
-        changeLanguage: jest.fn(),
-      },
-    };
-  },
-}));
+// Standard test props
+const defaultProps = {
+  name: 'First Purchase',
+  description: 'Complete your first purchase to earn this milestone.',
+  icon: 'shopping-cart',
+  pointsRequired: 100,
+  currentPoints: 50,
+  isCompleted: false,
+  rewardClaimed: false,
+  onClaim: jest.fn()
+};
 
 describe('MilestoneCard Visual Tests', () => {
-  // Define standard props for consistent testing
-  const defaultProps = {
-    name: 'First Purchase',
-    description: 'Complete your first purchase to earn rewards',
-    icon: 'shopping-bag',
-    pointsRequired: 100,
-    currentPoints: 50,
-    isCompleted: false,
-    rewardClaimed: false,
-  };
+  // Test in default state across breakpoints
+  createResponsiveVisualTests(
+    'MilestoneCard',
+    (breakpoint: Breakpoint) => (
+      <ResponsiveTestWrapper breakpoint={breakpoint}>
+        <MilestoneCard {...defaultProps} />
+      </ResponsiveTestWrapper>
+    )
+  );
 
+  // Test completed state
   testAllBreakpoints(
-    'MilestoneCard renders correctly',
-    ['xs', 'sm', 'md', 'lg', 'xl'],
-    (breakpoint: Breakpoint) => {
-      // Render component inside the responsive test container
+    'renders completed milestone correctly',
+    ['xs', 'md', 'xl'],
+    (breakpoint) => {
       const { container } = render(
-        <ResponsiveVisualTest breakpoint={breakpoint}>
-          <MilestoneCard {...defaultProps} />
-        </ResponsiveVisualTest>
+        <ResponsiveTestWrapper breakpoint={breakpoint}>
+          <MilestoneCard
+            {...defaultProps}
+            isCompleted={true}
+            currentPoints={100}
+          />
+        </ResponsiveTestWrapper>
       );
-
-      // Take snapshot
+      
       expect(container).toMatchImageSnapshot({
-        customSnapshotIdentifier: `milestone-card-default-${breakpoint}`,
+        customSnapshotIdentifier: `MilestoneCard-${breakpoint}-completed`
       });
     }
   );
-
-  // Test different states
-  it('renders completed state correctly', () => {
-    const { container } = render(
-      <ResponsiveVisualTest breakpoint="md">
-        <MilestoneCard
-          {...defaultProps}
-          isCompleted={true}
-          currentPoints={100}
-        />
-      </ResponsiveVisualTest>
-    );
-
-    expect(container).toMatchImageSnapshot({
-      customSnapshotIdentifier: 'milestone-card-completed',
-    });
-  });
-
-  it('renders claimed reward state correctly', () => {
-    const { container } = render(
-      <ResponsiveVisualTest breakpoint="md">
-        <MilestoneCard
-          {...defaultProps}
-          isCompleted={true}
-          rewardClaimed={true}
-          currentPoints={100}
-        />
-      </ResponsiveVisualTest>
-    );
-
-    expect(container).toMatchImageSnapshot({
-      customSnapshotIdentifier: 'milestone-card-claimed',
-    });
-  });
+  
+  // Test claimed state
+  testAllBreakpoints(
+    'renders claimed reward correctly',
+    ['xs', 'md', 'xl'],
+    (breakpoint) => {
+      const { container } = render(
+        <ResponsiveTestWrapper breakpoint={breakpoint}>
+          <MilestoneCard
+            {...defaultProps}
+            isCompleted={true}
+            rewardClaimed={true}
+            currentPoints={100}
+          />
+        </ResponsiveTestWrapper>
+      );
+      
+      expect(container).toMatchImageSnapshot({
+        customSnapshotIdentifier: `MilestoneCard-${breakpoint}-claimed`
+      });
+    }
+  );
+  
+  // Test near completion state
+  testAllBreakpoints(
+    'renders near-completion milestone correctly',
+    ['xs', 'md', 'xl'],
+    (breakpoint) => {
+      const { container } = render(
+        <ResponsiveTestWrapper breakpoint={breakpoint}>
+          <MilestoneCard
+            {...defaultProps}
+            currentPoints={90}
+          />
+        </ResponsiveTestWrapper>
+      );
+      
+      expect(container).toMatchImageSnapshot({
+        customSnapshotIdentifier: `MilestoneCard-${breakpoint}-near-completion`
+      });
+    }
+  );
 });

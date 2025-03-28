@@ -12,6 +12,12 @@ import type { MatchImageSnapshotOptions } from 'jest-image-snapshot';
 import { BREAKPOINTS, Breakpoint } from '@/hooks/useResponsive';
 // Add import for render from testing library
 import { render } from '@testing-library/react';
+import { 
+  VIEWPORT_SIZES, 
+  defaultSnapshotOptions, 
+  PRIORITY_BREAKPOINTS,
+  getSnapshotIdentifier
+} from '../utils/responsiveTesting';
 
 /**
  * Configure jest-image-snapshot for responsive component testing
@@ -22,44 +28,6 @@ export const configureToMatchImageSnapshot = () => {
   
   // Add the custom matcher to Jest
   expect.extend({ toMatchImageSnapshot });
-};
-
-/**
- * Default options for image snapshot testing
- */
-export const defaultSnapshotOptions: MatchImageSnapshotOptions = {
-  // Threshold for pixel difference to trigger failure (1% by default)
-  failureThreshold: 0.01,
-  failureThresholdType: 'percent',
-  // Improve diff visualization
-  comparisonMethod: 'ssim',
-  // Custom directory for snapshot storage
-  customSnapshotsDir: 'src/tests/__image_snapshots__',
-  // Organized snapshots by component
-  customDiffDir: 'src/tests/__image_snapshots__/__diff_output__',
-};
-
-/**
- * Standard viewport sizes for testing based on our breakpoints
- */
-export const VIEWPORT_SIZES = {
-  xs: { width: 375, height: 667 },  // iPhone SE
-  sm: { width: 640, height: 800 },  // Small tablet / large phone
-  md: { width: 768, height: 1024 }, // iPad
-  lg: { width: 1024, height: 768 }, // Landscape iPad / small laptop
-  xl: { width: 1280, height: 800 }, // Laptop
-  xxl: { width: 1920, height: 1080 } // Large desktop
-};
-
-/**
- * Generate snapshot identifier with device and state information
- */
-export const getSnapshotIdentifier = (
-  componentName: string,
-  breakpoint: Breakpoint,
-  stateName = 'default'
-): string => {
-  return `${componentName}-${breakpoint}-${stateName}`;
 };
 
 /**
@@ -78,7 +46,7 @@ export const getViewportByBreakpoint = (breakpoint: Breakpoint): { width: number
  */
 export const testAllBreakpoints = (
   testName: string,
-  breakpoints: Breakpoint[] = ['xs', 'md', 'xl'],
+  breakpoints: Breakpoint[] = PRIORITY_BREAKPOINTS,
   testFn: (breakpoint: Breakpoint) => void
 ): void => {
   describe(testName, () => {
@@ -101,7 +69,7 @@ export const testAllBreakpoints = (
 export const createResponsiveVisualTests = (
   componentName: string,
   renderComponent: (breakpoint: Breakpoint) => JSX.Element,
-  breakpoints: Breakpoint[] = ['xs', 'md', 'xl'],
+  breakpoints: Breakpoint[] = PRIORITY_BREAKPOINTS,
   options: Partial<MatchImageSnapshotOptions> = {}
 ): void => {
   describe(`${componentName} visual tests`, () => {

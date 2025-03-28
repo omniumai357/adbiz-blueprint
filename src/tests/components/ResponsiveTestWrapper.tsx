@@ -1,17 +1,17 @@
 
 /**
- * ResponsiveTestWrapper Component
+ * Responsive Test Wrapper Component
  * 
- * A wrapper component for rendering components at specific viewport sizes
- * for visual and functional testing.
+ * A standardized wrapper component for testing components at specific viewport sizes.
+ * This can be used for both visual regression tests and functional tests.
  */
 
 import React, { ReactNode, useEffect } from 'react';
 import { Breakpoint } from '@/hooks/useResponsive';
-import { getViewportForBreakpoint, mockWindowSize } from '../utils/ResponsiveTestingUtils';
+import { getViewportForBreakpoint, mockWindowSize } from '../utils/responsiveTesting';
 
 interface ResponsiveTestWrapperProps {
-  /** Component to test */
+  /** Component or content to test */
   children: ReactNode;
   /** Breakpoint to test at */
   breakpoint: Breakpoint;
@@ -25,10 +25,26 @@ interface ResponsiveTestWrapperProps {
   className?: string;
   /** Whether to show a breakpoint indicator */
   showIndicator?: boolean;
+  /** Test ID for testing */
+  testId?: string;
 }
 
 /**
  * A wrapper component for testing components at different viewport sizes
+ * that works for both visual and functional tests
+ * 
+ * @example
+ * // Visual testing
+ * <ResponsiveTestWrapper breakpoint="md">
+ *   <ComponentToTest />
+ * </ResponsiveTestWrapper>
+ * 
+ * // Functional testing with React Testing Library
+ * render(
+ *   <ResponsiveTestWrapper breakpoint="xs">
+ *     <ComponentToTest />
+ *   </ResponsiveTestWrapper>
+ * );
  */
 const ResponsiveTestWrapper: React.FC<ResponsiveTestWrapperProps> = ({
   children,
@@ -37,7 +53,8 @@ const ResponsiveTestWrapper: React.FC<ResponsiveTestWrapperProps> = ({
   height,
   addPadding = true,
   className = '',
-  showIndicator = true
+  showIndicator = true,
+  testId
 }) => {
   const viewport = getViewportForBreakpoint(breakpoint);
   const viewportHeight = height || viewport.height;
@@ -50,7 +67,7 @@ const ResponsiveTestWrapper: React.FC<ResponsiveTestWrapperProps> = ({
   
   return (
     <div
-      className={`relative ${className}`}
+      className={`responsive-test-wrapper relative ${className}`}
       style={{
         width: `${viewport.width}px`,
         height: `${viewportHeight}px`,
@@ -60,7 +77,8 @@ const ResponsiveTestWrapper: React.FC<ResponsiveTestWrapperProps> = ({
         border: '1px dashed #ddd',
         boxSizing: 'border-box'
       }}
-      data-testid={`responsive-test-${breakpoint}`}
+      data-testid={testId || `responsive-test-${breakpoint}`}
+      data-breakpoint={breakpoint}
       aria-label={`Viewport: ${viewport.width}×${viewportHeight}px`}
     >
       {showIndicator && (
