@@ -28,7 +28,7 @@ export const ResponsiveServicesPage: React.FC = () => {
   
   // Filter packages by selected category
   const filteredPackages = packages.filter(
-    pkg => pkg.billingCycle === selectedCategory
+    pkg => pkg.category === selectedCategory
   );
   
   return (
@@ -67,7 +67,7 @@ export const ResponsiveServicesPage: React.FC = () => {
         <>
           <ServicesGrid minItemWidth={isMobile ? 280 : 320} gap={isMobile ? "sm" : "md"}>
             {filteredPackages.map(pkg => (
-              <PackageCard key={pkg.id} package={pkg} />
+              <PackageCard key={pkg.id} pkg={pkg} />
             ))}
           </ServicesGrid>
           
