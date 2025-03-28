@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from 'react';
 import { getAllowedFileTypes, getReadableFileFormats, formatFileSize } from '@/utils/file-validation';
+import { FileState } from '../types';
 
 /**
  * Hook for validating files against type and size constraints
@@ -11,7 +12,7 @@ export const useFileValidator = () => {
   /**
    * Check if a file type is valid for the given category
    */
-  const isFileTypeValid = useCallback((file: File, fileCategory: string): boolean => {
+  const isFileTypeValid = useCallback((file: File, fileCategory: keyof FileState): boolean => {
     const allowedTypes = getAllowedFileTypes(fileCategory);
     return allowedTypes.length === 0 || allowedTypes.includes(file.type);
   }, []);
@@ -28,7 +29,7 @@ export const useFileValidator = () => {
    */
   const validateFiles = useCallback((
     files: File[],
-    fileCategory: string,
+    fileCategory: keyof FileState,
     maxSizeBytes: number
   ): { validFiles: File[]; invalidFiles: { file: File; reason: string }[] } => {
     const validFiles: File[] = [];
@@ -56,7 +57,7 @@ export const useFileValidator = () => {
     if (errors.length > 0) {
       setValidationErrors(prev => ({
         ...prev,
-        [fileCategory]: errors
+        [fileCategory as string]: errors
       }));
     }
     

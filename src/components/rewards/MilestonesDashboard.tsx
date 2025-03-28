@@ -111,9 +111,9 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             let pointsRequired = 0;
             if (milestone.milestone && 
                 typeof milestone.milestone === 'object' && 
-                milestone.milestone !== null && 
-                'points_required' in milestone.milestone) {
-              pointsRequired = Number(milestone.milestone.points_required) || 0;
+                milestone.milestone !== null) {
+              // Use optional chaining and nullish coalescing for safety
+              pointsRequired = Number(milestone.milestone?.points_required ?? 0);
             }
               
             return (

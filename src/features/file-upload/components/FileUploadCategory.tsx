@@ -7,7 +7,6 @@ import { FileState } from "../types";
 import FilePreviewGrid from "./FilePreviewGrid";
 import { getReadableFileFormats } from "@/utils/file-validation";
 import { useFileValidation } from "../hooks/useFileValidation";
-import { fileAdapter } from "@/utils/file-adapter";
 
 interface FileUploadCategoryProps {
   title: string;
@@ -28,8 +27,6 @@ export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
   
-  // Safely convert fileType to string for display purposes using our adapter utility
-  const fileTypeStr = fileAdapter.fileTypeToString(fileType);
   // Pass the fileType directly to getMaxFileSize and getReadableFileFormats since they expect a keyof FileState
   const maxFileSize = getMaxFileSize(fileType);
   const readableFormats = getReadableFileFormats(fileType);
@@ -48,12 +45,12 @@ export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
               type="button"
               variant="outline"
               className="relative"
-              onClick={() => document.getElementById(`${fileTypeStr}-upload`)?.click()}
+              onClick={() => document.getElementById(`${fileType}-upload`)?.click()}
             >
               <Upload className="h-4 w-4 mr-2" />
               Select {title}
               <input
-                id={`${fileTypeStr}-upload`}
+                id={`${fileType}-upload`}
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 accept={acceptFormats}
@@ -76,7 +73,7 @@ export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
           <FilePreviewGrid
             files={files}
             fileType={fileType}
-            emptyMessage={`No ${fileTypeStr} uploaded yet`}
+            emptyMessage={`No ${String(fileType)} uploaded yet`}
           />
         )}
       </div>

@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Upload } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { getReadableFileFormats } from '@/utils/file-validation';
-import { getMaxFileSize, formatFileSize } from '../utils';
+import { formatFileSize } from '@/utils/file-validation';
+import { FileState } from '../types';
+import { getMaxFileSize } from '../utils';
 
 interface FileUploadFieldProps {
   label: string;
   description?: string;
-  fileType: string;
+  fileType: keyof FileState;
   acceptedFormats: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
@@ -25,7 +27,7 @@ export const FileUploadField: React.FC<FileUploadFieldProps> = ({
   disabled = false,
   className = '',
 }) => {
-  const maxFileSize = getMaxFileSize(fileType);
+  const maxFileSize = getMaxFileSize(fileType as string);
   const readableFormats = getReadableFileFormats(fileType);
   const inputId = `${fileType}-upload-input`;
   

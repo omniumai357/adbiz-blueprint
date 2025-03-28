@@ -1,5 +1,5 @@
 
-import { formatFileSize as formatSize } from '@/utils/file-validation';
+import { formatFileSize } from '@/utils/file-validation';
 import { FileState } from '../types';
 
 /**
@@ -23,8 +23,6 @@ export const useFileValidation = () => {
   };
 
   // Reuse the formatFileSize function from utils
-  const formatFileSize = formatSize;
-
   return {
     getMaxFileSize,
     formatFileSize
