@@ -1,4 +1,3 @@
-
 import { User } from '@supabase/supabase-js';
 
 // API Response Types
@@ -102,11 +101,16 @@ export interface Milestone {
 export interface CommonMilestoneData {
   milestone_id: string;
   milestone_name: string;
-  milestone_description?: string;
-  reward_type: string;
-  reward_value: number;
+  milestone_description: string;
   icon?: string;
+  is_completed?: boolean;
+  reward_claimed?: boolean;
   is_claimed?: boolean;
+  completed_at?: string;
+  reward_value?: number;
+  reward_type?: string;
+  pointsRequired?: number;
+  isAvailable?: boolean;
 }
 
 export interface UserMilestone extends CommonMilestoneData {

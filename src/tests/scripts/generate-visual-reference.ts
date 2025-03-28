@@ -8,7 +8,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import chalk from 'chalk';
 import { BREAKPOINTS, Breakpoint } from '../../hooks/useResponsive';
 import { getViewportByBreakpoint } from '../visual/visualRegressionSetup';

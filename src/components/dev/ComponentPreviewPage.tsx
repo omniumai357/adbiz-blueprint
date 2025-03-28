@@ -69,7 +69,6 @@ function renderComponent(componentName: string, state: string) {
     case 'MilestoneCard':
       return (
         <MilestoneCard
-          milestone_id={mockProps.milestone.milestone_id}
           name={mockProps.milestone.milestone_name}
           description={mockProps.milestone.milestone_description}
           pointsRequired={mockProps.milestone.pointsRequired}
