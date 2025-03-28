@@ -110,12 +110,16 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             // Safely extract points_required from milestone with proper null checking
             let pointsRequired = 0;
             
-            // Use optional chaining and nullish coalescing for safe access
+            // Fix TypeScript error by ensuring milestoneData is not null before using it
             if (milestone.milestone) {
-              const milestoneData = milestone.milestone;
-              pointsRequired = typeof milestoneData === 'object' && milestoneData !== null
-                ? Number(milestoneData?.points_required ?? 0)
-                : 0;
+              // Explicitly check for null before accessing properties
+              if (typeof milestone.milestone === 'object' && milestone.milestone !== null) {
+                // Now TypeScript knows milestone.milestone is a non-null object
+                pointsRequired = Number(milestone.milestone.points_required || 0);
+              } else if (typeof milestone.milestone === 'string') {
+                // Handle case where milestone.milestone might be a string ID
+                pointsRequired = 0; // Default value for string case
+              }
             }
               
             return (
