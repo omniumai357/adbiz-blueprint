@@ -34,7 +34,16 @@ const customerSchema = z.object({
 const CustomerInfoForm = ({ customerInfo, onChange, isLoading = false }: CustomerInfoFormProps) => {
   const form = useForm<CustomerInfo>({
     resolver: zodResolver(customerSchema),
-    defaultValues: customerInfo,
+    defaultValues: {
+      firstName: customerInfo.firstName || "",
+      lastName: customerInfo.lastName || "",
+      email: customerInfo.email || "",
+      phone: customerInfo.phone || "",
+      company: customerInfo.company || "",
+      website: customerInfo.website || "",
+      invoiceDeliveryMethod: customerInfo.invoiceDeliveryMethod || "email",
+      userId: customerInfo.userId
+    },
   });
 
   const invoiceDeliveryMethod = form.watch("invoiceDeliveryMethod");

@@ -9,6 +9,9 @@ export interface CouponInfo {
   discountPercentage: number | null;
   validUntil: Date | null;
   isPersonalized: boolean;
+  id?: string;
+  name?: string;
+  discount?: number;
 }
 
 export function useCoupons(userId: string | null, subtotal: number) {
@@ -19,7 +22,6 @@ export function useCoupons(userId: string | null, subtotal: number) {
   const [isCheckingCoupon, setIsCheckingCoupon] = useState(false);
   const [couponDiscountAmount, setCouponDiscountAmount] = useState<number>(0);
 
-  // Fetch personalized coupon for logged-in user
   useEffect(() => {
     const fetchPersonalizedCoupon = async () => {
       if (!userId) return;
@@ -59,7 +61,6 @@ export function useCoupons(userId: string | null, subtotal: number) {
     fetchPersonalizedCoupon();
   }, [userId]);
   
-  // Apply a coupon code
   const applyCoupon = async (code: string) => {
     if (!code) return;
     
@@ -67,7 +68,6 @@ export function useCoupons(userId: string | null, subtotal: number) {
     setIsCheckingCoupon(true);
     
     try {
-      // If it's the personalized coupon, apply it directly
       if (personalizedCoupon && code.toUpperCase() === personalizedCoupon.code.toUpperCase()) {
         setAppliedCoupon(personalizedCoupon);
         calculateDiscountAmount(personalizedCoupon, subtotal);
@@ -79,7 +79,6 @@ export function useCoupons(userId: string | null, subtotal: number) {
         return;
       }
       
-      // Otherwise check the coupon in the database
       const { data, error } = await supabase
         .from('coupons')
         .select('*')
@@ -102,7 +101,6 @@ export function useCoupons(userId: string | null, subtotal: number) {
       }
       
       if (data) {
-        // Check if it's a user-specific coupon for someone else
         if (data.user_id && data.user_id !== userId) {
           toast({
             title: "Invalid coupon",
@@ -144,32 +142,33 @@ export function useCoupons(userId: string | null, subtotal: number) {
     }
   };
   
-  // Calculate the discount amount based on coupon type
   const calculateDiscountAmount = (coupon: CouponInfo, total: number) => {
     if (coupon.discountPercentage) {
-      // Percentage discount
       const discount = (total * coupon.discountPercentage) / 100;
       setCouponDiscountAmount(discount);
     } else if (coupon.discountAmount) {
-      // Fixed amount discount
       setCouponDiscountAmount(Math.min(coupon.discountAmount, total));
     } else {
       setCouponDiscountAmount(0);
     }
   };
   
-  // Recalculate discount when subtotal changes
   useEffect(() => {
     if (appliedCoupon) {
       calculateDiscountAmount(appliedCoupon, subtotal);
     }
   }, [subtotal, appliedCoupon]);
   
-  // Remove applied coupon
   const removeCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode("");
     setCouponDiscountAmount(0);
+  };
+  
+  const updateAmount = (total: number) => {
+    if (appliedCoupon) {
+      calculateDiscountAmount(appliedCoupon, total);
+    }
   };
   
   return {
@@ -179,6 +178,7 @@ export function useCoupons(userId: string | null, subtotal: number) {
     couponDiscountAmount,
     isCheckingCoupon,
     applyCoupon,
-    removeCoupon
+    removeCoupon,
+    updateAmount
   };
 }

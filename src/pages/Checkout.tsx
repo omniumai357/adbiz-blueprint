@@ -14,6 +14,7 @@ import { BundleDiscountInfo } from "@/components/checkout/bundle-discount";
 import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
 import { UserMilestone as ApiUserMilestone } from "@/types/api";
+import { CouponInfo } from "@/hooks/checkout/useCoupons";
 
 /**
  * Checkout Page Component
@@ -114,7 +115,13 @@ const Checkout = () => {
             isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
             limitedTimeOffer={checkout.discounts.offers.available as unknown as LimitedTimeOfferInfo}
             offerDiscountAmount={checkout.discounts.offers.amount}
-            appliedCoupon={checkout.discounts.coupons.applied}
+            appliedCoupon={checkout.discounts.coupons.applied ? {
+              code: checkout.discounts.coupons.applied.code,
+              discount: checkout.discounts.coupons.applied.discountPercentage || 0,
+              id: checkout.discounts.coupons.applied.id || "coupon-id",
+              name: checkout.discounts.coupons.applied.description || "Coupon",
+              discountAmount: checkout.discounts.coupons.applied.discountAmount || 0,
+            } : null}
             couponDiscountAmount={checkout.discounts.coupons.amount}
             appliedMilestoneReward={checkout.discounts.rewards.applied as unknown as UserMilestone}
             milestoneRewardAmount={checkout.discounts.rewards.amount}
