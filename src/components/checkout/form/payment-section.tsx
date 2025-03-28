@@ -36,6 +36,7 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
             amount={total}
             customerInfo={customerInfo}
             onSuccess={onOrderSuccess}
+            packageName={packageDetails.title}
           />
         ) : (
           <PayPalButton

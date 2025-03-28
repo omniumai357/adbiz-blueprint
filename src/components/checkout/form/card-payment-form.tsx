@@ -11,26 +11,31 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cardPaymentSchema, CardPaymentFormValues } from "@/schemas/checkout-validation";
 import { cn } from "@/lib/utils";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ArrowLeft } from "lucide-react";
+import OrderReviewConfirmation from "./order-review-confirmation";
 
 interface CardPaymentFormProps {
   amount: number;
   customerInfo: Partial<CustomerInfo>;
   onSuccess: (orderId: string) => void;
+  packageName?: string;
 }
 
 /**
  * Enhanced Credit Card Payment Form Component
  * 
- * Provides a user-friendly credit card payment form with validation and formatting
+ * Provides a user-friendly credit card payment form with validation, formatting,
+ * and order confirmation before submission
  */
 const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
   amount,
   customerInfo,
-  onSuccess
+  onSuccess,
+  packageName = "Selected Package"
 }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   
   // Initialize form with validation
   const form = useForm<CardPaymentFormValues>({
@@ -85,6 +90,29 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
     );
   };
   
+  // Handle continue to confirmation
+  const handleContinue = () => {
+    if (!isCustomerInfoComplete()) {
+      toast({
+        title: "Missing customer information",
+        description: "Please complete your personal information first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const isValid = form.trigger();
+    
+    if (isValid) {
+      setShowConfirmation(true);
+    }
+  };
+
+  // Return to payment form
+  const handleEdit = () => {
+    setShowConfirmation(false);
+  };
+  
   // Form submission handler
   const onSubmit = async (data: CardPaymentFormValues) => {
     if (!isCustomerInfoComplete()) {
@@ -123,11 +151,24 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
     }
   };
   
+  // If showing confirmation, render the confirmation component
+  if (showConfirmation) {
+    return (
+      <OrderReviewConfirmation
+        customerInfo={customerInfo}
+        amount={amount}
+        packageName={packageName}
+        onConfirm={() => onSubmit(form.getValues())}
+        onEdit={handleEdit}
+      />
+    );
+  }
+  
   return (
     <Card>
       <CardContent className="pt-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleContinue)} className="space-y-6">
             <FormField
               control={form.control}
               name="cardName"
@@ -266,7 +307,7 @@ const CardPaymentForm: React.FC<CardPaymentFormProps> = ({
               className="w-full" 
               disabled={!form.formState.isValid || isSubmitting}
             >
-              {isSubmitting ? "Processing..." : `Pay $${amount.toFixed(2)}`}
+              {isSubmitting ? "Processing..." : "Review Order"}
             </Button>
             
             {!form.formState.isValid && form.formState.submitCount > 0 && (
