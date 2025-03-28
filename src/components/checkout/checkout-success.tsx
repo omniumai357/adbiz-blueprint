@@ -1,15 +1,13 @@
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import ResponsiveInvoiceViewer from "@/components/invoice/responsive-invoice-viewer";
-import { useInvoiceDownload } from "@/hooks/checkout/useInvoiceDownload";
 import { useResponsive } from "@/hooks/useResponsive";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAnimatedMount } from "@/hooks/checkout/useAnimatedMount";
 import { useInvoiceGeneration } from "@/hooks/checkout/useInvoiceGeneration";
+import { useInvoiceDownload } from "@/hooks/checkout/useInvoiceDownload";
+import ResponsiveInvoiceViewer from "@/components/invoice/responsive-invoice-viewer";
 import ConfettiAnimation from "./success/confetti-animation";
 import OrderConfirmationCard from "./success/order-confirmation-card";
 import QuickActionButtons from "./success/quick-action-buttons";
@@ -20,10 +18,14 @@ interface CheckoutSuccessProps {
   invoiceNumber: string;
   isGeneratingInvoice?: boolean;
   userId: string | null;
+  orderDate?: string;
+  estimatedDelivery?: string;
+  orderStatus?: "processing" | "completed" | "delivered" | "cancelled";
+  className?: string;
 }
 
 /**
- * An enhanced checkout success component with animations and responsive design
+ * Enhanced checkout success component with additional features and improved animations
  * Shows order confirmation and provides access to the invoice
  */
 const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
@@ -31,14 +33,39 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   packageName,
   invoiceNumber,
   isGeneratingInvoice = false,
-  userId
+  userId,
+  orderDate,
+  estimatedDelivery,
+  orderStatus = "completed",
+  className
 }) => {
   const navigate = useNavigate();
   const { isMobile } = useResponsive();
   
-  // Use custom hooks for animations and state management
-  const { mounted, confettiActive, completedSteps } = useAnimatedMount();
-  const { invoiceProgress } = useInvoiceGeneration({ isGeneratingInvoice });
+  // Handle animation completion
+  const handleAllStepsCompleted = useCallback(() => {
+    if (!isGeneratingInvoice) {
+      toast.success("All processing steps completed", {
+        description: "Your order has been fully processed"
+      });
+    }
+  }, [isGeneratingInvoice]);
+  
+  // Use custom hooks for animations and state management with callbacks
+  const { mounted, confettiActive, completedSteps, resetAnimation } = useAnimatedMount({
+    onAllStepsCompleted: handleAllStepsCompleted
+  });
+  
+  const { invoiceProgress, completeProgress } = useInvoiceGeneration({ 
+    isGeneratingInvoice,
+    onComplete: () => {
+      if (!isGeneratingInvoice) {
+        toast.success("Invoice generated", {
+          description: "Your invoice is ready to view and download"
+        });
+      }
+    }
+  });
   
   const { 
     invoiceHtml,
@@ -50,23 +77,35 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
   } = useInvoiceDownload(invoiceNumber, userId);
   
   // Handle invoice actions with feedback
-  const handlePrintInvoice = () => {
+  const handlePrintInvoice = useCallback(() => {
     printInvoice();
     toast.success("Preparing invoice for printing");
-  };
+  }, [printInvoice]);
   
-  const handleDownloadInvoice = () => {
+  const handleDownloadInvoice = useCallback(() => {
     downloadInvoice();
     toast.success("Invoice download started");
-  };
+  }, [downloadInvoice]);
   
-  const handleShareInvoice = () => {
+  const handleShareInvoice = useCallback(() => {
     shareInvoice();
     toast.success("Sharing options opened");
-  };
+  }, [shareInvoice]);
+  
+  const handleContactSupport = useCallback(() => {
+    navigate("/contact", { 
+      state: { 
+        subject: `Order Support: ${orderId}`,
+        message: `I need help with my order ${orderId} for the ${packageName} package.`
+      } 
+    });
+    toast.success("Contacting support", {
+      description: "You'll be connected with our support team"
+    });
+  }, [navigate, orderId, packageName]);
   
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", className)}>
       {/* Confetti animation */}
       {confettiActive && <ConfettiAnimation />}
 
@@ -78,6 +117,10 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
         isGeneratingInvoice={isGeneratingInvoice}
         invoiceProgress={invoiceProgress}
         mounted={mounted}
+        orderDate={orderDate}
+        estimatedDelivery={estimatedDelivery}
+        orderStatus={orderStatus}
+        showDeliveryInfo={true}
       />
       
       <div className={cn(
@@ -102,10 +145,13 @@ const CheckoutSuccess: React.FC<CheckoutSuccessProps> = ({
         onPrint={handlePrintInvoice}
         onDownload={handleDownloadInvoice}
         onShare={handleShareInvoice}
+        onContactSupport={handleContactSupport}
         isLoading={isLoading}
         isPrinting={isPrinting}
         isGeneratingInvoice={isGeneratingInvoice}
         mounted={mounted}
+        showContinueShopping={true}
+        showContactSupport={true}
       />
     </div>
   );

@@ -1,40 +1,69 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+interface UseAnimatedMountOptions {
+  mountDelay?: number;
+  confettiDelay?: number;
+  stepInterval?: number;
+  steps?: string[];
+  onAllStepsCompleted?: () => void;
+}
 
 /**
- * Hook for managing mount animations with delayed activation
+ * Enhanced hook for managing mount animations with customizable timing and steps
  */
-export function useAnimatedMount() {
+export function useAnimatedMount({
+  mountDelay = 100,
+  confettiDelay = 300,
+  stepInterval = 600,
+  steps = ["Order processing", "Payment confirmation", "Invoice generation", "Order completion"],
+  onAllStepsCompleted
+}: UseAnimatedMountOptions = {}) {
   const [mounted, setMounted] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   
+  const resetAnimation = useCallback(() => {
+    setMounted(false);
+    setConfettiActive(false);
+    setCompletedSteps([]);
+  }, []);
+  
   useEffect(() => {
     // Trigger mount animation
-    const mountTimer = setTimeout(() => setMounted(true), 100);
+    const mountTimer = setTimeout(() => setMounted(true), mountDelay);
     
     // Trigger confetti animation
-    const confettiTimer = setTimeout(() => setConfettiActive(true), 300);
+    const confettiTimer = setTimeout(() => setConfettiActive(true), confettiDelay);
     
     // Simulate completion steps
-    const steps = ["Order processing", "Payment confirmation", "Invoice generation", "Order completion"];
     let currentStep = 0;
     
-    const stepInterval = setInterval(() => {
+    const stepTimer = setInterval(() => {
       if (currentStep < steps.length) {
         setCompletedSteps(prev => [...prev, steps[currentStep]]);
         currentStep++;
+        
+        // Call callback when all steps are completed
+        if (currentStep === steps.length && onAllStepsCompleted) {
+          onAllStepsCompleted();
+        }
       } else {
-        clearInterval(stepInterval);
+        clearInterval(stepTimer);
       }
-    }, 600);
+    }, stepInterval);
     
     return () => {
       clearTimeout(mountTimer);
       clearTimeout(confettiTimer);
-      clearInterval(stepInterval);
+      clearInterval(stepTimer);
     };
-  }, []);
+  }, [mountDelay, confettiDelay, stepInterval, steps, onAllStepsCompleted]);
   
-  return { mounted, confettiActive, completedSteps };
+  return { 
+    mounted, 
+    confettiActive, 
+    completedSteps,
+    resetAnimation
+  };
 }
