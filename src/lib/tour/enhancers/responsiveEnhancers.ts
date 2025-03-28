@@ -1,6 +1,6 @@
 
 import { TourStep } from "@/contexts/tour/types";
-import { TourStepEnhancer } from "@/lib/tour/types";
+import { TourStepEnhancer, Position } from "@/lib/tour/types";
 
 export interface ResponsiveContent {
   default: string;
@@ -39,10 +39,10 @@ export function responsiveContentEnhancedStep(
  */
 export function responsivePositionEnhancedStep(
   positions: {
-    default: "top" | "right" | "bottom" | "left";
-    mobile?: "top" | "right" | "bottom" | "left";
-    tablet?: "top" | "right" | "bottom" | "left";
-    desktop?: "top" | "right" | "bottom" | "left";
+    default: Position;
+    mobile?: Position;
+    tablet?: Position;
+    desktop?: Position;
   }
 ): (step: TourStep) => TourStep {
   return (step: TourStep): TourStep => {
@@ -88,7 +88,7 @@ export function responsiveSelectorEnhancedStep(
 /**
  * Creates a step that adjusts its placement in landscape mode
  */
-export const landscapePlacement = (placement: "top" | "right" | "bottom" | "left"): TourStepEnhancer => {
+export const landscapePlacement = (placement: Position): TourStepEnhancer => {
   return (step: TourStep): TourStep => {
     return {
       ...step,

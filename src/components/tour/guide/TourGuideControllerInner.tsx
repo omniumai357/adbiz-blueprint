@@ -12,6 +12,7 @@ import { TourViewContainer } from "./components/TourViewContainer";
 import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
 import { useLanguage } from "@/contexts/language-context";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
+import { Position } from "@/lib/tour/types";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {

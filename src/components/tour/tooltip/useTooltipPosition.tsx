@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/language-context";
-
-type Position = "top" | "right" | "bottom" | "left";
+import { Position } from "@/lib/tour/types";
 
 interface PositionOutput {
   tooltipPosition: { top: number; left: number };

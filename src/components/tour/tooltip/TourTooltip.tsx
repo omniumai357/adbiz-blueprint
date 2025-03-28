@@ -6,8 +6,7 @@ import { useTooltipAnimation } from "./useTooltipAnimation";
 import { TourTooltipActions } from "./TourTooltipActions";
 import { TourTooltipContent } from "./TourTooltipContent";
 import { TourTooltipContainer } from "./TourTooltipContainer";
-
-type Position = "top" | "right" | "bottom" | "left";
+import { Position } from "@/lib/tour/types";
 
 interface TourTooltipProps {
   targetElement: HTMLElement;
