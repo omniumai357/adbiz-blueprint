@@ -28,7 +28,7 @@ export const FileUploadCategory: FC<FileUploadCategoryProps> = ({
 }) => {
   const { formatFileSize, getMaxFileSize } = useFileValidation();
   
-  // Safely convert fileType to string for display purposes
+  // Safely convert fileType to string for display purposes using our adapter utility
   const fileTypeStr = fileAdapter.fileTypeToString(fileType);
   const maxFileSize = getMaxFileSize(fileTypeStr);
   const readableFormats = getReadableFileFormats(fileTypeStr);

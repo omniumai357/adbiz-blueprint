@@ -61,14 +61,15 @@ export const fileAdapter = {
       if (Array.isArray(uiFiles[prop])) {
         const files = uiFiles[prop] as File[];
         
-        const fileItemArray: FileItem[] = files.map(file => ({
+        const fileItemArray = files.map(file => ({
           id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
           file,
-          status: 'ready',
+          status: 'ready' as const,
           progress: 0
         }));
         
-        result[prop as keyof FileState] = fileItemArray;
+        // Use type assertion to ensure correct type assignment
+        result[prop as keyof FileState] = fileItemArray as unknown as FileItem[];
       }
     });
     

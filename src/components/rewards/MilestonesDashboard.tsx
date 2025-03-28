@@ -107,12 +107,14 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           ))}
           
           {milestones.map((milestone) => {
-            // Safely extract points_required from milestone
+            // Safely extract points_required from milestone with proper null checking
             let pointsRequired = 0;
             if (milestone.milestone && 
                 typeof milestone.milestone === 'object' && 
-                'points_required' in milestone.milestone) {
-              pointsRequired = (milestone.milestone.points_required as number) || 0;
+                milestone.milestone !== null && 
+                'points_required' in milestone.milestone && 
+                milestone.milestone.points_required !== null) {
+              pointsRequired = Number(milestone.milestone.points_required) || 0;
             }
               
             return (
