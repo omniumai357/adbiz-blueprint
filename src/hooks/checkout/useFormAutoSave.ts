@@ -84,7 +84,6 @@ export function useFormAutoSave({
         if (hoursSinceLastSave < 24 && Object.keys(savedData.data).length > 0) {
           // If there is meaningful saved data, offer to restore
           toast({
-            title: "Resume your checkout?",
             description: "We found your previously entered information.",
             action: {
               label: "Restore",

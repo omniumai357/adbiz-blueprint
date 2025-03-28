@@ -12,7 +12,7 @@ import DiscountDisplay from "@/components/checkout/form/discount-display";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
 import { useCheckoutValidation } from "@/hooks/checkout/useCheckoutValidation";
 import ResponsiveFormSection from "@/components/checkout/form/responsive-form-section";
-import { useFormAutoSave } from "@/hooks/form/useFormAutoSave";
+import { useFormAutoSave } from "@/hooks/checkout/useFormAutoSave";
 
 type CheckoutStep = "information" | "payment" | "confirmation";
 
