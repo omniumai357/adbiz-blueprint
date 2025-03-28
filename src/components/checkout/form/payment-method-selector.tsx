@@ -3,36 +3,32 @@ import React from "react";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { CreditCard, Wallet } from "lucide-react";
 import { PaymentOption } from "@/components/payment/payment-option";
-import { FormError } from "@/components/ui/form-error";
-
-type PaymentMethod = "credit-card" | "paypal";
+import { useResponsive } from "@/hooks/useResponsive";
 
 interface PaymentMethodSelectorProps {
-  selectedMethod: PaymentMethod;
-  onMethodChange: (method: PaymentMethod) => void;
-  error?: string;
+  selectedMethod: "credit-card" | "paypal";
+  onMethodChange: (method: "credit-card" | "paypal") => void;
 }
 
 /**
  * PaymentMethodSelector Component
  * 
- * A standalone component for selecting payment methods during checkout
+ * Provides a responsive radio group interface for selecting between different payment methods
  */
-const PaymentMethodSelector = ({ 
+const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({ 
   selectedMethod, 
-  onMethodChange,
-  error
-}: PaymentMethodSelectorProps) => {
+  onMethodChange 
+}) => {
+  const { isMobile } = useResponsive();
+  
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Payment Method</h2>
       
-      {error && <FormError message={error} />}
-      
       <RadioGroup 
         value={selectedMethod} 
-        onValueChange={(value) => onMethodChange(value as PaymentMethod)}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+        onValueChange={(value) => onMethodChange(value as "credit-card" | "paypal")}
+        className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-4`}
       >
         <PaymentOption
           id="credit-card"

@@ -15,6 +15,7 @@ import { LimitedTimeOfferInfo } from "@/components/checkout/limited-time-offer";
 import { UserMilestone } from "@/hooks/rewards/useMilestones";
 import { UserMilestone as ApiUserMilestone } from "@/types/api";
 import { CouponInfo } from "@/hooks/checkout/useCoupons";
+import ResponsiveCheckoutLayout from "@/components/checkout/responsive-checkout-layout";
 
 /**
  * Checkout Page Component
@@ -60,11 +61,10 @@ const Checkout = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow pt-32 pb-16">
-          <div className="container px-4 mx-auto max-w-2xl">
-            <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-            <Skeleton className="h-64 w-full mb-8" />
-            <Skeleton className="h-96 w-full" />
-          </div>
+          <ResponsiveCheckoutLayout
+            summary={<Skeleton className="h-64 w-full" />}
+            form={<Skeleton className="h-96 w-full" />}
+          />
         </main>
       </div>
     );
@@ -75,13 +75,15 @@ const Checkout = () => {
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-grow pt-32 pb-16">
-          <div className="container px-4 mx-auto max-w-2xl">
-            <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-            <div className="bg-red-50 p-6 rounded-lg border border-red-200">
-              <h2 className="text-xl font-semibold text-red-700">Package Not Found</h2>
-              <p className="mt-2 text-red-600">We couldn't find the package you're looking for.</p>
-            </div>
-          </div>
+          <ResponsiveCheckoutLayout
+            summary={<Skeleton className="h-64 w-full" />}
+            form={
+              <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+                <h2 className="text-xl font-semibold text-red-700">Package Not Found</h2>
+                <p className="mt-2 text-red-600">We couldn't find the package you're looking for.</p>
+              </div>
+            }
+          />
         </main>
       </div>
     );
@@ -99,56 +101,61 @@ const Checkout = () => {
       discountAmount: coupon.discountAmount || 0,
     };
   };
+
+  // Order summary component
+  const summaryComponent = (
+    <OrderSummary 
+      packageName={packageDetails.title} 
+      packagePrice={packageDetails.price}
+      selectedAddOns={checkout.addOns.selectedItems}
+      appliedDiscount={checkout.discounts.bundle.info as BundleDiscountInfo}
+      tieredDiscount={checkout.discounts.tiered.info as {
+        id: string;
+        name: string;
+        discountAmount: number;
+        firstPurchaseBonus?: number;
+      }}
+      isFirstPurchase={checkout.discounts.tiered.isFirstPurchase}
+      bundleDiscountAmount={checkout.discounts.bundle.amount}
+      tieredDiscountAmount={checkout.discounts.tiered.amount}
+      loyaltyBonusAmount={checkout.discounts.loyalty.amount}
+      totalDiscountAmount={checkout.discounts.total}
+      invoiceNumber={checkout.invoiceNumber}
+      isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
+      limitedTimeOffer={checkout.discounts.offers.available as unknown as LimitedTimeOfferInfo}
+      offerDiscountAmount={checkout.discounts.offers.amount}
+      appliedCoupon={checkout.discounts.coupons.applied ? mapCouponInfoToSummaryFormat(checkout.discounts.coupons.applied) : null}
+      couponDiscountAmount={checkout.discounts.coupons.amount}
+      appliedMilestoneReward={checkout.discounts.rewards.applied as unknown as UserMilestone}
+      milestoneRewardAmount={checkout.discounts.rewards.amount}
+    />
+  );
+
+  // Form or success component
+  const formOrSuccessComponent = checkout.showDownloadOptions && checkout.orderId ? (
+    <CheckoutSuccess 
+      orderId={checkout.orderId}
+      packageName={packageDetails.title}
+      invoiceNumber={checkout.invoiceNumber}
+      isGeneratingInvoice={checkout.isGeneratingInvoice}
+      userId={userId}
+    />
+  ) : (
+    <CheckoutForm 
+      checkout={checkout}
+      onOrderSuccess={checkout.handleOrderSuccess}
+    />
+  );
   
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      
       <main className="flex-grow pt-32 pb-16">
-        <div className="container px-4 mx-auto max-w-2xl">
-          <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-          
-          <OrderSummary 
-            packageName={packageDetails.title} 
-            packagePrice={packageDetails.price}
-            selectedAddOns={checkout.addOns.selectedItems}
-            appliedDiscount={checkout.discounts.bundle.info as BundleDiscountInfo}
-            tieredDiscount={checkout.discounts.tiered.info as {
-              id: string;
-              name: string;
-              discountAmount: number;
-              firstPurchaseBonus?: number;
-            }}
-            isFirstPurchase={checkout.discounts.tiered.isFirstPurchase}
-            bundleDiscountAmount={checkout.discounts.bundle.amount}
-            tieredDiscountAmount={checkout.discounts.tiered.amount}
-            loyaltyBonusAmount={checkout.discounts.loyalty.amount}
-            totalDiscountAmount={checkout.discounts.total}
-            invoiceNumber={checkout.invoiceNumber}
-            isLoyaltyProgramEnabled={checkout.discounts.loyalty.enabled}
-            limitedTimeOffer={checkout.discounts.offers.available as unknown as LimitedTimeOfferInfo}
-            offerDiscountAmount={checkout.discounts.offers.amount}
-            appliedCoupon={checkout.discounts.coupons.applied ? mapCouponInfoToSummaryFormat(checkout.discounts.coupons.applied) : null}
-            couponDiscountAmount={checkout.discounts.coupons.amount}
-            appliedMilestoneReward={checkout.discounts.rewards.applied as unknown as UserMilestone}
-            milestoneRewardAmount={checkout.discounts.rewards.amount}
-          />
-          
-          {checkout.showDownloadOptions && checkout.orderId ? (
-            <CheckoutSuccess 
-              orderId={checkout.orderId}
-              packageName={packageDetails.title}
-              invoiceNumber={checkout.invoiceNumber}
-              isGeneratingInvoice={checkout.isGeneratingInvoice}
-              userId={userId}
-            />
-          ) : (
-            <CheckoutForm 
-              checkout={checkout}
-              onOrderSuccess={checkout.handleOrderSuccess}
-            />
-          )}
-        </div>
+        <h1 className="text-3xl font-bold mb-8 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">Checkout</h1>
+        <ResponsiveCheckoutLayout
+          summary={summaryComponent}
+          form={formOrSuccessComponent}
+        />
       </main>
     </div>
   );

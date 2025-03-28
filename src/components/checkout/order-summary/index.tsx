@@ -5,7 +5,7 @@ import OrderSummaryHeader from "./order-summary-header";
 import PackageSection from "./package-section";
 import { DiscountsSection } from "./discounts-section"; 
 import OrderTotal from "./order-total";
-import { useDevice } from "@/hooks/use-device";
+import { useResponsive } from "@/hooks/useResponsive";
 import { logger } from "@/lib/utils/logging";
 import { AddOnItem } from "../add-on-item";
 import { BundleDiscountInfo } from "../bundle-discount";
@@ -67,20 +67,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   invoiceNumber,
   isLoading = false,
 }) => {
-  const { isMobile, isDesktop } = useDevice();
+  const { isMobile, isTablet, activeBreakpoint } = useResponsive();
   
   logger.debug('Rendering OrderSummary component', {
     context: 'OrderSummary',
     data: {
       packageName,
       totalDiscount: totalDiscountAmount,
-      deviceType: isMobile ? 'mobile' : isDesktop ? 'desktop' : 'tablet'
+      breakpoint: activeBreakpoint
     }
   });
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-lg border shadow-sm p-4 lg:p-6 mb-8">
+      <div className="bg-card rounded-lg border shadow-sm p-4 lg:p-6 mb-4 md:mb-0">
         <Skeleton className="h-8 w-2/3 mb-6" />
         <Skeleton className="h-20 w-full mb-4" />
         <Skeleton className="h-24 w-full mb-4" />
@@ -106,15 +106,18 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     ? Math.round((totalDiscountAmount / subtotal) * 100) 
     : 0;
 
+  const paddingClass = isMobile ? 'p-3' : isTablet ? 'p-4' : 'p-5';
+  const marginClass = isMobile ? 'space-y-4' : 'space-y-6';
+
   return (
-    <div className="bg-card rounded-lg border shadow-sm p-4 lg:p-6 mb-8">
+    <div className={`bg-card rounded-lg border shadow-sm ${paddingClass} sticky top-20`}>
       <OrderSummaryHeader 
         packageName={packageName} 
         invoiceNumber={invoiceNumber}
         savingsPercentage={savingsPercentage > 0 ? savingsPercentage : undefined}
       />
       
-      <div className={`space-y-6 ${isMobile ? 'pt-3' : 'pt-4'}`}>
+      <div className={marginClass}>
         <PackageSection 
           packageName={packageName}
           packagePrice={packagePrice}
