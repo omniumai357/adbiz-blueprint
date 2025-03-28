@@ -110,11 +110,13 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
             // Safely extract points_required from milestone with proper null checking
             let pointsRequired = 0;
             
-            if (milestone.milestone && 
-                typeof milestone.milestone === 'object' && 
-                milestone.milestone !== null) {
-              // Use optional chaining for safety
-              pointsRequired = Number(milestone.milestone?.points_required ?? 0);
+            if (milestone.milestone) {
+              // Handle nullable milestone object safely
+              const milestoneObj = milestone.milestone;
+              if (typeof milestoneObj === 'object' && milestoneObj !== null) {
+                // Access points_required directly from the non-null object
+                pointsRequired = Number(milestoneObj.points_required || 0);
+              }
             }
               
             return (
