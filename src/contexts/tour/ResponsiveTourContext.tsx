@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useDevice } from "@/hooks/use-device";
 import { Position } from "@/lib/tour/types";
+import { useLanguage } from "@/contexts/language-context";
 
 interface ResponsiveTourContextType {
   // Device detection
@@ -11,6 +12,10 @@ interface ResponsiveTourContextType {
   isDesktop: boolean;
   isLandscape: boolean;
   isPortrait: boolean;
+  
+  // Language direction
+  isRTL: boolean;
+  direction: 'ltr' | 'rtl';
   
   // Screen dimensions
   screenWidth: number;
@@ -37,6 +42,8 @@ const defaultContext: ResponsiveTourContextType = {
   isDesktop: true,
   isLandscape: false,
   isPortrait: true,
+  isRTL: false,
+  direction: 'ltr',
   screenWidth: typeof window !== "undefined" ? window.innerWidth : 1024,
   screenHeight: typeof window !== "undefined" ? window.innerHeight : 768,
   isOrientationChanging: false,
@@ -54,6 +61,7 @@ export const useResponsiveTour = () => useContext(ResponsiveTourContext);
 export const ResponsiveTourProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const device = useDevice();
+  const { direction, isRTL } = useLanguage();
   
   const [preferredViewMode, setPreferredViewMode] = useState<"tooltip" | "drawer" | "compact" | "fullscreen">("tooltip");
   const [isOrientationChanging, setIsOrientationChanging] = useState(false);
@@ -126,6 +134,8 @@ export const ResponsiveTourProvider: React.FC<{ children: React.ReactNode }> = (
     isDesktop,
     isLandscape: device.isLandscape,
     isPortrait: device.isPortrait,
+    isRTL,
+    direction,
     screenWidth: screenDimensions.width,
     screenHeight: screenDimensions.height,
     isOrientationChanging,

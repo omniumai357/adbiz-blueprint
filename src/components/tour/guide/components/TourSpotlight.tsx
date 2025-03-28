@@ -4,7 +4,7 @@ import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
 
 interface TourSpotlightProps {
   targetElement: HTMLElement;
-  intensity?: "light" | "medium" | "strong";
+  intensity?: "light" | "medium" | "strong" | "high" | "low";  // Updated to accept both naming conventions
   color?: string;
   pulseEffect?: boolean;
   fadeBackground?: boolean;
@@ -30,8 +30,10 @@ export const TourSpotlight: React.FC<TourSpotlightProps> = ({
   const getOpacityValue = () => {
     switch (intensity) {
       case "light": return 0.5;
+      case "low": return 0.5;  // Map "low" to same value as "light"
       case "medium": return 0.7;
       case "strong": return 0.85;
+      case "high": return 0.85;  // Map "high" to same value as "strong"
       default: return 0.7;
     }
   };
@@ -42,31 +44,32 @@ export const TourSpotlight: React.FC<TourSpotlightProps> = ({
   // Initialize spotlight position
   useEffect(() => {
     if (targetElement) {
+      // Set animation state when target changes
       const updateSpotlightPosition = () => {
-        const bounds = targetElement.getBoundingClientRect();
+        const rect = targetElement.getBoundingClientRect();
         
         // For mobile, add some padding to make the spotlight more visible
         const padding = isMobile ? 8 : (isTablet ? 12 : 5);
         
         setRect({
-          top: bounds.top - padding,
-          left: bounds.left - padding,
-          width: bounds.width + (padding * 2),
-          height: bounds.height + (padding * 2)
+          top: rect.top - padding,
+          left: rect.left + window.scrollX,
+          width: rect.width + (padding * 2),
+          height: rect.height + (padding * 2)
         });
       };
       
       // Update position immediately
       updateSpotlightPosition();
       
-      // Update on scroll and resize
-      window.addEventListener('scroll', updateSpotlightPosition);
+      // Add event listeners for responsive updates
       window.addEventListener('resize', updateSpotlightPosition);
+      window.addEventListener('scroll', updateSpotlightPosition);
       
       // Clean up event listeners
       return () => {
-        window.removeEventListener('scroll', updateSpotlightPosition);
         window.removeEventListener('resize', updateSpotlightPosition);
+        window.removeEventListener('scroll', updateSpotlightPosition);
       };
     }
   }, [targetElement, isMobile, isTablet]);
