@@ -1,59 +1,78 @@
 
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/ui/use-toast";
 import { useService } from "@/hooks/services/useService";
 
 /**
- * Hook for managing invoice downloads, printing, and sharing
+ * Custom hook for managing invoice download, printing, and sharing
  * 
  * @param invoiceNumber The invoice number to download
- * @param userId Optional user ID for authenticated users
- * @returns Invoice data and functions for interacting with the invoice
+ * @param userId Optional user ID for authenticated downloads
+ * @returns Object containing invoice data and handling functions
  */
-export function useInvoiceDownload(invoiceNumber: string, userId: string | null) {
-  const [invoiceHtml, setInvoiceHtml] = useState<string | null>(null);
-  const [invoiceUrl, setInvoiceUrl] = useState<string | null>(null);
+export function useInvoiceDownload(invoiceNumber: string | null, userId: string | null = null) {
+  const [invoiceHtml, setInvoiceHtml] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   
-  const invoiceService = useService("invoices");
+  // Get invoice service from registry
+  const invoicesService = useService("invoices");
   
-  // Fetch the invoice HTML when the component mounts
+  // Load invoice when invoice number changes
   useEffect(() => {
-    async function fetchInvoice() {
-      if (!invoiceNumber) return;
+    async function loadInvoice() {
+      if (!invoiceNumber) {
+        setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
+      setError(null);
       
       try {
-        setIsLoading(true);
+        // Fetch invoice HTML from service
+        const response = await invoicesService.getInvoiceHtml(invoiceNumber, userId);
         
-        // Get invoice HTML and PDF URL
-        const { html, pdfUrl } = await invoiceService.getInvoiceById(invoiceNumber, userId);
-        
-        if (html) {
-          setInvoiceHtml(html);
+        if (response?.html) {
+          setInvoiceHtml(response.html);
+        } else {
+          setError("Invoice content not available");
+          toast({
+            title: "Error loading invoice",
+            description: "The invoice content could not be loaded. Please try again later.",
+            variant: "destructive"
+          });
         }
-        
-        if (pdfUrl) {
-          setInvoiceUrl(pdfUrl);
-        }
-      } catch (error) {
-        console.error("Failed to fetch invoice:", error);
-        toast.error("Failed to load invoice", {
-          description: "There was an error loading your invoice. Please try again later."
+      } catch (err) {
+        console.error("Error loading invoice:", err);
+        setError("Failed to load invoice");
+        toast({
+          title: "Error loading invoice",
+          description: "There was an error loading the invoice. Please try again later.",
+          variant: "destructive"
         });
       } finally {
         setIsLoading(false);
       }
     }
     
-    fetchInvoice();
-  }, [invoiceNumber, userId, invoiceService]);
+    // Small delay for better UX when showing loading state
+    const timer = setTimeout(() => {
+      loadInvoice();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [invoiceNumber, userId, invoicesService, toast]);
   
   // Function to print the invoice
-  const printInvoice = () => {
-    if (!invoiceHtml) {
-      toast.error("Invoice not available", {
-        description: "The invoice is not available for printing."
+  const printInvoice = async () => {
+    if (!invoiceNumber) {
+      toast({
+        title: "Print error",
+        description: "Invoice number is required for printing",
+        variant: "destructive"
       });
       return;
     }
@@ -61,77 +80,95 @@ export function useInvoiceDownload(invoiceNumber: string, userId: string | null)
     setIsPrinting(true);
     
     try {
-      // Create a new window with the invoice HTML
-      const printWindow = window.open("", "_blank");
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
       
       if (!printWindow) {
-        throw new Error("Popup blocked");
+        toast({
+          title: "Print blocked",
+          description: "Please allow pop-ups to print invoices",
+          variant: "destructive"
+        });
+        return;
       }
       
-      // Write the invoice HTML to the new window
-      printWindow.document.write(invoiceHtml);
-      printWindow.document.close();
+      // Write invoice HTML to the new window
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Invoice #${invoiceNumber}</title>
+            <style>
+              @media print {
+                body { margin: 0; padding: 16px; }
+                @page { size: auto; margin: 10mm; }
+              }
+              body { font-family: system-ui, -apple-system, sans-serif; }
+            </style>
+          </head>
+          <body>
+            ${invoiceHtml || '<p>Invoice content not available</p>'}
+            <script>
+              // Auto-print when content is loaded
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                  setTimeout(function() {
+                    window.close();
+                  }, 500);
+                }, 500);
+              };
+            </script>
+          </body>
+        </html>
+      `);
       
-      // Wait for resources to load then print
-      printWindow.onload = () => {
-        printWindow.print();
-        // Close the window after printing (some browsers may not close automatically)
-        printWindow.onafterprint = () => {
-          printWindow.close();
-          setIsPrinting(false);
-        };
-      };
-      
-      // Fallback in case onload doesn't fire
+      toast({
+        title: "Print prepared",
+        description: "Your invoice is ready to print",
+      });
+    } catch (err) {
+      console.error("Print error:", err);
+      toast({
+        title: "Print failed",
+        description: "Failed to prepare invoice for printing",
+        variant: "destructive"
+      });
+    } finally {
       setTimeout(() => {
         setIsPrinting(false);
-      }, 5000);
-    } catch (error) {
-      console.error("Error printing invoice:", error);
-      
-      if (error instanceof Error && error.message === "Popup blocked") {
-        toast.error("Popup Blocked", {
-          description: "Please allow popups to print your invoice."
-        });
-      } else {
-        toast.error("Print Error", {
-          description: "There was an error printing your invoice. Please try again."
-        });
-      }
-      
-      setIsPrinting(false);
+      }, 2000);
     }
   };
   
-  // Function to download the invoice
+  // Function to download the invoice as PDF
   const downloadInvoice = async () => {
-    if (invoiceUrl) {
-      // If we have a direct URL to the PDF, use it
-      window.open(invoiceUrl, "_blank");
-      return;
-    }
-    
-    if (!invoiceHtml) {
-      toast.error("Invoice not available", {
-        description: "The invoice is not available for download."
+    if (!invoiceNumber) {
+      toast({
+        title: "Download error",
+        description: "Invoice number is required for download",
+        variant: "destructive"
       });
       return;
     }
     
     try {
-      // Generate a PDF from the invoice HTML
-      const { pdfUrl } = await invoiceService.generatePdf(invoiceNumber, userId);
+      // Call the service to generate and download PDF
+      const success = await invoicesService.downloadInvoicePdf(invoiceNumber, userId);
       
-      if (pdfUrl) {
-        setInvoiceUrl(pdfUrl); // Cache for future use
-        window.open(pdfUrl, "_blank");
+      if (success) {
+        toast({
+          title: "Download started",
+          description: "Your invoice is being downloaded",
+        });
       } else {
-        throw new Error("Failed to generate PDF");
+        throw new Error("Download failed");
       }
-    } catch (error) {
-      console.error("Error downloading invoice:", error);
-      toast.error("Download Error", {
-        description: "There was an error downloading your invoice. Please try again."
+    } catch (err) {
+      console.error("Download error:", err);
+      toast({
+        title: "Download failed",
+        description: "Failed to download invoice. Please try again later.",
+        variant: "destructive"
       });
     }
   };
@@ -139,44 +176,56 @@ export function useInvoiceDownload(invoiceNumber: string, userId: string | null)
   // Function to share the invoice
   const shareInvoice = async () => {
     if (!invoiceNumber) {
-      toast.error("Invoice not available", {
-        description: "The invoice is not available for sharing."
+      toast({
+        title: "Share error",
+        description: "Invoice number is required for sharing",
+        variant: "destructive"
       });
       return;
     }
     
     try {
-      // Check if the Web Share API is available
+      // Use Web Share API if available
       if (navigator.share) {
         await navigator.share({
           title: `Invoice #${invoiceNumber}`,
-          text: `Here is your invoice #${invoiceNumber}`,
-          url: window.location.href,
+          text: `Check out my invoice #${invoiceNumber}`,
+          url: `${window.location.origin}/invoices/${invoiceNumber}`
+        });
+        
+        toast({
+          title: "Share successful",
+          description: "Your invoice has been shared",
         });
       } else {
-        // Fallback - copy invoice number to clipboard
-        await navigator.clipboard.writeText(`Invoice #${invoiceNumber}`);
-        toast.success("Invoice number copied to clipboard");
+        // Fallback to copying link to clipboard
+        const invoiceUrl = `${window.location.origin}/invoices/${invoiceNumber}`;
+        await navigator.clipboard.writeText(invoiceUrl);
+        
+        toast({
+          title: "Link copied",
+          description: "Invoice link copied to clipboard",
+        });
       }
-    } catch (error) {
-      console.error("Error sharing invoice:", error);
+    } catch (err) {
+      // User cancelled or sharing failed
+      console.error("Share error:", err);
       
-      if (error instanceof Error && error.message.includes("AbortError")) {
-        // User canceled the share
-        return;
+      if (err instanceof Error && err.message !== "Share canceled") {
+        toast({
+          title: "Share failed",
+          description: "Failed to share invoice",
+          variant: "destructive"
+        });
       }
-      
-      toast.error("Share Error", {
-        description: "There was an error sharing your invoice."
-      });
     }
   };
   
   return {
     invoiceHtml,
-    invoiceUrl,
     isLoading,
     isPrinting,
+    error,
     printInvoice,
     downloadInvoice,
     shareInvoice
