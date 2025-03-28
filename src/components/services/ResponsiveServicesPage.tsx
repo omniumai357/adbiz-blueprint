@@ -8,6 +8,7 @@ import { ResponsiveContainer } from '@/components/ui/responsive-container';
 import { PackageCard } from '@/components/PackageCard';
 import { useResponsive } from '@/hooks/useResponsive';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Package } from '@/lib/data'; // Import the correct Package type
 
 /**
  * ResponsiveServicesPage component
@@ -26,10 +27,18 @@ export const ResponsiveServicesPage: React.FC = () => {
   
   const { isMobile } = useResponsive();
   
-  // Filter packages by selected category
-  const filteredPackages = packages.filter(
-    pkg => pkg.category === selectedCategory
-  );
+  // Filter packages by selected category and convert to the correct Package type
+  const filteredPackages = packages
+    .filter(pkg => pkg.category === selectedCategory)
+    .map(pkg => ({
+      id: pkg.id,
+      title: pkg.title,
+      description: pkg.description,
+      category: pkg.category as "monthly" | "custom" | "platinum",
+      price: pkg.price,
+      features: pkg.features,
+      popular: pkg.popular || false
+    }));
   
   return (
     <ResponsiveContainer className="py-6 md:py-10">
