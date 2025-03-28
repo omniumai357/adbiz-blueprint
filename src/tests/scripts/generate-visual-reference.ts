@@ -8,12 +8,7 @@
  * This file is now just a wrapper that imports the functionality from modularized files.
  */
 
-import { generateVisualReferenceLibrary } from './visual-reference/generator';
+import { runGenerator } from './visual-reference';
 
 // Run the generator
-generateVisualReferenceLibrary()
-  .catch(error => {
-    console.error('Failed to generate Visual Reference Library');
-    console.error(error);
-    process.exit(1);
-  });
+runGenerator();

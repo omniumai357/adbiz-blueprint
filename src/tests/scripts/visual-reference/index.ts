@@ -3,7 +3,7 @@
  * Visual Reference Library Generator - Main Entry Point
  */
 
-export { generateVisualReferenceLibrary } from './generator';
+import { generateVisualReferenceLibrary } from './generator';
 
 // Run the generator
 export const runGenerator = () => {
@@ -14,3 +14,6 @@ export const runGenerator = () => {
       process.exit(1);
     });
 };
+
+// Re-export for use in other files
+export { generateVisualReferenceLibrary };
