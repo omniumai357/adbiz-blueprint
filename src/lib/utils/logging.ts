@@ -1,3 +1,4 @@
+
 /**
  * Centralized logging utility with structured logging capabilities
  */
@@ -30,9 +31,21 @@ export interface LogData {
   fileCount?: number;
 }
 
+// Define log levels for better organization and filtering
+export enum LogLevel {
+  ERROR = 'error',
+  WARN = 'warn',
+  INFO = 'info',
+  DEBUG = 'debug'
+}
+
+// Environment check - production logs should be minimal
+const isProduction = process.env.NODE_ENV === 'production';
+
 // Define a logger class with methods for different log levels
 export class Logger {
   debug(message: string, data?: LogData): void {
+    if (isProduction) return; // Skip debug logs in production
     this.log('debug', message, data);
   }
 
@@ -54,14 +67,14 @@ export class Logger {
     const context = data?.context || 'App';
     const logData = data?.data || {};
     
-    // In development, use console methods directly
+    // In development, use console methods directly with rich formatting
     if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
       const logFn = console[level] || console.log;
       logFn(`[${timestamp}] [${level.toUpperCase()}] [${context}] ${message}`, logData);
     } else {
-      // In production, we might want to send logs to a service
-      // For now, we'll just use console with a simpler format
-      console[level](`[${level.toUpperCase()}] [${context}] ${message}`, logData);
+      // In production, use a simpler format and potentially send to logging service
+      console[level](`[${level.toUpperCase()}] [${context}] ${message}`, 
+        Object.keys(logData).length > 0 ? logData : '');
     }
   }
 }
@@ -105,4 +118,27 @@ export function formatErrorDetails(error: unknown): Record<string, any> {
   }
   
   return { rawError: String(error) };
+}
+
+/**
+ * Log performance metrics for a function call
+ * 
+ * @param operationName Name of the operation being measured
+ * @param fn Function to execute and measure
+ * @returns Result of the function execution
+ */
+export function logPerformance<T>(operationName: string, fn: () => T): T {
+  const start = performance.now();
+  const result = fn();
+  const duration = performance.now() - start;
+  
+  logger.debug(`Operation "${operationName}" took ${duration.toFixed(2)}ms`, {
+    context: 'Performance',
+    data: {
+      operation: operationName,
+      durationMs: duration
+    }
+  });
+  
+  return result;
 }

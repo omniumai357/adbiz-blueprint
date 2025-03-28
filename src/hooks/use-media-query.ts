@@ -24,7 +24,7 @@ export function useMediaQuery(query: string): boolean {
         setMatches(event.matches);
       };
 
-      // Add event listener
+      // Add event listener using the standard API
       mediaQuery.addEventListener("change", handler);
       
       // Clean up

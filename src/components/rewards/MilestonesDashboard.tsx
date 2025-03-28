@@ -79,22 +79,12 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
       skeletonContent={<MilestonesSkeleton />}
     >
       <div className="space-y-6">
-        <div className="bg-gradient-to-r from-slate-50 to-white p-4 md:p-6 rounded-lg border shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">{t('rewards.yourProgress')}</h2>
-          <p className="text-muted-foreground mb-4">
-            {t('rewards.pointsEarned', { points: totalPoints })}
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('rewards.availableRewards')}</h3>
-              <p className="text-2xl font-bold">{availableRewards.length}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">{t('rewards.completedMilestones')}</h3>
-              <p className="text-2xl font-bold">{completedMilestones.length}</p>
-            </div>
-          </div>
-        </div>
+        <MilestoneProgressCard
+          totalPoints={totalPoints}
+          completedMilestones={completedMilestones.length}
+          availableRewards={availableRewards.length}
+          isCompact={isTabletOrMobile}
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {availableRewards.map((reward) => (
