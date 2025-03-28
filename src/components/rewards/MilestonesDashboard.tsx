@@ -107,18 +107,15 @@ const MilestonesDashboard = ({ userId }: MilestonesDashboardProps) => {
           ))}
           
           {milestones.map((milestone) => {
-            // Safely extract points_required from milestone with proper null checking
+            // Extract points_required safely from milestone with robust type checking
             let pointsRequired = 0;
             
-            // Fix TypeScript error by ensuring milestoneData is not null before using it
+            // First check if milestone.milestone exists at all
             if (milestone.milestone) {
-              // Explicitly check for null before accessing properties
-              if (typeof milestone.milestone === 'object' && milestone.milestone !== null) {
-                // Now TypeScript knows milestone.milestone is a non-null object
-                pointsRequired = Number(milestone.milestone.points_required || 0);
-              } else if (typeof milestone.milestone === 'string') {
-                // Handle case where milestone.milestone might be a string ID
-                pointsRequired = 0; // Default value for string case
+              // Then use a type guard to safely handle different possible types
+              if (typeof milestone.milestone === 'object') {
+                // Get points_required with nullish coalescing for safety
+                pointsRequired = milestone.milestone ? Number(milestone.milestone.points_required || 0) : 0;
               }
             }
               
