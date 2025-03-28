@@ -12,10 +12,12 @@ import { TourViewRenderer } from "./components/TourViewRenderer";
 import { TourAnalyticsTracker } from "./components/TourAnalyticsTracker";
 import { useLanguage } from "@/contexts/language-context";
 import { useResponsiveTour } from "@/contexts/tour/ResponsiveTourContext";
+import { useResponsiveTourViews } from "@/hooks/tour/useResponsiveTourViews";
 import { Position } from "@/lib/tour/types";
 import { logger } from "@/lib/utils/logging";
 import { TourLiveAnnouncer } from "../accessibility/TourLiveAnnouncer";
 import { TourFocusManager } from "../accessibility/TourFocusManager";
+import { MobileTourAccessibility } from "../accessibility/MobileTourAccessibility";
 
 export const TourGuideControllerInner: React.FC = () => {
   const {
@@ -37,13 +39,19 @@ export const TourGuideControllerInner: React.FC = () => {
     isMobile,
     isTablet,
     isLandscape,
+    isPortrait,
     preferredViewMode,
     minTouchTargetSize,
-    shouldUseDrawer,
-    shouldUseCompactView,
-    isOrientationChanging,
-    handleOrientationChange
+    isOrientationChanging
   } = useResponsiveTour();
+  
+  // Use our new responsive views hook
+  const {
+    viewMode,
+    isTransitioning,
+    shouldUseDrawer,
+    shouldUseCompactView
+  } = useResponsiveTourViews();
   
   const { targetElement } = useTourElementFinder(currentStepData?.target || '');
   
@@ -56,13 +64,14 @@ export const TourGuideControllerInner: React.FC = () => {
           isMobile,
           isTablet, 
           isLandscape,
+          viewMode,
           preferredViewMode,
           currentStep: currentStep + 1,
           totalSteps
         }
       });
     }
-  }, [isActive, currentStepData, isMobile, isTablet, isLandscape, preferredViewMode, currentStep, totalSteps]);
+  }, [isActive, currentStepData, isMobile, isTablet, isLandscape, viewMode, preferredViewMode, currentStep, totalSteps]);
   
   // Handle orientation changes
   useEffect(() => {
@@ -120,6 +129,12 @@ export const TourGuideControllerInner: React.FC = () => {
         currentStepData={currentStepData} 
       />
       
+      {/* Mobile-specific accessibility */}
+      <MobileTourAccessibility
+        isActive={isActive}
+        isPortrait={isPortrait}
+      />
+      
       {/* Track analytics */}
       <TourAnalyticsTracker />
       
@@ -155,7 +170,7 @@ export const TourGuideControllerInner: React.FC = () => {
         useDrawer={shouldUseDrawer()}
         useCompactView={shouldUseCompactView()}
         preferredViewMode={preferredViewMode}
-        isOrientationChanging={isOrientationChanging}
+        isOrientationChanging={isTransitioning}
       />
     </>
   );

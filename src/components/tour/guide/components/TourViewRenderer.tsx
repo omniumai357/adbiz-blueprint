@@ -2,8 +2,7 @@
 import React, { useEffect } from "react";
 import { TourStep } from "@/contexts/tour/types";
 import { TourTooltip } from "./TourTooltip";
-import { TourDrawer } from "./TourDrawer";
-import { TourCompactView } from "./TourCompactView";
+import { MobileTourView } from "../../mobile/MobileTourView";
 import { TourSpotlight } from "./TourSpotlight";
 import { Position } from "@/lib/tour/types";
 import { logger } from "@/lib/utils/logging";
@@ -94,26 +93,21 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   }, [preferredViewMode, useDrawer, useCompactView, isOrientationChanging, isMobile, isTablet, isLandscape]);
 
   // Improved view mode selection logic with clearer rules
-  const determineViewMode = (): 'tooltip' | 'drawer' | 'compact' => {
+  const determineViewMode = (): 'tooltip' | 'mobile' => {
     // During orientation changes, return the current mode to prevent flickering
     if (isOrientationChanging) {
-      return preferredViewMode === 'fullscreen' ? 'drawer' : 
-             preferredViewMode as 'tooltip' | 'drawer' | 'compact';
+      return preferredViewMode === 'fullscreen' ? 'mobile' : 
+             (preferredViewMode === 'drawer' || preferredViewMode === 'compact') ? 'mobile' : 'tooltip';
     }
     
-    // On mobile in portrait, prefer drawer for better touch interactions
-    if (isMobile && !isLandscape) {
-      return 'drawer';
-    }
-    
-    // On mobile in landscape, use compact view to save vertical space
-    if (isMobile && isLandscape) {
-      return 'compact';
+    // On mobile, use mobile views
+    if (isMobile) {
+      return 'mobile';
     }
     
     // On tablets, consider orientation
     if (isTablet) {
-      return isLandscape ? 'tooltip' : 'drawer';
+      return isLandscape ? 'tooltip' : 'mobile';
     }
     
     // For larger screens, default to tooltip
@@ -122,7 +116,7 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
   
   // If there's an explicit preference, use it, otherwise determine automatically
   const viewMode = preferredViewMode !== 'fullscreen' 
-    ? preferredViewMode 
+    ? (preferredViewMode === 'drawer' || preferredViewMode === 'compact' ? 'mobile' : 'tooltip')
     : determineViewMode();
   
   // During orientation changes, use a stable view to prevent flickering
@@ -195,36 +189,18 @@ export const TourViewRenderer: React.FC<TourViewRendererProps> = ({
         />
       )}
 
-      {viewMode === 'drawer' && (
-        <TourDrawer
-          title={step.title}
-          content={step.content}
-          onNext={onNext}
-          onPrev={onPrev}
-          onClose={onClose}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          isLastStep={isLastStep}
-          stepInfo={stepInfo}
-          media={mediaContent}
+      {viewMode === 'mobile' && (
+        <MobileTourView
+          step={step}
+          isOpen={true}
           isLandscape={isLandscape}
-          isRTL={isRTL}
-        />
-      )}
-
-      {viewMode === 'compact' && (
-        <TourCompactView
-          title={step.title}
-          content={step.content}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
           onNext={onNext}
           onPrev={onPrev}
           onClose={onClose}
-          currentStep={currentStep}
-          totalSteps={totalSteps}
           isLastStep={isLastStep}
-          stepInfo={stepInfo}
-          media={mediaContent}
-          isRTL={isRTL}
+          direction={direction}
         />
       )}
     </div>

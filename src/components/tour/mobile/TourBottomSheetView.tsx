@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { TourStep } from "@/contexts/tour/types";
@@ -15,6 +15,10 @@ interface TourBottomSheetViewProps {
   totalSteps: number;
   isLastStep: boolean;
   direction: "ltr" | "rtl";
+  title?: string;
+  content?: string;
+  nextLabel?: string;
+  prevLabel?: string;
 }
 
 /**
@@ -32,7 +36,11 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
   currentStep,
   totalSteps,
   isLastStep,
-  direction
+  direction,
+  title: propTitle,
+  content: propContent,
+  nextLabel = "Next",
+  prevLabel = "Previous"
 }) => {
   const [sheetOpen, setSheetOpen] = useState(false);
   
@@ -52,6 +60,10 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
     onClose();
   };
   
+  // Use props or fallback to step properties
+  const title = propTitle || step.title;
+  const content = propContent || step.content;
+  
   // Extract media from step if available
   const media = step.media ? {
     type: step.media.type,
@@ -61,18 +73,29 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
   
   // Create RTL-aware navigation
   const isRTL = direction === "rtl";
+  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
+  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
+  
+  // Drag constraints to improve touch experience
+  const dragConstraints = {
+    top: false,
+    bottom: true,
+    left: false,
+    right: false
+  };
   
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent 
         side="bottom" 
-        className="rounded-t-xl p-0 overflow-hidden max-h-[80vh]"
+        className="rounded-t-xl p-0 overflow-hidden max-h-[90vh] focus:outline-none"
+        dragConstraints={dragConstraints}
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full focus:outline-none">
           {/* Header with close button */}
           <SheetHeader className="px-4 pt-4 pb-2 border-b">
             <div className="flex items-center justify-between">
-              <SheetTitle className="text-xl">{step.title}</SheetTitle>
+              <SheetTitle className="text-xl">{title}</SheetTitle>
               <Button variant="ghost" size="icon" onClick={handleSheetClose} className="h-8 w-8">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
@@ -105,7 +128,7 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
           {/* Content */}
           <div className="px-4 py-4 overflow-y-auto flex-grow">
             <div className="prose prose-sm dark:prose-invert">
-              {step.content}
+              {content}
             </div>
           </div>
           
@@ -120,8 +143,8 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
                     onClick={onPrev}
                     className="flex items-center gap-1"
                   >
-                    {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                    {isRTL ? "Next" : "Previous"}
+                    <PrevIcon className="h-4 w-4" />
+                    {prevLabel}
                   </Button>
                 )}
               </div>
@@ -139,12 +162,12 @@ export const TourBottomSheetView: React.FC<TourBottomSheetViewProps> = ({
                   {isLastStep ? (
                     <>
                       Finish
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 ml-1" />
                     </>
                   ) : (
                     <>
-                      {isRTL ? "Previous" : "Next"}
-                      {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      {nextLabel}
+                      <NextIcon className="h-4 w-4 ml-1" />
                     </>
                   )}
                 </Button>

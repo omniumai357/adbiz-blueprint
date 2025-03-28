@@ -14,6 +14,12 @@ interface TourMobileCompactViewProps {
   onClose: () => void;
   nextLabel?: string;
   prevLabel?: string;
+  isRTL?: boolean;
+  media?: {
+    type: 'image' | 'video';
+    url: string;
+    alt?: string;
+  };
 }
 
 /**
@@ -31,13 +37,19 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
   onPrev,
   onClose,
   nextLabel = "Next",
-  prevLabel = "Previous"
+  prevLabel = "Previous",
+  isRTL = false,
+  media
 }) => {
   const isLastStep = currentStep === totalSteps - 1;
   const showPrevButton = currentStep > 0;
   
+  // Swap directions for RTL layout
+  const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
+  const NextIcon = isRTL ? ChevronLeft : ChevronRight;
+  
   return (
-    <div className="fixed bottom-2 right-2 z-50 max-w-[350px]">
+    <div className="fixed bottom-2 right-2 z-50 max-w-[350px] w-full sm:w-auto">
       <Card className="shadow-lg border border-border">
         <CardHeader className="p-3 pb-0 flex flex-row items-center">
           <CardTitle className="text-base flex-grow">{title}</CardTitle>
@@ -46,13 +58,32 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
             size="sm"
             className="h-7 w-7 rounded-full p-0"
             onClick={onClose}
+            aria-label="Close tour"
           >
             <X className="h-3.5 w-3.5" />
             <span className="sr-only">Close</span>
           </Button>
         </CardHeader>
         
-        <CardContent className="p-3 text-sm max-h-[100px] overflow-y-auto">
+        {media && (
+          <div className="px-3 pt-2">
+            {media.type === 'image' ? (
+              <img 
+                src={media.url} 
+                alt={media.alt || title} 
+                className="rounded-sm w-full max-h-[80px] object-cover"
+              />
+            ) : (
+              <video 
+                src={media.url} 
+                controls 
+                className="rounded-sm w-full max-h-[80px]"
+              />
+            )}
+          </div>
+        )}
+        
+        <CardContent className="p-3 text-sm max-h-[80px] overflow-y-auto">
           {content}
         </CardContent>
         
@@ -69,7 +100,7 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
                 className="h-7 px-2 text-xs"
                 onClick={onPrev}
               >
-                <ChevronLeft className="h-3 w-3 mr-1" />
+                <PrevIcon className="h-3 w-3 mr-1" />
                 {prevLabel}
               </Button>
             )}
@@ -80,7 +111,7 @@ export const TourMobileCompactView: React.FC<TourMobileCompactViewProps> = ({
               onClick={isLastStep ? onClose : onNext}
             >
               {isLastStep ? "Finish" : nextLabel}
-              {!isLastStep && <ChevronRight className="h-3 w-3 ml-1" />}
+              {!isLastStep && <NextIcon className="h-3 w-3 ml-1" />}
             </Button>
           </div>
         </CardFooter>
