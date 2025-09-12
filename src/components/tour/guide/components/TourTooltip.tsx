@@ -15,7 +15,7 @@ interface TourTooltipProps {
   isLastStep: boolean;
   stepInfo: string;
   media?: {
-    type: "image" | "video";
+    type: "image" | "video" | "gif";
     url: string;
     alt?: string;
     animation?: string;

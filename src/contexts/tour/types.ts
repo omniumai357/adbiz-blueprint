@@ -16,7 +16,7 @@ export interface TourStep {
     close?: TourStepAction;
   };
   media?: {
-    type: 'image' | 'video';
+    type: 'image' | 'video' | 'gif';
     url: string;
     alt?: string;
     animation?: string;
